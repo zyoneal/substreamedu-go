@@ -1,0 +1,59 @@
+/* Responsive styles to add to HomePage.module.css */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .headerSection {
+        padding: 100px 20px 60px;
+    }
+    
+    .mainSlogan {
+        font-size: clamp(2.5rem, 8vw, 4rem);
+    }
+    
+    .tagline {
+        font-size: clamp(1rem, 3vw, 1.25rem);
+        margin-bottom: 40px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .headerSection {
+        padding: 80px 16px 50px;
+    }
+    
+    .mainSlogan {
+        font-size: clamp(2rem, 10vw, 3rem);
+        margin-bottom: 20px;
+    }
+    
+    .tagline {
+        font-size: clamp(0.9375rem, 4vw, 1.125rem);
+        margin-bottom: 36px;
+    }
+    
+    .heroActions {
+        gap: 16px;
+    }
+    
+    .heroCTA {
+        padding: 14px 36px;
+        font-size: 0.9375rem;
+    }
+    
+    .demoLink {
+        font-size: 0.875rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .headerSection {
+        padding: 60px 16px 40px;
+    }
+    
+    .heroCTA {
+        width: 100%;
+        max-width: 280px;
+    }
+}

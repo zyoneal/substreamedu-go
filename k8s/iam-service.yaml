@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam-service
+  labels:
+    app: iam-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iam-service
+  template:
+    metadata:
+      labels:
+        app: iam-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+      containers:
+      - name: iam-service
+        image: substreamedu/iam-service:latest
+        ports:
+        - containerPort: 3002
+        env:
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_DB_IAM
+          value: "sse_iam"
+        - name: POSTGRES_USER_APP
+          value: "substream_app"
+        - name: POSTGRES_PASSWORD_APP
+          value: "substream_pass"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam-service
+spec:
+  selector:
+    app: iam-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3002
+  type: ClusterIP

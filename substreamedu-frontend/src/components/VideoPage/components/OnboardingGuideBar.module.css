@@ -1,0 +1,233 @@
+/* ========================================================
+   INTERACTIVE ONBOARDING GUIDE BAR (STEP 1 & 2)
+   ======================================================== */
+
+.guideBarContainer {
+  width: 100%;
+  margin: 0 0 14px 0;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 25;
+  animation: guideSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes guideSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guideCard {
+  width: 100%;
+  max-width: 760px;
+  background: rgba(20, 19, 17, 0.92);
+  border: 1px solid rgba(250, 249, 47, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(250, 249, 47, 0.06);
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.guideCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #faf92f 0%, rgba(250, 249, 47, 0.2) 100%);
+}
+
+.guideCard.step2 {
+  border-color: rgba(250, 249, 47, 0.45);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 25px rgba(250, 249, 47, 0.12);
+}
+
+.guideCard.completed {
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(74, 222, 128, 0.1);
+}
+
+.guideCard.completed::before {
+  background: linear-gradient(90deg, #4ade80 0%, rgba(74, 222, 128, 0.2) 100%);
+}
+
+.leftGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepIndicators {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.stepCircle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #8e887f;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.2s ease;
+}
+
+.stepCircleActive {
+  background: #faf92f;
+  color: #0d0c0b;
+  border-color: #faf92f;
+  box-shadow: 0 0 10px rgba(250, 249, 47, 0.4);
+  animation: pulseLight 1.8s infinite alternate;
+}
+
+@keyframes pulseLight {
+  from {
+    box-shadow: 0 0 6px rgba(250, 249, 47, 0.3);
+  }
+  to {
+    box-shadow: 0 0 14px rgba(250, 249, 47, 0.6);
+  }
+}
+
+.stepCircleDone {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.stepConnector {
+  width: 14px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.stepConnectorDone {
+  background: #faf92f;
+}
+
+.contentBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepBadge {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #faf92f;
+}
+
+.stepBadge.completedBadge {
+  color: #4ade80;
+}
+
+.hintText {
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: 13px;
+  color: #ede8e0;
+  line-height: 1.4;
+  margin: 0;
+  white-space: normal;
+}
+
+.highlightHint {
+  color: #faf92f;
+  font-weight: 600;
+}
+
+.highlightHintSuccess {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.rightGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  background: rgba(250, 249, 47, 0.12);
+  border: 1px solid rgba(250, 249, 47, 0.3);
+  color: #faf92f;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  background: #faf92f;
+  color: #0d0c0b;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #8e887f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.closeButton:hover {
+  color: #ede8e0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 680px) {
+  .guideCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .rightGroup {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

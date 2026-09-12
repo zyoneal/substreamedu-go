@@ -1,0 +1,737 @@
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    box-sizing: border-box;
+    animation: overlayFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.confettiCanvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10000;
+    width: 100%;
+    height: 100%;
+}
+
+.modalContainer {
+    position: relative;
+    z-index: 10001;
+    width: 100%;
+    max-width: 980px;
+    max-height: 92vh;
+    background: #141312;
+    border: 1px solid #282522;
+    border-radius: 20px;
+    box-shadow: 
+        0 40px 100px -20px rgba(0, 0, 0, 0.95),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #ede8e0;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    animation: modalScaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid #282522;
+    background: #141312;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.headerIconBadge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #161514;
+    border: 1px solid #3a3836;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.headerTitles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.modalTitle {
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #ede8e0;
+    margin: 0;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modalSubtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #8a8580;
+    margin: 0;
+}
+
+.closeButton {
+    background: #1e1c1a;
+    border: 1px solid #3a3836;
+    color: #b0a99e;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    color: #ffffff;
+    background: #3a3836;
+    border-color: #ede8e0;
+}
+
+.modalBody {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(92vh - 84px);
+    box-sizing: border-box;
+}
+
+.previewSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    perspective: 1200px;
+}
+
+.trophyCardWrapper {
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s ease-out;
+    transform-style: preserve-3d;
+}
+
+.trophyCard {
+    position: relative;
+    border-radius: 24px;
+    padding: 24px 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    overflow: hidden;
+    box-shadow: 
+        0 25px 60px -15px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dynamic Themes */
+.themeSolar {
+    background: radial-gradient(circle at 50% 20%, rgba(249, 115, 22, 0.22) 0%, rgba(13, 13, 18, 0.95) 75%), #0c0c10;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.themeCosmic {
+    background: radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.25) 0%, rgba(13, 13, 18, 0.95) 75%), #0c0c10;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.themeOnyx {
+    background: radial-gradient(circle at 50% 20%, rgba(234, 179, 8, 0.15) 0%, rgba(8, 8, 10, 0.98) 75%), #060608;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.themeEmerald {
+    background: radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.22) 0%, rgba(13, 13, 18, 0.95) 75%), #08110d;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Specular Glare overlay */
+.cardGlare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 24px;
+    z-index: 5;
+    mix-blend-mode: overlay;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+/* Card Header */
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.brandPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    padding: 5px 10px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #e2e8f0;
+}
+
+.brandLogoDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f97316;
+    box-shadow: 0 0 8px #f97316;
+}
+
+.themeCosmic .brandLogoDot { background: #a855f7; box-shadow: 0 0 8px #a855f7; }
+.themeOnyx .brandLogoDot { background: #eab308; box-shadow: 0 0 8px #eab308; }
+.themeEmerald .brandLogoDot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+
+.milestonePill {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Center Hero Flame */
+.heroFlameContainer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 0;
+}
+
+.flameHalo {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.75;
+    pointer-events: none;
+    animation: haloPulse 3s ease-in-out infinite alternate;
+}
+
+.themeSolar .flameHalo { background: radial-gradient(circle, #f97316 0%, rgba(239, 68, 68, 0.3) 60%, transparent 80%); }
+.themeCosmic .flameHalo { background: radial-gradient(circle, #a855f7 0%, rgba(6, 182, 212, 0.3) 60%, transparent 80%); }
+.themeOnyx .flameHalo { background: radial-gradient(circle, #eab308 0%, rgba(234, 179, 8, 0.2) 60%, transparent 80%); }
+.themeEmerald .flameHalo { background: radial-gradient(circle, #10b981 0%, rgba(6, 182, 212, 0.3) 60%, transparent 80%); }
+
+@keyframes haloPulse {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    100% { transform: scale(1.15); opacity: 0.95; }
+}
+
+.flameIconWrapper {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.flameEmoji {
+    font-size: 46px;
+    line-height: 1;
+    filter: drop-shadow(0 0 14px rgba(249, 115, 22, 0.6));
+    animation: flameBob 2.5s ease-in-out infinite;
+}
+
+@keyframes flameBob {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.06); }
+}
+
+/* Streak Number */
+.streakDisplay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.streakBigNumber {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, #ffffff 30%, #f1f5f9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+}
+
+.streakBigLabel {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #e2e8f0;
+    margin-top: 2px;
+}
+
+.mottoBadge {
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #cbd5e1;
+    text-align: center;
+    margin-top: 4px;
+    max-width: 90%;
+    line-height: 1.35;
+}
+
+/* 7-Day Consistency Week Ring */
+.weekRingContainer {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 12px 10px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+}
+
+.dayNode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.dayLabel {
+    font-size: 10px;
+    font-weight: 600;
+    color: #71717a;
+    text-transform: uppercase;
+}
+
+.dayLabelActive {
+    color: #ffffff;
+}
+
+.dayCircle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.dayCircleActive {
+    background: linear-gradient(135deg, #f97316, #eab308);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.6);
+}
+
+.themeCosmic .dayCircleActive {
+    background: linear-gradient(135deg, #a855f7, #06b6d4);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+}
+
+.themeOnyx .dayCircleActive {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
+}
+
+.themeEmerald .dayCircleActive {
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+}
+
+.dayCircleToday {
+    position: relative;
+    border-width: 2px;
+    border-color: #ffffff;
+    animation: ringPulse 2s infinite;
+}
+
+@keyframes ringPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Stats Chips */
+.statsRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+.statChip {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+
+.statChipValue {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.statChipLabel {
+    font-size: 9.5px;
+    color: #888892;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Card Footer */
+.cardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 10.5px;
+    color: #71717a;
+}
+
+.footerTagline {
+    font-weight: 500;
+}
+
+.footerDomain {
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.controlsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    justify-content: center;
+}
+
+.sectionBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sectionLabel {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888892;
+    margin: 0;
+}
+
+/* Theme Picker */
+.themeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.themeOptionBtn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    color: #94949e;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: left;
+}
+
+.themeOptionBtn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.themeOptionBtnActive {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.themeSwatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.swatchSolar { background: linear-gradient(135deg, #f97316, #ef4444); box-shadow: 0 0 8px rgba(249, 115, 22, 0.5); }
+.swatchCosmic { background: linear-gradient(135deg, #a855f7, #06b6d4); box-shadow: 0 0 8px rgba(168, 85, 247, 0.5); }
+.swatchOnyx { background: linear-gradient(135deg, #eab308, #18181b); box-shadow: 0 0 8px rgba(234, 179, 8, 0.5); }
+.swatchEmerald { background: linear-gradient(135deg, #10b981, #84cc16); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+
+/* Action Buttons */
+.actionButtonsGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Primary "Copy Image" Button */
+.btnPrimary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 48px;
+    padding: 0 20px;
+    background: #ede8e0;
+    color: #000000;
+    border: none;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    transition: background 0.2s ease, transform 0.1s ease;
+    box-sizing: border-box;
+}
+
+.btnPrimary:hover {
+    background: #faf92f;
+    color: #000000;
+}
+
+.btnPrimary:active {
+    transform: scale(0.98);
+}
+
+.btnPrimarySuccess {
+    background: #4ade80 !important;
+    color: #000000 !important;
+}
+
+/* Secondary Actions Grid */
+.secondaryButtonsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.btnSecondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 16px;
+    background: #161514;
+    border: 1px solid #3a3836;
+    border-radius: 100px;
+    color: #ede8e0;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.btnSecondary:hover {
+    background: #242220;
+    border-color: #ede8e0;
+    color: #ffffff;
+}
+
+.btnSecondary:active {
+    transform: scale(0.98);
+}
+
+/* Social Quick Links */
+.socialRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.socialBtn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-decoration: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.socialBtnTelegram:hover {
+    background: rgba(36, 161, 222, 0.15);
+    border-color: rgba(36, 161, 222, 0.4);
+    color: #24a1de;
+}
+
+.socialBtnTwitter:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.socialBtnWhatsapp:hover {
+    background: rgba(37, 211, 102, 0.15);
+    border-color: rgba(37, 211, 102, 0.4);
+    color: #25d366;
+}
+
+/* Hidden canvas for PNG export */
+.hiddenCanvas {
+    display: none;
+}
+
+/* Toast message inside modal */
+.toastNotice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 9999px;
+    color: #4ade80;
+    font-size: 12px;
+    font-weight: 600;
+    animation: toastPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toastPop {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .modalContainer {
+        max-height: 95vh;
+        border-radius: 20px;
+    }
+
+    .modalHeader {
+        padding: 16px 20px;
+    }
+
+    .modalBody {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 20px;
+    }
+
+    .trophyCardWrapper {
+        max-width: 320px;
+    }
+
+    .streakBigNumber {
+        font-size: 52px;
+    }
+
+    .streakBigLabel {
+        font-size: 13px;
+    }
+
+    .themeGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

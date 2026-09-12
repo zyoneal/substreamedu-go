@@ -1,0 +1,30 @@
+# Environment files with secrets
+.env
+*.env.local
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Build outputs
+target/
+build/
+*.class
+*.jar
+*.war
+
+# Logs
+*.log
+*_logs.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

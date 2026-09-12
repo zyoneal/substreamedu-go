@@ -1,0 +1,13 @@
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/bin/Debug/net8.0/DocxToolkit.Core.deps.json
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/bin/Debug/net8.0/DocxToolkit.Core.dll
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/bin/Debug/net8.0/DocxToolkit.Core.pdb
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.csproj.AssemblyReference.cache
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.AssemblyInfoInputs.cache
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.AssemblyInfo.cs
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.csproj.CoreCompileInputs.cache
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.sourcelink.json
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.dll
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/refint/DocxToolkit.Core.dll
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/DocxToolkit.Core.pdb
+/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/obj/Debug/net8.0/ref/DocxToolkit.Core.dll

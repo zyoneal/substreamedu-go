@@ -1,0 +1,254 @@
+.ankiCard {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transition: all 0.2s ease;
+}
+
+.ankiCard:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.frontSide,
+.backSide {
+    width: 100%;
+}
+
+.divider {
+    width: 80%;
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 1.5rem 0;
+}
+
+.wordSection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.word {
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 400;
+    color: #e8e8e8;
+    margin: 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.word:hover {
+    color: #ffffff;
+}
+
+.transcription {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+    color: #888888;
+    margin: 0;
+}
+
+.definition {
+    font-size: 28px;
+    line-height: 32px;
+    font-weight: 400;
+    color: #e8e8e8;
+    margin: 0;
+}
+
+.backContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.playButton {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #888888;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.playButton:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e8e8e8;
+}
+
+.playing {
+    opacity: 0.7;
+}
+
+.contextGap {
+    color: #888888;
+    letter-spacing: 2px;
+}
+
+.playIcon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.contextSection {
+    margin-top: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.context {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 300;
+    color: #888888;
+    text-align: left;
+}
+
+.contextHighlight {
+    color: #ffffff;
+    font-weight: 600;
+    font-style: normal;
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.contextHighlight:hover {
+    transform: scale(1.05);
+}
+
+.imageSection {
+    margin-top: 1.5rem;
+    max-width: 100%;
+}
+
+.image {
+    max-width: 100%;
+    max-height: 300px;
+}
+
+.revealHint {
+    margin-top: auto;
+    padding-top: 2rem;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+.hintText {
+    color: #666666;
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+}
+
+@media (max-width: 640px) {
+    .ankiCard {
+        padding: 1rem;
+        min-height: 200px;
+    }
+
+    .word {
+        font-size: 32px;
+        line-height: 38px;
+    }
+
+    .definition {
+        font-size: 24px;
+        line-height: 28px;
+    }
+
+    .divider {
+        margin: 1rem 0;
+    }
+}
+
+@media (max-height: 800px) {
+    .ankiCard {
+        padding: 1.25rem;
+        min-height: 200px;
+    }
+    .word {
+        font-size: 32px;
+        line-height: 38px;
+    }
+    .definition {
+        font-size: 24px;
+        line-height: 28px;
+    }
+    .divider {
+        margin: 1rem 0;
+    }
+    .image {
+        max-height: 180px;
+    }
+    .contextSection {
+        margin-top: 1rem;
+    }
+    .context {
+        font-size: 15px;
+        line-height: 22px;
+    }
+    .revealHint {
+        padding-top: 1rem;
+    }
+}
+
+@media (max-height: 600px) {
+    .ankiCard {
+        padding: 0.75rem 1rem;
+        min-height: 160px;
+    }
+    .word {
+        font-size: 24px;
+        line-height: 30px;
+    }
+    .definition {
+        font-size: 18px;
+        line-height: 22px;
+    }
+    .divider {
+        margin: 0.75rem 0;
+    }
+    .image {
+        max-height: 110px;
+    }
+    .contextSection {
+        margin-top: 0.75rem;
+    }
+    .context {
+        font-size: 13px;
+        line-height: 18px;
+    }
+    .revealHint {
+        padding-top: 0.5rem;
+    }
+}

@@ -1,0 +1,129 @@
+.wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table th {
+    padding: 1.2rem;
+    color: #888888;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.table td {
+    padding: 1.2rem;
+    border-bottom: 1px solid #2a2a2a;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.email {
+    font-weight: 600;
+}
+
+.id {
+    font-size: 0.75rem;
+    color: #888888;
+    opacity: 0.8;
+}
+
+.wordCount {
+    color: var(--accent-blue, #0045e6);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.select {
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    color: #ffffff;
+    padding: 0.4rem;
+    border-radius: 6px;
+    outline: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.select:focus {
+    border-color: var(--accent-blue, #0045e6);
+}
+
+.select option {
+    background: #111111;
+    color: #ffffff;
+}
+
+.statusToggle,
+.premiumToggle {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.active {
+    background: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+}
+
+.inactive {
+    background: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+}
+
+.premium {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-blue, #0045e6);
+    box-shadow: none;
+}
+
+.free {
+    background: rgba(255, 255, 255, 0.05);
+    color: #888888;
+}
+
+.viewButton {
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid #2a2a2a;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.viewButton:hover {
+    background: #1a1a1a;
+    border-color: var(--accent-blue, #0045e6);
+    color: var(--accent-blue, #0045e6);
+    transform: translateY(-1px);
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}

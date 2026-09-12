@@ -1,0 +1,750 @@
+/* ============================================
+   OLLAMA DESIGN SYSTEM — Header / Primary Nav
+   ============================================ */
+
+.header_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 56px;
+    flex-wrap: nowrap;
+    font-family: var(--font-body);
+    background-color: rgba(13, 12, 11, 0.85);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #282522;
+}
+
+/* Glass background across states */
+.solid,
+.transparent {
+    background-color: rgba(13, 12, 11, 0.85);
+}
+
+.logo_container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logoText {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    font-family: var(--font-body);
+    text-transform: uppercase;
+}
+
+.logoImage {
+    height: 24px;
+    width: auto;
+    display: block;
+}
+
+/* === USER PROFILE === */
+.userProfile {
+    cursor: pointer;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.userProfile:hover,
+.userProfile:focus {
+    outline: none;
+}
+
+.logoutIconButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--rounded-full);
+    background-color: transparent;
+    color: var(--color-body);
+    transition: all 0.2s ease;
+}
+
+.userProfile:hover .logoutIconButton {
+    color: var(--color-ink);
+    background-color: var(--color-surface-soft);
+}
+
+.userProfile:active .logoutIconButton {
+    background-color: var(--color-hairline);
+}
+
+/* === PRIMARY CTA — Black Pill === */
+.signUpButton {
+    background-color: #faf92f;
+    color: #000000;
+    padding: 8px 20px;
+    border-radius: var(--rounded-full);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border: 1px solid #faf92f;
+    cursor: pointer;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.signUpButton:hover {
+    background-color: #e6e52b;
+    border-color: #e6e52b;
+}
+
+/* === NAVIGATION === */
+.navigation {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+}
+
+.dashboardNav {
+    display: none !important;
+}
+
+.navList {
+    display: flex;
+    gap: 0;
+    list-style: none;
+}
+
+.navItem {
+    text-decoration: none;
+    font-size: 12px;
+    color: var(--color-body);
+    position: relative;
+    padding: 8px 16px;
+    transition: color 0.15s ease;
+    font-family: var(--font-body);
+    font-weight: 400; /* regular */
+    display: flex;
+    align-items: center;
+    letter-spacing: 0;
+    line-height: 16px;
+}
+
+.navItem:hover {
+    color: var(--color-ink);
+}
+
+.navItem::after {
+    display: none;
+}
+
+.navItem.active {
+    color: #faf92f;
+    font-weight: 400;
+}
+
+/* === USER CONTAINER === */
+.user_container {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.user_info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.user_fullName {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-ink);
+}
+
+.user_role {
+    font-size: 12px;
+    color: var(--color-body);
+}
+
+.logout_button {
+    background: none;
+    color: var(--color-body);
+    border: none;
+    padding: 8px 0;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.logout_button:hover {
+    color: var(--color-ink);
+}
+
+/* === LANGUAGE SELECT === */
+.languageSelectCompact {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    justify-content: flex-end;
+    height: auto;
+}
+
+.languageSelect {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    position: relative;
+}
+
+.dropdownWrapper {
+    position: relative;
+    display: inline-block;
+    width: fit-content;
+    min-width: 100px;
+}
+
+.languageDropdown {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 8px 24px 8px 0;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-body);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    outline: none;
+}
+
+.languageDropdown:hover {
+    color: var(--color-ink);
+}
+
+.dropdownIcon {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    color: var(--color-mute);
+    pointer-events: none;
+    font-size: 10px;
+}
+
+.chevronIcon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+}
+
+.chevronIcon img {
+    width: 10px;
+    height: 5px;
+}
+
+/* === MOBILE MENU === */
+.menu {
+    color: var(--color-ink);
+    border: none;
+    background: none;
+    cursor: pointer;
+    width: auto;
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 14px;
+    transition: color 0.15s ease;
+}
+
+.menu:hover {
+    color: var(--color-body);
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdownContent {
+    min-width: 220px;
+    display: none;
+    position: absolute;
+    z-index: 100;
+    background: #141312;
+    color: #ede8e0;
+    padding: 12px 0;
+    border-radius: var(--rounded-lg);
+    border: 1px solid #282522;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.showMobileMenu {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdownContent a {
+    padding: 12px 24px;
+    text-decoration: none;
+    display: block;
+    color: #a1a1aa;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dropdownContent a:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dropdownContent a.active {
+    color: #fbbf24;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.logoutLink {
+    padding: 12px 24px;
+    text-decoration: none;
+    display: block;
+    color: #f4f4f5;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+}
+
+.logoutLink:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ef4444;
+}
+
+.desktopOnly {
+    display: flex !important;
+}
+
+.mobileOnly {
+    display: block !important;
+}
+
+@media (max-width: 1140px) {
+    .desktopOnly {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1141px) {
+    .logoutLink {
+        display: none !important;
+    }
+}
+
+/* === CUSTOM LANGUAGE BUTTON === */
+.customLangBtn {
+    background: none;
+    color: var(--color-body);
+    border: none;
+    padding: 8px 20px 8px 0;
+    font-size: 14px;
+    font-family: var(--font-body);
+    font-weight: 400;
+    cursor: pointer;
+    min-width: auto;
+    max-width: none;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: color 0.15s ease;
+    z-index: 2;
+    height: auto;
+}
+
+.customLangBtn:hover {
+    color: var(--color-ink);
+}
+
+/* === FIGMA LANGUAGE SELECTOR === */
+.figmaLangContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.figmaLangButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: opacity 0.15s ease;
+}
+
+.figmaLangText {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--color-body);
+    text-align: left;
+    transition: color 0.15s ease;
+    letter-spacing: 0;
+}
+
+.figmaLangButton:hover .figmaLangText {
+    color: var(--color-ink);
+}
+
+.figmaChevronIcon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    opacity: 0.4;
+}
+
+.figmaChevronIcon img {
+    width: 8px;
+    height: 4px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1536px) {
+    .header_container {
+        padding: 0 40px;
+    }
+}
+
+@media (max-width: 1400px) {
+    .header_container {
+        padding: 0 24px;
+    }
+
+    .navItem {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    .figmaLangText {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 1280px) {
+    .header_container {
+        padding: 0 16px;
+    }
+
+    .navItem {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+
+    .figmaLangText {
+        font-size: 13px;
+    }
+
+    .figmaChevronIcon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .figmaChevronIcon img {
+        width: 7px;
+        height: 3.5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header_container {
+        padding: 0 12px;
+        height: 48px;
+        gap: 8px;
+    }
+
+    .logo_container {
+        gap: 8px;
+    }
+
+    .logoText {
+        font-size: 12px;
+    }
+
+    .signUpButton {
+        padding: 6px 14px;
+        font-size: 12px;
+        height: 32px;
+    }
+
+    .languageSelectCompact {
+        gap: 12px;
+    }
+
+    .navItem {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+
+    .customLangBtn {
+        font-size: 13px;
+        padding: 6px 12px 6px 0;
+    }
+
+    .figmaLangText {
+        font-size: 13px;
+    }
+
+    .navigation {
+        position: relative;
+        left: auto;
+        transform: none;
+    }
+
+    .dashboardNav {
+        display: none !important;
+    }
+
+    .centerLang {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .dropdownContent {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    .menu {
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 380px) {
+    .header_container {
+        padding: 0 8px;
+        gap: 4px;
+    }
+
+    .logo_container {
+        gap: 4px;
+    }
+
+    .logoImage {
+        height: 20px;
+    }
+
+    .menu {
+        padding: 8px 8px;
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   UNAUTHENTICATED LANDING OVERRIDES
+   ============================================ */
+.unauthenticatedLanding {
+    background-color: rgba(13, 12, 11, 0.85);
+    border-bottom: 1px solid #282522;
+}
+
+.unauthenticatedLanding .logoText {
+    color: #ffffff !important;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.unauthenticatedLanding .logoImage {
+    /* filter: brightness(0) invert(1); removed because new logo is JPEG */
+}
+
+.unauthenticatedLanding .signUpButton {
+    background: #faf92f !important;
+    color: #000000 !important;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid #faf92f !important;
+    transition: all 0.2s ease !important;
+}
+
+.unauthenticatedLanding .signUpButton:hover {
+    background: #e6e52b !important;
+    border-color: #e6e52b !important;
+}
+
+.unauthenticatedLanding .signUpButton:active {
+    background: #d1d027 !important;
+    border-color: #d1d027 !important;
+}
+
+/* ============================================
+   DARK MODE ADAPTATION (e.g. VideoPage)
+   ============================================ */
+.darkHeader {
+    background-color: transparent !important;
+    border-bottom: none !important;
+    color: #f4f4f5 !important;
+}
+
+.darkHeader .logoText {
+    color: #ffffff !important;
+}
+
+.darkHeader .logoImage {
+    /* filter: brightness(0) invert(1); removed because new logo is JPEG */
+}
+
+.darkHeader .navItem {
+    color: #a1a1aa !important;
+}
+
+.darkHeader .navItem:hover {
+    color: #ffffff !important;
+}
+
+.darkHeader .navItem.active {
+    color: #faf92f !important;
+}
+
+.darkHeader .logoutIconButton {
+    color: #a1a1aa !important;
+}
+
+.darkHeader .userProfile:hover .logoutIconButton {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* === DARK HEADER & UNAUTHENTICATED MOBILE MENU OVERRIDES === */
+.darkHeader .menu,
+.unauthenticatedLanding .menu {
+    color: #ffffff !important;
+}
+
+/* === DARK HEADER & UNAUTHENTICATED LANGUAGE SELECTOR OVERRIDES === */
+.darkHeader [class*="currentLang"],
+.unauthenticatedLanding [class*="currentLang"] {
+    color: #888888 !important;
+}
+
+.darkHeader button:hover [class*="currentLang"],
+.darkHeader button:focus [class*="currentLang"] {
+    color: #ffffff !important;
+}
+
+.unauthenticatedLanding button:hover [class*="currentLang"],
+.unauthenticatedLanding button:focus [class*="currentLang"] {
+    color: #ffffff !important;
+}
+
+.darkHeader [class*="chevronIcon"],
+.unauthenticatedLanding [class*="chevronIcon"] {
+    color: #888888 !important;
+}
+
+.darkHeader button:hover [class*="chevronIcon"],
+.darkHeader button:focus [class*="chevronIcon"] {
+    color: #ffffff !important;
+}
+
+.unauthenticatedLanding button:hover [class*="chevronIcon"],
+.unauthenticatedLanding button:focus [class*="chevronIcon"] {
+    color: #ffffff !important;
+}
+
+@media (max-height: 800px) {
+    .header_container {
+        height: 48px;
+        padding: 0 16px;
+    }
+    .logoText {
+        font-size: 13px;
+    }
+    .logoImage {
+        height: 20px;
+    }
+    .navItem {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+    .signUpButton {
+        height: 32px;
+        padding: 6px 16px;
+        font-size: 13px;
+    }
+    .logoutIconButton {
+        width: 32px;
+        height: 32px;
+    }
+    .figmaLangText {
+        font-size: 13px;
+    }
+}
+
+@media (max-height: 600px) {
+    .header_container {
+        height: 40px;
+        padding: 0 12px;
+    }
+    .logoText {
+        font-size: 12px;
+    }
+    .logoImage {
+        height: 16px;
+    }
+    .navItem {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+    .signUpButton {
+        height: 28px;
+        padding: 4px 12px;
+        font-size: 12px;
+    }
+    .logoutIconButton {
+        width: 28px;
+        height: 28px;
+    }
+    .figmaLangText {
+        font-size: 12px;
+    }
+}

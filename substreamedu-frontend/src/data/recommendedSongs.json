@@ -1,0 +1,412 @@
+{
+    "A1": [
+        {
+            "title": "Happy",
+            "artist": "Pharrell Williams"
+        },
+        {
+            "title": "Roar",
+            "artist": "Katy Perry"
+        },
+        {
+            "title": "Firework",
+            "artist": "Katy Perry"
+        },
+        {
+            "title": "Shake It Off",
+            "artist": "Taylor Swift"
+        },
+        {
+            "title": "I'm Yours",
+            "artist": "Jason Mraz"
+        },
+        {
+            "title": "Stay",
+            "artist": "Rihanna"
+        },
+        {
+            "title": "Sugar",
+            "artist": "Maroon 5"
+        },
+        {
+            "title": "Home",
+            "artist": "Phillip Phillips"
+        },
+        {
+            "title": "Lucky",
+            "artist": "Jason Mraz & Colbie Caillat"
+        },
+        {
+            "title": "Best Day of My Life",
+            "artist": "American Authors"
+        },
+        {
+            "title": "Hey, Soul Sister",
+            "artist": "Train"
+        },
+        {
+            "title": "Stronger",
+            "artist": "Kelly Clarkson"
+        },
+        {
+            "title": "Breakaway",
+            "artist": "Kelly Clarkson"
+        },
+        {
+            "title": "Good Life",
+            "artist": "OneRepublic"
+        },
+        {
+            "title": "All of Me",
+            "artist": "John Legend"
+        },
+        {
+            "title": "Good Time",
+            "artist": "Owl City & Carly Rae Jepsen"
+        },
+        {
+            "title": "Believer",
+            "artist": "Imagine Dragons"
+        },
+        {
+            "title": "I'm a Believer",
+            "artist": "The Monkees"
+        },
+        {
+            "title": "Sunny",
+            "artist": "Bobby Hebb"
+        },
+        {
+            "title": "Cheerleader",
+            "artist": "OMI"
+        }
+    ],
+    "A2": [
+        {
+            "title": "Say",
+            "artist": "John Mayer"
+        },
+        {
+            "title": "Use Somebody",
+            "artist": "Kings of Leon"
+        },
+        {
+            "title": "Demons",
+            "artist": "Imagine Dragons"
+        },
+        {
+            "title": "Just the Way You Are",
+            "artist": "Bruno Mars"
+        },
+        {
+            "title": "Counting Stars",
+            "artist": "OneRepublic"
+        },
+        {
+            "title": "Ho Hey",
+            "artist": "The Lumineers"
+        },
+        {
+            "title": "She Will Be Loved",
+            "artist": "Maroon 5"
+        },
+        {
+            "title": "Drive By",
+            "artist": "Train"
+        },
+        {
+            "title": "I Won't Give Up",
+            "artist": "Jason Mraz"
+        },
+        {
+            "title": "No Such Thing",
+            "artist": "John Mayer"
+        },
+        {
+            "title": "3AM",
+            "artist": "Matchbox Twenty"
+        },
+        {
+            "title": "How to Save a Life",
+            "artist": "The Fray"
+        },
+        {
+            "title": "Good Riddance",
+            "artist": "Green Day"
+        },
+        {
+            "title": "Unwell",
+            "artist": "Matchbox Twenty"
+        },
+        {
+            "title": "Drive",
+            "artist": "Incubus"
+        },
+        {
+            "title": "The Middle",
+            "artist": "Jimmy Eat World"
+        },
+        {
+            "title": "Perfect",
+            "artist": "Pink"
+        },
+        {
+            "title": "Brave",
+            "artist": "Sara Bareilles"
+        },
+        {
+            "title": "Pocket",
+            "artist": "Meghan Trainor"
+        },
+        {
+            "title": "Shine",
+            "artist": "Collective Soul"
+        }
+    ],
+    "B1": [
+        {
+            "title": "Everybody Hurts",
+            "artist": "R.E.M."
+        },
+        {
+            "title": "Iris",
+            "artist": "Goo Goo Dolls"
+        },
+        {
+            "title": "Apologize",
+            "artist": "OneRepublic"
+        },
+        {
+            "title": "Brick",
+            "artist": "Ben Folds Five"
+        },
+        {
+            "title": "Hey There Delilah",
+            "artist": "Plain White T's"
+        },
+        {
+            "title": "Numb",
+            "artist": "Linkin Park"
+        },
+        {
+            "title": "Radioactive",
+            "artist": "Imagine Dragons"
+        },
+        {
+            "title": "Maps",
+            "artist": "Maroon 5"
+        },
+        {
+            "title": "Secrets",
+            "artist": "OneRepublic"
+        },
+        {
+            "title": "Africa",
+            "artist": "Toto"
+        },
+        {
+            "title": "Let Her Go",
+            "artist": "Passenger"
+        },
+        {
+            "title": "Take Me to Church",
+            "artist": "Hozier"
+        },
+        {
+            "title": "Pompeii",
+            "artist": "Bastille"
+        },
+        {
+            "title": "Royals",
+            "artist": "Lorde"
+        },
+        {
+            "title": "Hall of Fame",
+            "artist": "The Script feat. will.i.am"
+        },
+        {
+            "title": "Counting Blue Cars",
+            "artist": "Dishwalla"
+        },
+        {
+            "title": "Kryptonite",
+            "artist": "3 Doors Down"
+        },
+        {
+            "title": "Smooth",
+            "artist": "Santana & Rob Thomas"
+        },
+        {
+            "title": "One Headlight",
+            "artist": "The Wallflowers"
+        },
+        {
+            "title": "The Reason",
+            "artist": "Hoobastank"
+        }
+    ],
+    "B2": [
+        {
+            "title": "Californication",
+            "artist": "Red Hot Chili Peppers"
+        },
+        {
+            "title": "Mr. Brightside",
+            "artist": "The Killers"
+        },
+        {
+            "title": "Boulevard of Broken Dreams",
+            "artist": "Green Day"
+        },
+        {
+            "title": "Lose Yourself",
+            "artist": "Eminem"
+        },
+        {
+            "title": "Stan",
+            "artist": "Eminem"
+        },
+        {
+            "title": "Under the Bridge",
+            "artist": "Red Hot Chili Peppers"
+        },
+        {
+            "title": "In the End",
+            "artist": "Linkin Park"
+        },
+        {
+            "title": "Clocks",
+            "artist": "Coldplay"
+        },
+        {
+            "title": "Viva La Vida",
+            "artist": "Coldplay"
+        },
+        {
+            "title": "Pompeii",
+            "artist": "Bastille"
+        },
+        {
+            "title": "Believer",
+            "artist": "Imagine Dragons"
+        },
+        {
+            "title": "Counting Stars",
+            "artist": "OneRepublic"
+        },
+        {
+            "title": "Wake Me Up",
+            "artist": "Avicii"
+        },
+        {
+            "title": "My Songs Know What You Did in the Dark",
+            "artist": "Fall Out Boy"
+        },
+        {
+            "title": "Centuries",
+            "artist": "Fall Out Boy"
+        },
+        {
+            "title": "Waiting on the World to Change",
+            "artist": "John Mayer"
+        },
+        {
+            "title": "Gravity",
+            "artist": "John Mayer"
+        },
+        {
+            "title": "The Man",
+            "artist": "Aloe Blacc"
+        },
+        {
+            "title": "It's Not Over",
+            "artist": "Daughtry"
+        },
+        {
+            "title": "Mercy",
+            "artist": "Duffy"
+        }
+    ],
+    "C1": [
+        {
+            "title": "Hurricane",
+            "artist": "Bob Dylan"
+        },
+        {
+            "title": "Hotel California",
+            "artist": "Eagles"
+        },
+        {
+            "title": "American Pie",
+            "artist": "Don McLean"
+        },
+        {
+            "title": "The Sound of Silence",
+            "artist": "Simon & Garfunkel"
+        },
+        {
+            "title": "Like a Rolling Stone",
+            "artist": "Bob Dylan"
+        },
+        {
+            "title": "Born in the U.S.A.",
+            "artist": "Bruce Springsteen"
+        },
+        {
+            "title": "The Boxer",
+            "artist": "Simon & Garfunkel"
+        },
+        {
+            "title": "Fast Car",
+            "artist": "Tracy Chapman"
+        },
+        {
+            "title": "Hurt",
+            "artist": "Nine Inch Nails"
+        },
+        {
+            "title": "Man in the Mirror",
+            "artist": "Michael Jackson"
+        },
+        {
+            "title": "Blackbird",
+            "artist": "The Beatles"
+        },
+        {
+            "title": "Landslide",
+            "artist": "Fleetwood Mac"
+        },
+        {
+            "title": "Dreams",
+            "artist": "Fleetwood Mac"
+        },
+        {
+            "title": "Bohemian Rhapsody",
+            "artist": "Queen"
+        },
+        {
+            "title": "Imagine",
+            "artist": "John Lennon"
+        },
+        {
+            "title": "Space Oddity",
+            "artist": "David Bowie"
+        },
+        {
+            "title": "Hallelujah",
+            "artist": "Jeff Buckley"
+        },
+        {
+            "title": "Ain't No Sunshine",
+            "artist": "Bill Withers"
+        },
+        {
+            "title": "Small Town",
+            "artist": "John Mellencamp"
+        },
+        {
+            "title": "Scar Tissue",
+            "artist": "Red Hot Chili Peppers"
+        }
+    ]
+}

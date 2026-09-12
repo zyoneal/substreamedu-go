@@ -1,0 +1,16 @@
+.git
+.gitignore
+*.md
+Dockerfile
+.dockerignore
+ci/
+test/
+tests/
+*.test
+.gitlab-ci.yml
+docker-compose*
+k8s/
+.vscode/
+.idea/
+vendor/
+vendor

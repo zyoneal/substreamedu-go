@@ -1,0 +1,527 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Data Tier (PostgreSQL with pgvector)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: substreamedu-postgres
+    networks:
+      - data_net
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - wordstream_pg_v3:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres -c shared_buffers=128MB -c effective_cache_size=256MB -c maintenance_work_mem=32MB -c checkpoint_timeout=15min -c checkpoint_completion_target=0.9 -c wal_buffers=8MB -c default_statistics_target=100 -c random_page_cost=2.0 -c effective_io_concurrency=50 -c work_mem=2MB -c min_wal_size=128MB -c max_wal_size=512MB -c max_connections=100
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  # ----------------------------------------------------------------------------
+  # Messaging Tier (Apache Kafka + Zookeeper)
+  # ----------------------------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: substreamedu-zookeeper
+    networks:
+      - data_net
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_HEAP_OPTS: "-Xmx128M -Xms128M"
+    healthcheck:
+      test: [ "CMD-SHELL", "echo > /dev/tcp/localhost/2181 || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: substreamedu-kafka
+    networks:
+      - data_net
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      # Internal developer loopback only (never exposed publicly)
+      - "127.0.0.1:9094:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_HEAP_OPTS: "-Xmx256M -Xms256M"
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_LOG_SEGMENT_BYTES: 52428800
+      KAFKA_LOG_RETENTION_BYTES: 104857600
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+    healthcheck:
+      test: [ "CMD-SHELL", "echo > /dev/tcp/localhost/9092 || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # ----------------------------------------------------------------------------
+  # In-Memory Cache Tier (Redis 7)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: substreamedu-redis
+    networks:
+      - data_net
+      - backend_net
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # ----------------------------------------------------------------------------
+  # Microservice: Identity & Access Management (IAM)
+  # ----------------------------------------------------------------------------
+  iam-service:
+    build:
+      context: ./substreamedu-iam-service-go
+    container_name: iam-service
+    networks:
+      - backend_net
+      - data_net
+      - monitoring_net
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB_IAM=sse_iam
+      - POSTGRES_USER_APP=${POSTGRES_USER_APP:-${POSTGRES_USER:-substream_app}}
+      - POSTGRES_PASSWORD_APP=${POSTGRES_PASSWORD_APP:-${POSTGRES_PASSWORD:-substream_pass}}
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS:-2592000000}
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST:-smtp.gmail.com}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT:-587}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_SERVICE_NAME=iam-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck", "http://127.0.0.1:3002/auth-service/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+    stop_grace_period: 15s
+
+  # ----------------------------------------------------------------------------
+  # Microservice: Dictionary & Vocabulary (FSRS / Anki)
+  # ----------------------------------------------------------------------------
+  dictionary-service:
+    build:
+      context: ./substreamedu-dictionary-service-go
+    container_name: dictionary-service
+    networks:
+      - backend_net
+      - data_net
+      - monitoring_net
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB_DICTIONARY=substreamedu_dictionary
+      - POSTGRES_USER_APP=${POSTGRES_USER_APP:-${POSTGRES_USER:-substream_app}}
+      - POSTGRES_PASSWORD_APP=${POSTGRES_PASSWORD_APP:-${POSTGRES_PASSWORD:-substream_pass}}
+      - SECRET_KEY=${SECRET_KEY}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PIXABAY_API_KEY=${PIXABAY_API_KEY}
+      - NOUN_PROJECT_API_KEY=${NOUN_PROJECT_API_KEY}
+      - NOUN_PROJECT_API_SECRET=${NOUN_PROJECT_API_SECRET}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - IAM_SERVICE_URL=http://iam-service:3002
+      - SHARED_MEDIA_DIR=${SHARED_MEDIA_DIR:-/var/www/shared_media}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_SERVICE_NAME=dictionary-service
+    volumes:
+      - ./shared_media:/var/www/shared_media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      iam-service:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck", "http://127.0.0.1:3003/dictionary-service/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+    stop_grace_period: 15s
+
+
+  # ----------------------------------------------------------------------------
+  # Microservice: Media Streaming & Transcoding (FFmpeg / yt-dlp)
+  # ----------------------------------------------------------------------------
+  media-service:
+    build:
+      context: ./substreamedu-media-service-go
+    container_name: media-service
+    networks:
+      - backend_net
+      - data_net
+      - monitoring_net
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB_MEDIA=substreamedu_media
+      - POSTGRES_USER_APP=${POSTGRES_USER_APP:-${POSTGRES_USER:-substream_app}}
+      - POSTGRES_PASSWORD_APP=${POSTGRES_PASSWORD_APP:-${POSTGRES_PASSWORD:-substream_pass}}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - SUBDL_API_KEY=${SUBDL_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_SERVICE_NAME=media-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck", "http://127.0.0.1:3004/media-service/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+    stop_grace_period: 15s
+
+  # ----------------------------------------------------------------------------
+  # Microservice: Notification & Telegram Bot Engine
+  # ----------------------------------------------------------------------------
+  notification-service:
+    build:
+      context: ./substreamedu-notification-service-go
+    container_name: notification-service
+    networks:
+      - backend_net
+      - data_net
+      - monitoring_net
+    environment:
+      - TZ=Europe/Kiev
+      - IAM_SERVICE_HOST=iam-service
+      - DICTIONARY_SERVICE_HOST=dictionary-service
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB_NOTIFICATION=sse_iam
+      - POSTGRES_USER_APP=${POSTGRES_USER_APP:-${POSTGRES_USER:-substream_app}}
+      - POSTGRES_PASSWORD_APP=${POSTGRES_PASSWORD_APP:-${POSTGRES_PASSWORD:-substream_pass}}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_SERVICE_NAME=notification-service
+    depends_on:
+      iam-service:
+        condition: service_started
+      dictionary-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck", "http://127.0.0.1:3005/notification-service/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # ----------------------------------------------------------------------------
+  # Edge Gateway: Single Ingress Entrypoint for API & Auth
+  # ----------------------------------------------------------------------------
+  gateway:
+    build:
+      context: ./substreamedu-gateway-go
+    container_name: gateway
+    networks:
+      - frontend_net
+      - backend_net
+      - monitoring_net
+    environment:
+      - IAM_SERVICE_HOST=http://iam-service:3002
+      - DICTIONARY_SERVICE_HOST=http://dictionary-service:3003
+      - MEDIA_SERVICE_HOST=http://media-service:3004
+      - NOTIFICATION_SERVICE_HOST=http://notification-service:3005
+      - REDIS_HOST=redis
+      - OTLP_ENDPOINT=jaeger:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - OTEL_SERVICE_NAME=gateway
+    depends_on:
+      iam-service:
+        condition: service_started
+      dictionary-service:
+        condition: service_started
+      media-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck", "http://127.0.0.1:8080/gateway/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # ----------------------------------------------------------------------------
+  # Static Web Client (Asset Publisher)
+  # ----------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./substreamedu-frontend
+      args:
+        - REACT_APP_GOOGLE_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+        - REACT_APP_GOOGLE_API_KEY=${YOUTUBE_API_KEY}
+        - REACT_APP_API_URL=${REACT_APP_API_URL:-/api}
+    container_name: substreamedu-frontend
+    volumes:
+      - frontend_assets:/var/www/frontend
+    command: ["sh", "-c", "echo 'Deploying frontend static assets...'; mkdir -p /var/www/frontend; cp -rf /app/build/* /var/www/frontend/; echo 'Assets synced to volume successfully!'; tail -f /dev/null"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # ----------------------------------------------------------------------------
+  # Edge Reverse Proxy & TLS Terminator (Caddy)
+  # ONLY container with public Internet ports (80 / 443)
+  # ----------------------------------------------------------------------------
+  caddy:
+    image: caddy:latest
+    container_name: substreamedu-caddy
+    restart: unless-stopped
+    networks:
+      - frontend_net
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - frontend_assets:/var/www/frontend
+      - ./shared_media:/var/www/shared_media
+      - ./logs/caddy:/var/log/caddy
+    depends_on:
+      frontend:
+        condition: service_started
+      gateway:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # ----------------------------------------------------------------------------
+  # Observability Tier: Metrics, Logs, Traces (Loopback / SSH Tunnel Only)
+  # ----------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: substreamedu-prometheus
+    networks:
+      - monitoring_net
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    depends_on:
+      gateway:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: substreamedu-grafana
+    networks:
+      - monitoring_net
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: substreamedu-loki
+    networks:
+      - monitoring_net
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: substreamedu-promtail
+    networks:
+      - monitoring_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60.0
+    container_name: substreamedu-jaeger
+    networks:
+      - monitoring_net
+      - backend_net
+    ports:
+      - "127.0.0.1:16686:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+
+# ==============================================================================
+# Network Segregation Policies (Zero-Trust)
+# ==============================================================================
+networks:
+  frontend_net:
+    driver: bridge
+    internal: false
+  backend_net:
+    driver: bridge
+    internal: false
+  data_net:
+    driver: bridge
+    internal: true
+  monitoring_net:
+    driver: bridge
+    internal: false
+
+# ==============================================================================
+# Persistent Volumes
+# ==============================================================================
+volumes:
+  wordstream_pg_v3:
+  redis_data:
+  caddy_data:
+  caddy_config:
+  frontend_assets:
+  prometheus_data:
+  grafana_data:

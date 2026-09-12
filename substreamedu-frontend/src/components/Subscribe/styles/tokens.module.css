@@ -1,0 +1,59 @@
+:root {
+    --font-sans: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --black: #0d0c0b;
+    --near-black: #ede8e0;
+    --gray-600: #8a8580;
+    --gray-400: #666360;
+    --gray-200: #3d3934;
+    --gray-100: #282522;
+    --gray-50: #141312;
+    --white: #ffffff;
+
+    --c-bg-main: #0d0c0b;
+    --c-bg-card: #141312;
+    --c-bg-input: #1a1917;
+    --c-bg-accent-soft: rgba(250, 249, 47, 0.04);
+
+    --c-accent: #ede8e0;
+    --c-accent-hover: #faf92f;
+
+    --c-text-primary: #ede8e0;
+    --c-text-secondary: #8a8580;
+    --c-text-tertiary: #666360;
+
+    --c-border: #282522;
+    --c-border-hover: #3d3934;
+
+    --space-8: 8px;
+    --space-16: 16px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-40: 40px;
+    --space-48: 48px;
+    --space-64: 64px;
+    --space-80: 80px;
+    --space-120: 120px;
+
+    --font-family: var(--font-sans);
+
+    --display-size: clamp(2rem, 4vw, 2.75rem);
+    --display-lh: 1.2;
+    --display-fw: 300;
+    --display-ls: -0.02em;
+
+    --body-size: 15px;
+    --body-lh: 1.6;
+    --fw-body: 400;
+
+    --radius-button: 100px;
+    --radius-card: 20px;
+    --radius-input: 100px;
+    --radius-pill: 100px;
+
+    --shadow-hover: none;
+
+    --transition-premium: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-standard: 200ms;
+}

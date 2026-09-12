@@ -1,0 +1,29 @@
+/* TEAM */
+    Developer & Designer: SubStreamEdu Team
+    Site: https://substreamedu.com
+    Location: Ukraine
+
+/* SITE */
+    Language: English, Ukrainian
+    Doctype: HTML5
+    IDE: Visual Studio Code, WebStorm
+    Standards: HTML5, CSS3, ES6+
+    Components: React, TypeScript
+    Software: React.js, React Router, Axios
+
+/* THANKS */
+    To all our users learning English through our platform
+    To the open-source community
+    To educators worldwide
+
+/* LAST UPDATE */
+    January 13, 2025
+
+/* DESCRIPTION */
+    SubStreamEdu is a smart EdTech platform that helps users
+    learn English through real-world media: movies (.mp4+.srt),
+    YouTube videos, Spotify lyrics, and texts. Turn passive
+    watching into active learning by highlighting words and
+    saving them to your personal dictionary. Features include
+    flashcards, spaced repetition, Telegram bot, and export
+    to Anki/Quizlet.

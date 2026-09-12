@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: notification-service
+        image: ghcr.io/zyoneal/subsreamedu/notification-service:latest
+        ports:
+        - containerPort: 3005
+        env:
+        - name: IAM_SERVICE_HOST
+          value: "iam-service"
+        - name: DICTIONARY_SERVICE_HOST
+          value: "dictionary-service"
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
+        - name: TELEGRAM_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: telegram-bot-token
+        - name: TELEGRAM_BOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: telegram-bot-username
+        - name: TZ
+          value: "Europe/Kyiv"
+        - name: POSTGRES_USER_APP
+          value: "substream_app"
+        - name: POSTGRES_PASSWORD_APP
+          valueFrom:
+            secretKeyRef:
+              name: iam-secrets
+              key: postgres-password
+        - name: POSTGRES_DB_NOTIFICATION
+          value: "sse_iam"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop: ["ALL"]
+          allowPrivilegeEscalation: false
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+        livenessProbe:
+          httpGet:
+            path: /notification-service/actuator/health
+            port: 3005
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /notification-service/actuator/health
+            port: 3005
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  selector:
+    app: notification-service
+  ports:
+  - protocol: TCP
+    port: 3005
+    targetPort: 3005

@@ -1,0 +1,772 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modalContainer {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: hidden;
+    background: #1a1a1a;
+    
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 32px;
+    box-shadow: none;
+    margin: 40px 20px;
+    animation: modalScaleUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes modalScaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32px 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modalTitle {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.03em;
+    -webkit-font-smoothing: antialiased;
+}
+
+.warningMessage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 0.95rem;
+    color: #888888;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+}
+
+.warningIcon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.closeButton {
+    padding: 10px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    color: #888888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButton:hover {
+    background: rgba(255, 68, 68, 0.08);
+    color: #ff3b30;
+    transform: rotate(90deg);
+}
+
+.closeIcon {
+    width: 24px;
+    height: 24px;
+}
+
+.modalContent {
+    overflow-y: auto;
+    flex: 1;
+    padding: 32px 40px 40px 40px;
+}
+
+.loadingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 0;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.05);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyState {
+    text-align: center;
+    padding: 64px 0;
+}
+
+.emptyTitle {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e8e8e8;
+    margin: 0 0 12px 0;
+}
+
+.emptyDescription {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1rem;
+    color: #888888;
+    margin: 0;
+}
+
+.subtitlesList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.subtitleCard {
+    position: relative;
+    padding: 24px 32px;
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.subtitleCard:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+.subtitleCardContent {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.subtitleInfo {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.subtitleHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.subtitleName {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.02em;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+}
+
+.syncScore {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.syncScoreHigh {
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ADE80;
+    border-color: #4ADE80;
+}
+
+.syncScoreMedium {
+    background: rgba(252, 211, 77, 0.1);
+    color: #FCD34D;
+    border-color: #FCD34D;
+}
+
+.syncScoreLow {
+    background: rgba(248, 113, 113, 0.1);
+    color: #F87171;
+    border-color: #F87171;
+}
+
+.syncScoreIcon {
+    width: 14px;
+    height: 14px;
+}
+
+.syncReason {
+    font-family: var(--font-body), sans-serif;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 12px 0;
+    font-style: italic;
+}
+
+.subtitleBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-body), sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    -webkit-font-smoothing: antialiased;
+}
+
+.languageBadge {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e8e8e8;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trustedBadge {
+    background: rgba(52, 199, 89, 0.1);
+    color: #248a3d;
+    border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.hiBadge {
+    background: rgba(175, 82, 222, 0.1);
+    color: #8944ab;
+    border: 1px solid rgba(175, 82, 222, 0.2);
+}
+
+.badgeIcon {
+    width: 14px;
+    height: 14px;
+}
+
+.subtitleMeta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-family: var(--font-body), sans-serif;
+    font-size: 0.9rem;
+    color: #888888;
+    font-weight: 500;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ratingIcon {
+    width: 14px;
+    height: 14px;
+    color: #ff9500;
+}
+
+.subtitleActions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+}
+
+.quickTestButton {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+}
+
+.quickTestButton:hover {
+    background: #faf92f;
+    color: #000000;
+    transform: translateY(-2px);
+}
+
+.downloadButton {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+}
+
+.downloadButton:hover {
+    background: #faf92f;
+    color: #000000;
+    transform: translateY(-2px);
+}
+
+.buttonIcon {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.5;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: #ffffff;
+    color: #000000;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    font-family: var(--font-body), sans-serif;
+}
+
+.actionButton:hover .tooltip {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .modalContainer {
+        max-width: calc(100vw - 32px);
+        max-height: 90vh;
+        margin: 0 16px;
+    }
+
+    .modalHeader {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .modalTitle {
+        font-size: 1.25rem;
+    }
+
+    .warningMessage {
+        font-size: 0.8125rem;
+        margin-top: 4px;
+    }
+
+    .modalContent {
+        padding: 20px;
+        max-height: calc(90vh - 100px);
+    }
+
+    .subtitlesList {
+        gap: 12px;
+    }
+
+    .subtitleCard {
+        padding: 16px;
+    }
+
+    .subtitleCardContent {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .subtitleHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .subtitleName {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .syncScore {
+        font-size: 0.6875rem;
+        padding: 3px 10px;
+    }
+
+    .syncReason {
+        font-size: 0.6875rem;
+        margin-bottom: 8px;
+    }
+
+    .subtitleBadges {
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .badge {
+        font-size: 0.6875rem;
+        padding: 3px 10px;
+    }
+
+    .subtitleMeta {
+        font-size: 0.8125rem;
+        gap: 12px;
+    }
+
+    .subtitleActions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .actionButton {
+        width: 52px;
+        height: 52px;
+        flex-shrink: 0;
+    }
+
+    .buttonIcon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .closeButton {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modalContainer {
+        max-width: calc(100vw - 20px);
+        max-height: 95vh;
+        margin: 0 10px;
+    }
+
+    .modalHeader {
+        padding: 16px;
+        gap: 8px;
+    }
+
+    .modalTitle {
+        font-size: 1.125rem;
+        padding-right: 32px;
+    }
+
+    .warningMessage {
+        font-size: 0.75rem;
+    }
+
+    .warningIcon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .closeButton {
+        top: 12px;
+        right: 12px;
+        padding: 6px;
+    }
+
+    .closeIcon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .modalContent {
+        padding: 16px;
+        max-height: calc(95vh - 80px);
+    }
+
+    .subtitlesList {
+        gap: 10px;
+    }
+
+    .subtitleCard {
+        padding: 14px;
+    }
+
+    .subtitleCardContent {
+        gap: 10px;
+    }
+
+    .subtitleHeader {
+        gap: 6px;
+    }
+
+    .subtitleName {
+        font-size: 0.9375rem;
+        line-height: 1.4;
+    }
+
+    .syncScore {
+        font-size: 0.625rem;
+        padding: 2px 8px;
+        gap: 4px;
+    }
+
+    .syncScoreIcon {
+        width: 12px;
+        height: 12px;
+    }
+
+    .syncReason {
+        font-size: 0.625rem;
+        margin-bottom: 6px;
+    }
+
+    .subtitleBadges {
+        gap: 4px;
+        margin-bottom: 6px;
+    }
+
+    .badge {
+        font-size: 0.625rem;
+        padding: 2px 8px;
+    }
+
+    .badgeIcon {
+        width: 10px;
+        height: 10px;
+    }
+
+    .subtitleMeta {
+        font-size: 0.75rem;
+        gap: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ratingIcon {
+        width: 10px;
+        height: 10px;
+    }
+
+    .subtitleActions {
+        gap: 6px;
+    }
+
+    .actionButton {
+        width: 50px;
+        height: 50px;
+    }
+
+    .buttonIcon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .tooltip {
+        display: none;
+    }
+
+    .emptyTitle {
+        font-size: 1.125rem;
+    }
+
+    .emptyDescription {
+        font-size: 0.8125rem;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border-width: 3px;
+    }
+}
+
+/* AI Auto-Sync Styles */
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.autoSyncButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: #ffffff;
+    font-family: var(--font-body), sans-serif;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.autoSyncButton:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+    filter: brightness(1.1);
+}
+
+.autoSyncButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.autoSyncIcon {
+    width: 16px;
+    height: 16px;
+    fill: #faf92f;
+    color: #faf92f;
+}
+
+.autoSyncBanner {
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 16px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.autoSyncContent {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.autoSyncHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.autoSyncTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #60a5fa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pulseDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #38bdf8;
+    box-shadow: 0 0 10px #38bdf8;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.cancelSyncButton {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cccccc;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelSyncButton:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.autoSyncStatusText {
+    font-size: 0.875rem;
+    color: #e2e8f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.progressBarWrapper {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.matchedCard {
+    border-color: rgba(74, 222, 128, 0.4) !important;
+    background: rgba(74, 222, 128, 0.04) !important;
+}
+
+.aiSyncedBadge {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}

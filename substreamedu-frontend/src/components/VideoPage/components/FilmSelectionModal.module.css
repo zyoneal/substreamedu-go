@@ -1,0 +1,324 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modalContainer {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    max-height: 85vh;
+    overflow: hidden;
+    background: #1a1a1a;
+    
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 32px;
+    box-shadow: none;
+    margin: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    animation: modalScaleUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes modalScaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32px 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modalTitle {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.03em;
+    -webkit-font-smoothing: antialiased;
+}
+
+.searchInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 0.95rem;
+    color: #888888;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+}
+
+.closeButton {
+    padding: 10px;
+    border-radius: 14px;
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #888888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+}
+
+.closeButton:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+    transform: rotate(90deg) translateY(-2px);
+}
+
+.closeIcon {
+    width: 24px;
+    height: 24px;
+}
+
+.modalContent {
+    overflow-y: auto;
+    padding: 32px;
+}
+
+.loadingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 0;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.05);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyState {
+    text-align: center;
+    padding: 64px 0;
+}
+
+.emptyTitle {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e8e8e8;
+    margin: 0 0 12px 0;
+}
+
+.emptyDescription {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1rem;
+    color: #888888;
+    margin: 0;
+}
+
+.filmsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.filmCard {
+    position: relative;
+    padding: 24px 32px;
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.filmCard:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+.filmCardContent {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.filmInfo {
+    flex: 1;
+}
+
+.filmHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.filmName {
+    font-family: var(--font-body), sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.filmBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-body), sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    -webkit-font-smoothing: antialiased;
+}
+
+.typeBadge {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e8e8e8;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.yearBadge {
+    background: rgba(255, 255, 255, 0.03);
+    color: #888888;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.imdbBadge {
+    background: #222222;
+    color: #e8e8e8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filmMeta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: var(--font-body), sans-serif;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typeIcon,
+.badgeIcon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
+}
+
+.filmActions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.selectButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: #111111;
+    color: #e8e8e8;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: none;
+}
+
+.selectButton:hover {
+    background: #faf92f;
+    color: #000000;
+    border-color: #faf92f;
+    transform: translateY(-2px);
+}
+
+.selectIcon {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.5;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: #ffffff;
+    color: #000000;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    font-family: var(--font-body), sans-serif;
+}
+
+.selectButton:hover .tooltip {
+    opacity: 1;
+}

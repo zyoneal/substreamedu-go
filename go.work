@@ -1,0 +1,9 @@
+go 1.26.0
+
+use (
+	substreamedu-dictionary-service-go
+	substreamedu-gateway-go
+	substreamedu-iam-service-go
+	substreamedu-media-service-go
+	substreamedu-notification-service-go
+)

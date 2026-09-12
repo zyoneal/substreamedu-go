@@ -1,0 +1,384 @@
+/* ============================================
+   OLLAMA DESIGN SYSTEM — Public Content Landing
+   ============================================ */
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: var(--font-body);
+  color: var(--color-ink, #000000);
+  padding: 120px 24px 60px;
+}
+
+.loadingContainer, .errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  text-align: center;
+}
+
+.backLink {
+  margin-top: 16px;
+  color: var(--color-ink, #000000);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.backLink:hover {
+  opacity: 0.7;
+}
+
+.heroHeader {
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  margin-top: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroOverlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2));
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px;
+  color: white;
+}
+
+.heroTitle {
+  font-family: var(--font-display, 'e-Ukraine', 'Nunito', sans-serif);
+  font-size: 30px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.metaInfo {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  justify-content: center;
+}
+
+.authorBadge {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+  color: #000000;
+}
+
+.highlightText {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.guaranteeText {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 16px;
+}
+
+.authorSection {
+  padding: 60px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.authorBox {
+  display: flex;
+  gap: 32px;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  align-items: center;
+  border: 1px solid #e5e5e5;
+}
+
+.authorAvatar {
+  width: 64px;
+  height: 64px;
+  background: #000000;
+  color: white;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.authorInfo h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #000000;
+  margin-bottom: 8px;
+}
+
+.authorInfo p {
+  color: #737373;
+  font-size: 15px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.authorLink {
+  color: #000000;
+  text-decoration: underline;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .authorBox {
+    flex-direction: column;
+    text-align: center;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 84px 16px 40px;
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.methodologySection {
+  padding: 40px 0;
+  color: #737373;
+  line-height: 1.6;
+}
+
+.methodologySection p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.inlineLink {
+  color: #000000;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.relatedReading {
+  margin: 64px 0;
+  padding-top: 48px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.readingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.readingCard {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  padding: 24px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color 0.2s;
+  text-align: left;
+}
+
+.readingCard:hover {
+  border-color: #000000;
+}
+
+.readingCard h4 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 8px;
+}
+
+.readingCard p {
+  font-size: 14px;
+  color: #737373;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-display, 'e-Ukraine', 'Nunito', sans-serif);
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: var(--color-ink, #000000);
+}
+
+.snippetBox {
+  position: relative;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #fafafa;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+}
+
+.snippetLine {
+  margin: 0 0 8px 0;
+}
+
+.fadeOutOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, #fafafa 80%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  font-weight: 500;
+  color: #a3a3a3;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.vocabList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vocabCard {
+  background: white;
+  border: 1px solid #e5e5e5;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.vocabMain {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.vocabWord {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.transcription {
+  color: #a3a3a3;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 14px;
+}
+
+.translation {
+  color: #737373;
+  font-size: 14px;
+}
+
+.ctaLockSection {
+  margin: 88px 0;
+  text-align: center;
+}
+
+.ctaCard {
+  background: #171717;
+  color: #ffffff;
+  padding: 48px 32px;
+  border-radius: 12px;
+}
+
+.ctaTitle {
+  margin: 0 0 16px 0;
+  font-family: var(--font-display, 'e-Ukraine', 'Nunito', sans-serif);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.ctaText {
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 480px;
+  margin: 0 auto;
+  opacity: 0.7;
+}
+
+.ctaButtons {
+  margin-top: 32px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  background: #ffffff;
+  color: #000000;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+}
+
+.btnPrimary:hover {
+  background-color: #fafafa;
+}
+
+.btnSecondary {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 20px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.2s;
+}
+
+.btnSecondary:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.guaranteeText {
+  margin-top: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}

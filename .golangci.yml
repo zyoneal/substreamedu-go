@@ -1,0 +1,42 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - ineffassign
+    - typecheck
+    - unused
+    - misspell
+    - revive
+    - gosec
+    - bodyclose
+    - noctx
+    - unconvert
+    - prealloc
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+  gosec:
+    excludes:
+      - G404
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly

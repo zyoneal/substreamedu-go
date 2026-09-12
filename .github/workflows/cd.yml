@@ -1,0 +1,57 @@
+name: Continuous Delivery (CD)
+
+on:
+  push:
+    branches: [ "main" ]
+
+# Concurrency Guard: Queue deployments sequentially to prevent parallel SSH & git lock races
+concurrency:
+  group: cd-deployment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-to-server:
+    name: Zero-Downtime Production Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Remote Rolling Deployment via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          timeout: 60s
+          command_timeout: 30m
+          script: |
+            set -eo pipefail
+
+            # Target Project Directory Resolution
+            SECRET_DIR="${{ secrets.PROJECT_DIR }}"
+            if [ -n "$SECRET_DIR" ] && [ -d "$SECRET_DIR" ]; then
+                TARGET_DIR="$SECRET_DIR"
+            elif [ -d "$HOME/substreamedu-go" ]; then
+                TARGET_DIR="$HOME/substreamedu-go"
+            elif [ -d "/app" ]; then
+                TARGET_DIR="/app"
+            elif [ -d "$HOME/app" ]; then
+                TARGET_DIR="$HOME/app"
+            else
+                echo "⚠️ Target project directory not found. Cloning repository to $HOME/substreamedu-go..."
+                git clone https://github.com/zyoneal/substreamedu-go.git "$HOME/substreamedu-go"
+                TARGET_DIR="$HOME/substreamedu-go"
+            fi
+
+            echo "📂 Navigating to production directory: $TARGET_DIR"
+            cd "$TARGET_DIR"
+
+            # Prune stale git lock files left by interrupted/aborted SSH sessions
+            rm -f .git/index.lock .git/refs/remotes/origin/main.lock .git/refs/heads/main.lock .git/shallow.lock 2>/dev/null || true
+
+            echo "📦 Fetching latest code revision from main..."
+            git fetch --prune --force origin main
+            git reset --hard origin/main
+            chmod +x deploy.sh
+
+            echo "🚀 Executing zero-downtime deployment script..."
+            ./deploy.sh

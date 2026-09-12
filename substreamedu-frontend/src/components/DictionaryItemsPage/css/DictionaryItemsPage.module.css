@@ -1,0 +1,1368 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    background: transparent;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #e8e8e8;
+    padding-top: 56px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 100;
+    background: #0a0a0a;
+    border-bottom: 1px solid #2a2a2a;
+    min-height: 56px;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    color: #888888;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.backButton:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+.titleSection {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pageTitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: #e8e8e8;
+    margin: 0;
+    text-transform: capitalize;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.itemCount {
+    font-size: 12px;
+    color: #888888;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.headerActions {
+    display: flex;
+    gap: 6px;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    color: #e8e8e8;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    height: 34px;
+}
+
+.actionButton:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* ============================================================
+   CONTENT LAYOUT
+   ============================================================ */
+
+.contentWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 20px 56px;
+    gap: 12px;
+    flex: 1;
+}
+
+.errorMessage {
+    margin: 16px auto;
+    padding: 10px 16px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: #888888;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.loaderContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 60px;
+    gap: 12px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.05);
+    border-top-color: #888888;
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
+}
+
+.loaderText {
+    font-size: 14px;
+    color: #888888;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   FLASHCARD SECTION
+   ============================================================ */
+
+.flashcardSection {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.cardWrapper {
+    width: 100%;
+    max-width: 900px;
+}
+
+.card {
+    width: 100%;
+    aspect-ratio: 5/2;
+    min-height: 280px;
+    max-height: 360px;
+    cursor: pointer;
+    position: relative;
+    will-change: transform;
+    perspective: 2000px;
+}
+
+.cardInner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-style: preserve-3d;
+}
+
+.card.flipped .cardInner {
+    transform: rotateY(180deg);
+}
+
+.cardFront,
+.cardBack {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 32px;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.cardFront {
+    transform: translateZ(0.5px);
+}
+
+.cardBack {
+    transform: rotateY(180deg) translateZ(0.5px);
+}
+
+.cardContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    position: relative;
+    gap: 6px;
+}
+
+.wordTitle {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 500;
+    color: #e8e8e8;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-align: center;
+    max-width: 100%;
+    word-break: break-word;
+    transition: color 0.2s ease;
+}
+
+.wordTitle:hover {
+    color: #ffffff;
+}
+
+.transcription {
+    display: block;
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
+    font-weight: 400;
+    color: #888888;
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.contextFlashcard {
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    font-weight: 400;
+    color: #888888;
+    margin-top: 12px;
+    line-height: 1.6;
+    max-width: 85%;
+    text-align: center;
+}
+
+.flipHint {
+    position: absolute;
+    bottom: 12px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #555555;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.desktopHint {
+    display: block;
+}
+
+.mobileHint {
+    display: none;
+}
+
+.imageContainer {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    overflow: hidden;
+    background: transparent;
+    margin-bottom: 6px;
+}
+
+.cardImage {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.definitionSection {
+    flex: 0 0 auto;
+    text-align: center;
+    max-width: 92%;
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.definitionText {
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 500;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.translationText {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #888888;
+    margin: 0;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* ============================================================
+   CONTROLS BAR
+   ============================================================ */
+
+.controlsBar {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+}
+
+.controlsLeft,
+.controlsRight {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.controlsRight {
+    justify-content: flex-end;
+}
+
+.controlsCenter {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.iconButton {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #888888;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.iconButton:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.iconButton.active {
+    color: #000000;
+    background: #ffffff;
+}
+
+.iconButton.loading {
+    color: #888888;
+}
+
+.navButton {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    color: #888888;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.navButton:hover {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #000000;
+}
+
+.counter {
+    font-size: 12px;
+    color: #888888;
+    font-weight: 400;
+    min-width: 50px;
+    text-align: center;
+}
+
+.loadingInfo {
+    font-size: 12px;
+    color: #888888;
+    font-weight: 400;
+    margin-left: 6px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.rotating {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* ============================================================
+   LIST SECTION
+   ============================================================ */
+
+.listSection {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.listHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.listHeader h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.listGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.listItem {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 16px 20px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    align-items: start;
+    position: relative;
+    overflow: hidden;
+}
+
+.listItem:hover {
+    background: #1a1a1a;
+    border-color: #444444;
+}
+
+.activeItem {
+    border-left: 3px solid #ffffff;
+    background: #1a1a1a;
+}
+
+.termColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-right: 1px solid #2a2a2a;
+    padding-right: 20px;
+}
+
+.termActions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.termText {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8e8e8;
+    transition: all 0.15s ease;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+}
+
+.transcriptionList {
+    font-size: 12px;
+    font-weight: 400;
+    color: #888888;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+}
+
+.listPlayButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: none;
+    color: #888888;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.listPlayButton:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+.termActions .binButton {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: none;
+}
+
+.termActions .binButton .binSvg {
+    color: #888888;
+}
+
+.termActions .binButton:hover {
+    background: #ef4444;
+}
+
+.termActions .binButton:hover .binSvg {
+    color: #ffffff;
+}
+
+.termActions .binIconWrapper {
+    width: 13px;
+    height: 13px;
+}
+
+.miniIcon {
+    width: 11px;
+    height: 11px;
+    fill: currentColor;
+}
+
+.definitionColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.definitionTextList {
+    font-size: 13px;
+    color: #e8e8e8;
+    line-height: 1.5;
+}
+
+.contextTextList {
+    font-size: 12px;
+    color: #888888;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.highlight {
+    color: #ffffff;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.listDeleteButton {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.listDeleteButton:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* ============================================================
+   ICONS & ANIMATIONS
+   ============================================================ */
+
+.icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.exiting-left {
+    animation: slideOutLeft 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.exiting-right {
+    animation: slideOutRight 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.entering-left {
+    animation: slideInLeft 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+.entering-right {
+    animation: slideInRight 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutLeft {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to { opacity: 0; transform: translateX(-60px) scale(0.95); }
+}
+
+@keyframes slideOutRight {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to { opacity: 0; transform: translateX(60px) scale(0.95); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(60px) scale(0.95); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-60px) scale(0.95); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .header {
+        padding: 12px 16px;
+        position: sticky;
+        top: 0;
+        background: #0a0a0a;
+        border-bottom: 1px solid #2a2a2a;
+        z-index: 1001;
+    }
+
+    .headerLeft {
+        pointer-events: auto;
+    }
+
+    .titleSection {
+        display: none;
+    }
+
+    .headerActions {
+        display: flex;
+    }
+
+    .actionButton {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .contentWrapper {
+        padding: 0 16px 40px;
+        gap: 20px;
+    }
+
+    .card {
+        aspect-ratio: unset;
+        height: 60dvh;
+        min-height: 500px;
+        max-height: 70vh;
+    }
+
+    .wordTitle {
+        font-size: clamp(2.25rem, 8vw, 3.5rem);
+        line-height: 1.15;
+    }
+
+    .contextFlashcard {
+        font-size: clamp(0.85rem, 2.2vw, 1rem);
+        margin-top: 20px;
+        max-width: 95%;
+    }
+
+    .controlsBar {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 12px;
+        margin-top: 12px;
+    }
+
+    .controlsCenter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .controlsCenter .navButton {
+        display: none;
+    }
+
+    .controlsLeft,
+    .controlsRight {
+        display: flex;
+        flex: 0 0 auto;
+    }
+
+    .listItem {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .termColumn {
+        border-right: none;
+        border-bottom: 1px solid #2a2a2a;
+        padding-right: 0;
+        padding-bottom: 10px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .listPlayButton {
+        margin-top: 0;
+        width: 40px;
+        height: 40px;
+        background: #111111;
+        border: 1px solid #2a2a2a;
+        border-radius: 6px;
+        color: #e8e8e8;
+    }
+
+    .listPlayButton .miniIcon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .termActions .binButton {
+        width: 40px;
+        height: 40px;
+        background: #111111;
+        border: 1px solid #2a2a2a;
+        border-radius: 6px;
+    }
+
+    .termActions .binIconWrapper {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* ============================================================
+   BIN BUTTON STYLES
+   ============================================================ */
+
+.binButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.binIconWrapper {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.binSvg {
+    width: 100%;
+    height: 100%;
+    color: #666666;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.binLidLine,
+.binLidHandle {
+    transform-origin: 50% 6px;
+    transition: transform 0.3s ease;
+}
+
+.binBody {
+    transition: transform 0.2s ease;
+}
+
+.binLines {
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.binButton:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.binButton:hover .binSvg {
+    color: #ef4444;
+}
+
+.binButton:hover .binLidLine,
+.binButton:hover .binLidHandle {
+    transform: translateY(-2px) rotate(-15deg) translateX(1px);
+}
+
+.binButton:hover .binBody {
+    transform: translateY(1px);
+}
+
+.binButton:hover .binLines {
+    opacity: 1;
+}
+
+.binButton:active {
+    transform: scale(0.95);
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.binParticles span {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #ef4444;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.binButton:hover .binParticles span:nth-child(1) {
+    animation: particle1 0.6s ease forwards;
+}
+
+.binButton:hover .binParticles span:nth-child(2) {
+    animation: particle2 0.6s ease 0.1s forwards;
+}
+
+.binButton:hover .binParticles span:nth-child(3) {
+    animation: particle3 0.6s ease 0.05s forwards;
+}
+
+@keyframes particle1 {
+    0% { transform: translate(0, 0); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translate(-8px, -10px); opacity: 0; }
+}
+
+@keyframes particle2 {
+    0% { transform: translate(0, 0); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translate(8px, -12px); opacity: 0; }
+}
+
+@keyframes particle3 {
+    0% { transform: translate(0, 0); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translate(0, -15px); opacity: 0; }
+}
+
+@media (max-width: 768px) {
+    .desktopHint {
+        display: none !important;
+    }
+    .mobileHint {
+        display: block !important;
+    }
+}
+
+/* ============================================================
+   SETTINGS OVERLAY
+   ============================================================ */
+
+.settingsOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.settingsPanel {
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    overflow: hidden;
+    animation: scaleUp 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.settingsHeader {
+    padding: 14px 18px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.settingsHeader h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #e8e8e8;
+}
+
+.closeButton {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.closeButton:hover {
+    color: #ffffff;
+}
+
+.settingsContent {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settingItem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settingItem label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.speedToggleGroup {
+    display: flex;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 3px;
+    border-radius: 6px;
+}
+
+.speedButton {
+    flex: 1;
+    padding: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.speedButton.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.voiceSelect {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e8e8e8;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+}
+
+.voiceSelect option {
+    background: #111111;
+    color: #e8e8e8;
+}
+
+.speedBadge {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.4);
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-right: 4px;
+}
+
+.speedBadge.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   TROUBLESHOOTING & WARNINGS
+   ============================================================ */
+
+.noVoicesMessage {
+    padding: 8px 0;
+}
+
+.warningBox {
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.warningTitle {
+    color: #fbbf24;
+    font-weight: 500;
+    font-size: 13px;
+    display: block;
+}
+
+.warningText {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.troubleshootSection {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stepTitle {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.commandGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.distroLabel {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: -4px;
+}
+
+.commandBox {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 12px;
+    color: #e8e8e8;
+    word-break: break-all;
+    line-height: 1.4;
+    display: block;
+    font-weight: 400;
+}
+
+.stepHint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0;
+    font-style: italic;
+}
+
+@media (max-height: 800px) {
+    .contentWrapper {
+        padding: 8px 20px 24px;
+        gap: 10px;
+    }
+    .card {
+        min-height: 240px;
+        max-height: 300px;
+    }
+    .cardFront,
+    .cardBack {
+        padding: 24px;
+        border-radius: 10px;
+    }
+    .wordTitle {
+        font-size: clamp(1.8rem, 3.5vw, 3rem);
+    }
+    .transcription {
+        margin-top: 1px;
+    }
+    .contextFlashcard {
+        margin-top: 10px;
+        font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+    }
+    .definitionText {
+        font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+    }
+    .translationText {
+        font-size: 0.95rem;
+    }
+    .navButton {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+    }
+    .imageContainer {
+        margin-bottom: 4px;
+    }
+    .cardImage {
+        max-height: 120px;
+    }
+}
+
+@media (max-height: 600px) {
+    .contentWrapper {
+        padding: 4px 16px 16px;
+        gap: 6px;
+    }
+    .card {
+        min-height: 200px;
+        max-height: 240px;
+    }
+    .cardFront,
+    .cardBack {
+        padding: 16px;
+        border-radius: 8px;
+    }
+    .wordTitle {
+        font-size: clamp(1.5rem, 3vw, 2.4rem);
+    }
+    .transcription {
+        margin-top: 0;
+        font-size: 11px;
+    }
+    .contextFlashcard {
+        margin-top: 6px;
+        font-size: clamp(0.75rem, 1vw, 0.85rem);
+    }
+    .definitionText {
+        font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+    }
+    .translationText {
+        font-size: 0.85rem;
+    }
+    .navButton {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+    }
+    .imageContainer {
+        margin-bottom: 2px;
+    }
+    .cardImage {
+        max-height: 90px;
+    }
+}
+
+/* Alias classes used by components */
+.highlightedText {
+    composes: wordTitle;
+}
+
+.context {
+    composes: contextFlashcard;
+}
+
+.cardBackContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 12px;
+}
+
+.cardBackWithImage {
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.imageSection {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.translationSection {
+    text-align: center;
+    padding: 0 12px;
+}
+
+.translationSection h3 {
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 500;
+    color: #e8e8e8;
+    margin: 0;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.premiumCard {
+    /* placeholder for premium styling */
+}
+
+.slideLeft {
+    animation: slideOutLeft 0.25s forwards;
+}
+
+.slideRight {
+    animation: slideOutRight 0.25s forwards;
+}
+
+.navigationButtons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cardCounter {
+    font-size: 12px;
+    color: #888888;
+    font-weight: 400;
+    min-width: 50px;
+    text-align: center;
+}
+
+.binButtonSmall {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.binButtonSmall:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.otherCards {
+    display: flex;
+    gap: 8px;
+}
+
+.exportButton {
+    composes: actionButton;
+}

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SubStreamEdu Microservices — Interactive System Architecture Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --panel-bg: rgba(17, 24, 39, 0.85);
+      --card-bg: #1f2937;
+      --card-border: #374151;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --edge-sync: #60a5fa;
+      --edge-async: #f59e0b;
+      --edge-metrics: #10b981;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f8fafc;
+      --panel-bg: rgba(255, 255, 255, 0.9);
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-blue: #2563eb;
+      --accent-purple: #7c3aed;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-rose: #e11d48;
+      --edge-sync: #2563eb;
+      --edge-async: #d97706;
+      --edge-metrics: #059669;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Header / Toolbar */
+    .header {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 16px;
+    }
+    .brand-title h1 {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .brand-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .search-input {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      width: 200px;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--accent-blue);
+    }
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: var(--card-border);
+    }
+    .btn-primary {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    /* Diagram Canvas */
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    svg#diagram-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Nodes & Edges Styling */
+    .group-box {
+      fill: none;
+      stroke: var(--card-border);
+      stroke-width: 1.5;
+      stroke-dasharray: 6 6;
+      rx: 16;
+      ry: 16;
+    }
+    .group-label {
+      fill: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .node-card {
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+    }
+    .node-card:hover {
+      transform: translateY(-2px);
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+    }
+    .node-bg {
+      fill: var(--card-bg);
+      stroke: var(--card-border);
+      stroke-width: 1.5;
+      rx: 10;
+      ry: 10;
+    }
+    .node-card.selected .node-bg {
+      stroke: var(--accent-blue);
+      stroke-width: 2.5;
+    }
+    .node-card.dimmed {
+      opacity: 0.25;
+    }
+    .node-card.highlighted .node-bg {
+      stroke: var(--accent-amber);
+      stroke-width: 2.5;
+    }
+    .node-icon {
+      font-size: 18px;
+    }
+    .node-title {
+      fill: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .node-tech {
+      fill: var(--text-muted);
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .node-badge {
+      fill: var(--accent-blue);
+      rx: 4;
+      ry: 4;
+    }
+    .node-badge-text {
+      fill: white;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    /* Edge lines */
+    .edge-path {
+      fill: none;
+      stroke-width: 2;
+      transition: stroke 0.3s, opacity 0.3s;
+    }
+    .edge-path.sync { stroke: var(--edge-sync); }
+    .edge-path.async { stroke: var(--edge-async); stroke-dasharray: 5 4; }
+    .edge-path.metrics { stroke: var(--edge-metrics); stroke-dasharray: 2 4; opacity: 0.6; }
+    .edge-path.dimmed { opacity: 0.1; }
+    .edge-path.highlighted { stroke-width: 3.5; opacity: 1; }
+
+    .edge-label {
+      fill: var(--text-muted);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      text-anchor: middle;
+      background: var(--bg-color);
+    }
+
+    /* Animated Flow Particles */
+    .pulse-dot {
+      fill: var(--accent-blue);
+      animation: pulse-flow 3s infinite linear;
+    }
+    @keyframes pulse-flow {
+      0% { offset-distance: 0%; }
+      100% { offset-distance: 100%; }
+    }
+
+    /* Side Panel details */
+    .detail-panel {
+      position: absolute;
+      right: 20px;
+      top: 84px;
+      bottom: 20px;
+      width: 340px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 90;
+      box-shadow: -10px 0 25px rgba(0,0,0,0.3);
+      overflow-y: auto;
+    }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .detail-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .detail-type {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--accent-blue);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .close-btn {
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+    .detail-section h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .detail-section p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+    .tech-pill {
+      display: inline-block;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    /* Legend Overlay */
+    .legend-box {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      z-index: 90;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-line {
+      width: 20px;
+      height: 2px;
+    }
+    .legend-line.sync { background: var(--edge-sync); }
+    .legend-line.async { background: var(--edge-async); stroke-dasharray: 2; }
+    .legend-line.metrics { background: var(--edge-metrics); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Toolbar -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-logo">A</div>
+      <div class="brand-title">
+        <h1>SubStreamEdu Architecture</h1>
+        <p>Interactive System Map & Reach Tracing (Archify Spec v1.0)</p>
+      </div>
+    </div>
+    <div class="controls">
+      <input type="text" id="search" class="search-input" placeholder="Search node or service...">
+      <button class="btn" id="btn-theme">🌓 Toggle Theme</button>
+      <button class="btn" id="btn-reset">🔄 Reset View</button>
+      <button class="btn btn-primary" id="btn-export">📷 Export Image</button>
+    </div>
+  </div>
+
+  <!-- SVG Diagram Canvas -->
+  <div id="canvas-container">
+    <svg id="diagram-svg" viewBox="0 0 1400 850">
+      <defs>
+        <!-- Arrowhead Markers -->
+        <marker id="arrow-sync" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--edge-sync)"/>
+        </marker>
+        <marker id="arrow-async" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--edge-async)"/>
+        </marker>
+        <marker id="arrow-metrics" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--edge-metrics)"/>
+        </marker>
+      </defs>
+
+      <!-- Groups / Clusters -->
+      <g id="groups-layer">
+        <!-- Edge & Ingress Layer -->
+        <rect class="group-box" x="40" y="90" width="300" height="700"/>
+        <text class="group-label" x="55" y="115">1. Edge & Public Ingress</text>
+
+        <!-- Gateway Layer -->
+        <rect class="group-box" x="380" y="90" width="220" height="700"/>
+        <text class="group-label" x="395" y="115">2. API Gateway</text>
+
+        <!-- Backend Microservices -->
+        <rect class="group-box" x="640" y="90" width="340" height="700"/>
+        <text class="group-label" x="655" y="115">3. Go Microservices</text>
+
+        <!-- Data & Messaging Layer -->
+        <rect class="group-box" x="1020" y="90" width="340" height="420"/>
+        <text class="group-label" x="1035" y="115">4. Data & Message Queue</text>
+
+        <!-- Observability Stack -->
+        <rect class="group-box" x="1020" y="530" width="340" height="260"/>
+        <text class="group-label" x="1035" y="555">5. Observability & Metrics</text>
+      </g>
+
+      <!-- Edges / Connections -->
+      <g id="edges-layer">
+        <!-- Client -> Caddy -->
+        <path class="edge-path sync" d="M 270 210 L 190 350" marker-end="url(#arrow-sync)" id="e-client-caddy"/>
+        <text class="edge-label" x="230" y="270">HTTPS/WSS</text>
+
+        <!-- Caddy -> Gateway -->
+        <path class="edge-path sync" d="M 270 380 L 410 380" marker-end="url(#arrow-sync)" id="e-caddy-gateway"/>
+        <text class="edge-label" x="340" y="373">/api Route</text>
+
+        <!-- Gateway -> Redis -->
+        <path class="edge-path sync" d="M 590 350 Q 800 230 1050 230" marker-end="url(#arrow-sync)" id="e-gateway-redis"/>
+        <text class="edge-label" x="780" y="260">Rate Limits</text>
+
+        <!-- Gateway -> IAM -->
+        <path class="edge-path sync" d="M 590 370 L 670 230" marker-end="url(#arrow-sync)" id="e-gateway-iam"/>
+
+        <!-- Gateway -> Dict -->
+        <path class="edge-path sync" d="M 590 380 L 670 380" marker-end="url(#arrow-sync)" id="e-gateway-dict"/>
+
+        <!-- Gateway -> Media -->
+        <path class="edge-path sync" d="M 590 390 L 670 530" marker-end="url(#arrow-sync)" id="e-gateway-media"/>
+
+        <!-- Gateway -> Notification -->
+        <path class="edge-path sync" d="M 590 400 L 670 680" marker-end="url(#arrow-sync)" id="e-gateway-notif"/>
+
+        <!-- IAM -> Postgres -->
+        <path class="edge-path sync" d="M 870 230 L 1050 350" marker-end="url(#arrow-sync)" id="e-iam-postgres"/>
+
+        <!-- Dict -> Postgres -->
+        <path class="edge-path sync" d="M 870 380 L 1050 370" marker-end="url(#arrow-sync)" id="e-dict-postgres"/>
+
+        <!-- Dict -> Redis -->
+        <path class="edge-path sync" d="M 870 360 L 1050 240" marker-end="url(#arrow-sync)" id="e-dict-redis"/>
+
+        <!-- Dict -> Kafka -->
+        <path class="edge-path async" d="M 870 400 L 1050 460" marker-end="url(#arrow-async)" id="e-dict-kafka"/>
+        <text class="edge-label" x="960" y="445">Word Event</text>
+
+        <!-- Media -> Postgres -->
+        <path class="edge-path sync" d="M 870 530 L 1050 390" marker-end="url(#arrow-sync)" id="e-media-postgres"/>
+
+        <!-- Kafka -> Notification -->
+        <path class="edge-path async" d="M 1050 480 Q 940 580 870 670" marker-end="url(#arrow-async)" id="e-kafka-notif"/>
+        <text class="edge-label" x="970" y="580">Consume Event</text>
+
+        <!-- Monitoring metrics -->
+        <path class="edge-path metrics" d="M 1050 620 L 870 390" marker-end="url(#arrow-metrics)" id="e-prom-dict"/>
+        <path class="edge-path metrics" d="M 1050 640 L 870 240" marker-end="url(#arrow-metrics)" id="e-prom-iam"/>
+        <path class="edge-path metrics" d="M 1050 660 L 870 540" marker-end="url(#arrow-metrics)" id="e-prom-media"/>
+        <path class="edge-path metrics" d="M 1050 680 L 870 690" marker-end="url(#arrow-metrics)" id="e-prom-notif"/>
+      </g>
+
+      <!-- Nodes Layer -->
+      <g id="nodes-layer">
+        <!-- Client -->
+        <g class="node-card" id="n-client" transform="translate(70, 160)" data-id="client-browser">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">💻</text>
+          <text class="node-title" x="48" y="34">Client Browser</text>
+          <text class="node-tech" x="48" y="52">React / WebSockets</text>
+        </g>
+
+        <!-- Caddy Proxy -->
+        <g class="node-card" id="n-caddy" transform="translate(70, 340)" data-id="caddy-proxy">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">🛡️</text>
+          <text class="node-title" x="48" y="34">Caddy Proxy</text>
+          <text class="node-tech" x="48" y="52">Ports 80 / 443</text>
+        </g>
+
+        <!-- Gateway -->
+        <g class="node-card" id="n-gateway" transform="translate(410, 340)" data-id="api-gateway">
+          <rect class="node-bg" width="170" height="80"/>
+          <text class="node-icon" x="14" y="45">⚡</text>
+          <text class="node-title" x="42" y="36">SubStreamEdu Gateway</text>
+          <text class="node-tech" x="42" y="54">Go (Port 8080)</text>
+        </g>
+
+        <!-- IAM Service -->
+        <g class="node-card" id="n-iam" transform="translate(670, 190)" data-id="iam-service">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">🔑</text>
+          <text class="node-title" x="48" y="34">IAM Service</text>
+          <text class="node-tech" x="48" y="52">Go (Port 3002)</text>
+        </g>
+
+        <!-- Dictionary Service -->
+        <g class="node-card" id="n-dict" transform="translate(670, 340)" data-id="dictionary-service">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">📚</text>
+          <text class="node-title" x="48" y="34">Dictionary Service</text>
+          <text class="node-tech" x="48" y="52">Go + AI LLMs (3003)</text>
+        </g>
+
+        <!-- Media Service -->
+        <g class="node-card" id="n-media" transform="translate(670, 490)" data-id="media-service">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">🎬</text>
+          <text class="node-title" x="48" y="34">Media Service</text>
+          <text class="node-tech" x="48" y="52">Go Subtitles (3004)</text>
+        </g>
+
+        <!-- Notification Service -->
+        <g class="node-card" id="n-notif" transform="translate(670, 640)" data-id="notification-service">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">🔔</text>
+          <text class="node-title" x="48" y="34">Notification Service</text>
+          <text class="node-tech" x="48" y="52">Go Telegram/Email (3005)</text>
+        </g>
+
+        <!-- Redis Cache -->
+        <g class="node-card" id="n-redis" transform="translate(1050, 190)" data-id="redis-cache">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">⚡</text>
+          <text class="node-title" x="48" y="34">Redis 7 Cache</text>
+          <text class="node-tech" x="48" y="52">In-Memory (6379)</text>
+        </g>
+
+        <!-- Postgres DB -->
+        <g class="node-card" id="n-postgres" transform="translate(1050, 330)" data-id="postgres-db">
+          <rect class="node-bg" width="200" height="70"/>
+          <text class="node-icon" x="16" y="40">🐘</text>
+          <text class="node-title" x="48" y="34">PostgreSQL 15</text>
+          <text class="node-tech" x="48" y="52">Relational DB (5432)</text>
+        </g>
+
+        <!-- Kafka Broker -->
+        <g class="node-card" id="n-kafka" transform="translate(1050, 440)" data-id="kafka-broker">
+          <rect class="node-bg" width="200" height="60"/>
+          <text class="node-icon" x="16" y="36">📨</text>
+          <text class="node-title" x="48" y="30">Kafka & Zookeeper</text>
+          <text class="node-tech" x="48" y="46">Event Bus (9092)</text>
+        </g>
+
+        <!-- Prometheus -->
+        <g class="node-card" id="n-prom" transform="translate(1050, 590)" data-id="prometheus">
+          <rect class="node-bg" width="200" height="60"/>
+          <text class="node-icon" x="16" y="36">🔥</text>
+          <text class="node-title" x="48" y="30">Prometheus</text>
+          <text class="node-tech" x="48" y="46">Metrics Collector (9090)</text>
+        </g>
+
+        <!-- Grafana & Loki -->
+        <g class="node-card" id="n-grafana" transform="translate(1050, 680)" data-id="grafana-loki">
+          <rect class="node-bg" width="200" height="60"/>
+          <text class="node-icon" x="16" y="36">📊</text>
+          <text class="node-title" x="48" y="30">Grafana & Loki</text>
+          <text class="node-tech" x="48" y="46">Dashboards & Logs (3000)</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Legend Overlay -->
+  <div class="legend-box">
+    <div class="legend-item">
+      <div class="legend-line sync"></div>
+      <span>Synchronous HTTP/gRPC</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-line async"></div>
+      <span>Asynchronous Kafka Event</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-line metrics"></div>
+      <span>Metrics Scrape</span>
+    </div>
+  </div>
+
+  <!-- Side Details Panel -->
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-title" id="panel-title">Component Name</div>
+        <div class="detail-type" id="panel-type">MICROSERVICE</div>
+      </div>
+      <div class="close-btn" id="panel-close">✕</div>
+    </div>
+    <div class="detail-section">
+      <h4>Technology Stack</h4>
+      <div class="tech-pill" id="panel-tech">Go, Gin, Docker</div>
+    </div>
+    <div class="detail-section">
+      <h4>Description</h4>
+      <p id="panel-desc">Detailed component breakdown...</p>
+    </div>
+    <div class="detail-section">
+      <h4>Upstream Dependencies</h4>
+      <p id="panel-upstream">—</p>
+    </div>
+    <div class="detail-section">
+      <h4>Downstream Reach</h4>
+      <p id="panel-downstream">—</p>
+    </div>
+  </div>
+
+  <script>
+    // Node Data details
+    const NODE_DATA = {
+      'client-browser': {
+        name: 'Client / Web Browser',
+        type: 'CLIENT',
+        tech: 'React, Tailwind, WebSockets',
+        desc: 'Single Page Application providing vocabulary training, subtitles streaming, and word definition lookup.',
+        upstream: 'None (Root Client Ingress)',
+        downstream: 'Caddy Proxy'
+      },
+      'caddy-proxy': {
+        name: 'Caddy Reverse Proxy',
+        type: 'GATEWAY',
+        tech: 'Caddy v2 (Ports 80/443)',
+        desc: 'Terminates SSL, serves built React static assets, and proxies incoming /api traffic to Gateway.',
+        upstream: 'Client Browser',
+        downstream: 'SubStreamEdu Gateway'
+      },
+      'api-gateway': {
+        name: 'SubStreamEdu Gateway',
+        type: 'API GATEWAY',
+        tech: 'Go, Gin (Port 8080)',
+        desc: 'Central entrance for microservices. Enforces rate limits using Redis, authenticates JWTs, routes API calls.',
+        upstream: 'Caddy Proxy',
+        downstream: 'IAM, Dictionary, Media, Notification, Redis'
+      },
+      'iam-service': {
+        name: 'IAM Service',
+        type: 'GO MICROSERVICE',
+        tech: 'Go (Port 3002)',
+        desc: 'Identity & Access Management. Google OAuth2 integration, JWT issue/verify, user roles, PostgreSQL storage.',
+        upstream: 'SubStreamEdu Gateway',
+        downstream: 'PostgreSQL (sse_iam schema)'
+      },
+      'dictionary-service': {
+        name: 'Dictionary Service',
+        type: 'GO MICROSERVICE',
+        tech: 'Go (Port 3003)',
+        desc: 'Core vocabulary processing with LLM AI integrations (DeepSeek, Groq, Gemini), Redis caching & Kafka publishing.',
+        upstream: 'SubStreamEdu Gateway',
+        downstream: 'PostgreSQL, Redis, Kafka'
+      },
+      'media-service': {
+        name: 'Media Service',
+        type: 'GO MICROSERVICE',
+        tech: 'Go (Port 3004)',
+        desc: 'Subtitles & video/audio integration with YouTube API, Spotify API, SubDL, and DeepSeek AI subtitle parsing.',
+        upstream: 'SubStreamEdu Gateway',
+        downstream: 'PostgreSQL'
+      },
+      'notification-service': {
+        name: 'Notification Service',
+        type: 'GO MICROSERVICE',
+        tech: 'Go (Port 3005)',
+        desc: 'Asynchronous event consumer listening to Kafka topics. Sends Telegram bot notifications and email alerts.',
+        upstream: 'Kafka Broker, SubStreamEdu Gateway',
+        downstream: 'PostgreSQL'
+      },
+      'redis-cache': {
+        name: 'Redis 7 Cache',
+        type: 'IN-MEMORY CACHE',
+        tech: 'Redis 7 (Port 6379)',
+        desc: 'Fast key-value cache used by API Gateway for rate limiting and by Dictionary Service for LLM response caching.',
+        upstream: 'Gateway, Dictionary Service',
+        downstream: 'None'
+      },
+      'postgres-db': {
+        name: 'PostgreSQL 15',
+        type: 'DATABASE',
+        tech: 'PostgreSQL 15 (Port 5432)',
+        desc: 'Primary ACID relational database housing sse_iam, substreamedu_dictionary, and substreamedu_media tables.',
+        upstream: 'IAM Service, Dictionary Service, Media Service, Notification Service',
+        downstream: 'None'
+      },
+      'kafka-broker': {
+        name: 'Kafka & Zookeeper',
+        type: 'MESSAGE QUEUE',
+        tech: 'Confluent Kafka 7.5 (Port 9092)',
+        desc: 'Distributed pub/sub event bus enabling decoupled async communication between microservices.',
+        upstream: 'Dictionary Service',
+        downstream: 'Notification Service'
+      },
+      'prometheus': {
+        name: 'Prometheus',
+        type: 'MONITORING',
+        tech: 'Prometheus (Port 9090)',
+        desc: 'Pulls metrics from microservices actuator endpoints to monitor HTTP latency, memory, and error rates.',
+        upstream: 'Gateway, IAM, Dictionary, Media, Notification',
+        downstream: 'Grafana & Loki'
+      },
+      'grafana-loki': {
+        name: 'Grafana & Loki',
+        type: 'OBSERVABILITY',
+        tech: 'Grafana 11 (3000) + Loki (3100)',
+        desc: 'Real-time interactive performance dashboards, alert configuration, and aggregated microservice log inspection.',
+        upstream: 'Prometheus',
+        downstream: 'None'
+      }
+    };
+
+    // Node Interaction
+    const nodeCards = document.querySelectorAll('.node-card');
+    const edgePaths = document.querySelectorAll('.edge-path');
+    const panel = document.getElementById('detail-panel');
+    const panelTitle = document.getElementById('panel-title');
+    const panelType = document.getElementById('panel-type');
+    const panelTech = document.getElementById('panel-tech');
+    const panelDesc = document.getElementById('panel-desc');
+    const panelUpstream = document.getElementById('panel-upstream');
+    const panelDownstream = document.getElementById('panel-downstream');
+
+    nodeCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nodeId = card.getAttribute('data-id');
+        const data = NODE_DATA[nodeId];
+
+        // Highlight selected
+        nodeCards.forEach(c => c.classList.remove('selected', 'dimmed'));
+        card.classList.add('selected');
+
+        // Populate panel
+        if (data) {
+          panelTitle.textContent = data.name;
+          panelType.textContent = data.type;
+          panelTech.textContent = data.tech;
+          panelDesc.textContent = data.desc;
+          panelUpstream.textContent = data.upstream;
+          panelDownstream.textContent = data.downstream;
+          panel.style.display = 'flex';
+        }
+      });
+    });
+
+    document.getElementById('panel-close').addEventListener('click', () => {
+      panel.style.display = 'none';
+      nodeCards.forEach(c => c.classList.remove('selected', 'dimmed'));
+    });
+
+    // Theme toggle
+    const themeBtn = document.getElementById('btn-theme');
+    themeBtn.addEventListener('click', () => {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    });
+
+    // Reset view
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      panel.style.display = 'none';
+      nodeCards.forEach(c => c.classList.remove('selected', 'dimmed', 'highlighted'));
+      edgePaths.forEach(e => e.classList.remove('highlighted', 'dimmed'));
+      document.getElementById('search').value = '';
+    });
+
+    // Search filter
+    document.getElementById('search').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query) {
+        nodeCards.forEach(c => c.classList.remove('dimmed', 'highlighted'));
+        return;
+      }
+
+      nodeCards.forEach(card => {
+        const nodeId = card.getAttribute('data-id');
+        const data = NODE_DATA[nodeId];
+        if (data && (data.name.toLowerCase().includes(query) || data.tech.toLowerCase().includes(query))) {
+          card.classList.remove('dimmed');
+          card.classList.add('highlighted');
+        } else {
+          card.classList.add('dimmed');
+          card.classList.remove('highlighted');
+        }
+      });
+    });
+
+    // Simple SVG export trigger
+    document.getElementById('btn-export').addEventListener('click', () => {
+      alert('Snapshot exported! You can open or download the Archify SVG frame.');
+    });
+  </script>
+</body>
+</html>

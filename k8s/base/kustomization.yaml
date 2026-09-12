@@ -1,0 +1,9 @@
+resources:
+- iam-service/iam-service.yaml
+- dictionary-service/dictionary-service.yaml
+- media-service/media-service.yaml
+- notification-service/notification-service.yaml
+- gateway/gateway.yaml
+- frontend/frontend.yaml
+- infra
+- ingress.yaml

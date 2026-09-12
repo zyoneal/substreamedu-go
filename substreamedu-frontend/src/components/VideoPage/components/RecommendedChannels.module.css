@@ -1,0 +1,113 @@
+.section {
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sectionTitle {
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #ede8e0;
+    margin: 0 0 14px 0;
+    text-align: left;
+    letter-spacing: -0.01em;
+}
+
+.channelList {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 48px;
+    box-sizing: border-box;
+}
+
+.channelLink {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: inherit;
+    background: #141312;
+    border: 1px solid #282522;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.channelLink:hover {
+    background: #1a1917;
+    border-color: #3d3934;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.channelAvatarWrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1917;
+    border: 1px solid #282522;
+}
+
+.channelAvatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.channelAvatarFallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.channelName {
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #ede8e0;
+    margin: 0;
+    letter-spacing: -0.01em;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channelLink:hover .channelName {
+    color: #ffffff;
+}
+
+@media (max-width: 900px) {
+    .channelList {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .channelList {
+        grid-template-columns: 1fr;
+    }
+
+    .channelLink {
+        padding: 10px 12px;
+    }
+}

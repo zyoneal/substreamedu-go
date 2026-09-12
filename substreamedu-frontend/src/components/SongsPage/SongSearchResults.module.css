@@ -1,0 +1,320 @@
+/* === SONG SEARCH RESULTS - FACTORY.AI MINIMAL STYLE === */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.loading,
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #e8e8e8;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyIcon {
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 1rem;
+}
+
+.empty h3 {
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+}
+
+.empty p {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.resultsHeader {
+    margin-bottom: 1.5rem;
+}
+
+.resultsHeader h3 {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Clean grid layout - equal height cards */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Card with fixed structure */
+.songCard {
+    background: #141312;
+    border: 1px solid #282522;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    box-shadow: none;
+}
+
+.songCard:hover {
+    border-color: #3d3934;
+    background: #1a1917;
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+.songCard.selected {
+    border-color: #ede8e0;
+    background: #1a1917;
+    transform: translateY(-1px);
+    box-shadow: none;
+}
+
+.cardContent {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* YouTube 16:9 thumbnail */
+.imageContainer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #1a1917;
+    flex-shrink: 0;
+}
+
+.albumArt {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.songCard:hover .albumArt {
+    transform: scale(1.03);
+    opacity: 0.85;
+}
+
+/* Play overlay */
+.playOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    color: #ede8e0;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 15;
+}
+
+.playOverlay svg {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #141312;
+    border: 1px solid #3d3934;
+    color: #ede8e0;
+    padding: 10px;
+    box-shadow: none;
+    transform: scale(0.85);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.songCard:hover .playOverlay {
+    opacity: 1;
+}
+
+.songCard:hover .playOverlay svg {
+    transform: scale(1);
+}
+
+/* Song info - fills remaining space */
+.songInfo {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.songTitle {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    color: #ede8e0;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    transition: color 0.15s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.explicitBadge {
+    font-size: 9px;
+    padding: 1px 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+}
+
+.artistName {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 400;
+    color: #8a8580;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.albumName {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+    color: #666664;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Metadata row */
+.metadata {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.metadataItem {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 400;
+    color: #8a8580;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.difficultyBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 500;
+    background: none;
+    color: #ede8e0;
+    border: none;
+    padding: 0;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.sourceBadge {
+    font-size: 11px;
+    padding: 0;
+    background: none;
+    color: #8a8580;
+    text-transform: capitalize;
+    font-weight: 400;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.features {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #282522;
+}
+
+.feature {
+    font-size: 11px;
+    font-weight: 400;
+    color: #8a8580;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .songInfo {
+        padding: 12px;
+    }
+
+    .songTitle {
+        font-size: 14px;
+    }
+
+    .artistName {
+        font-size: 12px;
+    }
+
+    .features {
+        display: none;
+    }
+}

@@ -1,0 +1,400 @@
+@import './tokens.module.css';
+
+.themeContainer {
+    font-family: var(--font-sans);
+    background-color: var(--c-bg-main);
+    background-image: radial-gradient(ellipse 90% 50% at 50% -5%, rgba(245, 158, 11, 0.035) 0%, transparent 65%);
+    color: var(--c-text-primary);
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+}
+
+.mainContent {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 120px 24px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
+.heroSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.heroContent {
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.headerGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+}
+
+.displayTitle {
+    font-family: var(--font-sans);
+    font-size: var(--display-size);
+    line-height: var(--display-lh);
+    font-weight: var(--display-fw);
+    letter-spacing: var(--display-ls);
+    margin: 0;
+    color: var(--near-black);
+}
+
+.description {
+    font-family: var(--font-sans);
+    font-size: var(--body-size);
+    line-height: var(--body-lh);
+    font-weight: var(--fw-body);
+    color: var(--gray-600);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.pricingSection {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.plansGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.card {
+    position: relative;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-card);
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    transition: all var(--duration-standard) var(--transition-premium);
+}
+
+.card:hover {
+    border-color: var(--c-border-hover);
+    transform: translateY(-2px);
+    background: var(--c-bg-input);
+}
+
+.card.highlight {
+    border-color: var(--c-border-hover);
+}
+
+.card.highlight:hover {
+    border-color: var(--c-accent-hover);
+}
+
+.cardHeader {
+    margin-bottom: 28px;
+}
+
+.planName {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin: 0 0 10px;
+}
+
+.planPrice {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.priceValue {
+    font-family: var(--font-sans);
+    font-size: 38px;
+    font-weight: 300;
+    color: var(--near-black);
+    letter-spacing: -0.03em;
+}
+
+.pricePeriod {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gray-600);
+}
+
+.oldPrice {
+    text-decoration: line-through;
+    font-size: 16px;
+    color: var(--gray-400);
+    font-weight: 400;
+    font-family: var(--font-mono);
+}
+
+.features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--near-black);
+    font-weight: 300;
+}
+
+.check {
+    color: var(--c-accent-hover);
+    flex-shrink: 0;
+}
+
+.button {
+    height: 44px;
+    padding: 0 24px;
+    border-radius: var(--radius-button);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all var(--duration-standard) var(--transition-premium);
+    margin-top: auto;
+    cursor: pointer;
+}
+
+.buttonPrimary {
+    background: var(--c-accent);
+    color: var(--black);
+    border: none;
+}
+
+.buttonPrimary:hover {
+    background: var(--c-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(250, 249, 47, 0.2);
+}
+
+.buttonSecondary {
+    background: var(--c-bg-card);
+    color: var(--near-black);
+    border: 1px solid var(--c-border);
+}
+
+.buttonSecondary:hover {
+    border-color: var(--c-border-hover);
+    background: var(--c-bg-input);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+
+.badge {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+}
+
+.badgeHighlight {
+    background: var(--c-accent-hover);
+    color: var(--black);
+}
+
+.badgeRegular {
+    background: var(--c-bg-input);
+    color: var(--gray-600);
+    border: 1px solid var(--c-border);
+}
+
+.promoContainer {
+    width: 100%;
+    max-width: 440px;
+    margin: 32px auto 0;
+    display: flex;
+    gap: 8px;
+    background: var(--c-bg-card);
+    padding: 6px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--c-border);
+    transition: border-color var(--duration-standard) ease;
+}
+
+.promoContainer:focus-within {
+    border-color: var(--c-border-hover);
+}
+
+.promoInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0 18px;
+    color: var(--near-black);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    height: 40px;
+    outline: none;
+}
+
+.promoInput::placeholder {
+    color: var(--gray-400);
+}
+
+.promoButton {
+    height: 40px;
+    padding: 0 20px;
+    background: var(--c-accent);
+    color: var(--black);
+    border: none;
+    border-radius: var(--radius-button);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--duration-standard) var(--transition-premium);
+    white-space: nowrap;
+}
+
+.promoButton:hover {
+    background: var(--c-accent-hover);
+    transform: translateY(-1px);
+}
+
+.message {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.success {
+    color: var(--c-accent-hover);
+}
+
+.error {
+    color: #f87171;
+}
+
+/* ========== Teacher Promo ========== */
+.teacherPromo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 32px;
+    padding: 12px 24px;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-pill);
+    max-width: fit-content;
+}
+
+.teacherPromoIcon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.teacherPromoText {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.teacherPromoLink {
+    color: var(--near-black);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.teacherPromoLink:hover {
+    color: var(--c-accent-hover);
+}
+
+@media (max-width: 768px) {
+    .mainContent {
+        padding: 84px 16px 80px;
+        gap: 36px;
+    }
+
+    .plansGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        max-width: 420px;
+    }
+
+    .card {
+        padding: 28px 24px;
+    }
+
+    .priceValue {
+        font-size: 32px;
+    }
+
+    .button {
+        width: 100%;
+        height: 42px;
+    }
+
+    .teacherPromo {
+        border-radius: 16px;
+        flex-direction: column;
+        text-align: center;
+        padding: 16px 20px;
+    }
+
+    .promoContainer {
+        max-width: 100%;
+    }
+}

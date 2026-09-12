@@ -1,0 +1,125 @@
+.googleDriveButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 48px;
+    padding: 0 24px;
+    border-radius: 100px;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    background: #ede8e0;
+    color: #0d0c0b;
+    border: none;
+    transition: background 0.2s ease, transform 0.1s ease;
+    min-width: 280px;
+}
+
+.googleDriveButton:hover:not(:disabled) {
+    background: #faf92f;
+    color: #0d0c0b;
+}
+
+.googleDriveButton:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.googleDriveButton:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: #ede8e0;
+    color: #0d0c0b;
+}
+
+.buttonContent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon {
+    width: 18px;
+    height: 18px;
+}
+
+.hint {
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #666360;
+    text-align: center;
+    max-width: 450px;
+    padding: 0 16px;
+    margin: 0;
+    align-self: center;
+    width: 100%;
+}
+
+.errorContainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #f87171;
+}
+
+.noticeContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 450px;
+    box-sizing: border-box;
+    background: #141312;
+    border: 1px solid #282522;
+}
+
+.noticeRow {
+    display: flex;
+    align-items: start;
+    gap: 8px;
+}
+
+.noticeContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #9e988f;
+}
+
+.noticeTitle {
+    font-weight: 400;
+    color: #ede8e0;
+    font-size: 13px;
+    margin: 0;
+}
+
+.noticeText {
+    margin: 0;
+}
+
+.noticeInstructions {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #666360;
+    margin: 0;
+}

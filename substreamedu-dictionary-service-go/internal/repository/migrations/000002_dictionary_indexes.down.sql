@@ -1,0 +1,11 @@
+DROP INDEX IF EXISTS idx_outbox_events_status_created;
+DROP INDEX IF EXISTS idx_dictionary_user_due_filter;
+DROP INDEX IF EXISTS idx_dictionary_user_status_due;
+DROP INDEX IF EXISTS idx_dictionary_user_resource;
+DROP INDEX IF EXISTS idx_dictionary_is_leech;
+DROP INDEX IF EXISTS idx_dictionary_embedding;
+DROP INDEX IF EXISTS idx_dictionary_resource_name_trgm;
+DROP INDEX IF EXISTS idx_dictionary_pagination;
+DROP INDEX IF EXISTS idx_dictionary_learning_due;
+DROP INDEX IF EXISTS idx_dictionary_srs;
+DROP INDEX IF EXISTS idx_dictionary_user_id;

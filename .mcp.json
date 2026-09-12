@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "codebase-memory": {
+      "command": "codebase-memory-mcp",
+      "args": [
+        "--workspace",
+        "/Users/test/Desktop/substreamedu-go"
+      ]
+    }
+  }
+}

@@ -1,0 +1,329 @@
+.container {
+    padding: 120px 2rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: #ffffff;
+}
+
+.header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.searchContainer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    box-shadow: none;
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filterButton {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid #2a2a2a;
+    color: #888888;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.filterButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+.activeFilter {
+    background: var(--accent-blue, #0045e6);
+    color: #ffffff;
+    border-color: var(--accent-blue, #0045e6);
+}
+
+.primaryButton {
+    background: #FFFFFF;
+    color: #000000;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+}
+
+.primaryButton:hover {
+    background: #0045e6;
+    color: #FFFFFF;
+    border-color: #0045e6;
+    transform: translateY(-2px);
+}
+
+.sortSelect {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid #2a2a2a;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.sortSelect:focus {
+    border-color: var(--accent-blue, #0045e6);
+    background: #1a1a1a;
+}
+
+.searchInput {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    width: 250px;
+}
+
+.searchInput::placeholder {
+    color: #888888;
+    opacity: 0.6;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.statCard {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid #2a2a2a;
+    padding: 1.5rem;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: none;
+}
+
+.statCard:hover {
+    transform: translateY(-5px);
+    background: rgba(25, 25, 25, 0.9);
+    box-shadow: none;
+}
+
+.statLabel {
+    color: #888888;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.statValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.tableContainer {
+    background: #0a0a0a;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid #2a2a2a;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    font-size: 1.2rem;
+    color: var(--text-secondary, #525252);
+    font-weight: 500;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.dots {
+    color: var(--text-secondary, #525252);
+    padding: 0 0.5rem;
+    font-weight: 600;
+}
+
+.pageButton {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    box-shadow: none;
+}
+
+.pageButton:hover:not(:disabled) {
+    background: #1a1a1a;
+    border-color: #333333;
+    transform: translateY(-1px);
+}
+
+.pageButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: transparent;
+    box-shadow: none;
+}
+
+.activePage {
+    background: var(--accent-blue, #0045e6);
+    color: white;
+    border: none;
+}
+
+.activePage:hover:not(:disabled) {
+    background: var(--accent-blue-hover, #0038c2);
+}
+
+/* Details Modal */
+.modalBackdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 24px;
+    padding: 2.5rem;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: none;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.modalHeader h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.closeButton {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #888888;
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+.detailsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.detailLabel {
+    color: #888888;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.detailValue {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ffffff;
+}
+
+.loadingStats {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-secondary, #525252);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 84px 1rem 1.5rem;
+    }
+}

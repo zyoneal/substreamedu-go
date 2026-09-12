@@ -1,0 +1,124 @@
+/* === SCROLLING TEXT WALL === */
+
+.wall {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+
+  /* 3D perspective container */
+  perspective: 550px;
+  perspective-origin: 50% 50%;
+
+  /* Pure alpha mask: text smoothly dissolves to 100% transparency with no solid overlays */
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, #000000 15%, rgba(0, 0, 0, 0.45) 50%, transparent 75%);
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, #000000 15%, rgba(0, 0, 0, 0.45) 50%, transparent 75%);
+}
+
+.perspective {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Apply 3D rotation to tilt the text plane */
+  transform: rotateX(24deg) scale(1.18);
+  transform-style: preserve-3d;
+}
+
+.scrollTrack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+
+  /* Infinite upward scroll animation */
+  animation: scrollUp 65s linear infinite;
+}
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0) translateZ(0);
+  }
+  100% {
+    /* Move up by exactly 1/3 of content since we have 3 copies */
+    transform: translateY(-33.333%) translateZ(0);
+  }
+}
+
+.textLine {
+  display: block;
+  font-family: var(--font-sans, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+  font-size: clamp(0.95rem, 1.4vw, 1.25rem);
+  font-weight: 300;
+  color: rgba(237, 232, 224, 0.38);
+  letter-spacing: -0.01em;
+  line-height: 2.1;
+  text-align: center;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.highlight {
+  font-weight: 500;
+  color: var(--white, #ffffff);
+}
+
+/* Hide all solid overlays to avoid any visible box or sharp boundaries */
+.fadeTop,
+.fadeBottom,
+.fadeLeft,
+.fadeRight,
+.vignette {
+  display: none;
+}
+
+/* === Responsive adjustments === */
+
+@media (max-width: 768px) {
+  .wall {
+    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, #000000 20%, rgba(0, 0, 0, 0.45) 55%, transparent 80%);
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, #000000 20%, rgba(0, 0, 0, 0.45) 55%, transparent 80%);
+  }
+
+  .perspective {
+    transform: rotateX(20deg) scale(1.1);
+  }
+
+  .textLine {
+    font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+    line-height: 2.0;
+  }
+
+  .scrollTrack {
+    gap: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wall {
+    perspective: 420px;
+    -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 50%, #000000 20%, rgba(0, 0, 0, 0.45) 55%, transparent 82%);
+    mask-image: radial-gradient(ellipse 85% 70% at 50% 50%, #000000 20%, rgba(0, 0, 0, 0.45) 55%, transparent 82%);
+  }
+
+  .perspective {
+    transform: rotateX(16deg) scale(1.05);
+  }
+
+  .textLine {
+    font-size: 0.75rem;
+    line-height: 1.9;
+  }
+}
+
+/* === Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  .scrollTrack {
+    animation-duration: 300s;
+  }
+}

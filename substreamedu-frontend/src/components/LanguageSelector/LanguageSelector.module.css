@@ -1,0 +1,195 @@
+.container {
+    position: relative;
+    display: inline-block;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+}
+
+.button:hover .currentLang {
+    color: #ffffff;
+}
+
+.currentLang {
+    font-family: var(--font-body), sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.2;
+    color: #525252;
+    text-align: left;
+    transition: color 0.15s ease;
+    letter-spacing: -0.01em;
+}
+
+.notSelected {
+    color: #FF4444 !important;
+    /* Red to indicate action needed */
+    font-weight: 500;
+}
+
+.notSelectedChevron {
+    color: #FF4444 !important;
+}
+
+.button:hover .currentLang.notSelected {
+    color: #ff6666 !important;
+}
+
+.button:hover .chevronIcon.notSelectedChevron {
+    color: #ff6666 !important;
+}
+
+.chevronWrapper {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    opacity: 0.8;
+}
+
+.chevronIcon {
+    color: #525252;
+    /* Same color as text */
+    transition: color 0.15s ease;
+}
+
+.button:hover .chevronIcon {
+    color: #ffffff;
+}
+
+.dropdown {
+    position: absolute;
+    right: 0;
+    left: auto;
+    top: calc(100% + 8px);
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    box-shadow: none;
+    min-width: 220px;
+    width: auto;
+    margin: 0;
+    padding: 12px 0;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+/* Premium Scrollbar Styles applied to the dropdown */
+.dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sectionTitle {
+    padding: 12px 20px 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9CA3AF;
+    font-weight: 600;
+    font-family: var(--font-body), sans-serif;
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    z-index: 1;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.scrollArea {
+    /* Removed nested scroll logic */
+    max-height: none;
+    overflow-y: visible;
+}
+
+.item {
+    padding: 10px 20px;
+    color: #525252;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+}
+
+.item:hover,
+.item:focus {
+    color: #000000;
+    background: rgba(0, 0, 0, 0.03);
+    outline: none;
+}
+
+.item[aria-selected="true"] {
+    color: #000000;
+    background: rgba(0, 0, 0, 0.03);
+    font-weight: 700;
+}
+
+.checkIcon {
+    display: inline-block;
+    color: #000000;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 8px 0;
+}
+
+@media (max-width: 1400px) {
+    .currentLang {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 1280px) {
+    .currentLang {
+        font-size: 13px;
+    }
+
+    .chevronWrapper {
+        width: 14px;
+        height: 14px;
+    }
+
+    .chevronIcon {
+        width: 14px;
+        height: 14px;
+    }
+}

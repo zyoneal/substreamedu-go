@@ -1,0 +1,274 @@
+.container {
+  width: 100%;
+  max-width: 620px;
+  background: #141312;
+  border: 1px solid #282522;
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+}
+
+.textSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: stretch;
+  text-align: left;
+}
+
+.title {
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.25;
+  color: #ede8e0;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.description {
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #b0a99e;
+  margin: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1a1917;
+  border: 1px solid #282522;
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.inputContainer:hover {
+  border-color: #3d3934;
+}
+
+.inputContainer:focus-within {
+  border-color: #ede8e0;
+  background: #1a1917;
+}
+
+.inputContainer.valid {
+  border-color: #4ade80;
+}
+
+.inputContainer.invalid {
+  border-color: #ef4444;
+}
+
+.youtubeIconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.youtubeIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ede8e0;
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: #666360;
+  font-weight: 300;
+}
+
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+  color: #4ade80;
+  stroke-width: 2.5px;
+  flex-shrink: 0;
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+  color: #666360;
+}
+
+.clearButton:hover {
+  color: #ede8e0;
+  background: #1e1c1a;
+}
+
+.pasteButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+  color: #666360;
+}
+
+.pasteButton:hover {
+  color: #ede8e0;
+  background: #1e1c1a;
+}
+
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f87171;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.errorAlertIcon {
+  color: #ef4444;
+  font-size: 14px;
+}
+
+.buttonSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.loadButton {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 100px;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: #ede8e0;
+  color: #000000;
+  border: none;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.loadButton:hover:not(:disabled) {
+  background: #faf92f;
+  color: #000000;
+}
+
+.loadButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.loadButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #ede8e0;
+  color: #000000;
+}
+
+.buttonText {
+  font-weight: 500;
+  font-size: 13px;
+  color: inherit;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.hint {
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #666360;
+  text-align: left;
+  margin: 0;
+  width: 100%;
+}
+
+@media screen and (max-width: 767px) {
+  .container {
+    max-width: 100%;
+    padding: 20px 16px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .description {
+    font-size: 12px;
+  }
+
+  .inputContainer {
+    width: 100%;
+    padding: 8px 12px;
+  }
+
+  .loadButton {
+    height: 44px;
+    font-size: 12px;
+  }
+
+  .hint {
+    font-size: 10px;
+  }
+}
