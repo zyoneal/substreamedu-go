@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
+import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleCleaner';
 
 import styles from './css/SubtitleViewer.module.css';
 import { LanguageContext } from "../LanguageContext";
@@ -89,7 +90,10 @@ const SubtitleViewer: React.FC = () => {
         setError('');
         try {
             const data = await SubtitleService.fetchSubtitles(fileId);
-            setSubtitles(data);
+            const sanitized = Array.isArray(data)
+                ? data.map(s => typeof s === 'string' ? cleanSubtitleText(s) : cleanSubtitleText(s?.text || ''))
+                : [];
+            setSubtitles(sanitized);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred.');
         } finally {
@@ -378,7 +382,7 @@ const SubtitleViewer: React.FC = () => {
                 return line.trim();
             }
         }
-        const cleanedText = text.replace(/\s+/g, ' ').trim();
+        const cleanedText = cleanSubtitleSelection(text);
         const regex = new RegExp(`[^.!?]*${selected}[^.!?]*[.!?]*`, 'g');
         const sentences = cleanedText.match(regex);
         if (sentences && sentences.length > 0) {

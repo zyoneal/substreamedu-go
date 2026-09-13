@@ -171,11 +171,25 @@ func addSub(subs *[]dto.SubtitleResponseDto, id *int64, start, end, text string,
 	*id++
 }
 
-var cleanTagsRegex = regexp.MustCompile("<[^>]*>")
+var (
+	cleanTagsRegex    = regexp.MustCompile(`<[^>]*>`)
+	assTagsRegex      = regexp.MustCompile(`\{[^}]*\}`)
+	assLineBreakRegex = regexp.MustCompile(`\\[Nn]`)
+	assSpaceRegex     = regexp.MustCompile(`\\h`)
+)
 
 func CleanSubtitleText(text string) string {
+	// 1. Strip ASS/SSA style override tags and comments {...}
+	text = assTagsRegex.ReplaceAllString(text, "")
+	// 2. Strip HTML tags <...>
 	text = cleanTagsRegex.ReplaceAllString(text, "")
+	// 3. Replace ASS hard spaces \h with space
+	text = assSpaceRegex.ReplaceAllString(text, " ")
+	// 4. Replace ASS hard and soft linebreaks \N and \n with space
+	text = assLineBreakRegex.ReplaceAllString(text, " ")
+	// 5. Unescape HTML entities
 	text = html.UnescapeString(text)
+	// 6. Collapse multiple whitespaces and trim
 	return strings.Join(strings.Fields(text), " ")
 }
 

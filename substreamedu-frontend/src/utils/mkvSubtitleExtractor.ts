@@ -1,4 +1,5 @@
 import { SubDLSubtitle } from '../services/SubtitleService';
+import { cleanSubtitleText } from './subtitleCleaner';
 
 import { SubtitleParser } from 'matroska-subtitles';
 
@@ -82,11 +83,13 @@ export const extractSubtitlesFromMkv = async (file: File): Promise<{
             if (track && track.isSupported) {
                 const startTime = formatTimestamp(subtitle.time);
                 const endTime = formatTimestamp(subtitle.time + subtitle.duration);
-                const text = subtitle.text || '';
+                const text = cleanSubtitleText(subtitle.text || '');
 
-                const index = track.content.length + 1;
-                const entry = `${index}\n${startTime} --> ${endTime}\n${text}\n`;
-                track.content.push(entry);
+                if (text) {
+                    const index = track.content.length + 1;
+                    const entry = `${index}\n${startTime} --> ${endTime}\n${text}\n`;
+                    track.content.push(entry);
+                }
             }
         });
 

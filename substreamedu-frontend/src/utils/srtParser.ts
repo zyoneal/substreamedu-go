@@ -1,4 +1,6 @@
 
+import { cleanSubtitleText } from './subtitleCleaner';
+
 export interface ParsedSubtitle {
     id: number;
     name: string;
@@ -33,14 +35,16 @@ export function parseSRT(srtContent: string, subtitleName: string): ParsedSubtit
         
         if (!line) {
             if (currentSubtitle.startTimeMs !== undefined && textLines.length > 0) {
-                
-                subtitles.push({
-                    id: currentSubtitle.id || subtitles.length + 1,
-                    name: subtitleName,
-                    startTimeMs: currentSubtitle.startTimeMs,
-                    endTimeMs: currentSubtitle.endTimeMs || 0,
-                    text: textLines.join('\n')
-                });
+                const cleanedText = cleanSubtitleText(textLines.join('\n'));
+                if (cleanedText) {
+                    subtitles.push({
+                        id: currentSubtitle.id || subtitles.length + 1,
+                        name: subtitleName,
+                        startTimeMs: currentSubtitle.startTimeMs,
+                        endTimeMs: currentSubtitle.endTimeMs || 0,
+                        text: cleanedText
+                    });
+                }
                 
                 
                 currentSubtitle = {};
@@ -69,13 +73,16 @@ export function parseSRT(srtContent: string, subtitleName: string): ParsedSubtit
     
     
     if (currentSubtitle.startTimeMs !== undefined && textLines.length > 0) {
-        subtitles.push({
-            id: currentSubtitle.id || subtitles.length + 1,
-            name: subtitleName,
-            startTimeMs: currentSubtitle.startTimeMs,
-            endTimeMs: currentSubtitle.endTimeMs || 0,
-            text: textLines.join('\n')
-        });
+        const cleanedText = cleanSubtitleText(textLines.join('\n'));
+        if (cleanedText) {
+            subtitles.push({
+                id: currentSubtitle.id || subtitles.length + 1,
+                name: subtitleName,
+                startTimeMs: currentSubtitle.startTimeMs,
+                endTimeMs: currentSubtitle.endTimeMs || 0,
+                text: cleanedText
+            });
+        }
     }
     
     return subtitles;

@@ -7,6 +7,7 @@ import { FilmSelectionModal } from './components/FilmSelectionModal';
 import { ReelGeneratorModal } from './components/ReelGeneratorModal';
 import { parseSRT } from '../../utils/srtParser';
 import { extractMovieYear } from '../../utils/videoNameUtils';
+import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleCleaner';
 import styles from "../../components/VideoPage/css/VideoPlayerPopover.module.css";
 import { LanguageContext } from "../LanguageContext";
 import { AuthContext } from "../../store/AuthContext";
@@ -88,8 +89,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
     const { data: userDictionaryItems } = useUserDictionaryItemsLight();
 
+    const sanitizeSubtitles = useCallback((subs: Subtitle[] | any[] | null): Subtitle[] | null => {
+        if (!subs || !Array.isArray(subs)) return null;
+        return subs.map(sub => ({
+            ...sub,
+            text: cleanSubtitleText(sub.text || '')
+        }));
+    }, []);
+
     const [subtitlesForVideo, setSubtitlesForVideo] = useState<Subtitle[] | null>(
-        sessionStorage.getItem('subtitles') ? JSON.parse(sessionStorage.getItem('subtitles')!) : null
+        sessionStorage.getItem('subtitles') ? sanitizeSubtitles(JSON.parse(sessionStorage.getItem('subtitles')!)) : null
     );
 
     const isMountedRef = useRef(true);
@@ -522,9 +531,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             sessionStorage.setItem('subtitleName', subtitleName);
 
             const data = await SubtitleService.fetchSubtitlesForVideo(subtitleName);
-            setSubtitlesForVideo(data);
+            const sanitized = sanitizeSubtitles(data);
+            setSubtitlesForVideo(sanitized);
 
-            sessionStorage.setItem('videoSubtitles', JSON.stringify(data));
+            sessionStorage.setItem('videoSubtitles', JSON.stringify(sanitized || data));
 
             if (Array.isArray(data) && data.length > 0) {
                 setFileName(data[0].name);
@@ -1069,8 +1079,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             try {
                 setIsYoutubeSubsLoading(true);
                 const data = await SubtitleService.fetchSubtitlesForYoutube(id);
-                setSubtitlesForVideo(data);
-                sessionStorage.setItem('videoSubtitles', JSON.stringify(data));
+                const sanitized = sanitizeSubtitles(data);
+                setSubtitlesForVideo(sanitized);
+                sessionStorage.setItem('videoSubtitles', JSON.stringify(sanitized || data));
                 if (Array.isArray(data) && data.length > 0) {
                     setFileName(data[0].name || id);
                     sessionStorage.setItem('subtitleName', data[0].name || id);
@@ -1097,7 +1108,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
             if (storedSubs && storedSubtitleName && isSameVideo) {
                 const data = JSON.parse(storedSubs);
-                setSubtitlesForVideo(data);
+                setSubtitlesForVideo(sanitizeSubtitles(data));
 
                 if (storedDictionaryItems) {
                     const parsedItems = JSON.parse(storedDictionaryItems) as DictionaryItem[];
@@ -1190,7 +1201,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     };
 
     const cleanTextForSelection = (text: string): string => {
-        return text.replace(/\s+/g, ' ').trim();
+        return cleanSubtitleSelection(text);
     };
 
         const findSentenceForSubtitle = (selected: string | null): string | null => {
@@ -1286,14 +1297,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
      */
     const getExtendedSubtitleContext = (): string => {
         if (!Array.isArray(subtitlesForVideo) || !currentSubtitle) {
-            return currentSubtitle || '';
+            return cleanSubtitleSelection(currentSubtitle || '');
         }
 
         // Find current subtitle index
         const currentIndex = subtitlesForVideo.findIndex(sub => sub.text === currentSubtitle);
 
         if (currentIndex === -1) {
-            return currentSubtitle;
+            return cleanSubtitleSelection(currentSubtitle);
         }
 
         // Collect context: previous + current + next
@@ -1301,18 +1312,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
         // Add previous subtitle (if exists)
         if (currentIndex > 0) {
-            contextParts.push(subtitlesForVideo[currentIndex - 1].text);
+            contextParts.push(cleanSubtitleText(subtitlesForVideo[currentIndex - 1].text));
         }
 
         // Add current subtitle
-        contextParts.push(currentSubtitle);
+        contextParts.push(cleanSubtitleText(currentSubtitle));
 
         // Add next subtitle (if exists)
         if (currentIndex < subtitlesForVideo.length - 1) {
-            contextParts.push(subtitlesForVideo[currentIndex + 1].text);
+            contextParts.push(cleanSubtitleText(subtitlesForVideo[currentIndex + 1].text));
         }
 
-        return contextParts.join(' ');
+        return cleanSubtitleSelection(contextParts.join(' '));
     };
 
     const showSelectionTooltip = (range: Range) => {
@@ -1461,21 +1472,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const formatSubtitleForDisplay = (text: string): string => {
         if (!text) return '';
 
-        // Normalize CRLF to LF and remove trailing/leading whitespace per line
-        let formatted = text.replace(/\r\n/g, '\n');
+        // 1. Sanitize ASS/SSA tags, HTML markup, and convert \N into \n
+        let formatted = cleanSubtitleText(text);
 
-        
-        
-        formatted = formatted.replace(/\n(?![ \t]*-)/g, ' ');
+        // 2. Collapse non-dialogue newlines into a single space
+        formatted = formatted.replace(/\n(?![ \t]*[-–—])/g, ' ');
 
-        
-        
-        formatted = formatted.replace(/([^\n])\s+-\s+/g, '$1\n- ');
+        // 3. Ensure dialogue lines start on fresh lines with '- '
+        formatted = formatted.replace(/([^\n])\s+[-–—]\s+/g, '$1\n- ');
+        formatted = formatted.replace(/\s+[-–—]\s+/g, '\n- ');
 
-        
-        formatted = formatted.replace(/\s+-\s+/g, '\n- ');
-
-        
+        // 4. Collapse duplicate horizontal spaces and trim
         return formatted.replace(/[ \t]{2,}/g, ' ').trim();
     };
 

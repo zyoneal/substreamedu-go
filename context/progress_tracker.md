@@ -13,6 +13,7 @@
   - Purge Legacy Reverso Integration & Dead Types (ADR-013)
   - Purge Dead, Unreferenced, and Obsolete Code across Frontend & Go Services (ADR-019)
   - Dynamic Diagonal Resize & Zero-Scroll Screen-Fit Player (ADR-027)
+  - Subtitle ASS/SSA Formatting & Tags Sanitization (ADR-029)
 
 ---
 
@@ -48,10 +49,20 @@
 | **ADR-026** | 2026-09-12 | Refine Video Player Seek Step to 4s | Adjust player keyboard shortcuts (`ArrowLeft` / `ArrowRight`) and UI seek buttons (`RotateCcw` / `RotateCw`) to 4 seconds. | Provides comfortable, phrase-level navigation when listening to dialogues and subtitles in language learning flow without jumping too far. |
 | **ADR-027** | 2026-09-12 | Auto-Fit Zero-Scroll Player Sizing & Dynamic Per-Video Aspect Ratio | Eliminate manual resize slider clutter; set player to dynamic max-fit no scroll by default; dynamically detect video natural aspect ratio (`videoWidth / videoHeight`) on metadata load and calculate exact max viewport bounds (`window.innerHeight - 152px overhead`). | Zero vertical or horizontal scrolling for any video geometry (16:9, 21:9, 4:3, vertical); seamless automatic scaling; Theater mode button / shortcut `T` available for compact toggle. |
 | **ADR-028** | 2026-09-12 | Transparent Feature Grid & Card Bento with Inner Divider Borders | Remove solid background colors from `.featureGrid` and `.featureCard` to blend seamlessly with dark canvas ambient lighting, while preserving 1px inner grid dividers between cells across responsive breakpoints. | Eliminates blocky opaque rectangular backgrounds; ensures seamless visual depth and ambient glow behind capability cards with crisp interior divider lines. |
+| **ADR-029** | 2026-09-13 | Sanitize ASS/SSA Override Tags, HTML Markup, and `\N` Escapes Across Subtitle Pipelines | Subtitles extracted from MKV files (SSA/ASS tracks) or downloaded from subtitle providers contained raw ASS override tags (`{\i1}`, `{\i0}`), escaped hard line breaks (`\N`), hard spaces (`\h`), and HTML tags. This glued adjacent words together (`be\Nif`), leaked raw markup into rendered subtitles, and corrupted sentence context for AI translation and flashcard generation. | Created centralized `subtitleCleaner.ts` utility (`cleanSubtitleText`, `cleanSubtitleSelection`); sanitized subtitle parsing in `srtParser.ts` and extraction in `mkvSubtitleExtractor.ts`; updated `VideoPlayer.tsx` display and selection pipeline to strip ASS/HTML tags and cleanly separate dialogue lines (`- `, `— `); updated Go backend parser `CleanSubtitleText`. 100% unit tests pass across TypeScript and Go. |
 
 ---
 
 ## Session Notes
+- **Subtitle ASS/SSA Formatting & Tags Sanitization (Completed 2026-09-13)**:
+  - Created centralized utility `subtitleCleaner.ts` with `cleanSubtitleText` and `cleanSubtitleSelection`: strips ASS/SSA override tags (`{\i1}`, `{\pos()}`, `{\c&H...&}`, etc.), converts ASS hard/soft breaks (`\N`, `\n`) into real newlines (`\n`), converts ASS hard spaces (`\h`) into regular spaces, decodes HTML entities, and normalizes duplicate whitespace.
+  - Integrated `cleanSubtitleText` in `mkvSubtitleExtractor.ts` so embedded MKV subtitle tracks are emitted as valid, clean SRT blocks without raw SSA tags.
+  - Integrated `cleanSubtitleText` into `srtParser.ts` so any uploaded or fetched `.srt` file is sanitized at parse time.
+  - Refactored `formatSubtitleForDisplay` in `VideoPlayer.tsx` to sanitize tags before collapsing non-dialogue newlines into spaces and preserving dialogue lines (`- `, `— `) on distinct lines.
+  - Updated `cleanTextForSelection` and `getExtendedSubtitleContext` in `VideoPlayer.tsx` to ensure word click-to-translate matching and dictionary sentence saves receive pristine context without markup.
+  - Enhanced Go backend `CleanSubtitleText` in `substreamedu-media-service-go/internal/parser/subtitle_parser.go` with regex patterns for ASS override tags and `\N`/`\h` escapes.
+  - Added unit test suites `subtitleCleaner.test.ts`, `srtParser.test.ts`, and `subtitle_parser_test.go` verifying all user-reported cases (`be\Nif`, `{\i1}I'm Teagan Tao.{\i0}`, dialogue dashes, and punctuation).
+  - Verified 100% test pass rate on frontend Jest (16 suites, 60 tests), TypeScript compile (`tsc --noEmit`), production build (`npm run build`), and Go tests (`go test ./...` in `media-service`).
 - **Transparent Feature Grid & Card Bento with Inner Divider Borders (Completed 2026-09-12)**:
   - Removed solid `background: var(--gray-200)` from `.featureGrid` and `background: var(--black)` / `:hover` solid background from `.featureCard`.
   - Converted divider system to pure interior card borders (`border-right: 1px solid var(--gray-200)` and `border-bottom: 1px solid var(--gray-200)`) with edge-suppression (`:nth-child(3n) { border-right: none }`, `:nth-child(n+4) { border-bottom: none }`).
