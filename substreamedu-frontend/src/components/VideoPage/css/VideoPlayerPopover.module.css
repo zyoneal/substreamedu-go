@@ -3330,13 +3330,28 @@
 }
 
 .onboardingGuideWrapper {
-    width: 100%;
+    position: fixed;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    width: auto;
+    max-width: min(760px, calc(100vw - 32px));
     display: flex;
     justify-content: center;
-    margin-top: 14px;
-    z-index: 20;
+    margin-top: 0;
     padding: 0 16px;
     box-sizing: border-box;
+    pointer-events: none;
+    transition: top 0.25s ease, opacity 0.25s ease;
+}
+
+@media (max-width: 768px) {
+    .onboardingGuideWrapper {
+        top: 56px;
+        max-width: calc(100vw - 16px);
+        padding: 0 8px;
+    }
 }
 
 ::-webkit-full-screen .videoWrapper,
@@ -3735,6 +3750,23 @@ video[playsinline] {
 .saveButton svg {
     stroke: currentColor;
     transition: all 0.2s ease;
+}
+
+.saveButtonHighlight {
+    background: #faf92f !important;
+    color: #000000 !important;
+    animation: saveButtonPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes saveButtonPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 2px #faf92f, 0 0 14px rgba(250, 249, 47, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 4px #faf92f, 0 0 26px rgba(250, 249, 47, 0.9);
+        transform: scale(1.04);
+    }
 }
 
 .reelButton {

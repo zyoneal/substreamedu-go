@@ -114,7 +114,7 @@ export const OnboardingGuideBar: React.FC<OnboardingGuideBarProps> = ({
                                     </strong>
                                     {intl.formatMessage({
                                         id: 'onboarding.step1Desc3',
-                                        defaultMessage: ' in the subtitles above to see its instant translation.'
+                                        defaultMessage: ' in the subtitles to see its instant translation.'
                                     })}
                                 </>
                             )}

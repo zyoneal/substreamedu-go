@@ -4,41 +4,43 @@
 
 .guideBarContainer {
   width: 100%;
-  margin: 0 0 14px 0;
+  margin: 0;
   display: flex;
   justify-content: center;
   position: relative;
   z-index: 25;
-  animation: guideSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+  animation: guideSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes guideSlideDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-14px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .guideCard {
   width: 100%;
-  max-width: 760px;
-  background: rgba(20, 19, 17, 0.92);
-  border: 1px solid rgba(250, 249, 47, 0.25);
-  border-radius: 12px;
-  padding: 12px 16px;
+  max-width: 720px;
+  background: rgba(18, 17, 15, 0.94);
+  border: 1px solid rgba(250, 249, 47, 0.28);
+  border-radius: 16px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(250, 249, 47, 0.06);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(250, 249, 47, 0.1);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .guideCard::before {
@@ -52,13 +54,13 @@
 }
 
 .guideCard.step2 {
-  border-color: rgba(250, 249, 47, 0.45);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 25px rgba(250, 249, 47, 0.12);
+  border-color: rgba(250, 249, 47, 0.5);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(250, 249, 47, 0.18);
 }
 
 .guideCard.completed {
-  border-color: rgba(74, 222, 128, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.5);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 24px rgba(74, 222, 128, 0.18);
 }
 
 .guideCard.completed::before {

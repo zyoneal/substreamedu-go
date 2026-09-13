@@ -17,8 +17,6 @@ import Eye from 'lucide-react/dist/esm/icons/eye';
 import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
 import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
-import RectangleHorizontal from 'lucide-react/dist/esm/icons/rectangle-horizontal';
-import Shrink from 'lucide-react/dist/esm/icons/shrink';
 import Pause from 'lucide-react/dist/esm/icons/pause';
 import Play from 'lucide-react/dist/esm/icons/play';
 import RotateCcw from 'lucide-react/dist/esm/icons/rotate-cw';
@@ -2644,22 +2642,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             >
                                                 {showSubtitles ? <EyeOff size={24} /> : <Eye size={24} />}
                                             </button>
-                                            {!isFullscreen && (
-                                                <button
-                                                    className={`${styles.controlButton} ${isMaxFit ? styles.controlButtonActive : ''}`}
-                                                    onClick={toggleMaxFit}
-                                                    aria-label={isMaxFit 
-                                                        ? intl.formatMessage({ id: 'videoPlayer.defaultSize', defaultMessage: 'Default size (T)' })
-                                                        : intl.formatMessage({ id: 'videoPlayer.fitScreen', defaultMessage: 'Fit to screen without scroll (T)' })
-                                                    }
-                                                    title={isMaxFit 
-                                                        ? intl.formatMessage({ id: 'videoPlayer.defaultSize', defaultMessage: 'Default size (T)' })
-                                                        : intl.formatMessage({ id: 'videoPlayer.fitScreen', defaultMessage: 'Fit to screen without scroll (T)' })
-                                                    }
-                                                >
-                                                    {isMaxFit ? <Shrink size={24} /> : <RectangleHorizontal size={24} />}
-                                                </button>
-                                            )}
                                             <button
                                                 className={styles.controlButton}
                                                 onClick={toggleFullscreen}
@@ -3072,7 +3054,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             !(translationData.translation && translationData.translation.includes('You have reached your free limit of 100 translations')) && (
                                                 <button
                                                     onClick={saveToDict}
-                                                    className={styles.saveButton}
+                                                    className={`${styles.saveButton} ${onboardingStep === 2 ? styles.saveButtonHighlight : ''}`}
                                                     title="Add to dictionary"
                                                 >
                                                     <span>SAVE</span>
