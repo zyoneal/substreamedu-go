@@ -628,13 +628,7 @@ const FlashcardsGame: React.FC = () => {
                                                     <div className={styles.startOverlayContent}>
                                                         <button
                                                             className={styles.startButton}
-                                                            onClick={() => {
-                                                                setHasStarted(true);
-                                                                
-                                                                if (currentWord.highlightedText) {
-                                                                    playTTS(decodeHtmlEntities(currentWord.highlightedText), currentWord.id, learningLanguage || 'en');
-                                                                }
-                                                            }}
+                                                            onClick={() => setHasStarted(true)}
                                                         >
                                                             <Play className={styles.startIcon} />
                                                             {intl.formatMessage({ id: 'srs.start_learning', defaultMessage: 'Start Learning' })}
