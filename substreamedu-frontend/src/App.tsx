@@ -15,6 +15,7 @@ import { IntlProvider } from 'react-intl';
 import TelegramFloatingButton from './components/ui/TelegramFloatingButton';
 import PremiumLimitModal from './components/PremiumLimitModal';
 import CinematicCursor from './components/HomePage/CinematicCursor';
+import ScrollToTop from './components/ScrollToTop';
 import { SUPPORTED_LANGUAGES } from './constants/languageConfig';
 
 import enMessages from './locales/en.json';
@@ -126,6 +127,7 @@ const App: React.FC = () => {
                     <LanguageContext.Provider value={languageContextValue}>
                         <IntlProvider locale="en" messages={enMessages}>
                             <div className="flex flex-col min-h-screen bg-canvas">
+                                <ScrollToTop />
                                 <CinematicCursor />
                                 {!isTiktokPage && !isLoginPage && <Header />}
                                 <main className="flex-1 bg-canvas pt-0 pb-0">
