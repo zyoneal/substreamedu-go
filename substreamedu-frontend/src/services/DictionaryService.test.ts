@@ -75,6 +75,25 @@ describe('DictionaryService & SRS Session Invariants', () => {
       expect(stats.sessionCards).toBe(50);
       expect(stats.sessionNewWords).toBe(23);
     });
+
+    it('correctly passes weekDays array from backend response', async () => {
+      const mockWeekStats = {
+        totalWords: 200,
+        streakDays: 3,
+        reviewedToday: false,
+        weekDays: [true, false, false, false, false, false, false],
+      };
+
+      (axiosService.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockWeekStats,
+        },
+      });
+
+      const stats = await DictionaryService.fetchDashboardStats();
+      expect(stats.weekDays).toEqual([true, false, false, false, false, false, false]);
+      expect(stats.reviewedToday).toBe(false);
+    });
   });
 
   describe('generateSessionSummary', () => {

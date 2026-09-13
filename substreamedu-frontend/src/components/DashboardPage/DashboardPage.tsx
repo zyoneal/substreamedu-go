@@ -44,6 +44,7 @@ interface DashboardStats {
     sessionNewWords?: number;
     streakDays: number;
     reviewedToday?: boolean;
+    weekDays?: boolean[];
 }
 
 const DAYS_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -148,9 +149,11 @@ const DashboardPage: React.FC = () => {
 
                         <div className={styles.streakWeekNodes}>
                             {DAYS_LETTERS.map((day, idx) => {
-                                const isActive = reviewedToday
-                                    ? idx <= currentDayIndex && (currentDayIndex - idx < activeStreakCount)
-                                    : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount);
+                                const isActive = stats?.weekDays && stats.weekDays.length === 7
+                                    ? stats.weekDays[idx]
+                                    : (reviewedToday
+                                        ? idx <= currentDayIndex && (currentDayIndex - idx < activeStreakCount)
+                                        : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount));
                                 const isToday = idx === currentDayIndex;
                                 return (
                                     <div key={idx} className={styles.weekNode}>
@@ -592,6 +595,7 @@ const DashboardPage: React.FC = () => {
                     dueToday={stats.dueToday}
                     sessionCards={stats.sessionCards}
                     reviewedToday={stats.reviewedToday}
+                    weekDays={stats.weekDays}
                 />
             )}
         </motion.div>

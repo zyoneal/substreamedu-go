@@ -4,11 +4,20 @@ import { baseURL } from '../constants/urls';
 import { AuthService } from './AuthService';
 import { debugLog } from '../utils/debug';
 
+const getClientTimezone = () => {
+  try {
+    return typeof Intl !== 'undefined' ? (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC') : 'UTC';
+  } catch {
+    return 'UTC';
+  }
+};
+
 const axiosService = axios.create({
   baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
     'Accept-Language': 'uk',
+    'X-Timezone': getClientTimezone(),
   },
 });
 
@@ -29,6 +38,11 @@ export const setupInterceptors = (
 
   reqInterceptorId = axiosService.interceptors.request.use((req) => {
     (req as any).metadata = { startTime: new Date() };
+
+    const tz = getClientTimezone();
+    if (tz) {
+      req.headers['X-Timezone'] = tz;
+    }
 
     const email = AuthService.getUserEmail();
     if (email) {

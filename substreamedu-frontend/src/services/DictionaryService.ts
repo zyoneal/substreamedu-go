@@ -302,6 +302,7 @@ const DictionaryService = {
     sessionNewWords?: number;
     streakDays: number;
     reviewedToday?: boolean;
+    weekDays?: boolean[];
   }> {
     try {
       const response = await axiosService.get(`${baseURL}api/dictionary/srs/stats`);
@@ -323,6 +324,7 @@ const DictionaryService = {
         sessionNewWords: sessionNewWords,
         streakDays: raw.streakDays ?? 0,
         reviewedToday: raw.reviewedToday ?? false,
+        weekDays: Array.isArray(raw.weekDays) ? raw.weekDays : undefined,
       };
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
@@ -337,6 +339,7 @@ const DictionaryService = {
         sessionNewWords: 0,
         streakDays: 0,
         reviewedToday: false,
+        weekDays: undefined,
       };
     }
   }

@@ -25,6 +25,7 @@ export interface StreakShareModalProps {
     dueToday: number;
     sessionCards?: number;
     reviewedToday?: boolean;
+    weekDays?: boolean[];
 }
 
 interface ConfettiParticle {
@@ -190,7 +191,8 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
     learningWords,
     dueToday,
     sessionCards,
-    reviewedToday = false
+    reviewedToday = false,
+    weekDays
 }) => {
     const intl = useIntl();
     const [theme, setTheme] = useState<StreakTheme>('solar');
@@ -509,9 +511,11 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
         DAYS_OF_WEEK.forEach((dayLabel, idx) => {
             const nodeCenterX = ringBoxX + step * idx + step / 2;
             const nodeCenterY = ringBoxY + 70;
-            const isActive = reviewedToday
-                ? idx <= currentDayIndex && (currentDayIndex - idx < activeStreakCount)
-                : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount);
+            const isActive = weekDays && weekDays.length === 7
+                ? weekDays[idx]
+                : (reviewedToday
+                    ? idx <= currentDayIndex && (currentDayIndex - idx < activeStreakCount)
+                    : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount));
             const isToday = idx === currentDayIndex;
 
             // Day label (top)
@@ -628,7 +632,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
                 else reject(new Error('Canvas export failed'));
             }, 'image/png');
         });
-    }, [streakDays, totalWords, learningWords, dueToday, sessionCards, reviewedToday, currentDayIndex, activeStreakCount, getMotto]);
+    }, [streakDays, totalWords, learningWords, dueToday, sessionCards, reviewedToday, currentDayIndex, activeStreakCount, getMotto, weekDays]);
 
     // Share text message
     const shareText = `🔥 I'm on a ${streakDays}-day learning streak on SubstreamEdu! 🚀 ${totalWords} words mastered. Keep the flame alive!`;
@@ -816,9 +820,11 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
                                 </div>
                                 <div className={styles.weekRingContainer}>
                                     {DAYS_OF_WEEK.map((day, idx) => {
-                                        const isActive = reviewedToday
-                                            ? idx <= currentDayIndex && (currentDayIndex - idx < activeStreakCount)
-                                            : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount);
+                                        const isActive = weekDays && weekDays.length === 7
+                                            ? weekDays[idx]
+                                            : (reviewedToday
+                                                ? idx <= currentDayIndex && (currentDayIndex - idx < activeStreakCount)
+                                                : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount));
                                         const isToday = idx === currentDayIndex;
                                         return (
                                             <div key={idx} className={styles.dayNode}>

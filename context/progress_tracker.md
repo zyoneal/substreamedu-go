@@ -14,6 +14,9 @@
   - Purge Dead, Unreferenced, and Obsolete Code across Frontend & Go Services (ADR-019)
   - Dynamic Diagonal Resize & Zero-Scroll Screen-Fit Player (ADR-027)
   - Subtitle ASS/SSA Formatting & Tags Sanitization (ADR-029)
+  - Purge Custom Trailing Cursor & Restore Native OS Pointer Precision (ADR-030)
+  - FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation (ADR-031)
+  - Sleek Bottom Floating Onboarding Toast Redesign (ADR-032)
 
 ---
 
@@ -50,10 +53,37 @@
 | **ADR-027** | 2026-09-12 | Auto-Fit Zero-Scroll Player Sizing & Dynamic Per-Video Aspect Ratio | Eliminate manual resize slider clutter; set player to dynamic max-fit no scroll by default; dynamically detect video natural aspect ratio (`videoWidth / videoHeight`) on metadata load and calculate exact max viewport bounds (`window.innerHeight - 152px overhead`). | Zero vertical or horizontal scrolling for any video geometry (16:9, 21:9, 4:3, vertical); seamless automatic scaling; Theater mode button / shortcut `T` available for compact toggle. |
 | **ADR-028** | 2026-09-12 | Transparent Feature Grid & Card Bento with Inner Divider Borders | Remove solid background colors from `.featureGrid` and `.featureCard` to blend seamlessly with dark canvas ambient lighting, while preserving 1px inner grid dividers between cells across responsive breakpoints. | Eliminates blocky opaque rectangular backgrounds; ensures seamless visual depth and ambient glow behind capability cards with crisp interior divider lines. |
 | **ADR-029** | 2026-09-13 | Sanitize ASS/SSA Override Tags, HTML Markup, and `\N` Escapes Across Subtitle Pipelines | Subtitles extracted from MKV files (SSA/ASS tracks) or downloaded from subtitle providers contained raw ASS override tags (`{\i1}`, `{\i0}`), escaped hard line breaks (`\N`), hard spaces (`\h`), and HTML tags. This glued adjacent words together (`be\Nif`), leaked raw markup into rendered subtitles, and corrupted sentence context for AI translation and flashcard generation. | Created centralized `subtitleCleaner.ts` utility (`cleanSubtitleText`, `cleanSubtitleSelection`); sanitized subtitle parsing in `srtParser.ts` and extraction in `mkvSubtitleExtractor.ts`; updated `VideoPlayer.tsx` display and selection pipeline to strip ASS/HTML tags and cleanly separate dialogue lines (`- `, `— `); updated Go backend parser `CleanSubtitleText`. 100% unit tests pass across TypeScript and Go. |
+| **ADR-030** | 2026-09-14 | Purge Custom Trailing Cursor & Restore Native OS Pointer Precision | The custom spring-animated trailing cursor (`CinematicCursor`) created a psychological perception of mouse smoothing / altered sensitivity, visual latency, and friction during precision tasks (word-by-word subtitle selection, flashcard review). | Removed global `<CinematicCursor />` from `App.tsx` and purged dead component files (`CinematicCursor.tsx`, `CinematicCursor.module.css`). Restores pure 1:1 native OS pointer physics, direct manipulation, and zero perceived latency across all routes. |
+| **ADR-031** | 2026-09-14 | FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation | Client in UTC+3 (e.g. Monday 00:41) was evaluated against server UTC (Sunday 21:41), marking reviewedToday: true for Sunday's reviews and causing client heuristic to place a false checkmark on Monday. Client-side heuristic calculation also broke at weekly calendar boundaries. | Standardized on user timezone awareness: frontend sends `X-Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone` via Axios; backend embeds tzdata (`_ "time/tzdata"`), groups PostgreSQL review dates via `((reviewed_at AT TIME ZONE 'UTC') AT TIME ZONE $tz)::date`, computes `dueCutoff` and `isToday` in user location, and emits explicit `weekDays: [bool; 7]` for the user's current week. |
+| **ADR-032** | 2026-09-14 | Sleek Bottom Floating Onboarding Toast Redesign | Fixed top-positioned onboarding guide bar (top: 56px) on mobile directly occluded the video stream and subtitles, squished titles into 4 broken vertical words (STEP 1 OF / 2: CLICK / TO / TRANSLATE), and left the close button stranded in the bottom-left. | Repositioned onboarding guide to a non-intrusive bottom floating toast (bottom: 24px desktop, bottom: 84px mobile above Telegram FAB); replaced heavy 2-step indicator circles with a sleek `1/2` badge; anchored close button to top-right; eliminated radioactive yellow glow for refined warm dark glassmorphism. |
 
 ---
 
 ## Session Notes
+- **FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation (Completed 2026-09-14)**:
+  - Fixed timezone discrepancy between UTC backend and local client timezone.
+  - Client sends `X-Timezone` via `AxiosService.ts` default headers and request interceptor.
+  - Backend extracts `X-Timezone` (or `?tz=...`), embeds `time/tzdata`, and evaluates `today`, `yesterday`, and `dueCutoff` in user's timezone.
+  - In PostgreSQL `GetUserReviewDates`, dates are converted to user's timezone: `CAST(((reviewed_at AT TIME ZONE 'UTC') AT TIME ZONE $2) AS DATE)`.
+  - Backend returns explicit `weekDays: [bool; 7]` for Monday through Sunday of user's current week.
+  - Frontend `DashboardPage.tsx` and `StreakShareModal.tsx` consume `weekDays` directly, eliminating client-side heuristic guesswork.
+  - Verified with Go unit tests (`go test -v ./internal/service -run TestStreakTimezone`) and TypeScript Jest suite (16 suites, 61 tests passed).
+- **Sleek Bottom Floating Onboarding Toast Redesign (Completed 2026-09-14)**:
+  - Repositioned `onboardingGuideWrapper` from obstructive fixed top banner (`top: 56px`) to sleek bottom floating toast (`bottom: 84px` on mobile above Telegram FAB, `bottom: 24px` on desktop).
+  - Redesigned `OnboardingGuideBar.tsx` and `.module.css`: replaced space-hogging dual circles with a clean `1 / 2` badge and single-line title.
+  - Moved `closeButton` to the standard top-right corner.
+  - Replaced radioactive yellow border with subtle dark glassmorphic card styling (`rgba(18, 17, 15, 0.94)`, `backdrop-filter: blur(20px)`, `border: 1px solid rgba(255, 255, 255, 0.12)`).
+  - Verified 100% test pass rate across Jest test suite (16 suites, 61 tests).
+
+---
+
+## Session Notes
+- **Restore Native OS Pointer Precision & Ambient Cleanliness (Completed 2026-09-14)**:
+  - Removed `<CinematicCursor />` and its import from `src/App.tsx`.
+  - Deleted `src/components/HomePage/CinematicCursor.tsx` and `CinematicCursor.module.css`.
+  - Removed global `cursor: none !important;` override from `src/index.css`, immediately restoring native OS cursor visibility on all elements.
+  - Removed mouse-following flashlight/torchlight (`interactiveSpotlight`) and its `mousemove` listener from `HomePage.tsx` and `HomePage.module.css`.
+  - Verified 100% test pass rate across Jest test suites and zero TypeScript errors (`tsc --noEmit`).
 - **Subtitle ASS/SSA Formatting & Tags Sanitization (Completed 2026-09-13)**:
   - Created centralized utility `subtitleCleaner.ts` with `cleanSubtitleText` and `cleanSubtitleSelection`: strips ASS/SSA override tags (`{\i1}`, `{\pos()}`, `{\c&H...&}`, etc.), converts ASS hard/soft breaks (`\N`, `\n`) into real newlines (`\n`), converts ASS hard spaces (`\h`) into regular spaces, decodes HTML entities, and normalizes duplicate whitespace.
   - Integrated `cleanSubtitleText` in `mkvSubtitleExtractor.ts` so embedded MKV subtitle tracks are emitted as valid, clean SRT blocks without raw SSA tags.

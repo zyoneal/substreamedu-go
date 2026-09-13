@@ -333,13 +333,29 @@ func (h *DictionaryHandler) GetRandomWord(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: res})
 }
 
+func (h *DictionaryHandler) resolveLocation(c *gin.Context) *time.Location {
+	tz := c.GetHeader("X-Timezone")
+	if tz == "" {
+		tz = c.Query("tz")
+	}
+	if tz == "" {
+		return time.UTC
+	}
+	loc, err := time.LoadLocation(tz)
+	if err != nil || loc == nil {
+		return time.UTC
+	}
+	return loc
+}
+
 func (h *DictionaryHandler) GetStreak(c *gin.Context) {
 	userID, ok := h.getUserId(c)
 	if !ok {
 		return
 	}
 
-	streak := h.vocabularyService.CalculateStreak(c.Request.Context(), userID)
+	loc := h.resolveLocation(c)
+	streak := h.vocabularyService.CalculateStreak(c.Request.Context(), userID, loc)
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: streak})
 }
 
@@ -349,7 +365,8 @@ func (h *DictionaryHandler) GetDictionaryStats(c *gin.Context) {
 		return
 	}
 
-	stats, err := h.vocabularyService.GetDictionaryStats(c.Request.Context(), userID)
+	loc := h.resolveLocation(c)
+	stats, err := h.vocabularyService.GetDictionaryStats(c.Request.Context(), userID, loc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return

@@ -213,16 +213,7 @@ const HomePage: React.FC = () => {
   const heroContentY = useTransform(heroScrollProgress, [0, 1], [0, 48]);
   const heroContentOpacity = useTransform(heroScrollProgress, [0, 0.75, 1], [1, 0.85, 0.2]);
 
-  useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
-      if (pageRef.current) {
-        pageRef.current.style.setProperty('--spotlight-x', `${e.clientX}px`);
-        pageRef.current.style.setProperty('--spotlight-y', `${e.clientY}px`);
-      }
-    };
-    window.addEventListener('mousemove', handleMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMove);
-  }, []);
+
 
   // ─────────────────────────────────────────────
   // FAQ
@@ -460,7 +451,6 @@ const HomePage: React.FC = () => {
   return (
     <div className={styles.page} ref={pageRef}>
       <div className={styles.projectorBeam} aria-hidden="true" />
-      <div className={styles.interactiveSpotlight} aria-hidden="true" />
       <div className={styles.filmVignette} aria-hidden="true" />
       <div className={styles.filmGrain} aria-hidden="true" />
       <motion.div className={styles.scrollProgressBar} style={{ scaleX: scrollProgressSpring }} aria-hidden="true" />

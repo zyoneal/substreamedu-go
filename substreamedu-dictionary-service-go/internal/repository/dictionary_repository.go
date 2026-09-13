@@ -519,12 +519,15 @@ func (r *DictionaryRepository) SaveReviewLog(ctx context.Context, tx DB, l *mode
 	return err
 }
 
-func (r *DictionaryRepository) GetUserReviewDates(ctx context.Context, userID uuid.UUID) ([]time.Time, error) {
+func (r *DictionaryRepository) GetUserReviewDates(ctx context.Context, userID uuid.UUID, tz string) ([]time.Time, error) {
+	if tz == "" {
+		tz = "UTC"
+	}
 	rows, err := r.db.Query(ctx, `
-		SELECT DISTINCT CAST(reviewed_at AS DATE) as review_date
+		SELECT DISTINCT CAST(((reviewed_at AT TIME ZONE 'UTC') AT TIME ZONE $2) AS DATE) as review_date
 		FROM review_log
 		WHERE user_id = $1
-		ORDER BY review_date DESC`, userID)
+		ORDER BY review_date DESC`, userID, tz)
 	if err != nil {
 		return nil, err
 	}

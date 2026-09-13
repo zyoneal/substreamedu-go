@@ -1,5 +1,5 @@
 /* ========================================================
-   INTERACTIVE ONBOARDING GUIDE BAR (STEP 1 & 2)
+   BOTTOM FLOATING ONBOARDING TOAST (APPLE / LINEAR STYLE)
    ======================================================== */
 
 .guideBarContainer {
@@ -8,15 +8,14 @@
   display: flex;
   justify-content: center;
   position: relative;
-  z-index: 25;
   pointer-events: auto;
-  animation: guideSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: toastSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes guideSlideDown {
+@keyframes toastSlideUp {
   from {
     opacity: 0;
-    transform: translateY(-14px) scale(0.96);
+    transform: translateY(16px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -26,148 +25,148 @@
 
 .guideCard {
   width: 100%;
-  max-width: 720px;
   background: rgba(18, 17, 15, 0.94);
-  border: 1px solid rgba(250, 249, 47, 0.28);
-  border-radius: 16px;
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(250, 249, 47, 0.1);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-}
-
-.guideCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #faf92f 0%, rgba(250, 249, 47, 0.2) 100%);
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .guideCard.step2 {
-  border-color: rgba(250, 249, 47, 0.5);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(250, 249, 47, 0.18);
+  border-color: rgba(250, 249, 47, 0.3);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(250, 249, 47, 0.08);
 }
 
 .guideCard.completed {
-  border-color: rgba(74, 222, 128, 0.5);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 24px rgba(74, 222, 128, 0.18);
+  border-color: rgba(74, 222, 128, 0.35);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(74, 222, 128, 0.08);
 }
 
-.guideCard.completed::before {
-  background: linear-gradient(90deg, #4ade80 0%, rgba(74, 222, 128, 0.2) 100%);
-}
-
-.leftGroup {
+.cardHeader {
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex: 1;
-  min-width: 0;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
-.stepIndicators {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.stepCircle {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  font-weight: 700;
-  color: #8e887f;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: all 0.2s ease;
-}
-
-.stepCircleActive {
-  background: #faf92f;
-  color: #0d0c0b;
-  border-color: #faf92f;
-  box-shadow: 0 0 10px rgba(250, 249, 47, 0.4);
-  animation: pulseLight 1.8s infinite alternate;
-}
-
-@keyframes pulseLight {
-  from {
-    box-shadow: 0 0 6px rgba(250, 249, 47, 0.3);
-  }
-  to {
-    box-shadow: 0 0 14px rgba(250, 249, 47, 0.6);
-  }
-}
-
-.stepCircleDone {
-  background: rgba(74, 222, 128, 0.15);
-  color: #4ade80;
-  border-color: rgba(74, 222, 128, 0.4);
-}
-
-.stepConnector {
-  width: 14px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.stepConnectorDone {
-  background: #faf92f;
-}
-
-.contentBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.stepBadgeRow {
+.headerLeft {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex: 1;
 }
 
-.stepBadge {
-  font-family: var(--font-mono, monospace);
-  font-size: 10.5px;
+.stepPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: rgba(250, 249, 47, 0.14);
+  border: 1px solid rgba(250, 249, 47, 0.3);
+  color: #fef08a;
+  font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #faf92f;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
-.stepBadge.completedBadge {
+.stepPillSuccess {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.35);
   color: #4ade80;
+}
+
+.stepTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #f4f4f5;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stepIcon {
+  color: #fef08a;
+  flex-shrink: 0;
+}
+
+.completedTitle {
+  color: #4ade80;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  background: #4ade80;
+  color: #09090b;
+  border: none;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+
+.actionButton:active {
+  transform: scale(0.98);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.closeButton:hover {
+  color: #f4f4f5;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .hintText {
   font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-  font-size: 13px;
-  color: #ede8e0;
-  line-height: 1.4;
-  margin: 0;
-  white-space: normal;
+  font-size: 12.5px;
+  color: #a1a1aa;
+  line-height: 1.45;
+  margin: 6px 0 0 0;
 }
 
 .highlightHint {
-  color: #faf92f;
+  color: #fef08a;
   font-weight: 600;
 }
 
@@ -176,60 +175,18 @@
   font-weight: 600;
 }
 
-.rightGroup {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.actionButton {
-  background: rgba(250, 249, 47, 0.12);
-  border: 1px solid rgba(250, 249, 47, 0.3);
-  color: #faf92f;
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.actionButton:hover {
-  background: #faf92f;
-  color: #0d0c0b;
-}
-
-.closeButton {
-  background: transparent;
-  border: none;
-  color: #8e887f;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-.closeButton:hover {
-  color: #ede8e0;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-@media (max-width: 680px) {
+@media (max-width: 480px) {
   .guideCard {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
   }
 
-  .rightGroup {
-    width: 100%;
-    justify-content: space-between;
+  .stepTitle {
+    font-size: 12px;
+  }
+
+  .hintText {
+    font-size: 12px;
+    margin-top: 5px;
   }
 }

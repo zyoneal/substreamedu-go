@@ -3061,7 +3061,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             !(translationData.translation && translationData.translation.includes('You have reached your free limit of 100 translations')) && (
                                                 <button
                                                     onClick={saveToDict}
-                                                    className={`${styles.saveButton} ${onboardingStep === 2 ? styles.saveButtonHighlight : ''}`}
+                                                    className={styles.saveButton}
                                                     title="Add to dictionary"
                                                 >
                                                     <span>SAVE</span>

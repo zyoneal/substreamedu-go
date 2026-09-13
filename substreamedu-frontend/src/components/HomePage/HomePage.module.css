@@ -93,26 +93,7 @@
   }
 }
 
-/* Interactive Lens Reflex / Soft Torchlight */
-.interactiveSpotlight {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(
-    650px circle at var(--spotlight-x, 50vw) var(--spotlight-y, 30vh),
-    rgba(250, 249, 47, 0.035) 0%,
-    rgba(245, 158, 11, 0.012) 35%,
-    transparent 70%
-  );
-  will-change: background;
-}
 
-@media (hover: none) or (pointer: coarse) {
-  .interactiveSpotlight {
-    display: none;
-  }
-}
 
 /* 35mm Cinema Perimeter Vignette (Optical Falloff) */
 .filmVignette {

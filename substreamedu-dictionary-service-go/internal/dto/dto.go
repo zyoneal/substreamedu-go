@@ -71,8 +71,9 @@ type DictionaryStatsDto struct {
 	SessionDueCards int64 `json:"sessionDueCards"`
 	SessionNewCards int64 `json:"sessionNewCards"`
 	SessionNewWords int64 `json:"sessionNewWords"`
-	StreakDays      int   `json:"streakDays"`
-	ReviewedToday   bool  `json:"reviewedToday"`
+	StreakDays      int    `json:"streakDays"`
+	ReviewedToday   bool   `json:"reviewedToday"`
+	WeekDays        []bool `json:"weekDays"`
 }
 
 type ReviewResponseDto struct {

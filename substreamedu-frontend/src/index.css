@@ -362,20 +362,3 @@ code {
     padding-top: 48px !important;
   }
 }
-
-@media (hover: hover) and (pointer: fine) {
-  html,
-  body,
-  #root,
-  *,
-  *::before,
-  *::after {
-    cursor: none !important;
-  }
-
-  input,
-  textarea,
-  [contenteditable="true"] {
-    cursor: text !important;
-  }
-}
