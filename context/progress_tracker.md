@@ -18,6 +18,7 @@
   - FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation (ADR-031)
   - Sleek Bottom Floating Onboarding Toast Redesign (ADR-032)
   - Purge Yellow Outline on Active Streak Checkmark Circles (ADR-033)
+  - FAANG-Grade User Timezone Awareness in SRS Daily Cards (ADR-034)
 
 ---
 
@@ -58,10 +59,16 @@
 | **ADR-031** | 2026-09-14 | FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation | Client in UTC+3 (e.g. Monday 00:41) was evaluated against server UTC (Sunday 21:41), marking reviewedToday: true for Sunday's reviews and causing client heuristic to place a false checkmark on Monday. Client-side heuristic calculation also broke at weekly calendar boundaries. | Standardized on user timezone awareness: frontend sends `X-Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone` via Axios; backend embeds tzdata (`_ "time/tzdata"`), groups PostgreSQL review dates via `((reviewed_at AT TIME ZONE 'UTC') AT TIME ZONE $tz)::date`, computes `dueCutoff` and `isToday` in user location, and emits explicit `weekDays: [bool; 7]` for the user's current week. |
 | **ADR-032** | 2026-09-14 | Sleek Bottom Floating Onboarding Toast Redesign | Fixed top-positioned onboarding guide bar (top: 56px) on mobile directly occluded the video stream and subtitles, squished titles into 4 broken vertical words (STEP 1 OF / 2: CLICK / TO / TRANSLATE), and left the close button stranded in the bottom-left. | Repositioned onboarding guide to a non-intrusive bottom floating toast (bottom: 24px desktop, bottom: 84px mobile above Telegram FAB); replaced heavy 2-step indicator circles with a sleek `1/2` badge; anchored close button to top-right; eliminated radioactive yellow glow for refined warm dark glassmorphism. |
 | **ADR-033** | 2026-09-15 | Purge Yellow Outline on Active Streak Checkmark Circles | `.weekNodeToday` was unconditionally applied to current day even after completion, causing an unsightly neon yellow outline around the active checkmark circle. | Added `!isActive` guard in `DashboardPage.tsx` and override `.weekNodeActive.weekNodeToday` in `DashboardPage.module.css`. |
+| **ADR-034** | 2026-09-16 | FAANG-Grade User Timezone Awareness in SRS Daily Cards (`/srs/today`) | When local user time was past midnight (e.g. 00:06 UTC+3, Sept 16), the dashboard correctly identified 50 cards due for today via timezone-aware `GetDictionaryStats`. However, `/api/dictionary/srs/today` hardcoded UTC time (21:06 UTC, Sept 15), filtering out cards due on Sept 16 and falling back to 50 brand new cards (`status: 'new'`). Furthermore, review cache invalidation did not purge timezone-suffixed keys (`srs:stats:<userID>:<loc>`). | Added `loc *time.Location` parameter to `GetDailyCards` and resolved user location in `DictionaryHandler.GetDailyCards(c)`. Updated `learning_service` Redis cache invalidation to scan and delete all `srs:stats:<userID>*` keys upon review. 100% Go unit tests pass. |
 
 ---
 
 ## Session Notes
+- **FAANG-Grade User Timezone Awareness in SRS Daily Cards (Completed 2026-09-16)**:
+  - Propagated user timezone from HTTP request (`X-Timezone` header / `?tz=...` query) to `learningService.GetDailyCards(ctx, userID, loc)`.
+  - Aligned `todayStart` and `dueCutoff` in `GetDailyCards` to user local calendar day, preventing premature fallback to random new cards when reviewing past midnight in local time.
+  - Updated Redis invalidation across `ReviewCard` and `RefreshSession` to match `srs:stats:<userID>*`, ensuring stats cache updates across all timezones.
+  - Added unit tests in `srs_daily_cards_timezone_test.go` verifying boundary behavior across timezones.
 - **Purge Yellow Outline on Active Streak Checkmark Circles (Completed 2026-09-15)**:
   - Guarded `styles.weekNodeToday` class application with `isToday && !isActive` in `DashboardPage.tsx`.
   - Added CSS rule `.weekNodeActive.weekNodeToday { border-color: #ede8e0; box-shadow: none; }` in `DashboardPage.module.css`.

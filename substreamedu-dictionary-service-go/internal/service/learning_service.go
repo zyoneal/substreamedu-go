@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -39,10 +40,13 @@ func NewLearningService(repo *repository.DictionaryRepository, outbox *OutboxSer
 
 const SessionLimit = 50
 
-func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID) (*dto.DailySessionDto, error) {
-	now := time.Now().UTC()
-	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	dueCutoff := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, time.UTC)
+func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, loc *time.Location) (*dto.DailySessionDto, error) {
+	if loc == nil {
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	dueCutoff := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, loc)
 
 	totalCount, _ := s.repo.CountTotalWords(ctx, userID)
 
@@ -163,9 +167,7 @@ func (s *LearningService) ReviewCard(ctx context.Context, cardID int64, rating s
 		return nil, err
 	}
 
-	if s.redis != nil {
-		s.redis.Del(ctx, "srs:stats:"+card.UserID.String())
-	}
+	s.InvalidateCache(ctx, card.UserID)
 
 	response := &dto.ReviewResponseDto{
 		Card:			s.mapCardToDto(card),
@@ -198,6 +200,10 @@ func (s *LearningService) publishLeechEvent(ctx context.Context, card *model.Dic
 
 func (s *LearningService) RefreshSession(ctx context.Context, userID uuid.UUID) error {
 	if s.redis != nil {
+		iter := s.redis.Scan(ctx, 0, fmt.Sprintf("srs:stats:%s*", userID.String()), 0).Iterator()
+		for iter.Next(ctx) {
+			s.redis.Del(ctx, iter.Val())
+		}
 		s.redis.Del(ctx, "srs:stats:"+userID.String())
 	}
 	if s.logger != nil {
@@ -207,9 +213,6 @@ func (s *LearningService) RefreshSession(ctx context.Context, userID uuid.UUID) 
 }
 
 func (s *LearningService) InvalidateCache(ctx context.Context, userID uuid.UUID) {
-	if s.redis != nil {
-		s.redis.Del(ctx, "srs:stats:"+userID.String())
-	}
 	_ = s.RefreshSession(ctx, userID)
 }
 

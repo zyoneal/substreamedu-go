@@ -151,7 +151,8 @@ func (h *DictionaryHandler) GetDailyCards(c *gin.Context) {
 		return
 	}
 
-	res, err := h.learningService.GetDailyCards(c.Request.Context(), userID)
+	loc := h.resolveLocation(c)
+	res, err := h.learningService.GetDailyCards(c.Request.Context(), userID, loc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
