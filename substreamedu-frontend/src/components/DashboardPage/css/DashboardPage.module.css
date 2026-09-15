@@ -331,6 +331,11 @@
     box-shadow: 0 0 0 1px #faf92f;
 }
 
+.weekNodeActive.weekNodeToday {
+    border-color: #ede8e0;
+    box-shadow: none;
+}
+
 /* 2. Review Card */
 .cardReview {
     grid-column: span 4;

@@ -161,7 +161,7 @@ const DashboardPage: React.FC = () => {
                                         <div
                                             className={`${styles.weekNodeCircle} ${
                                                 isActive ? styles.weekNodeActive : ''
-                                            } ${isToday ? styles.weekNodeToday : ''}`}
+                                            } ${isToday && !isActive ? styles.weekNodeToday : ''}`}
                                         >
                                             {isActive && <Check size={11} strokeWidth={3} />}
                                         </div>

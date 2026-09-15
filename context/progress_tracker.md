@@ -17,6 +17,7 @@
   - Purge Custom Trailing Cursor & Restore Native OS Pointer Precision (ADR-030)
   - FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation (ADR-031)
   - Sleek Bottom Floating Onboarding Toast Redesign (ADR-032)
+  - Purge Yellow Outline on Active Streak Checkmark Circles (ADR-033)
 
 ---
 
@@ -56,10 +57,16 @@
 | **ADR-030** | 2026-09-14 | Purge Custom Trailing Cursor & Restore Native OS Pointer Precision | The custom spring-animated trailing cursor (`CinematicCursor`) created a psychological perception of mouse smoothing / altered sensitivity, visual latency, and friction during precision tasks (word-by-word subtitle selection, flashcard review). | Removed global `<CinematicCursor />` from `App.tsx` and purged dead component files (`CinematicCursor.tsx`, `CinematicCursor.module.css`). Restores pure 1:1 native OS pointer physics, direct manipulation, and zero perceived latency across all routes. |
 | **ADR-031** | 2026-09-14 | FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation | Client in UTC+3 (e.g. Monday 00:41) was evaluated against server UTC (Sunday 21:41), marking reviewedToday: true for Sunday's reviews and causing client heuristic to place a false checkmark on Monday. Client-side heuristic calculation also broke at weekly calendar boundaries. | Standardized on user timezone awareness: frontend sends `X-Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone` via Axios; backend embeds tzdata (`_ "time/tzdata"`), groups PostgreSQL review dates via `((reviewed_at AT TIME ZONE 'UTC') AT TIME ZONE $tz)::date`, computes `dueCutoff` and `isToday` in user location, and emits explicit `weekDays: [bool; 7]` for the user's current week. |
 | **ADR-032** | 2026-09-14 | Sleek Bottom Floating Onboarding Toast Redesign | Fixed top-positioned onboarding guide bar (top: 56px) on mobile directly occluded the video stream and subtitles, squished titles into 4 broken vertical words (STEP 1 OF / 2: CLICK / TO / TRANSLATE), and left the close button stranded in the bottom-left. | Repositioned onboarding guide to a non-intrusive bottom floating toast (bottom: 24px desktop, bottom: 84px mobile above Telegram FAB); replaced heavy 2-step indicator circles with a sleek `1/2` badge; anchored close button to top-right; eliminated radioactive yellow glow for refined warm dark glassmorphism. |
+| **ADR-033** | 2026-09-15 | Purge Yellow Outline on Active Streak Checkmark Circles | `.weekNodeToday` was unconditionally applied to current day even after completion, causing an unsightly neon yellow outline around the active checkmark circle. | Added `!isActive` guard in `DashboardPage.tsx` and override `.weekNodeActive.weekNodeToday` in `DashboardPage.module.css`. |
 
 ---
 
 ## Session Notes
+- **Purge Yellow Outline on Active Streak Checkmark Circles (Completed 2026-09-15)**:
+  - Guarded `styles.weekNodeToday` class application with `isToday && !isActive` in `DashboardPage.tsx`.
+  - Added CSS rule `.weekNodeActive.weekNodeToday { border-color: #ede8e0; box-shadow: none; }` in `DashboardPage.module.css`.
+  - Confirmed active streak checkmark circles render clean parchment `#ede8e0` border and background with zero yellow border or box-shadow ring.
+  - Verified with `npx tsc --noEmit`, Jest suite (16 suites, 61 tests passed), and `npm run build`.
 - **FAANG-Grade User Timezone Awareness & SRS Streak Week Calculation (Completed 2026-09-14)**:
   - Fixed timezone discrepancy between UTC backend and local client timezone.
   - Client sends `X-Timezone` via `AxiosService.ts` default headers and request interceptor.
