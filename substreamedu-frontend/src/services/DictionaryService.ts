@@ -1,6 +1,26 @@
 import { baseURL, urls } from "../constants/urls";
 import { axiosService } from './AxiosService';
 
+export interface PracticeExercise {
+  id: string;
+  type: 'gap_fill' | 'paraphrase';
+  target_word: string;
+  prompt: string;
+  sentence_before?: string;
+  sentence_after?: string;
+  hint?: string;
+  options?: string[];
+  accepted_answers: string[];
+  explanation?: string;
+}
+
+export interface EvaluateSentenceResult {
+  is_correct: boolean;
+  status: 'native' | 'natural' | 'minor_issues' | 'incorrect';
+  feedback: string;
+  improved_version?: string;
+}
+
 const DictionaryService = {
 
   async fetchDictionaryResources(): Promise<any[]> {
@@ -288,6 +308,50 @@ const DictionaryService = {
     } catch (error) {
       console.error("Error generating session summary:", error);
       throw new Error("Failed to generate session summary");
+    }
+  },
+
+  async generatePracticeExercises(
+    items: { word: string; meaning: string; context?: string }[],
+    learningLanguage: string,
+    fluentLanguage: string,
+    exerciseTypes?: string[]
+  ): Promise<{ exercises: PracticeExercise[] }> {
+    try {
+      const response = await axiosService.post(`/api/dictionary/practice/generate-exercises`, {
+        items,
+        learningLanguage,
+        fluentLanguage,
+        exerciseTypes
+      }, {
+        timeout: 20000
+      });
+      return response.data?.data || response.data || { exercises: [] };
+    } catch (error) {
+      console.error("Error generating practice exercises:", error);
+      throw new Error("Failed to generate practice exercises");
+    }
+  },
+
+  async evaluateSentence(
+    word: string,
+    meaning: string,
+    sentence: string,
+    learningLanguage: string
+  ): Promise<EvaluateSentenceResult> {
+    try {
+      const response = await axiosService.post(`/api/dictionary/practice/evaluate-sentence`, {
+        word,
+        meaning,
+        sentence,
+        learningLanguage
+      }, {
+        timeout: 20000
+      });
+      return response.data?.data || response.data;
+    } catch (error) {
+      console.error("Error evaluating sentence:", error);
+      throw new Error("Failed to evaluate sentence");
     }
   },
 

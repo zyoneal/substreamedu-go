@@ -56,4 +56,24 @@ func TestAIGeneration_ValidationAndTimeout(t *testing.T) {
 		h.GenerateSessionSummary(c)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
+
+	t.Run("GeneratePracticeExercises returns 400 on invalid JSON", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("POST", "/practice/generate-exercises", bytes.NewBufferString("invalid json"))
+		c.Request.Header.Set("Content-Type", "application/json")
+
+		h.GeneratePracticeExercises(c)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("EvaluateSentence returns 400 on invalid JSON", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("POST", "/practice/evaluate-sentence", bytes.NewBufferString("invalid json"))
+		c.Request.Header.Set("Content-Type", "application/json")
+
+		h.EvaluateSentence(c)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
 }

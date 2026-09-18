@@ -51,7 +51,11 @@ interface SessionState {
     startTime: number;
 }
 
-const FlashcardsGame: React.FC = () => {
+export interface FlashcardsProps {
+    onStartActivePractice?: (words: Array<{ word: string; translation?: string; definition?: string; context?: string }>) => void;
+}
+
+const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) => {
     const intl = useIntl();
     const navigate = useNavigate();
     const [reviewWords, setReviewWords] = useState<DictionaryItem[]>([]);
@@ -896,6 +900,17 @@ const FlashcardsGame: React.FC = () => {
                                 <RefreshCw className={`${styles.refreshIcon} ${loading ? styles.spinning : ''}`} />
                                 {loading ? intl.formatMessage({ id: 'flashcards.studyingMore' }) : intl.formatMessage({ id: 'flashcards.studyMore' })}
                             </button>
+
+                            {onStartActivePractice && sessionWords.length > 0 && (
+                                <button
+                                    onClick={() => onStartActivePractice(sessionWords)}
+                                    className={styles.primaryButton}
+                                    style={{ marginTop: '12px', background: 'linear-gradient(135deg, #f0c674, #e6b800)', color: '#0d0c0b' }}
+                                >
+                                    <Sparkles size={16} />
+                                    <span>Practice these {sessionWords.length} words actively</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

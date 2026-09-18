@@ -232,3 +232,41 @@ type SessionSummaryResponse struct {
 	FluentStory	string		`json:"fluentStory"`
 	Questions	[]string	`json:"questions"`
 }
+
+type PracticeExercisesRequest struct {
+	Items            []WordWithMeaning `json:"items" binding:"required,min=1"`
+	LearningLanguage string            `json:"learningLanguage"`
+	FluentLanguage   string            `json:"fluentLanguage"`
+	ExerciseTypes    []string          `json:"exerciseTypes"`
+}
+
+type PracticeExercise struct {
+	ID              string   `json:"id"`
+	Type            string   `json:"type"` // "gap_fill" | "paraphrase"
+	TargetWord      string   `json:"target_word"`
+	Prompt          string   `json:"prompt"`
+	SentenceBefore  string   `json:"sentence_before,omitempty"`
+	SentenceAfter   string   `json:"sentence_after,omitempty"`
+	Hint            string   `json:"hint"`
+	Options         []string `json:"options,omitempty"`
+	AcceptedAnswers []string `json:"accepted_answers"`
+	Explanation     string   `json:"explanation"`
+}
+
+type PracticeExercisesResponse struct {
+	Exercises []PracticeExercise `json:"exercises"`
+}
+
+type EvaluateSentenceRequest struct {
+	Word             string `json:"word" binding:"required"`
+	Meaning          string `json:"meaning"`
+	Sentence         string `json:"sentence" binding:"required"`
+	LearningLanguage string `json:"learningLanguage"`
+}
+
+type EvaluateSentenceResponse struct {
+	IsCorrect       bool   `json:"is_correct"`
+	Status          string `json:"status"` // "native" | "natural" | "minor_issues" | "incorrect"
+	Feedback        string `json:"feedback"`
+	ImprovedVersion string `json:"improved_version,omitempty"`
+}

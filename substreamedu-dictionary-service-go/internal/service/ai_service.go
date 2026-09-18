@@ -1306,3 +1306,228 @@ func (s *AIService) GenerateEmbedding(ctx context.Context, text string) ([]float
 	return nil, nil
 }
 
+func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.PracticeExercisesRequest) (*dto.PracticeExercisesResponse, error) {
+	resolvedLearning := req.LearningLanguage
+	if val, ok := s.languageCache[req.LearningLanguage]; ok {
+		resolvedLearning = val
+	}
+	if resolvedLearning == "" {
+		resolvedLearning = "English"
+	}
+	resolvedFluent := req.FluentLanguage
+	if val, ok := s.languageCache[req.FluentLanguage]; ok {
+		resolvedFluent = val
+	}
+	if resolvedFluent == "" {
+		resolvedFluent = "Russian"
+	}
+
+	items := req.Items
+	if len(items) > 10 {
+		items = items[:10]
+	}
+
+	var prompt strings.Builder
+	fmt.Fprintf(&prompt, "You are a professional language pedagogy specialist and curriculum designer.\n")
+	fmt.Fprintf(&prompt, "Create engaging, authentic active vocabulary practice exercises for intermediate/advanced learners studying %s.\n", resolvedLearning)
+	fmt.Fprintf(&prompt, "Native/fluent language for hints/translations: %s.\n\n", resolvedFluent)
+	prompt.WriteString("Target words and collocations to practice:\n")
+	for i, item := range items {
+		if item.Context != "" {
+			fmt.Fprintf(&prompt, "%d. \"%s\" (meaning: %s, original context: \"%s\")\n", i+1, item.Word, item.Meaning, item.Context)
+		} else {
+			fmt.Fprintf(&prompt, "%d. \"%s\" (meaning: %s)\n", i+1, item.Word, item.Meaning)
+		}
+	}
+
+	prompt.WriteString("\nGenerate 1-2 diverse exercises per word. Include two types:\n")
+	prompt.WriteString("1. \"gap_fill\": An authentic sentence where the target word/collocation is replaced with '______'. Provide 'sentence_before' and 'sentence_after', a helpful hint (in fluent language), 4 options (the correct word plus 3 plausible distractors of the same part of speech), accepted inflections in 'accepted_answers', and a brief pedagogical explanation.\n")
+	prompt.WriteString("2. \"paraphrase\": A sentence expressing a situation without the target word, asking the learner to rewrite it or complete it using the target word/collocation. Provide 'accepted_answers' and an explanation.\n\n")
+
+	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
+	prompt.WriteString("{\n")
+	prompt.WriteString("  \"exercises\": [\n")
+	prompt.WriteString("    {\n")
+	prompt.WriteString("      \"id\": \"ex_1\",\n")
+	prompt.WriteString("      \"type\": \"gap_fill\",\n")
+	prompt.WriteString("      \"target_word\": \"string\",\n")
+	prompt.WriteString("      \"prompt\": \"sentence with ______ blank\",\n")
+	prompt.WriteString("      \"sentence_before\": \"sentence part before blank\",\n")
+	prompt.WriteString("      \"sentence_after\": \"sentence part after blank\",\n")
+	prompt.WriteString("      \"hint\": \"concise hint\",\n")
+	prompt.WriteString("      \"options\": [\"correct\", \"distractor1\", \"distractor2\", \"distractor3\"],\n")
+	prompt.WriteString("      \"accepted_answers\": [\"exact word\", \"inflected form\"],\n")
+	prompt.WriteString("      \"explanation\": \"brief pedagogical note\"\n")
+	prompt.WriteString("    }\n")
+	prompt.WriteString("  ]\n")
+	prompt.WriteString("}\n")
+	prompt.WriteString("Do NOT include markdown fences, code blocks, or preamble.")
+
+	dsReq := dto.DeepSeekRequest{
+		Model: "deepseek-chat",
+		Messages: []dto.DeepSeekMessage{
+			{Role: "system", Content: "You are an expert language pedagogy AI. You generate precise JSON exercises for active vocabulary production."},
+			{Role: "user", Content: prompt.String()},
+		},
+		MaxTokens:   1500,
+		Temperature: 0.5,
+	}
+
+	respStr, err := s.callWithFallback(ctx, dsReq)
+	if err == nil {
+		clean := strings.TrimSpace(respStr)
+		if strings.HasPrefix(clean, "```json") {
+			clean = strings.TrimPrefix(clean, "```json")
+		} else if strings.HasPrefix(clean, "```") {
+			clean = strings.TrimPrefix(clean, "```")
+		}
+		clean = strings.TrimSuffix(clean, "```")
+		clean = strings.TrimSpace(clean)
+
+		var result dto.PracticeExercisesResponse
+		var unmarshalErr error
+		if unmarshalErr = json.Unmarshal([]byte(clean), &result); unmarshalErr == nil && len(result.Exercises) > 0 {
+			return &result, nil
+		}
+		s.logger.Warn("Failed to unmarshal AI practice exercises, falling back to algorithmic generator", zap.Error(unmarshalErr))
+	} else {
+		s.logger.Warn("AI call failed for practice exercises, using algorithmic fallback", zap.Error(err))
+	}
+
+	fallbackResult := s.generateAlgorithmicExercises(items)
+	return fallbackResult, nil
+}
+
+func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *dto.PracticeExercisesResponse {
+	var exercises []dto.PracticeExercise
+	for i, item := range items {
+		target := strings.TrimSpace(item.Word)
+		if target == "" {
+			continue
+		}
+
+		ctxText := strings.TrimSpace(item.Context)
+		var prompt, before, after string
+		if ctxText != "" && strings.Contains(strings.ToLower(ctxText), strings.ToLower(target)) {
+			idx := strings.Index(strings.ToLower(ctxText), strings.ToLower(target))
+			before = ctxText[:idx]
+			after = ctxText[idx+len(target):]
+			prompt = before + "______" + after
+		} else {
+			prompt = fmt.Sprintf("She tried to ______ but found it harder than expected.")
+			before = "She tried to "
+			after = " but found it harder than expected."
+		}
+
+		var options []string
+		options = append(options, target)
+		for _, other := range items {
+			otherWord := strings.TrimSpace(other.Word)
+			if otherWord != "" && !strings.EqualFold(otherWord, target) && len(options) < 4 {
+				options = append(options, otherWord)
+			}
+		}
+		fallbacks := []string{"look into", "carry out", "give up", "bring up", "stand out"}
+		for _, f := range fallbacks {
+			if len(options) >= 4 {
+				break
+			}
+			if !strings.EqualFold(f, target) {
+				options = append(options, f)
+			}
+		}
+
+		exercises = append(exercises, dto.PracticeExercise{
+			ID:              fmt.Sprintf("ex_%d", i+1),
+			Type:            "gap_fill",
+			TargetWord:      target,
+			Prompt:          prompt,
+			SentenceBefore:  before,
+			SentenceAfter:   after,
+			Hint:            item.Meaning,
+			Options:         options,
+			AcceptedAnswers: []string{target, strings.ToLower(target)},
+			Explanation:     fmt.Sprintf("Target word: '%s' (%s)", target, item.Meaning),
+		})
+	}
+
+	return &dto.PracticeExercisesResponse{Exercises: exercises}
+}
+
+func (s *AIService) EvaluateSentence(ctx context.Context, req dto.EvaluateSentenceRequest) (*dto.EvaluateSentenceResponse, error) {
+	resolvedLearning := req.LearningLanguage
+	if val, ok := s.languageCache[req.LearningLanguage]; ok {
+		resolvedLearning = val
+	}
+	if resolvedLearning == "" {
+		resolvedLearning = "English"
+	}
+
+	var prompt strings.Builder
+	fmt.Fprintf(&prompt, "You are an encouraging, expert language teacher evaluating a student's original sentence in %s.\n", resolvedLearning)
+	fmt.Fprintf(&prompt, "Target word/phrase: \"%s\" (meaning: %s)\n", req.Word, req.Meaning)
+	fmt.Fprintf(&prompt, "Student's sentence: \"%s\"\n\n", req.Sentence)
+	prompt.WriteString("Analyze whether the target word is used correctly, idiomatically, and grammatically.\n")
+	prompt.WriteString("Assign one of these statuses:\n")
+	prompt.WriteString("- \"native\": Perfectly natural, native-level phrasing and grammar.\n")
+	prompt.WriteString("- \"natural\": Grammatically sound, natural usage with minor or no stylistic quirks.\n")
+	prompt.WriteString("- \"minor_issues\": Understandable and word used decently, but minor grammar/preposition/collocation mistake.\n")
+	prompt.WriteString("- \"incorrect\": Target word misused in meaning, or severe grammatical breakdown.\n\n")
+	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
+	prompt.WriteString("{\n")
+	prompt.WriteString("  \"is_correct\": true,\n")
+	prompt.WriteString("  \"status\": \"native\" | \"natural\" | \"minor_issues\" | \"incorrect\",\n")
+	prompt.WriteString("  \"feedback\": \"1-2 concise sentences of constructive feedback.\",\n")
+	prompt.WriteString("  \"improved_version\": \"Native speaker phrasing of their intended meaning.\"\n")
+	prompt.WriteString("}\n")
+	prompt.WriteString("Do NOT include markdown formatting or commentary.")
+
+	dsReq := dto.DeepSeekRequest{
+		Model: "deepseek-chat",
+		Messages: []dto.DeepSeekMessage{
+			{Role: "system", Content: "You are a professional linguistic evaluator. You respond strictly in valid JSON."},
+			{Role: "user", Content: prompt.String()},
+		},
+		MaxTokens:   500,
+		Temperature: 0.3,
+	}
+
+	respStr, err := s.callWithFallback(ctx, dsReq)
+	if err == nil {
+		clean := strings.TrimSpace(respStr)
+		if strings.HasPrefix(clean, "```json") {
+			clean = strings.TrimPrefix(clean, "```json")
+		} else if strings.HasPrefix(clean, "```") {
+			clean = strings.TrimPrefix(clean, "```")
+		}
+		clean = strings.TrimSuffix(clean, "```")
+		clean = strings.TrimSpace(clean)
+
+		var evalResp dto.EvaluateSentenceResponse
+		var unmarshalErr error
+		if unmarshalErr = json.Unmarshal([]byte(clean), &evalResp); unmarshalErr == nil {
+			return &evalResp, nil
+		}
+		s.logger.Warn("Failed to unmarshal sentence evaluation, falling back", zap.Error(unmarshalErr))
+	} else {
+		s.logger.Warn("Sentence evaluation AI call failed, using fallback", zap.Error(err))
+	}
+
+	hasWord := strings.Contains(strings.ToLower(req.Sentence), strings.ToLower(req.Word))
+	if hasWord {
+		return &dto.EvaluateSentenceResponse{
+			IsCorrect:       true,
+			Status:          "natural",
+			Feedback:        fmt.Sprintf("Well done! Your sentence includes '%s'. Keep practicing using it in varied contexts.", req.Word),
+			ImprovedVersion: req.Sentence,
+		}, nil
+	}
+
+	return &dto.EvaluateSentenceResponse{
+		IsCorrect:       false,
+		Status:          "minor_issues",
+		Feedback:        fmt.Sprintf("Make sure to include the target word '%s' in your sentence.", req.Word),
+		ImprovedVersion: fmt.Sprintf("%s ...", req.Word),
+	}, nil
+}
+

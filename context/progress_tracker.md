@@ -5,13 +5,13 @@
 - **Current Phase**: Phase 2: Product Feature Expansion
 - **In Progress**: None
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
-  - Spec 05A: Active Vocabulary Practice (P2)
   - Spec 05D: Grammar Detection & Exercises (P2)
   - Spec 05F: Writing Practice (P3)
   - Spec 05B: Teacher Mode (P3)
 - **Completed (Phase 2)**:
   - Spec 05C: Better Contextual Explanations (P1) (ADR-035)
   - Spec 05E: Collocations & Chunks (P1) (ADR-035)
+  - Spec 06: Active Vocabulary Practice (Spec 05A) (ADR-036)
 - **Completed (Phase 1)**:
   - Context System & SDD Initialization (`/context/`, `AGENTS.md`)
   - Spec 01: System Audit & Core Stability Refactor (`/context/feature_specs/01_system_audit_refactor.md`)
@@ -70,10 +70,19 @@
 | **ADR-033** | 2026-09-15 | Purge Yellow Outline on Active Streak Checkmark Circles | `.weekNodeToday` was unconditionally applied to current day even after completion, causing an unsightly neon yellow outline around the active checkmark circle. | Added `!isActive` guard in `DashboardPage.tsx` and override `.weekNodeActive.weekNodeToday` in `DashboardPage.module.css`. |
 | **ADR-034** | 2026-09-16 | FAANG-Grade User Timezone Awareness in SRS Daily Cards (`/srs/today`) | When local user time was past midnight (e.g. 00:06 UTC+3, Sept 16), the dashboard correctly identified 50 cards due for today via timezone-aware `GetDictionaryStats`. However, `/api/dictionary/srs/today` hardcoded UTC time (21:06 UTC, Sept 15), filtering out cards due on Sept 16 and falling back to 50 brand new cards (`status: 'new'`). Furthermore, review cache invalidation did not purge timezone-suffixed keys (`srs:stats:<userID>:<loc>`). | Added `loc *time.Location` parameter to `GetDailyCards` and resolved user location in `DictionaryHandler.GetDailyCards(c)`. Updated `learning_service` Redis cache invalidation to scan and delete all `srs:stats:<userID>*` keys upon review. 100% Go unit tests pass. |
 | **ADR-035** | 2026-09-18 | Rich Contextual Explanations, Register Badges, and Collocation Chunks in Popover (Spec 05C & 05E) | Add register, usage note, alternatives with register notes, typical contexts, and clickable multi-word chunks to LLM translation prompt (v3.0 cache key) and frontend popover UI. | Learners immediately understand nuance, formality level, and naturally occurring multi-word phrases; can click chunks to translate and save them directly as single vocabulary items. Zero DB schema changes needed. |
+| **ADR-036** | 2026-09-18 | Active Vocabulary Practice: Cloze Gap-Fills, Paraphrase, & AI Sentence Builder (Spec 06 / 05A) | Provide interactive production exercises on /learning with instant client-side cloze from subtitle context, AI exercise generation, and real-time AI sentence evaluation. | Bridges passive flashcard recognition into active production in authentic video contexts. Zero DB schema changes. |
 
 ---
 
 ## Session Notes
+- **Active Vocabulary Practice Engine (Completed 2026-09-18)**:
+  - Implemented `GeneratePracticeExercises` and `EvaluateSentence` in `ai_service.go` with resilient algorithmic cloze fallbacks.
+  - Added request/response DTOs (`PracticeExercisesRequest`, `EvaluateSentenceRequest`) and registered `/api/dictionary/practice/*` routes.
+  - Implemented `ActivePractice.tsx` and `ActivePractice.module.css` following Cinematic Espresso design system.
+  - Added dual modes: Contextual Cloze (typing + options, audio TTS, hint reveals) and AI Sentence Builder (free text writing with instant grammar, naturalness, and native polish critique).
+  - Enhanced `Flashcards.tsx` to offer a direct CTA on session completion to practice reviewed session words actively.
+  - Upgraded `LearningPage.tsx` with top mode switcher tabs between SRS Flashcards and Active Practice.
+  - Verified: Go tests pass (`go test -v ./...`), Go build succeeds, TypeScript typechecks clean (`npx tsc --noEmit`), Jest test suite passes (17 suites, 65 tests), and production bundle builds cleanly (`npm run build`).
 - **Rich Contextual Explanations, Register Badges & Collocation Chunks (Completed 2026-09-18)**:
   - Extended LLM translation prompt in `ai_service.go` (`createTranslationPrompt`) with output schema for `register` (formal, informal, slang, neutral, academic, literary), `usage_note`, `alternatives`, `chunks` (multi-word units), and `typical_contexts`.
   - Bumped translation cache key to `ai:translation:v3.0:` and optimal `maxTokens` to handle richer linguistic payload.
