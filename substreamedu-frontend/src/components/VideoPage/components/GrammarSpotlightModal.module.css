@@ -159,6 +159,14 @@
   letter-spacing: 0.01em;
 }
 
+.formulaNote {
+  font-size: 0.76rem;
+  color: var(--color-mute, #8c8882);
+  letter-spacing: 0.015em;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
 .explanations {
   display: flex;
   flex-direction: column;

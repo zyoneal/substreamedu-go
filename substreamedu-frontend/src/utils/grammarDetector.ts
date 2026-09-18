@@ -14,6 +14,7 @@ export interface DetectedGrammarPoint {
   shortLabel: string;
   cefrLevel: 'B1' | 'B2' | 'C1' | 'C2';
   formula: string;
+  formulaNote?: string;
   explanation: string;
   nativeExplanation: string;
   matchedText: string;
@@ -37,6 +38,7 @@ export interface GrammarRuleDefinition {
   shortLabel: string;
   cefrLevel: 'B1' | 'B2' | 'C1' | 'C2';
   formula: string;
+  formulaNote?: string;
   explanation: string;
   nativeExplanation: string;
   pattern: RegExp;
@@ -47,7 +49,7 @@ export const GRAMMAR_EXPLANATIONS_BY_LANG: Record<string, Record<string, string>
   uk: {
     third_conditional: 'Нереальна умова в минулому: жаль або роздуми про те, що не сталося (якби в минулому..., то...).',
     inverted_conditional: 'Емфатична безсполучникова інверсія в умовному реченні (більш офіційний стиль замість "if").',
-    modal_perfect: 'Модальне дієслово з перфектним інфінітивом: жаль, припущення або докір щодо минулої дії.',
+    modal_perfect: 'Модальне дієслово + перфектний інфінітив для вираження припущення, можливості, жалю, критики або очікування щодо минулої дії.',
     inversion: 'Емфатична інверсія: винесення заперечного або обмежувального прислівника (Never, Rarely, Seldom, Hardly) на початок речення вимагає зміни порядку слів на «Прислівник + Допоміжне дієслово + Підмет + Дієслово».',
     second_conditional: 'Нереальна або малоймовірна умова в теперішньому чи майбутньому (якби..., то...). Уявні сценарії.',
     causative_form: 'Каузативна форма (have/get something done): дія виконується кимось іншим на замовлення або прохання.',
@@ -66,7 +68,7 @@ export const GRAMMAR_EXPLANATIONS_BY_LANG: Record<string, Record<string, string>
   ru: {
     third_conditional: 'Нереальное условие в прошлом: сожаление или размышление о том, чего не произошло.',
     inverted_conditional: 'Эмфатическая бессоюзная инверсия в условном предложении.',
-    modal_perfect: 'Модальный глагол с перфектным инфинитивом: сожаление, предположение или упрёк о прошлом.',
+    modal_perfect: 'Модальный глагол + перфектный инфинитив для выражения предположения, возможности, сожаления, критики или упрёка относительно прошлого действия.',
     inversion: 'Эмфатическая инверсия: вынесение отрицательного или ограничительного наречия (Never, Rarely, Seldom, Hardly) в начало предложения меняет порядок слов на «Отрицательное наречие + Вспомогательный глагол + Подлежащее + Основной глагол» для драматического усиления речи (например, Never have I seen..., в отличие от обычного порядка You would never have...).',
     second_conditional: 'Нереальное или маловероятное условие в настоящем или будущем (если бы..., то...).',
     causative_form: 'Каузативная форма: действие выполняется кем-то другим по вашей просьбе или заказу.',
@@ -205,22 +207,23 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     })
   },
 
-  // 3. Modal Perfects (should have / could have / must have)
+  // 3. Modal Perfects (should have / could have / must have / would have)
   {
     tag: 'modal_perfect',
     name: 'Modal Perfect',
     shortLabel: 'Modal Perf',
     cefrLevel: 'B2',
-    formula: 'Modal (should / could / must / might / can\'t) + have + V3',
-    explanation: 'Expresses past deduction, criticism, regret, or missed possibility.',
-    nativeExplanation: 'Модальный глагол с перфектным инфинитивом для выражения прошлых догадок, сожалений или критики.',
-    pattern: /\b(?:should|shouldn't|could|couldn't|must|might|can't)\s+have\s+(?:been|seen|done|known|gone|made|told|thought|taken|given|said|come|heard|felt|left|found|[a-z]{3,}ed)\b/i,
+    formula: 'Modal + have + past participle (V3)',
+    formulaNote: 'Common forms: should have, could have, would have, might have, must have, can\'t have',
+    explanation: 'Modal + have + V3 is used to talk about past situations, including expectations, possibilities, deductions, regrets, and criticism.',
+    nativeExplanation: 'Модальный глагол + перфектный инфинитив для выражения предположения, возможности, сожаления, критики или упрёка относительно прошлого действия.',
+    pattern: /\b(?:should|shouldn't|could|couldn't|must|might|can't|would|wouldn't)\s+have\s+(?:been|seen|done|known|gone|made|told|thought|taken|given|said|come|heard|felt|left|found|respected|slowed|called|[a-z]{3,}ed)\b/i,
     generateQuiz: () => ({
-      question: "You ___ the speed limit; the road was extremely icy.",
-      options: ["should have respected", "must respect", "could respecting"],
+      question: "You were driving through a school zone yesterday. You ___ the speed limit.",
+      options: ["should have respected", "must have respected", "should respect"],
       answer: "should have respected",
-      hint: "Past obligation/criticism requires should + have + V3",
-      explanation: "'Should have + V3' expresses criticism or regret about a past action."
+      hint: "Past obligation or advisable action that was expected: should + have + V3",
+      explanation: "Should have + V3 describes something that was expected or advisable in the past but did not happen or was not observed."
     })
   },
 
@@ -521,6 +524,7 @@ export function detectGrammarInText(
         shortLabel: rule.shortLabel,
         cefrLevel: rule.cefrLevel,
         formula: rule.formula,
+        formulaNote: rule.formulaNote,
         explanation: rule.explanation,
         nativeExplanation: getNativeExplanation(rule.tag, langCode),
         matchedText,

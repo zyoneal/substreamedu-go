@@ -1569,14 +1569,15 @@ func (s *AIService) AnalyzeGrammar(ctx context.Context, req dto.AnalyzeGrammarRe
 	fmt.Fprintf(&prompt, "Target learner native language: %s\n\n", resolvedFluent)
 
 	prompt.WriteString("Perform a deep pedagogical breakdown of the primary advanced grammatical structure:\n")
-	prompt.WriteString("1. Identify the rule name (e.g., 'Third Conditional', 'Modal Perfect (Past Regret)', 'Passive Voice', 'Causative Form', 'Negative Inversion').\n")
-	prompt.WriteString("2. Provide the canonical formula (e.g., 'Negative/Restrictive Adverb + Auxiliary + Subject + Main Verb' or 'If + had + V3, ... would have + V3').\n")
-	prompt.WriteString("3. Specify the CEFR level (B1, B2, C1, or C2).\n")
-	prompt.WriteString("4. Explain in 1-2 sentences why this structure was used in this context (pragmatics, nuance).\n")
-	prompt.WriteString("5. Provide a 1-2 sentence explanation in the student's native language.\n")
-	prompt.WriteString("6. Extract the exact highlighted substring demonstrating the structure.\n")
-	prompt.WriteString("7. Create 1 interactive mini-quiz question (gap_fill) testing this exact structure with 3 plausible options and the correct answer.\n")
-	prompt.WriteString("8. LINGUISTIC PRECISION MANDATE: NEVER classify regular word order (e.g. 'you would never have', 'I will never forget') as Negative Inversion. Negative Inversion strictly requires fronting a negative/restrictive adverbial (Never, Rarely, Seldom, Hardly, Little, Not only) to the beginning of the clause followed by subject-auxiliary inversion (Auxiliary + Subject). If the sentence has normal Subject + Aux + Adverb + Verb order, do NOT label it as Negative Inversion; analyze its actual structure.\n\n")
+	prompt.WriteString("1. SYNTACTIC ROLE ANALYSIS MANDATE: Always analyze the syntactic role of the target phrase within the FULL sentence before assigning a grammar topic (e.g., determine if a pronoun is subject or object, or whether an auxiliary verb precedes or follows the subject). Never classify a grammar category purely from isolated adjacent words.\n")
+	prompt.WriteString("2. Identify the rule name (e.g., 'Third Conditional', 'Modal Perfect', 'Passive Voice', 'Causative Form', 'Negative Inversion').\n")
+	prompt.WriteString("3. Provide the canonical formula (e.g., 'Modal + have + past participle (V3)', 'Negative/Restrictive Adverb + Auxiliary + Subject + Main Verb').\n")
+	prompt.WriteString("4. Specify the CEFR level (B1, B2, C1, or C2).\n")
+	prompt.WriteString("5. Explain in 1-2 sentences why this structure was used in this context (pragmatics, nuance).\n")
+	prompt.WriteString("6. Provide a 1-2 sentence explanation in the student's native language.\n")
+	prompt.WriteString("7. Extract the exact highlighted substring demonstrating the structure.\n")
+	prompt.WriteString("8. Create 1 interactive mini-quiz question (gap_fill) testing this exact structure with 3 plausible, high-quality options and the correct answer (distractors must test real tense/modal differentiation rather than obvious nonsense).\n")
+	prompt.WriteString("9. LINGUISTIC PRECISION MANDATE: NEVER classify regular word order (e.g. 'you would never have', 'I will never forget') as Negative Inversion. Negative Inversion strictly requires fronting a negative/restrictive adverbial (Never, Rarely, Seldom, Hardly, Little, Not only) to the beginning of the clause followed by subject-auxiliary inversion (Auxiliary + Subject). Also, do NOT confuse inverted questions ('Have you done your homework?') with Causative Form ('have something done').\n\n")
 
 	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
 	prompt.WriteString("{\n")
@@ -1679,9 +1680,15 @@ func getGrammarFallbackNative(tag, fluentLanguage string) string {
 		return "Нереальное или маловероятное условие в настоящем/будущем (если бы... то...)."
 	case "modal_perfect":
 		if isUk {
-			return "Модальне дієслово з перфектним інфінітивом: жаль, докір або логічний висновок щодо минулого."
+			return "Модальне дієслово + перфектний інфінітив для вираження припущення, можливості, жалю, критики або очікування щодо минулої дії."
+		} else if isEs {
+			return "Verbo modal + infinitivo perfecto (have + V3) para expresar deducción, posibilidad, arrepentimiento o crítica sobre situaciones pasadas."
+		} else if isPl {
+			return "Czasownik modalny + Perfect Infinitive (have + V3) do wyrażania przypuszczeń, możliwości, żalu lub krytyki dotyczących przeszłości."
+		} else if isTr {
+			return "Modal + have + V3 yapısı: Geçmişe dair mantıksal çıkarım, olasılık, pişmanlık veya eleştiri bildirmek için kullanılır."
 		}
-		return "Модальный глагол с перфектным инфинитивом для выражения сожаления или логического вывода о прошлом."
+		return "Модальный глагол + перфектный инфинитив для выражения предположения, возможности, сожаления, критики или упрёка относительно прошлого действия."
 	case "passive_voice":
 		if isUk {
 			return "Пасивний (страждальний) стан: фокус на об'єкті дії або призначенні інструмента."
@@ -1844,26 +1851,26 @@ func (s *AIService) resolveGrammarFallbackRule(sentence, ruleHint string) *dto.A
 		}
 	}
 
-	if tag == "modal_perfect" || strings.Contains(lower, "should have") || strings.Contains(lower, "could have") || strings.Contains(lower, "must have") {
+	if tag == "modal_perfect" || strings.Contains(lower, "should have") || strings.Contains(lower, "could have") || strings.Contains(lower, "must have") || strings.Contains(lower, "might have") || strings.Contains(lower, "would have") {
 		return &dto.AnalyzeGrammarResponse{
-			RuleName:           "Modal Perfect (Past Deduction / Regret)",
+			RuleName:           "Modal Perfect",
 			StructureTag:       "modal_perfect",
 			CefrLevel:          "B2",
-			Formula:            "Modal verb (should / could / must) + have + V3",
-			Explanation:        "Reflects on past actions, expressing criticism, missed possibilities, or strong logical deductions.",
-			NativeExplanation:  "Модальный глагол с перфектным инфинитивом для выражения сожаления или логического вывода о прошлом.",
-			HighlightedSegment: "have",
+			Formula:            "Modal + have + past participle (V3)",
+			Explanation:        "Modal + have + V3 is used to talk about past situations, including expectations, possibilities, deductions, regrets, and criticism.",
+			NativeExplanation:  "Модальный глагол + перфектный инфинитив для выражения предположения, возможности, сожаления, критики или упрёка относительно прошлого действия.",
+			HighlightedSegment: "should have",
 			Exercise: dto.PracticeExercise{
 				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
 				Type:            "gap_fill",
-				TargetWord:      "should have told",
-				Prompt:          "You ___ me earlier instead of waiting until the last minute.",
-				SentenceBefore:  "You ",
-				SentenceAfter:   " me earlier instead of waiting until the last minute.",
-				Hint:            "should + have + tell (V3)",
-				Options:         []string{"should have told", "should tell", "must told"},
-				AcceptedAnswers: []string{"should have told"},
-				Explanation:     "Expresses advice or regret regarding a past completed action.",
+				TargetWord:      "should have respected",
+				Prompt:          "You were driving through a school zone yesterday. You ___ the speed limit.",
+				SentenceBefore:  "You were driving through a school zone yesterday. You ",
+				SentenceAfter:   " the speed limit.",
+				Hint:            "Past obligation or advisable action that was expected: should + have + V3",
+				Options:         []string{"should have respected", "must have respected", "should respect"},
+				AcceptedAnswers: []string{"should have respected"},
+				Explanation:     "Should have + V3 describes something that was expected or advisable in the past but did not happen or was not observed.",
 			},
 		}
 	}

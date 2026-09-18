@@ -28,7 +28,27 @@ describe('grammarDetector', () => {
     expect(result).not.toBeNull();
     expect(result?.tag).toBe('modal_perfect');
     expect(result?.shortLabel).toBe('Modal Perf');
-    expect(result?.miniQuiz.options.length).toBeGreaterThanOrEqual(3);
+    expect(result?.formula).toBe('Modal + have + past participle (V3)');
+    expect(result?.formulaNote).toContain('Common forms');
+    expect(result?.miniQuiz.question).toContain('school zone');
+    expect(result?.miniQuiz.options).toEqual(
+      expect.arrayContaining(['should have respected', 'must have respected', 'should respect'])
+    );
+  });
+
+  test('detects authentic Modal Perfect quote from video ("should have said")', () => {
+    const text = "You should have said something about five seconds ago.";
+    const result = detectGrammarInText(text);
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('modal_perfect');
+    expect(result?.matchedText).toBe('should have said');
+  });
+
+  test('detects would have as Modal Perfect when not in an if-clause', () => {
+    const text = "I would have loved to join you for dinner tonight.";
+    const result = detectGrammarInText(text);
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('modal_perfect');
   });
 
   test('detects Inversion with Negative Adverbial and extracts full inverted phrase', () => {

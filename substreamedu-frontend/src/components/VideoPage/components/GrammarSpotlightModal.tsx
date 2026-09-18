@@ -142,6 +142,9 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
           <div className={styles.formulaSection}>
             <div className={styles.formulaLabel}>Structure Formula</div>
             <div className={styles.formulaPill}>{grammarPoint.formula}</div>
+            {grammarPoint.formulaNote && (
+              <div className={styles.formulaNote}>{grammarPoint.formulaNote}</div>
+            )}
           </div>
 
           {/* Explanations */}
