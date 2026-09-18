@@ -889,28 +889,31 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                 {intl.formatMessage({ id: 'flashcards.allCardsReviewed' })}
                             </h2>
                             <p className={styles.completionDescription}>
-                                {intl.formatMessage({ id: 'flashcards.greatJob' })}
+                                {Math.max(initialCardsCount.current, answeredIds.size) > 0 && sessionWords.length > 0
+                                    ? `Great job today! You've reviewed ${Math.max(initialCardsCount.current, answeredIds.size)} cards across ${sessionWords.length} unique words.`
+                                    : intl.formatMessage({ id: 'flashcards.greatJob' })}
                             </p>
 
-                            <button
-                                onClick={handleRefresh}
-                                disabled={loading}
-                                className={styles.refreshButton}
-                            >
-                                <RefreshCw className={`${styles.refreshIcon} ${loading ? styles.spinning : ''}`} />
-                                {loading ? intl.formatMessage({ id: 'flashcards.studyingMore' }) : intl.formatMessage({ id: 'flashcards.studyMore' })}
-                            </button>
+                            <div className={styles.completionActions}>
+                                {onStartActivePractice && sessionWords.length > 0 && (
+                                    <button
+                                        onClick={() => onStartActivePractice(sessionWords)}
+                                        className={styles.activePracticeButton}
+                                    >
+                                        <Sparkles size={16} />
+                                        <span>Practice these {sessionWords.length} words actively</span>
+                                    </button>
+                                )}
 
-                            {onStartActivePractice && sessionWords.length > 0 && (
                                 <button
-                                    onClick={() => onStartActivePractice(sessionWords)}
-                                    className={styles.primaryButton}
-                                    style={{ marginTop: '12px', background: 'linear-gradient(135deg, #f0c674, #e6b800)', color: '#0d0c0b' }}
+                                    onClick={handleRefresh}
+                                    disabled={loading}
+                                    className={styles.refreshButton}
                                 >
-                                    <Sparkles size={16} />
-                                    <span>Practice these {sessionWords.length} words actively</span>
+                                    <RefreshCw className={`${styles.refreshIcon} ${loading ? styles.spinning : ''}`} />
+                                    <span>{loading ? intl.formatMessage({ id: 'flashcards.studyingMore' }) : intl.formatMessage({ id: 'flashcards.studyMore' })}</span>
                                 </button>
-                            )}
+                            </div>
                         </div>
                     </div>
                 )}

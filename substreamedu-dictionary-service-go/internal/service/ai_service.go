@@ -1323,8 +1323,8 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 	}
 
 	items := req.Items
-	if len(items) > 10 {
-		items = items[:10]
+	if len(items) > 20 {
+		items = items[:20]
 	}
 
 	var prompt strings.Builder
@@ -1340,9 +1340,7 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 		}
 	}
 
-	prompt.WriteString("\nGenerate 1-2 diverse exercises per word. Include two types:\n")
-	prompt.WriteString("1. \"gap_fill\": An authentic sentence where the target word/collocation is replaced with '______'. Provide 'sentence_before' and 'sentence_after', a helpful hint (in fluent language), 4 options (the correct word plus 3 plausible distractors of the same part of speech), accepted inflections in 'accepted_answers', and a brief pedagogical explanation.\n")
-	prompt.WriteString("2. \"paraphrase\": A sentence expressing a situation without the target word, asking the learner to rewrite it or complete it using the target word/collocation. Provide 'accepted_answers' and an explanation.\n\n")
+	prompt.WriteString("\nGenerate exactly 1 engaging, authentic exercise per word. Focus on \"gap_fill\": An authentic sentence where the target word/collocation is replaced with '______'. Provide 'sentence_before' and 'sentence_after', a helpful hint (in fluent language), 4 options (the correct word plus 3 plausible distractors of the same part of speech), accepted inflections in 'accepted_answers', and a brief pedagogical explanation.\n\n")
 
 	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
 	prompt.WriteString("{\n")
@@ -1369,7 +1367,7 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 			{Role: "system", Content: "You are an expert language pedagogy AI. You generate precise JSON exercises for active vocabulary production."},
 			{Role: "user", Content: prompt.String()},
 		},
-		MaxTokens:   1500,
+		MaxTokens:   2500,
 		Temperature: 0.5,
 	}
 
@@ -1394,7 +1392,7 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 		s.logger.Warn("AI call failed for practice exercises, using algorithmic fallback", zap.Error(err))
 	}
 
-	fallbackResult := s.generateAlgorithmicExercises(items)
+	fallbackResult := s.generateAlgorithmicExercises(req.Items)
 	return fallbackResult, nil
 }
 

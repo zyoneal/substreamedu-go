@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import ActivePractice from './ActivePractice';
 import { LanguageContext } from '../LanguageContext';
+import { DictionaryService } from '../../services/DictionaryService';
 import enMessages from '../../locales/en.json';
 
 jest.mock('../../services/DictionaryService', () => ({
@@ -96,6 +97,42 @@ describe('ActivePractice Component', () => {
     await waitFor(() => {
       expect(screen.getByText(/Compose an original sentence using/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/Write a sentence featuring "brush off"/i)).toBeInTheDocument();
+    });
+  });
+
+  it('retains all practice words when AI returns a smaller batch of exercises', async () => {
+    const fiveWords = [
+      ...mockWords,
+      { word: 'concede', translation: 'уступать', definition: 'admit that something is true', context: 'He conceded defeat.' },
+      { word: 'profound', translation: 'глубокий', definition: 'very great or intense', context: 'A profound impact.' },
+      { word: 'resilient', translation: 'стойкий', definition: 'able to withstand hardships', context: 'A resilient community.' },
+    ];
+
+    (DictionaryService.generatePracticeExercises as jest.Mock).mockResolvedValueOnce({
+      exercises: [
+        {
+          id: 'ai_1',
+          type: 'gap_fill',
+          target_word: 'brush off',
+          prompt: 'He tried to ______ all negative rumors.',
+          sentence_before: 'He tried to ',
+          sentence_after: ' all negative rumors.',
+          hint: 'dismiss',
+          options: ['brush off', 'take over', 'look into', 'set up'],
+          accepted_answers: ['brush off'],
+          explanation: 'AI enhanced note',
+        }
+      ]
+    });
+
+    renderComponent(fiveWords);
+
+    // Initial counter shows 5 exercises total
+    expect(screen.getByText('5')).toBeInTheDocument();
+
+    // After async AI resolves, total exercises should STILL be 5, not truncated to 1
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
     });
   });
 });

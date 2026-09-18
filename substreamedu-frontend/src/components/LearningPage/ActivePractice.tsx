@@ -54,6 +54,10 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
     const [isCompleted, setIsCompleted] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
+    const currentIndexRef = useRef(currentIndex);
+    currentIndexRef.current = currentIndex;
+    const selectedOptionRef = useRef(selectedOption);
+    selectedOptionRef.current = selectedOption;
 
     // 1. Load words if not provided
     useEffect(() => {
@@ -150,7 +154,19 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
             fluentLanguage || 'ru'
         )?.then(resp => {
             if (resp && resp.exercises && resp.exercises.length > 0) {
-                setExercises(resp.exercises);
+                const aiMap = new Map(
+                    resp.exercises.map(e => [e.target_word.toLowerCase().trim(), e])
+                );
+                setExercises(prev => prev.map((ex, idx) => {
+                    const aiEx = aiMap.get(ex.target_word.toLowerCase().trim());
+                    if (!aiEx) return ex;
+                    // Keep card stable if user has already progressed past it or is typing in it
+                    if (idx < currentIndexRef.current) return ex;
+                    if (idx === currentIndexRef.current && (inputRef.current?.value || selectedOptionRef.current)) {
+                        return ex;
+                    }
+                    return aiEx;
+                }));
             }
         })?.catch(err => {
             // Silently fall back to algorithmic exercises already set
