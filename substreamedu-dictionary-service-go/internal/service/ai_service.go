@@ -1569,13 +1569,14 @@ func (s *AIService) AnalyzeGrammar(ctx context.Context, req dto.AnalyzeGrammarRe
 	fmt.Fprintf(&prompt, "Target learner native language: %s\n\n", resolvedFluent)
 
 	prompt.WriteString("Perform a deep pedagogical breakdown of the primary advanced grammatical structure:\n")
-	prompt.WriteString("1. Identify the rule name (e.g., 'Third Conditional', 'Modal Perfect (Past Regret)', 'Passive Voice', 'Causative Form', 'Inversion').\n")
-	prompt.WriteString("2. Provide the canonical formula (e.g., 'If + had + V3, ... would have + V3').\n")
+	prompt.WriteString("1. Identify the rule name (e.g., 'Third Conditional', 'Modal Perfect (Past Regret)', 'Passive Voice', 'Causative Form', 'Negative Inversion').\n")
+	prompt.WriteString("2. Provide the canonical formula (e.g., 'Negative/Restrictive Adverb + Auxiliary + Subject + Main Verb' or 'If + had + V3, ... would have + V3').\n")
 	prompt.WriteString("3. Specify the CEFR level (B1, B2, C1, or C2).\n")
 	prompt.WriteString("4. Explain in 1-2 sentences why this structure was used in this context (pragmatics, nuance).\n")
 	prompt.WriteString("5. Provide a 1-2 sentence explanation in the student's native language.\n")
 	prompt.WriteString("6. Extract the exact highlighted substring demonstrating the structure.\n")
-	prompt.WriteString("7. Create 1 interactive mini-quiz question (gap_fill) testing this exact structure with 3 plausible options and the correct answer.\n\n")
+	prompt.WriteString("7. Create 1 interactive mini-quiz question (gap_fill) testing this exact structure with 3 plausible options and the correct answer.\n")
+	prompt.WriteString("8. LINGUISTIC PRECISION MANDATE: NEVER classify regular word order (e.g. 'you would never have', 'I will never forget') as Negative Inversion. Negative Inversion strictly requires fronting a negative/restrictive adverbial (Never, Rarely, Seldom, Hardly, Little, Not only) to the beginning of the clause followed by subject-auxiliary inversion (Auxiliary + Subject). If the sentence has normal Subject + Aux + Adverb + Verb order, do NOT label it as Negative Inversion; analyze its actual structure.\n\n")
 
 	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
 	prompt.WriteString("{\n")
@@ -1693,9 +1694,15 @@ func getGrammarFallbackNative(tag, fluentLanguage string) string {
 		return "Каузативная форма: действие выполняется кем-то другим по вашей просьбе или заказу."
 	case "inversion":
 		if isUk {
-			return "Інверсія після заперечних прислівників для виразного підсилення висловлювання."
+			return "Інверсія після заперечних або обмежувальних прислівників: вимагає порядку слів «Прислівник + Допоміжне дієслово + Підмет + Дієслово» для підсилення висловлювання."
+		} else if isEs {
+			return "Inversión negativa enfática: el adverbio negativo inicial exige la estructura «Adverbio + Verbo auxiliar + Sujeto + Verbo principal» para dar énfasis dramático."
+		} else if isPl {
+			return "Inwersja po przysłówkach przeczących wysuniętych na początek zdania — czasownik posiłkowy poprzedza podmiot dla wzmocnienia dramaturgii."
+		} else if isTr {
+			return "Vurgulu negatif devrik yapı: olumsuz zarf başa geldiğinde yardımcı fiil özneden önce gelir."
 		}
-		return "Инверсия после отрицательных наречий для эмфатического усиления высказывания."
+		return "Эмфатическая инверсия: вынесение отрицательного или ограничительного наречия в начало предложения меняет порядок слов на «Наречие + Вспомогательный глагол + Подлежащее + Глагол»."
 	case "wish_if_only":
 		if isUk {
 			return "Конструкція з wish / if only: вираження жалю про теперішню або минулу ситуацію."
@@ -1764,6 +1771,30 @@ func (s *AIService) getGrammarFallback(sentence, ruleHint, fluentLanguage string
 func (s *AIService) resolveGrammarFallbackRule(sentence, ruleHint string) *dto.AnalyzeGrammarResponse {
 	lower := strings.ToLower(sentence)
 	tag := strings.ToLower(ruleHint)
+
+	if tag == "inversion" || strings.HasPrefix(lower, "never ") || strings.HasPrefix(lower, "rarely ") || strings.HasPrefix(lower, "seldom ") || strings.HasPrefix(lower, "hardly had") || strings.HasPrefix(lower, "little did") || strings.HasPrefix(lower, "not only did") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Negative Inversion",
+			StructureTag:       "inversion",
+			CefrLevel:          "C1",
+			Formula:            "Negative/Restrictive Adverb + Auxiliary + Subject + Main Verb",
+			Explanation:        "Moving a negative or restrictive expression to the beginning of a clause triggers subject-auxiliary inversion for emphatic or dramatic effect.",
+			NativeExplanation:  "Эмфатическая инверсия: вынесение отрицательного или ограничительного наречия в начало предложения меняет порядок слов на «Наречие + Вспомогательный глагол + Подлежащее + Глагол».",
+			HighlightedSegment: "Never have I",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "have I witnessed",
+				Prompt:          "Never ___ such breathtaking cinematic visuals.",
+				SentenceBefore:  "Never ",
+				SentenceAfter:   " such breathtaking cinematic visuals.",
+				Hint:            "Auxiliary verb before subject (have + I + V3)",
+				Options:         []string{"have I witnessed", "I have witnessed", "did I witnessed"},
+				AcceptedAnswers: []string{"have I witnessed"},
+				Explanation:     "After fronted negative adverbs like 'Never', the auxiliary verb precedes the subject.",
+			},
+		}
+	}
 
 	if tag == "third_conditional" || (strings.Contains(lower, "if ") && (strings.Contains(lower, "would have") || strings.Contains(lower, "could have"))) {
 		return &dto.AnalyzeGrammarResponse{

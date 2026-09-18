@@ -31,12 +31,41 @@ describe('grammarDetector', () => {
     expect(result?.miniQuiz.options.length).toBeGreaterThanOrEqual(3);
   });
 
-  test('detects Inversion with Negative Adverbial', () => {
+  test('detects Inversion with Negative Adverbial and extracts full inverted phrase', () => {
     const text = "Never have I seen such incredible cinematography in my life.";
     const result = detectGrammarInText(text);
     expect(result).not.toBeNull();
     expect(result?.tag).toBe('inversion');
     expect(result?.cefrLevel).toBe('C1');
+    expect(result?.formula).toBe('Negative/Restrictive Adverb + Auxiliary + Subject + Main Verb');
+    expect(result?.matchedText).toBe('Never have I seen');
+  });
+
+  test('detects fronted negative inversion with "Never have I witnessed"', () => {
+    const text = "Never have I witnessed such breathtaking cinematic visuals.";
+    const result = detectGrammarInText(text);
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('inversion');
+    expect(result?.matchedText).toBe('Never have I witnessed');
+  });
+
+  test('detects other fronted restrictive inversions (Rarely, Hardly, Little, Under no circumstances)', () => {
+    expect(detectGrammarInText("Rarely do we encounter such profound dedication.")?.tag).toBe('inversion');
+    expect(detectGrammarInText("Hardly had I arrived when the phone rang.")?.tag).toBe('inversion');
+    expect(detectGrammarInText("Little did they know what was about to happen.")?.tag).toBe('inversion');
+    expect(detectGrammarInText("Under no circumstances should you open this emergency door.")?.tag).toBe('inversion');
+  });
+
+  test('does NOT misclassify standard S-Aux-Adv-V word order as Negative Inversion (false positive prevention)', () => {
+    // The user's exact authentic video subtitle:
+    const videoSubtitle = "The girl you said was out of your league, that you'd never have a chance with.";
+    const res1 = detectGrammarInText(videoSubtitle);
+    expect(res1?.tag).not.toBe('inversion');
+
+    expect(detectGrammarInText("I will never have enough time to finish this project.")?.tag).not.toBe('inversion');
+    expect(detectGrammarInText("They rarely have coffee in the evening.")?.tag).not.toBe('inversion');
+    expect(detectGrammarInText("He seldom does any chores around the house.")?.tag).not.toBe('inversion');
+    expect(detectGrammarInText("We barely had time to pack our bags.")?.tag).not.toBe('inversion');
   });
 
   test('detects Second Conditional', () => {
