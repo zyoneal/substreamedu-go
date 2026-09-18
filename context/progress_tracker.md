@@ -84,6 +84,7 @@
   - Removed persistent top-right `[N words]` / `[N letters]` badge in `ActivePractice.tsx` that gave away the answer in multiple-choice mode.
   - Relocated length clue to `Show Meaning Hint` strictly for typing mode when the learner explicitly requests assistance.
   - Enhanced distractor selection in `ActivePractice.tsx` and `ai_service.go` (`generateAlgorithmicExercises`): prioritized session words with matching word count (single words with single words, phrasal expressions with phrasal expressions) and aligned default fallbacks (`consider`/`resolve` for single words vs `take over`/`run into` for multi-word phrases).
+  - Purged top mode switcher pill (`[SRS Flashcards] [Active Practice]`) from `LearningPage.tsx`. Active Practice is now strictly and cleanly accessible via the post-review completion CTA button after finishing scheduled flashcards.
   - Updated unit test assertions in `ActivePractice.test.tsx`: 19 test suites, 102 tests pass cleanly. Production bundle built and verified.
 - **Active Practice Batch Merge & Completion Actions UX Polish (Completed 2026-09-18)**:
   - Clarified card reviews vs unique word count in `Flashcards.tsx`: `You've reviewed ${totalCards} cards across ${sessionWords.length} unique words.` (explaining 50 card reviews vs 30 unique lexical items due to CardType 0/1 directions and 'Again' repeats).
