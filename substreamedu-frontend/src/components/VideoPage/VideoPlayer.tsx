@@ -215,6 +215,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const [temporarySubtitleInfo, setTemporarySubtitleInfo] = useState<SubtitleWithScore | null>(null);
 
     const [selectedGrammarPoint, setSelectedGrammarPoint] = useState<DetectedGrammarPoint | null>(null);
+    const [selectedGrammarSentence, setSelectedGrammarSentence] = useState<string>('');
     const [isGrammarModalOpen, setIsGrammarModalOpen] = useState(false);
     const [isGrammarIndexOpen, setIsGrammarIndexOpen] = useState(false);
 
@@ -2763,6 +2764,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                                 e.stopPropagation();
                                                                 pauseVideo();
                                                                 setSelectedGrammarPoint(activeGrammarPoint);
+                                                                setSelectedGrammarSentence(currentSubtitle || '');
                                                                 setIsGrammarModalOpen(true);
                                                             }}
                                                             title={`Explore grammar: ${activeGrammarPoint.name}`}
@@ -2862,6 +2864,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                                 e.stopPropagation();
                                                                 pauseVideo();
                                                                 setSelectedGrammarPoint(activeGrammarPoint);
+                                                                setSelectedGrammarSentence(currentSubtitle || '');
                                                                 setIsGrammarModalOpen(true);
                                                             }}
                                                             title={`Explore grammar: ${activeGrammarPoint.name}`}
@@ -3435,9 +3438,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
                 <GrammarSpotlightModal
                     isOpen={isGrammarModalOpen}
-                    onClose={() => setIsGrammarModalOpen(false)}
+                    onClose={() => {
+                        setIsGrammarModalOpen(false);
+                        setSelectedGrammarSentence('');
+                    }}
                     grammarPoint={selectedGrammarPoint}
-                    fullSentence={currentSubtitle || ''}
+                    fullSentence={selectedGrammarSentence || currentSubtitle || ''}
                     learningLanguage={learningLanguage}
                     fluentLanguage={fluentLanguage || 'Russian'}
                 />
@@ -3454,6 +3460,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                             youtubePlayerRef.current.seekTo(Math.max(0, match.timestampSeconds), true);
                         }
                         setSelectedGrammarPoint(match.grammar);
+                        setSelectedGrammarSentence(match.text);
                         setIsGrammarModalOpen(true);
                     }}
                 />

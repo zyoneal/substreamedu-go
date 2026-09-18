@@ -1746,6 +1746,54 @@ func (s *AIService) getGrammarFallback(sentence, ruleHint string) *dto.AnalyzeGr
 		}
 	}
 
+	if tag == "be_used_to" || (strings.Contains(lower, "used to") && (strings.Contains(lower, "get used to") || strings.Contains(lower, "got used to") || strings.Contains(lower, "am used to") || strings.Contains(lower, "is used to") || strings.Contains(lower, "are used to") || strings.Contains(lower, "be used to"))) {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Be / Get used to (Accustomed)",
+			StructureTag:       "be_used_to",
+			CefrLevel:          "B2",
+			Formula:            "be / get + used to + noun / V-ing",
+			Explanation:        "Expresses becoming or being accustomed to something through habit, adaptation, or exposure.",
+			NativeExplanation:  "Конструкция be / get used to: привыкнуть к чему-либо или быть привыкшим (требует герундий -ing или существительное).",
+			HighlightedSegment: "used to",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "living",
+				Prompt:          "She is slowly getting used to ___ in a noisy city.",
+				SentenceBefore:  "She is slowly getting used to ",
+				SentenceAfter:   " in a noisy city.",
+				Hint:            "live (gerund -ing)",
+				Options:         []string{"living", "live", "lived"},
+				AcceptedAnswers: []string{"living"},
+				Explanation:     "After 'get used to', we use a noun or the -ing form (gerund).",
+			},
+		}
+	}
+
+	if tag == "used_to" || strings.Contains(lower, "used to") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Used to (Past Habit / State)",
+			StructureTag:       "used_to",
+			CefrLevel:          "B1",
+			Formula:            "used to + base verb / didn't use to",
+			Explanation:        "Refers to past habits, routines, or states that are no longer true in the present.",
+			NativeExplanation:  "Конструкция used to: привычки или состояния в прошлом, которых больше нет.",
+			HighlightedSegment: "used to",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "play",
+				Prompt:          "He used to ___ guitar in high school, but he gave it up.",
+				SentenceBefore:  "He used to ",
+				SentenceAfter:   " guitar in high school, but he gave it up.",
+				Hint:            "base verb form",
+				Options:         []string{"play", "playing", "played"},
+				AcceptedAnswers: []string{"play"},
+				Explanation:     "'Used to' expressing past habit takes the bare infinitive (base verb).",
+			},
+		}
+	}
+
 	return &dto.AnalyzeGrammarResponse{
 		RuleName:           "Grammar in Context",
 		StructureTag:       "general_grammar",

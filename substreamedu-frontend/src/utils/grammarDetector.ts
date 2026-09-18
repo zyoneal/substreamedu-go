@@ -194,7 +194,26 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     })
   },
 
-  // 9. Used to / Would (Past Habit)
+  // 9. Be / Get used to (Accustomed)
+  {
+    tag: 'be_used_to',
+    name: 'Be / Get used to (Accustomed)',
+    shortLabel: 'Get used to',
+    cefrLevel: 'B2',
+    formula: 'be / get + used to + noun / V-ing',
+    explanation: 'Describes becoming or being accustomed to something familiar through habit or experience.',
+    nativeExplanation: 'Конструкция be / get used to: привыкнуть к чему-либо или быть привыкшим (требует существительное или -ing).',
+    pattern: /\b(?:be|am|is|are|was|were|been|being|get|gets|got|getting)\s+used\s+to(?:\s+(?:[a-z]{2,}|the|a|an|my|your|his|her|our|their|this|that|it|real))?/i,
+    generateQuiz: () => ({
+      question: "It took him some time to get used to ___ early every morning.",
+      options: ["waking up", "wake up", "woke up"],
+      answer: "waking up",
+      hint: "After 'get used to', use the -ing form (gerund) or noun",
+      explanation: "'Get used to' is followed by a gerund (-ing) or noun."
+    })
+  },
+
+  // 10. Used to / Would (Past Habit)
   {
     tag: 'used_to',
     name: 'Used to (Past Habit)',
@@ -203,7 +222,7 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     formula: 'used to + base verb / didn\'t use to',
     explanation: 'Contrasts past routines or states with the present, emphasizing that it is no longer true.',
     nativeExplanation: 'Конструкция used to: привычки или состояния в прошлом, которых больше нет.',
-    pattern: /\b(?:used\s+to\s+[a-z]{3,}|didn't\s+use\s+to\s+[a-z]{3,})\b/i,
+    pattern: /(?<!\b(?:be|am|is|are|was|were|been|being|get|gets|got|getting)\s+)\b(?:used\s+to\s+[a-z]{3,}|didn't\s+use\s+to\s+[a-z]{3,})\b/i,
     generateQuiz: () => ({
       question: "She ___ live in Paris, but now she resides in Tokyo.",
       options: ["used to", "was used to", "use to"],
@@ -213,7 +232,7 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     })
   },
 
-  // 10. Participle Clause
+  // 11. Participle Clause
   {
     tag: 'participle_clause',
     name: 'Participle Clause',
@@ -282,10 +301,16 @@ export function detectGrammarInText(rawText: string | null | undefined): Detecte
 }
 
 export function formatTimeSeconds(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
+  const total = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(total / 3600);
+  const mins = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
   const paddedMins = mins.toString().padStart(2, '0');
   const paddedSecs = secs.toString().padStart(2, '0');
+  if (hours > 0) {
+    const paddedHours = hours.toString().padStart(2, '0');
+    return `${paddedHours}:${paddedMins}:${paddedSecs}`;
+  }
   return `${paddedMins}:${paddedSecs}`;
 }
 
@@ -302,20 +327,23 @@ export function scanSubtitlesForGrammar(
   for (let i = 0; i < subtitles.length; i++) {
     const sub = subtitles[i];
     const text = typeof sub.text === 'string' ? sub.text : '';
-    if (!text || text.length < 12) continue;
+    if (!text || text.length < 10) continue;
 
     const detected = detectGrammarInText(text);
     if (!detected) continue;
 
-    const startSeconds = typeof sub.start === 'number'
-      ? sub.start
-      : typeof sub.startTime === 'number'
-        ? sub.startTime
-        : 0;
+    let startSeconds = 0;
+    if (typeof sub.startTimeMs === 'number' && sub.startTimeMs > 0) {
+      startSeconds = sub.startTimeMs / 1000;
+    } else if (typeof sub.start === 'number' && sub.start > 0) {
+      startSeconds = sub.start > 10000 ? sub.start / 1000 : sub.start;
+    } else if (typeof sub.startTime === 'number' && sub.startTime > 0) {
+      startSeconds = sub.startTime > 10000 ? sub.startTime / 1000 : sub.startTime;
+    }
 
-    // Prevent spamming the same grammar point in immediate consecutive lines (< 3s apart)
-    const minuteBucket = Math.floor(startSeconds / 3);
-    const key = `${detected.tag}_${minuteBucket}`;
+    // Prevent spamming the same grammar point in immediate consecutive lines (< 4s apart)
+    const timeBucket = Math.floor(startSeconds / 4);
+    const key = `${detected.tag}_${timeBucket}`;
     if (seenTagsPerMinute.has(key)) {
       continue;
     }
