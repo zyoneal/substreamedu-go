@@ -1531,3 +1531,241 @@ func (s *AIService) EvaluateSentence(ctx context.Context, req dto.EvaluateSenten
 	}, nil
 }
 
+type grammarAIResponse struct {
+	RuleName           string               `json:"rule_name"`
+	StructureTag       string               `json:"structure_tag"`
+	CefrLevel          string               `json:"cefr_level"`
+	Formula            string               `json:"formula"`
+	Explanation        string               `json:"explanation"`
+	NativeExplanation  string               `json:"native_explanation"`
+	HighlightedSegment string               `json:"highlighted_segment"`
+	Exercise           dto.PracticeExercise `json:"exercise"`
+}
+
+func (s *AIService) AnalyzeGrammar(ctx context.Context, req dto.AnalyzeGrammarRequest) (*dto.AnalyzeGrammarResponse, error) {
+	resolvedLearning := req.LearningLanguage
+	if val, ok := s.languageCache[req.LearningLanguage]; ok {
+		resolvedLearning = val
+	}
+	if resolvedLearning == "" {
+		resolvedLearning = "English"
+	}
+
+	resolvedFluent := req.FluentLanguage
+	if val, ok := s.languageCache[req.FluentLanguage]; ok {
+		resolvedFluent = val
+	}
+	if resolvedFluent == "" {
+		resolvedFluent = "Russian"
+	}
+
+	var prompt strings.Builder
+	fmt.Fprintf(&prompt, "You are a master linguistic professor and communicative grammar teacher.\n")
+	fmt.Fprintf(&prompt, "Analyze the following %s sentence from authentic video subtitles:\n", resolvedLearning)
+	fmt.Fprintf(&prompt, "Sentence: \"%s\"\n", req.Sentence)
+	if req.RuleHint != "" {
+		fmt.Fprintf(&prompt, "Detected Pattern Hint: %s\n", req.RuleHint)
+	}
+	fmt.Fprintf(&prompt, "Target learner native language: %s\n\n", resolvedFluent)
+
+	prompt.WriteString("Perform a deep pedagogical breakdown of the primary advanced grammatical structure:\n")
+	prompt.WriteString("1. Identify the rule name (e.g., 'Third Conditional', 'Modal Perfect (Past Regret)', 'Passive Voice', 'Causative Form', 'Inversion').\n")
+	prompt.WriteString("2. Provide the canonical formula (e.g., 'If + had + V3, ... would have + V3').\n")
+	prompt.WriteString("3. Specify the CEFR level (B1, B2, C1, or C2).\n")
+	prompt.WriteString("4. Explain in 1-2 sentences why this structure was used in this context (pragmatics, nuance).\n")
+	prompt.WriteString("5. Provide a 1-2 sentence explanation in the student's native language.\n")
+	prompt.WriteString("6. Extract the exact highlighted substring demonstrating the structure.\n")
+	prompt.WriteString("7. Create 1 interactive mini-quiz question (gap_fill) testing this exact structure with 3 plausible options and the correct answer.\n\n")
+
+	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
+	prompt.WriteString("{\n")
+	prompt.WriteString("  \"rule_name\": \"Third Conditional\",\n")
+	prompt.WriteString("  \"structure_tag\": \"third_conditional\",\n")
+	prompt.WriteString("  \"cefr_level\": \"B2\",\n")
+	prompt.WriteString("  \"formula\": \"If + had + V3, ... would have + V3\",\n")
+	prompt.WriteString("  \"explanation\": \"Expresses an impossible past condition and its imagined past result.\",\n")
+	prompt.WriteString("  \"native_explanation\": \"Выражает нереальное условие в прошлом.\",\n")
+	prompt.WriteString("  \"highlighted_segment\": \"would have been\",\n")
+	prompt.WriteString("  \"exercise\": {\n")
+	prompt.WriteString("    \"id\": \"quiz-1\",\n")
+	prompt.WriteString("    \"type\": \"gap_fill\",\n")
+	prompt.WriteString("    \"target_word\": \"had known\",\n")
+	prompt.WriteString("    \"prompt\": \"If I ___ about the delay, I would have taken the earlier flight.\",\n")
+	prompt.WriteString("    \"sentence_before\": \"If I \",\n")
+	prompt.WriteString("    \"sentence_after\": \" about the delay, I would have taken the earlier flight.\",\n")
+	prompt.WriteString("    \"hint\": \"Past perfect form of 'know'\",\n")
+	prompt.WriteString("    \"options\": [\"had known\", \"knew\", \"have known\"],\n")
+	prompt.WriteString("    \"accepted_answers\": [\"had known\"],\n")
+	prompt.WriteString("    \"explanation\": \"Third conditional requires 'had + past participle' in the if-clause.\"\n")
+	prompt.WriteString("  }\n")
+	prompt.WriteString("}\n")
+	prompt.WriteString("Do NOT include markdown backticks or commentary.")
+
+	dsReq := dto.DeepSeekRequest{
+		Model: "deepseek-chat",
+		Messages: []dto.DeepSeekMessage{
+			{Role: "system", Content: "You are a professional linguistics and grammar analyzer. You respond strictly in valid JSON."},
+			{Role: "user", Content: prompt.String()},
+		},
+		MaxTokens:   800,
+		Temperature: 0.3,
+	}
+
+	respStr, err := s.callWithFallback(ctx, dsReq)
+	if err == nil {
+		clean := strings.TrimSpace(respStr)
+		if strings.HasPrefix(clean, "```json") {
+			clean = strings.TrimPrefix(clean, "```json")
+		} else if strings.HasPrefix(clean, "```") {
+			clean = strings.TrimPrefix(clean, "```")
+		}
+		clean = strings.TrimSuffix(clean, "```")
+		clean = strings.TrimSpace(clean)
+
+		var gResp grammarAIResponse
+		if unmarshalErr := json.Unmarshal([]byte(clean), &gResp); unmarshalErr == nil && gResp.RuleName != "" {
+			if gResp.Exercise.ID == "" {
+				gResp.Exercise.ID = fmt.Sprintf("quiz-%d", time.Now().UnixNano())
+			}
+			return &dto.AnalyzeGrammarResponse{
+				RuleName:           gResp.RuleName,
+				StructureTag:       gResp.StructureTag,
+				CefrLevel:          gResp.CefrLevel,
+				Formula:            gResp.Formula,
+				Explanation:        gResp.Explanation,
+				NativeExplanation:  gResp.NativeExplanation,
+				HighlightedSegment: gResp.HighlightedSegment,
+				Exercise:           gResp.Exercise,
+			}, nil
+		}
+		s.logger.Warn("Failed to unmarshal grammar analysis AI response, falling back", zap.Error(err))
+	} else {
+		s.logger.Warn("Grammar analysis AI call failed, using linguistic fallback", zap.Error(err))
+	}
+
+	return s.getGrammarFallback(req.Sentence, req.RuleHint), nil
+}
+
+func (s *AIService) getGrammarFallback(sentence, ruleHint string) *dto.AnalyzeGrammarResponse {
+	lower := strings.ToLower(sentence)
+	tag := strings.ToLower(ruleHint)
+
+	if tag == "third_conditional" || (strings.Contains(lower, "if ") && (strings.Contains(lower, "would have") || strings.Contains(lower, "could have"))) {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Third Conditional",
+			StructureTag:       "third_conditional",
+			CefrLevel:          "B2",
+			Formula:            "If + had + V3, ... would have + V3",
+			Explanation:        "Speculates about an impossible past scenario and its unrealized consequence.",
+			NativeExplanation:  "Нереальное условие в прошлом (сожаление или размышление о том, чего не произошло).",
+			HighlightedSegment: "would have",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "had known",
+				Prompt:          "If she ___ the truth, she would have acted differently.",
+				SentenceBefore:  "If she ",
+				SentenceAfter:   " the truth, she would have acted differently.",
+				Hint:            "Past Perfect (had + V3)",
+				Options:         []string{"had known", "knew", "has known"},
+				AcceptedAnswers: []string{"had known"},
+				Explanation:     "Third conditional uses past perfect in the condition clause.",
+			},
+		}
+	}
+
+	if tag == "second_conditional" || (strings.Contains(lower, "if ") && strings.Contains(lower, "would ")) {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Second Conditional",
+			StructureTag:       "second_conditional",
+			CefrLevel:          "B1",
+			Formula:            "If + Past Simple, ... would + base verb",
+			Explanation:        "Describes hypothetical, unreal, or improbable situations in the present or future.",
+			NativeExplanation:  "Нереальное или маловероятное условие в настоящем/будущем (если бы... то...).",
+			HighlightedSegment: "would",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "had",
+				Prompt:          "If I ___ more time, I would read every evening.",
+				SentenceBefore:  "If I ",
+				SentenceAfter:   " more time, I would read every evening.",
+				Hint:            "Past simple of 'have'",
+				Options:         []string{"had", "have", "would have"},
+				AcceptedAnswers: []string{"had"},
+				Explanation:     "Second conditional requires past simple in the if-clause.",
+			},
+		}
+	}
+
+	if tag == "modal_perfect" || strings.Contains(lower, "should have") || strings.Contains(lower, "could have") || strings.Contains(lower, "must have") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Modal Perfect (Past Deduction / Regret)",
+			StructureTag:       "modal_perfect",
+			CefrLevel:          "B2",
+			Formula:            "Modal verb (should / could / must) + have + V3",
+			Explanation:        "Reflects on past actions, expressing criticism, missed possibilities, or strong logical deductions.",
+			NativeExplanation:  "Модальный глагол с перфектным инфинитивом для выражения сожаления или логического вывода о прошлом.",
+			HighlightedSegment: "have",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "should have told",
+				Prompt:          "You ___ me earlier instead of waiting until the last minute.",
+				SentenceBefore:  "You ",
+				SentenceAfter:   " me earlier instead of waiting until the last minute.",
+				Hint:            "should + have + tell (V3)",
+				Options:         []string{"should have told", "should tell", "must told"},
+				AcceptedAnswers: []string{"should have told"},
+				Explanation:     "Expresses advice or regret regarding a past completed action.",
+			},
+		}
+	}
+
+	if tag == "passive_voice" || strings.Contains(lower, " was ") || strings.Contains(lower, " were ") || strings.Contains(lower, " been ") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Passive Voice",
+			StructureTag:       "passive_voice",
+			CefrLevel:          "B1",
+			Formula:            "be + past participle (V3)",
+			Explanation:        "Shifts narrative focus from the person performing the action to the recipient or outcome.",
+			NativeExplanation:  "Пассивный (страдательный) залог — фокус на объекте действия, а не на исполнителе.",
+			HighlightedSegment: "was",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "was built",
+				Prompt:          "The ancient fortress ___ in the 14th century.",
+				SentenceBefore:  "The ancient fortress ",
+				SentenceAfter:   " in the 14th century.",
+				Hint:            "be (past) + build (V3)",
+				Options:         []string{"was built", "built", "has built"},
+				AcceptedAnswers: []string{"was built"},
+				Explanation:     "Past simple passive uses was/were + past participle.",
+			},
+		}
+	}
+
+	return &dto.AnalyzeGrammarResponse{
+		RuleName:           "Grammar in Context",
+		StructureTag:       "general_grammar",
+		CefrLevel:          "B1",
+		Formula:            "Subject + Verb Phrase + Object/Complement",
+		Explanation:        "Authentic sentence structure captured from natural dialogue.",
+		NativeExplanation:  "Грамматическая конструкция в контексте живой речи.",
+		HighlightedSegment: sentence,
+		Exercise: dto.PracticeExercise{
+			ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+			Type:            "gap_fill",
+			TargetWord:      "complete",
+			Prompt:          "Review this authentic sentence carefully: \"" + sentence + "\"",
+			SentenceBefore:  "Review: \"",
+			SentenceAfter:   "\"",
+			Hint:            "Pay attention to verb tenses and clause connectors",
+			Options:         []string{"complete", "practice", "analyze"},
+			AcceptedAnswers: []string{"complete"},
+			Explanation:     "Recognizing natural collocations and clause balance is key to fluency.",
+		},
+	}
+}
+

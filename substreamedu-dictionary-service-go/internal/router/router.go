@@ -54,6 +54,7 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 			api.POST("/session-summary", dh.GenerateSessionSummary)
 			api.POST("/practice/generate-exercises", dh.GeneratePracticeExercises)
 			api.POST("/practice/evaluate-sentence", dh.EvaluateSentence)
+			api.POST("/grammar/analyze", dh.AnalyzeGrammar)
 
 			// Mutations require strict JWT authentication
 			mutations := api.Group("")

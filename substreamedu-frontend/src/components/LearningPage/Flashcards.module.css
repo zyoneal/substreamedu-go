@@ -1,8 +1,8 @@
 .pageContainer {
     position: relative;
-    min-height: 100vh;
+    min-height: calc(100vh - 140px);
     background: transparent;
-    padding-top: 120px;
+    padding-top: 24px;
 }
 
 .content {
@@ -774,7 +774,7 @@
 
 @media (max-width: 768px) {
     .pageContainer {
-        padding-top: 84px;
+        padding-top: 16px;
     }
 
     .storyHeaderWrapper {
@@ -825,7 +825,7 @@
 
 @media (max-height: 800px) {
     .pageContainer {
-        padding-top: 104px;
+        padding-top: 16px;
     }
     .startOverlayContent {
         transform: scale(0.9);
@@ -861,7 +861,7 @@
 
 @media (max-height: 600px) {
     .pageContainer {
-        padding-top: 104px;
+        padding-top: 12px;
     }
     .startOverlayContent {
         transform: scale(0.8);

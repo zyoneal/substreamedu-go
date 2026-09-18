@@ -270,3 +270,21 @@ type EvaluateSentenceResponse struct {
 	Feedback        string `json:"feedback"`
 	ImprovedVersion string `json:"improved_version,omitempty"`
 }
+
+type AnalyzeGrammarRequest struct {
+	Sentence         string `json:"sentence" binding:"required"`
+	RuleHint         string `json:"ruleHint"`
+	LearningLanguage string `json:"learningLanguage"`
+	FluentLanguage   string `json:"fluentLanguage"`
+}
+
+type AnalyzeGrammarResponse struct {
+	RuleName           string           `json:"ruleName"`
+	StructureTag       string           `json:"structureTag"`
+	CefrLevel          string           `json:"cefrLevel"`
+	Formula            string           `json:"formula"`
+	Explanation        string           `json:"explanation"`
+	NativeExplanation  string           `json:"nativeExplanation,omitempty"`
+	HighlightedSegment string           `json:"highlightedSegment"`
+	Exercise           PracticeExercise `json:"exercise"`
+}

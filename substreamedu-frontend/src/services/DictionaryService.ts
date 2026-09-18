@@ -21,6 +21,24 @@ export interface EvaluateSentenceResult {
   improved_version?: string;
 }
 
+export interface AnalyzeGrammarRequest {
+  sentence: string;
+  ruleHint?: string;
+  learningLanguage?: string;
+  fluentLanguage?: string;
+}
+
+export interface AnalyzeGrammarResponse {
+  ruleName: string;
+  structureTag: string;
+  cefrLevel: string;
+  formula: string;
+  explanation: string;
+  nativeExplanation?: string;
+  highlightedSegment: string;
+  exercise: PracticeExercise;
+}
+
 const DictionaryService = {
 
   async fetchDictionaryResources(): Promise<any[]> {
@@ -405,6 +423,16 @@ const DictionaryService = {
         reviewedToday: false,
         weekDays: undefined,
       };
+    }
+  },
+
+  async analyzeGrammar(req: AnalyzeGrammarRequest): Promise<AnalyzeGrammarResponse | null> {
+    try {
+      const response = await axiosService.post(`${baseURL}api/dictionary/grammar/analyze`, req);
+      return response.data?.data || response.data || null;
+    } catch (error) {
+      console.error("Error analyzing grammar:", error);
+      return null;
     }
   }
 

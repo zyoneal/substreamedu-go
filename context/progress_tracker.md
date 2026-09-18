@@ -5,13 +5,13 @@
 - **Current Phase**: Phase 2: Product Feature Expansion
 - **In Progress**: None
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
-  - Spec 05D: Grammar Detection & Exercises (P2)
   - Spec 05F: Writing Practice (P3)
   - Spec 05B: Teacher Mode (P3)
 - **Completed (Phase 2)**:
+  - Spec 07: Grammar Detection & Exercises (Spec 05D) (ADR-037)
+  - Spec 06: Active Vocabulary Practice (Spec 05A) (ADR-036)
   - Spec 05C: Better Contextual Explanations (P1) (ADR-035)
   - Spec 05E: Collocations & Chunks (P1) (ADR-035)
-  - Spec 06: Active Vocabulary Practice (Spec 05A) (ADR-036)
 - **Completed (Phase 1)**:
   - Context System & SDD Initialization (`/context/`, `AGENTS.md`)
   - Spec 01: System Audit & Core Stability Refactor (`/context/feature_specs/01_system_audit_refactor.md`)
@@ -71,10 +71,21 @@
 | **ADR-034** | 2026-09-16 | FAANG-Grade User Timezone Awareness in SRS Daily Cards (`/srs/today`) | When local user time was past midnight (e.g. 00:06 UTC+3, Sept 16), the dashboard correctly identified 50 cards due for today via timezone-aware `GetDictionaryStats`. However, `/api/dictionary/srs/today` hardcoded UTC time (21:06 UTC, Sept 15), filtering out cards due on Sept 16 and falling back to 50 brand new cards (`status: 'new'`). Furthermore, review cache invalidation did not purge timezone-suffixed keys (`srs:stats:<userID>:<loc>`). | Added `loc *time.Location` parameter to `GetDailyCards` and resolved user location in `DictionaryHandler.GetDailyCards(c)`. Updated `learning_service` Redis cache invalidation to scan and delete all `srs:stats:<userID>*` keys upon review. 100% Go unit tests pass. |
 | **ADR-035** | 2026-09-18 | Rich Contextual Explanations, Register Badges, and Collocation Chunks in Popover (Spec 05C & 05E) | Add register, usage note, alternatives with register notes, typical contexts, and clickable multi-word chunks to LLM translation prompt (v3.0 cache key) and frontend popover UI. | Learners immediately understand nuance, formality level, and naturally occurring multi-word phrases; can click chunks to translate and save them directly as single vocabulary items. Zero DB schema changes needed. |
 | **ADR-036** | 2026-09-18 | Active Vocabulary Practice: Cloze Gap-Fills, Paraphrase, & AI Sentence Builder (Spec 06 / 05A) | Provide interactive production exercises on /learning with instant client-side cloze from subtitle context, AI exercise generation, and real-time AI sentence evaluation. | Bridges passive flashcard recognition into active production in authentic video contexts. Zero DB schema changes. |
+| **ADR-037** | 2026-09-18 | Authentic Grammar Detection, Subtitle Spotlight, & Video Grammar Index (Spec 07 / 05D) | Learners acquire vocabulary from subtitles, but natural speech contains rich B1–C1 grammar structures (Conditionals, Inversion, Modal Perfects, Causatives) that go unassisted. Processing 1500 subtitle lines via LLM is cost-prohibitive and introduces video stutter. | Implemented 3-tier hybrid architecture: (1) Client-side rule engine (`grammarDetector.ts`) scanning 12+ English structures in <5ms; (2) Discreet subtitle spotlight badge `[✨ Grammar: 3rd Cond]`, `GrammarSpotlightModal` with formula, quote highlight, explanation, and 1-question mini-quiz; (3) `VideoGrammarIndexModal` with CEFR filters and seek links; (4) Backend on-demand endpoint `POST /api/dictionary/grammar/analyze` with circuit breaker and algorithmic fallback. Zero DB migrations, 100% tests pass. |
 
 ---
 
 ## Session Notes
+- **Grammar Detection & Exercises (Completed 2026-09-18)**:
+  - Added `AnalyzeGrammarRequest` and `AnalyzeGrammarResponse` in `dto.go`.
+  - Implemented `AnalyzeGrammar` in `ai_service.go` with DeepSeek/Groq/Gemini fallback and offline linguistic rules.
+  - Added `AnalyzeGrammar` handler with 15s deadline in `dictionary_handler.go` and wired route `api.POST("/grammar/analyze", dh.AnalyzeGrammar)`.
+  - Created `src/utils/grammarDetector.ts` client-side rule engine supporting 12+ English structures (Conditionals 1st–3rd, Inverted Conditionals, Modal Perfects, Causatives, Passive Voice, Inversion, Wish, Used to, Participles) and full subtitle track scanning.
+  - Created `src/components/VideoPage/components/GrammarSpotlightModal.tsx` & `.module.css` with formula card, quote breakdown, and 1-question interactive mini-quiz with immediate feedback.
+  - Created `src/components/VideoPage/components/VideoGrammarIndexModal.tsx` & `.module.css` with CEFR filtering and video seek links.
+  - Integrated grammar spotlight badge into active subtitle container (both normal and fullscreen) and added "Grammar in this Video" button into player controls bar in `VideoPlayer.tsx`.
+  - Added unit test suite `src/utils/grammarDetector.test.ts` (9 tests, 100% pass).
+  - Verified: Go tests pass (`go test -v ./...`), Go build succeeds, TypeScript typecheck passes (`npx tsc --noEmit`), Jest test suite passes (18 suites, 74 tests), and production bundle builds cleanly (`npm run build`).
 - **Active Vocabulary Practice Engine (Completed 2026-09-18)**:
   - Implemented `GeneratePracticeExercises` and `EvaluateSentence` in `ai_service.go` with resilient algorithmic cloze fallbacks.
   - Added request/response DTOs (`PracticeExercisesRequest`, `EvaluateSentenceRequest`) and registered `/api/dictionary/practice/*` routes.

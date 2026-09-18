@@ -20,9 +20,9 @@ const LearningPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-[#0d0c0b] text-[#ede8e0] pt-6 pb-16">
+        <div className="w-full min-h-screen bg-[#0d0c0b] text-[#ede8e0] pt-[76px] pb-16">
             {/* Top Navigation Mode Tabs */}
-            <div className="max-w-md mx-auto px-4 mb-4">
+            <div className="max-w-md mx-auto px-4 mb-4 relative z-20">
                 <div className="flex items-center justify-center p-1 bg-white/[0.04] border border-white/[0.08] rounded-xl">
                     <button
                         onClick={() => setActiveTab('flashcards')}
