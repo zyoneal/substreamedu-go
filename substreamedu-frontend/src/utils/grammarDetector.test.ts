@@ -83,6 +83,12 @@ describe('grammarDetector', () => {
     expect(result?.tag).toBe('causative');
   });
 
+  test('does NOT misclassify Present Perfect questions like "Have you done..." as Causative Form', () => {
+    const text = "Have you done any exercises recently?";
+    const result = detectGrammarInText(text);
+    expect(result?.tag).not.toBe('causative');
+  });
+
   test('detects Used to for past habits', () => {
     const text = "We used to play tennis together every Sunday morning.";
     const result = detectGrammarInText(text);

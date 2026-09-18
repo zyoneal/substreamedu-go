@@ -2769,10 +2769,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                                 setSelectedGrammarSentence(currentSubtitle || '');
                                                                 setIsGrammarModalOpen(true);
                                                             }}
-                                                            title={`Explore grammar: ${activeGrammarPoint.name}`}
+                                                            title={`Explore grammar: ${activeGrammarPoint.name} (${activeGrammarPoint.cefrLevel})`}
                                                         >
-                                                            <Sparkles size={12} className={styles.grammarBadgeIcon} />
-                                                            <span>{activeGrammarPoint.shortLabel || activeGrammarPoint.name}</span>
+                                                            <span className={styles.grammarBadgeIconWrapper}>
+                                                                <Sparkles size={11} className={styles.grammarBadgeIcon} />
+                                                            </span>
+                                                            <span className={styles.grammarBadgeLabel}>
+                                                                {activeGrammarPoint.shortLabel || activeGrammarPoint.name}
+                                                            </span>
+                                                            <span className={styles.grammarBadgeCefr}>
+                                                                {activeGrammarPoint.cefrLevel}
+                                                            </span>
                                                         </button>
                                                     </div>
                                                 )}
@@ -2869,10 +2876,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                                 setSelectedGrammarSentence(currentSubtitle || '');
                                                                 setIsGrammarModalOpen(true);
                                                             }}
-                                                            title={`Explore grammar: ${activeGrammarPoint.name}`}
+                                                            title={`Explore grammar: ${activeGrammarPoint.name} (${activeGrammarPoint.cefrLevel})`}
                                                         >
-                                                            <Sparkles size={12} className={styles.grammarBadgeIcon} />
-                                                            <span>{activeGrammarPoint.shortLabel || activeGrammarPoint.name}</span>
+                                                            <span className={styles.grammarBadgeIconWrapper}>
+                                                                <Sparkles size={11} className={styles.grammarBadgeIcon} />
+                                                            </span>
+                                                            <span className={styles.grammarBadgeLabel}>
+                                                                {activeGrammarPoint.shortLabel || activeGrammarPoint.name}
+                                                            </span>
+                                                            <span className={styles.grammarBadgeCefr}>
+                                                                {activeGrammarPoint.cefrLevel}
+                                                            </span>
                                                         </button>
                                                     </div>
                                                 )}

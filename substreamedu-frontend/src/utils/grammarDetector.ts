@@ -271,7 +271,7 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     formula: 'have / get + object + Past Participle (V3)',
     explanation: 'Indicates arranging for someone else to perform a service or action for you.',
     nativeExplanation: 'Каузативная форма: действие выполняется кем-то другим по вашей просьбе или заказу.',
-    pattern: /\b(?:have|has|had|get|gets|got)\s+(?:(?:my|your|his|her|our|their|the|a|an)\s+)?[a-z]+\s+(?:repaired|fixed|cleaned|checked|tested|delivered|built|done|replaced|painted|serviced|installed)\b/i,
+    pattern: /\b(?:have|has|had|get|gets|got)\s+(?:(?:my|your|his|her|our|their|the|a|an)\s+[a-z]+|it|them|this|that|something|anything|everything)\s+(?:repaired|fixed|cleaned|checked|tested|delivered|built|done|replaced|painted|serviced|installed|cut)\b/i,
     generateQuiz: () => ({
       question: "We need to have our car ___ before the long winter road trip.",
       options: ["serviced", "service", "servicing"],
