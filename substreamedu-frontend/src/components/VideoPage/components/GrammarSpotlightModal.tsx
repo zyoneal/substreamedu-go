@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Sparkles, X, Check, AlertCircle, Loader2 } from 'lucide-react';
-import { DetectedGrammarPoint } from '../../../utils/grammarDetector';
+import { DetectedGrammarPoint, getNativeExplanation } from '../../../utils/grammarDetector';
 import { DictionaryService, AnalyzeGrammarResponse } from '../../../services/DictionaryService';
+import { LanguageContext } from '../../LanguageContext';
 import styles from './GrammarSpotlightModal.module.css';
 
 interface GrammarSpotlightModalProps {
@@ -19,8 +20,14 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
   grammarPoint,
   fullSentence,
   learningLanguage = 'English',
-  fluentLanguage = 'Russian'
+  fluentLanguage: propFluentLanguage
 }) => {
+  const { fluentLanguage: contextFluentLanguage } = useContext(LanguageContext);
+  const activeFluentLanguage =
+    propFluentLanguage ||
+    contextFluentLanguage ||
+    (typeof window !== 'undefined' ? localStorage.getItem('fluentLanguage') : null) ||
+    'ru';
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isDeepDiving, setIsDeepDiving] = useState<boolean>(false);
@@ -63,7 +70,7 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
         sentence: fullSentence,
         ruleHint: grammarPoint.tag,
         learningLanguage,
-        fluentLanguage
+        fluentLanguage: activeFluentLanguage
       });
       if (response) {
         setDeepDiveData(response);
@@ -74,6 +81,10 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
       setIsDeepDiving(false);
     }
   };
+
+  const nativeExplanationText = grammarPoint
+    ? (getNativeExplanation(grammarPoint.tag, activeFluentLanguage) || grammarPoint.nativeExplanation)
+    : '';
 
   // Split sentence around the matched grammar pattern for optical highlight
   const renderHighlightedSentence = () => {
@@ -136,8 +147,8 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
           {/* Explanations */}
           <div className={styles.explanations}>
             <p className={styles.explanationMain}>{grammarPoint.explanation}</p>
-            {grammarPoint.nativeExplanation && (
-              <p className={styles.explanationNative}>{grammarPoint.nativeExplanation}</p>
+            {nativeExplanationText && (
+              <p className={styles.explanationNative}>{nativeExplanationText}</p>
             )}
           </div>
 

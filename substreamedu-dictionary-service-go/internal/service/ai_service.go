@@ -1643,10 +1643,125 @@ func (s *AIService) AnalyzeGrammar(ctx context.Context, req dto.AnalyzeGrammarRe
 		s.logger.Warn("Grammar analysis AI call failed, using linguistic fallback", zap.Error(err))
 	}
 
-	return s.getGrammarFallback(req.Sentence, req.RuleHint), nil
+	return s.getGrammarFallback(req.Sentence, req.RuleHint, resolvedFluent), nil
 }
 
-func (s *AIService) getGrammarFallback(sentence, ruleHint string) *dto.AnalyzeGrammarResponse {
+func getGrammarFallbackNative(tag, fluentLanguage string) string {
+	lowerLang := strings.ToLower(fluentLanguage)
+	isUk := strings.Contains(lowerLang, "ukrain") || lowerLang == "uk" || lowerLang == "ua"
+	isEs := strings.Contains(lowerLang, "span") || lowerLang == "es"
+	isPl := strings.Contains(lowerLang, "pol") || lowerLang == "pl"
+	isTr := strings.Contains(lowerLang, "turk") || lowerLang == "tr"
+
+	switch tag {
+	case "third_conditional":
+		if isUk {
+			return "Нереальна умова в минулому: жаль або роздуми про те, що не сталося."
+		} else if isEs {
+			return "Tercer condicional: expresa una condición imposible en el pasado y su consecuencia no realizada."
+		} else if isPl {
+			return "Trzeci okres warunkowy: nierealny warunek w przeszłości i jego wyobrażony skutek."
+		} else if isTr {
+			return "Third Conditional: Geçmişte gerçekleşmemiş bir durum ve pişmanlık ifade eder."
+		}
+		return "Нереальное условие в прошлом (сожаление или размышление о том, чего не произошло)."
+	case "second_conditional":
+		if isUk {
+			return "Нереальна або малоймовірна умова в теперішньому чи майбутньому (якби..., то...). Уявні сценарії."
+		} else if isEs {
+			return "Segundo condicional: situaciones hipotéticas o improbables en el presente o futuro."
+		} else if isPl {
+			return "Drugi okres warunkowy: hipotetyczne sytuacje w teraźniejszości lub przyszłości."
+		} else if isTr {
+			return "Second Conditional: Şu an veya gelecek için varsayımsal durumlar."
+		}
+		return "Нереальное или маловероятное условие в настоящем/будущем (если бы... то...)."
+	case "modal_perfect":
+		if isUk {
+			return "Модальне дієслово з перфектним інфінітивом: жаль, докір або логічний висновок щодо минулого."
+		}
+		return "Модальный глагол с перфектным инфинитивом для выражения сожаления или логического вывода о прошлом."
+	case "passive_voice":
+		if isUk {
+			return "Пасивний (страждальний) стан: фокус на об'єкті дії або призначенні інструмента."
+		}
+		return "Пассивный (страдательный) залог — фокус на объекте действия, а не на исполнителе."
+	case "causative_form":
+		if isUk {
+			return "Каузативна форма: дія виконується кимось іншим на ваше замовлення або прохання."
+		}
+		return "Каузативная форма: действие выполняется кем-то другим по вашей просьбе или заказу."
+	case "inversion":
+		if isUk {
+			return "Інверсія після заперечних прислівників для виразного підсилення висловлювання."
+		}
+		return "Инверсия после отрицательных наречий для эмфатического усиления высказывания."
+	case "wish_if_only":
+		if isUk {
+			return "Конструкція з wish / if only: вираження жалю про теперішню або минулу ситуацію."
+		}
+		return "Конструкция с wish / if only: выражение сожаления о настоящем или прошлом."
+	case "be_used_to":
+		if isUk {
+			return "Конструкція be / get used to: бути звиклим або звикати до чогось (вимагає іменник або закінчення -ing)."
+		}
+		return "Конструкция be / get used to: привыкнуть к чему-либо (требует существительное или герундий -ing)."
+	case "used_to":
+		if isUk {
+			return "Конструкція used to: регулярні звички або стани в минулому, яких більше немає."
+		}
+		return "Конструкция used to: привычки или состояния в прошлом, которых больше нет."
+	case "participle_clause":
+		if isUk {
+			return "Дієприкметниковий зворот: компактне поєднання причини, умови або послідовності дій."
+		}
+		return "Причастный оборот: компактное объединение причины или последовательности действий."
+	case "first_conditional":
+		if isUk {
+			return "Реальна умова в теперішньому або майбутньому з високою ймовірністю результату."
+		}
+		return "Реальное условие в настоящем или будущем с вероятным результатом."
+	case "present_perfect_continuous":
+		if isUk {
+			return "Тривала дія, що розпочалася в минулому і триває дотепер або щойно закінчилася."
+		}
+		return "Длительное действие, начавшееся в прошлом и продолжающееся в настоящий момент или только что завершившееся."
+	case "be_supposed_to":
+		if isUk {
+			return "Конструкція be supposed to: передбачається, належить або слід зробити за правилами чи домовленістю."
+		}
+		return "Конструкция be supposed to: предполагается, должен по правилам или договорённости."
+	case "modal_deduction":
+		if isUk {
+			return "Модальне дієслово логічного висновку: висока впевненість або неможливість (має бути, не може бути)."
+		}
+		return "Модальный глагол логической дедукции: уверенность или вывод (должно быть, не может быть)."
+	case "concession":
+		if isUk {
+			return "Підрядне речення допусту (Even though / Although): з'єднує факти всупереч перешкодам або несподіванкам."
+		}
+		return "Придаточное предложение уступки: связывает факты вопреки трудностям или неожиданным обстоятельствам."
+	case "indirect_question":
+		if isUk {
+			return "Непряме запитання: ввічливе формулювання з прямим стверджувальним порядком слів (Subject + Verb)."
+		}
+		return "Косвенный вопрос: вежливая формулировка с прямым порядком слов (Subject + Verb)."
+	}
+	if isUk {
+		return "Граматична конструкція англійської мови."
+	}
+	return "Грамматическая конструкция английского языка."
+}
+
+func (s *AIService) getGrammarFallback(sentence, ruleHint, fluentLanguage string) *dto.AnalyzeGrammarResponse {
+	res := s.resolveGrammarFallbackRule(sentence, ruleHint)
+	if res != nil {
+		res.NativeExplanation = getGrammarFallbackNative(res.StructureTag, fluentLanguage)
+	}
+	return res
+}
+
+func (s *AIService) resolveGrammarFallbackRule(sentence, ruleHint string) *dto.AnalyzeGrammarResponse {
 	lower := strings.ToLower(sentence)
 	tag := strings.ToLower(ruleHint)
 

@@ -84,7 +84,10 @@
   - Integrated sentence stitching into `VideoPlayer.tsx` subtitle processing pipeline and `grammarDetector.ts:scanSubtitlesForGrammar`.
   - Expanded grammar detection with 5 conversational B1/B2 patterns: `present_perfect_continuous`, `be_supposed_to`, `modal_deduction`, `concession`, and `indirect_question`.
   - Added exercise templates and fallback evaluation logic in backend `ai_service.go` for all 5 new grammar tags.
-  - Created unit test suite `src/utils/subtitleSentenceStitcher.test.ts` (6 tests) and expanded `grammarDetector.test.ts` (21 tests). Total: 19 test suites, 92 tests, 100% passing.
+  - Added first-class multilingual native explanation dictionary `GRAMMAR_EXPLANATIONS_BY_LANG` (Ukrainian `uk`, Russian `ru`, Spanish `es`, Polish `pl`, Turkish `tr`) and dynamic resolver `getNativeExplanation`.
+  - Fixed `GrammarSpotlightModal` to dynamically bind to the user's active language from `LanguageContext` and `localStorage`, rendering native explanations in Ukrainian (or chosen language) instead of hardcoded Russian.
+  - Updated backend `ai_service.go` fallback to localize `NativeExplanation` in accordance with `req.FluentLanguage`.
+  - Created unit test suite `src/utils/subtitleSentenceStitcher.test.ts` (6 tests) and expanded `grammarDetector.test.ts` (24 tests). Total: 19 test suites, 95 tests, 100% passing.
 - **Grammar Detection & Exercises (Completed 2026-09-18)**:
   - Added `AnalyzeGrammarRequest` and `AnalyzeGrammarResponse` in `dto.go`.
   - Implemented `AnalyzeGrammar` in `ai_service.go` with DeepSeek/Groq/Gemini fallback and offline linguistic rules.

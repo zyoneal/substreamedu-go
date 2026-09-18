@@ -31,7 +31,7 @@ export interface VideoGrammarMatch {
   grammar: DetectedGrammarPoint;
 }
 
-interface GrammarRuleDefinition {
+export interface GrammarRuleDefinition {
   tag: string;
   name: string;
   shortLabel: string;
@@ -41,6 +41,129 @@ interface GrammarRuleDefinition {
   nativeExplanation: string;
   pattern: RegExp;
   generateQuiz: (matchedText: string, contextSentence: string) => GrammarMiniQuiz;
+}
+
+export const GRAMMAR_EXPLANATIONS_BY_LANG: Record<string, Record<string, string>> = {
+  uk: {
+    third_conditional: 'Нереальна умова в минулому: жаль або роздуми про те, що не сталося (якби в минулому..., то...).',
+    inverted_conditional: 'Емфатична безсполучникова інверсія в умовному реченні (більш офіційний стиль замість "if").',
+    modal_perfect: 'Модальне дієслово з перфектним інфінітивом: жаль, припущення або докір щодо минулої дії.',
+    inversion: 'Інверсія після заперечних прислівників (Never, Rarely, Seldom) для виразного підсилення висловлювання.',
+    second_conditional: 'Нереальна або малоймовірна умова в теперішньому чи майбутньому (якби..., то...). Уявні сценарії.',
+    causative_form: 'Каузативна форма (have/get something done): дія виконується кимось іншим на замовлення або прохання.',
+    passive_voice: 'Пасивний (страждальний) стан: фокус на об\'єкті дії або призначенні інструмента (be used to + інфінітив).',
+    wish_if_only: 'Конструкція з wish / if only: вираження жалю або нездійсненого бажання про теперішнє чи минуле.',
+    be_used_to: 'Конструкція be / get used to: бути звиклим або звикати до чогось (вимагає іменник або закінчення -ing).',
+    used_to: 'Конструкція used to: регулярні звички або стани в минулому, яких більше немає в теперішньому.',
+    participle_clause: 'Дієприкметниковий зворот: компактне поєднання причини, умови або часової послідовності дій.',
+    first_conditional: 'Реальна умова в теперішньому або майбутньому з високою ймовірністю результату.',
+    present_perfect_continuous: 'Тривала дія, що розпочалася в минулому і триває дотепер або щойно закінчилася з видимим результатом.',
+    be_supposed_to: 'Конструкція be supposed to: передбачається, належить або слід зробити за правилами чи домовленістю.',
+    modal_deduction: 'Модальне дієслово логічного висновку: висока впевненість або неможливість (має бути, не може бути).',
+    concession: 'Підрядне речення допусту (Even though / Although): з\'єднує факти всупереч перешкодам або несподіванкам.',
+    indirect_question: 'Непряме запитання: ввічливе формулювання з прямим стверджувальним порядком слів (Subject + Verb).'
+  },
+  ru: {
+    third_conditional: 'Нереальное условие в прошлом: сожаление или размышление о том, чего не произошло.',
+    inverted_conditional: 'Эмфатическая бессоюзная инверсия в условном предложении.',
+    modal_perfect: 'Модальный глагол с перфектным инфинитивом: сожаление, предположение или упрёк о прошлом.',
+    inversion: 'Инверсия после отрицательных наречий для эмфатического усиления речи.',
+    second_conditional: 'Нереальное или маловероятное условие в настоящем или будущем (если бы..., то...).',
+    causative_form: 'Каузативная форма: действие выполняется кем-то другим по вашей просьбе или заказу.',
+    passive_voice: 'Страдательный (пассивный) залог: фокус на объекте, результате действия или назначении инструмента.',
+    wish_if_only: 'Конструкция с wish / if only: выражение сожаления о настоящем или прошлом.',
+    be_used_to: 'Конструкция be / get used to: привыкнуть к чему-либо или быть привыкшим (требует существительное или -ing).',
+    used_to: 'Конструкция used to: привычки или состояния в прошлом, которых больше нет.',
+    participle_clause: 'Причастный оборот: компактное объединение причины или последовательности действий.',
+    first_conditional: 'Реальное условие в настоящем или будущем с вероятным результатом.',
+    present_perfect_continuous: 'Длительное действие, начавшееся в прошлом и продолжающееся в настоящий момент или только что завершившееся.',
+    be_supposed_to: 'Конструкция be supposed to: предполагается, должен по правилам или договорённости.',
+    modal_deduction: 'Модальный глагол логической дедукции: уверенность или вывод (должно быть, не может быть).',
+    concession: 'Придаточное предложение уступки: связывает факты вопреки трудностям или неожиданным обстоятельствам.',
+    indirect_question: 'Косвенный вопрос: вежливая формулировка с прямым порядком слов (Subject + Verb).'
+  },
+  es: {
+    third_conditional: 'Tercer condicional: expresa una condición imposible en el pasado y su consecuencia no realizada.',
+    inverted_conditional: 'Condicional invertido: estilo formal y enfático sin utilizar "if".',
+    modal_perfect: 'Verbo modal perfecto: expresa arrepentimiento, crítica o deducción lógica sobre el pasado.',
+    inversion: 'Inversión tras adverbios negativos para dar mayor énfasis estilístico a la frase.',
+    second_conditional: 'Segundo condicional: situaciones hipotéticas o improbables en el presente o futuro.',
+    causative_form: 'Forma causativa: encargar o hacer que otra persona realice una acción por nosotros.',
+    passive_voice: 'Voz pasiva: enfoca la atención en el objeto de la acción o en la función de una herramienta.',
+    wish_if_only: 'Estructura con "wish / if only": expresa deseos o arrepentimiento sobre una situación real.',
+    be_used_to: 'Estructura "be / get used to": estar acostumbrado o acostumbrarse a algo (requiere sustantivo o -ing).',
+    used_to: 'Estructura "used to": hábitos o estados pasados que ya no se realizan en el presente.',
+    participle_clause: 'Cláusula de participio: estructura concisa para expresar causa, tiempo o condición.',
+    first_conditional: 'Primer condicional: condición real o probable en el presente o futuro con un resultado predecible.',
+    present_perfect_continuous: 'Presente perfecto continuo: acción prolongada iniciada en el pasado que continúa en el presente.',
+    be_supposed_to: 'Estructura "be supposed to": deber o tener previsto hacer algo según normas o planes.',
+    modal_deduction: 'Deducción modal: certeza lógica o imposibilidad basada en evidencias (must be / can\'t be).',
+    concession: 'Oración concesiva (Even though / Although): conecta dos hechos con un contraste superado.',
+    indirect_question: 'Pregunta indirecta: formulación cortés que mantiene el orden afirmativo (Sujeto + Verbo).'
+  },
+  pl: {
+    third_conditional: 'Trzeci okres warunkowy: nierealny warunek w przeszłości i jego wyobrażony skutek.',
+    inverted_conditional: 'Inwersja w okresie warunkowym: oficjalny i emfatyczny styl bez użycia "if".',
+    modal_perfect: 'Czasowniki modalne z Perfect Infinitive: żal, krytyka lub logiczny wniosek dotyczący przeszłości.',
+    inversion: 'Inwersja po przysłówkach przeczących dla stylistycznego wzmocnienia wypowiedzi.',
+    second_conditional: 'Drugi okres warunkowy: hipotetyczne lub mało prawdopodobne sytuacje w teraźniejszości lub przyszłości.',
+    causative_form: 'Konstrukcja kauzatywna: zlecenie wykonania czynności komuś innemu.',
+    passive_voice: 'Strona bierna: skupienie na przedmiocie czynności lub przeznaczeniu narzędzia.',
+    wish_if_only: 'Konstrukcja z "wish / if only": wyrażanie żalu lub życzeń nierealnych.',
+    be_used_to: 'Struktura "be / get used to": być przyzwyczajonym do czegoś (wymaga rzeczownika lub formy -ing).',
+    used_to: 'Struktura "used to": dawne nawyki lub stany z przeszłości, które już nie trwają.',
+    participle_clause: 'Imiesłowowy równoważnik zdania: zwięzłe wyrażenie przyczyny lub następstwa zdarzeń.',
+    first_conditional: 'Pierwszy okres warunkowy: realny warunek z prawdopodobnym skutkiem w przyszłości.',
+    present_perfect_continuous: 'Czynność rozpoczęta w przeszłości i trwająca do chwili obecnej.',
+    be_supposed_to: 'Konstrukcja "be supposed to": powinność wynikająca z zasad, ustaleń lub oczekiwań.',
+    modal_deduction: 'Czasowniki modalne dedukcji: logiczna pewność lub niemożliwość (must be / can\'t be).',
+    concession: 'Zdanie podrzędne przyzwalające (Even though / Although): łączenie faktów wbrew okolicznościom.',
+    indirect_question: 'Pytanie pośrednie: uprzejma forma pytania z szykiem zdania twierdzącego.'
+  },
+  tr: {
+    third_conditional: 'Third Conditional: Geçmişte gerçekleşmemiş bir durum ve pişmanlık veya varsayım ifade eder.',
+    inverted_conditional: 'Devrik koşul cümlesi: "If" kullanmadan daha resmi ve vurgulu koşul anlatımı.',
+    modal_perfect: 'Geçmiş zaman modal yapısı: Geçmişe dair pişmanlık, eleştiri veya mantıksal çıkarım.',
+    inversion: 'Olumsuz zarflardan sonra devrik yapı: Cümleye edebi ve güçlü bir vurgu katar.',
+    second_conditional: 'Second Conditional: Şu an veya gelecek için hayali veya varsayımsal durumlar.',
+    causative_form: 'Ettirgen çatı (Causative): Bir işin başkasına yaptırıldığını ifade eder.',
+    passive_voice: 'Edilgen çatı (Passive Voice): Eylemi yapandan ziyade nesneye veya aracın amacına odaklanır.',
+    wish_if_only: 'Wish / If only yapısı: Şimdiki veya geçmiş durumla ilgili pişmanlık ve dilek belirtir.',
+    be_used_to: '"Be / get used to" yapısı: Bir şeye alışkın olmak veya alışmak (-ing veya isim gerektirir).',
+    used_to: '"Used to" yapısı: Geçmişteki artık devam etmeyen alışkanlıklar veya durumlar.',
+    participle_clause: 'Ortaç cümleciği (Participle Clause): Neden veya zaman sırasını kompakt şekilde bağlar.',
+    first_conditional: 'First Conditional: Şu an veya gelecek için gerçekleşmesi muhtemel koşullar ve sonuçları.',
+    present_perfect_continuous: 'Geçmişte başlayıp halen devam eden veya etkisi süren uzun süreli eylemler.',
+    be_supposed_to: '"Be supposed to" yapısı: Kurallara veya plana göre yapılması beklenen eylemler.',
+    modal_deduction: 'Mantıksal çıkarım modalları: Güçlü kesinlik veya imkansızlık belirtir (must be / can\'t be).',
+    concession: 'Zıtlık / Karşıtlık bağlacı (Even though / Although): Beklenmeyen durumlara rağmen gerçekleşen olaylar.',
+    indirect_question: 'Dolaylı soru: Düz cümle söz dizimine sahip nezaket içeren soru kalıbı.'
+  }
+};
+
+export function getNativeExplanation(tag: string, langCode?: string | null): string {
+  const normalized = (langCode || '').toLowerCase().trim().split(/[-_]/)[0];
+  if (normalized === 'en' || normalized === 'english') {
+    return '';
+  }
+  const langMap: Record<string, string> = {
+    ukrainian: 'uk',
+    uk: 'uk',
+    ua: 'uk',
+    russian: 'ru',
+    ru: 'ru',
+    spanish: 'es',
+    es: 'es',
+    polish: 'pl',
+    pl: 'pl',
+    turkish: 'tr',
+    tr: 'tr'
+  };
+  const resolved = langMap[normalized] || normalized;
+  if (GRAMMAR_EXPLANATIONS_BY_LANG[resolved] && GRAMMAR_EXPLANATIONS_BY_LANG[resolved][tag]) {
+    return GRAMMAR_EXPLANATIONS_BY_LANG[resolved][tag];
+  }
+  return GRAMMAR_EXPLANATIONS_BY_LANG['ru']?.[tag] || '';
 }
 
 const GRAMMAR_RULES: GrammarRuleDefinition[] = [
@@ -379,7 +502,10 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
   }
 ];
 
-export function detectGrammarInText(rawText: string | null | undefined): DetectedGrammarPoint | null {
+export function detectGrammarInText(
+  rawText: string | null | undefined,
+  langCode?: string | null
+): DetectedGrammarPoint | null {
   if (!rawText) return null;
   const text = rawText.trim();
   if (text.length < 10) return null;
@@ -396,7 +522,7 @@ export function detectGrammarInText(rawText: string | null | undefined): Detecte
         cefrLevel: rule.cefrLevel,
         formula: rule.formula,
         explanation: rule.explanation,
-        nativeExplanation: rule.nativeExplanation,
+        nativeExplanation: getNativeExplanation(rule.tag, langCode),
         matchedText,
         matchIndex,
         matchLength: matchedText.length,
@@ -423,7 +549,8 @@ export function formatTimeSeconds(seconds: number): string {
 }
 
 export function scanSubtitlesForGrammar(
-  subtitles: Array<any> | null | undefined
+  subtitles: Array<any> | null | undefined,
+  langCode?: string | null
 ): VideoGrammarMatch[] {
   if (!Array.isArray(subtitles) || subtitles.length === 0) {
     return [];
@@ -439,7 +566,7 @@ export function scanSubtitlesForGrammar(
     const text = typeof sub.text === 'string' ? sub.text : '';
     if (!text || text.length < 10) continue;
 
-    const detected = detectGrammarInText(text);
+    const detected = detectGrammarInText(text, langCode);
     if (!detected) continue;
 
     let startSeconds = 0;

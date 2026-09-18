@@ -3447,7 +3447,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     grammarPoint={selectedGrammarPoint}
                     fullSentence={selectedGrammarSentence || currentSubtitle || ''}
                     learningLanguage={learningLanguage}
-                    fluentLanguage={fluentLanguage || 'Russian'}
+                    fluentLanguage={fluentLanguage || undefined}
                 />
 
                 <VideoGrammarIndexModal

@@ -1,7 +1,8 @@
 import {
   detectGrammarInText,
   scanSubtitlesForGrammar,
-  formatTimeSeconds
+  formatTimeSeconds,
+  getNativeExplanation
 } from './grammarDetector';
 
 describe('grammarDetector', () => {
@@ -195,5 +196,25 @@ describe('grammarDetector', () => {
     expect(matches.length).toBe(1);
     expect(matches[0].grammar.tag).toBe('third_conditional');
     expect(matches[0].text).toContain("would have caught");
+  });
+
+  test('returns Ukrainian native explanation when language is uk or ukrainian', () => {
+    const ukExplanation = getNativeExplanation('second_conditional', 'uk');
+    expect(ukExplanation).toContain('Нереальна або малоймовірна умова в теперішньому');
+
+    const result = detectGrammarInText("If I was done driving my van, I would get out my van.", 'uk');
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('second_conditional');
+    expect(result?.nativeExplanation).toContain('Нереальна або малоймовірна умова в теперішньому');
+  });
+
+  test('returns Spanish native explanation when language is es', () => {
+    const esExplanation = getNativeExplanation('second_conditional', 'es');
+    expect(esExplanation).toContain('Segundo condicional: situaciones hipotéticas');
+  });
+
+  test('returns empty native explanation when learner language is English to avoid redundancy', () => {
+    const enExplanation = getNativeExplanation('second_conditional', 'en');
+    expect(enExplanation).toBe('');
   });
 });
