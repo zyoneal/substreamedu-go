@@ -99,6 +99,11 @@ describe('grammarDetector', () => {
 
     const res2 = detectGrammarInText("and they're used to cut grass. Whipper snippers.");
     expect(res2?.tag).toBe('passive_voice');
+
+    const res3 = detectGrammarInText("that are used to carry like the vegetables and stuff to the");
+    expect(res3?.tag).toBe('passive_voice');
+    expect(res3?.name).toBe('Passive Voice');
+    expect(res3?.miniQuiz.answer).toBe('cut');
   });
 
   test('classifies reduced tool clause "a hand towel used to dry" as Passive Voice', () => {
