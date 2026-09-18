@@ -58,10 +58,9 @@ describe('ActivePractice Component', () => {
 
     expect(screen.getByText('Contextual Cloze')).toBeInTheDocument();
     expect(screen.getByText('AI Sentence Builder')).toBeInTheDocument();
-    // Target word should NOT be spoiled in header or prompt before checking
+    // Target word and length should NOT be spoiled in header or prompt before checking
     expect(screen.queryByText('brush off')).not.toBeInTheDocument();
-    // Subtle word/letter count clue is shown instead
-    expect(screen.getByText(/2 words/i)).toBeInTheDocument();
+    expect(screen.queryByText(/2 words/i)).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Type the missing word/i)).toBeInTheDocument();
   });
 
@@ -79,13 +78,14 @@ describe('ActivePractice Component', () => {
     expect(screen.getByRole('button', { name: /continue/i })).toBeInTheDocument();
   });
 
-  it('toggles hint display when clicking hint button', () => {
+  it('toggles hint display when clicking hint button and includes length clue in typing mode', () => {
     renderComponent();
 
     const hintBtn = screen.getByRole('button', { name: /show meaning hint/i });
     fireEvent.click(hintBtn);
 
     expect(screen.getByText(/отмахнуться/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 words/i)).toBeInTheDocument();
   });
 
   it('switches to AI Sentence Builder mode', async () => {

@@ -1419,13 +1419,34 @@ func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *d
 
 		var options []string
 		options = append(options, target)
+
+		isMultiWord := strings.Contains(strings.TrimSpace(target), " ")
+		var sameCountOthers, diffCountOthers []string
 		for _, other := range items {
 			otherWord := strings.TrimSpace(other.Word)
-			if otherWord != "" && !strings.EqualFold(otherWord, target) && len(options) < 4 {
-				options = append(options, otherWord)
+			if otherWord != "" && !strings.EqualFold(otherWord, target) {
+				if strings.Contains(otherWord, " ") == isMultiWord {
+					sameCountOthers = append(sameCountOthers, otherWord)
+				} else {
+					diffCountOthers = append(diffCountOthers, otherWord)
+				}
 			}
 		}
-		fallbacks := []string{"look into", "carry out", "give up", "bring up", "stand out"}
+
+		for _, o := range append(sameCountOthers, diffCountOthers...) {
+			if len(options) >= 4 {
+				break
+			}
+			options = append(options, o)
+		}
+
+		var fallbacks []string
+		if isMultiWord {
+			fallbacks = []string{"look into", "carry out", "give up", "bring up", "stand out", "figure out"}
+		} else {
+			fallbacks = []string{"consider", "resolve", "approach", "maintain", "indicate", "evaluate"}
+		}
+
 		for _, f := range fallbacks {
 			if len(options) >= 4 {
 				break

@@ -106,15 +106,25 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                 prompt = `${before}______${after}`;
             }
 
-            // Distractors
+            // Distractors: prioritize words of similar structure/length to avoid giveaways
+            const targetWordCount = target.trim().split(/\s+/).length;
             const otherWords = practiceWords
                 .map(w => w.word.trim())
                 .filter(w => w && w.toLowerCase() !== target.toLowerCase());
+
+            const sameCountWords = otherWords.filter(w => w.split(/\s+/).length === targetWordCount);
+            const diffCountWords = otherWords.filter(w => w.split(/\s+/).length !== targetWordCount);
+            const sortedOtherWords = [...sameCountWords, ...diffCountWords];
+
             const options = [target];
-            for (const ow of otherWords) {
+            for (const ow of sortedOtherWords) {
                 if (options.length < 4) options.push(ow);
             }
-            const defaultDistractors = ['take over', 'look after', 'run into', 'set up', 'stand by'];
+
+            const singleWordDistractors = ['consider', 'resolve', 'approach', 'maintain', 'indicate', 'evaluate'];
+            const multiWordDistractors = ['take over', 'look after', 'run into', 'set up', 'stand by', 'figure out'];
+            const defaultDistractors = targetWordCount > 1 ? multiWordDistractors : singleWordDistractors;
+
             for (const d of defaultDistractors) {
                 if (options.length >= 4) break;
                 if (!options.includes(d) && d !== target) options.push(d);
@@ -445,17 +455,7 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                                     <Volume2 size={16} />
                                 </button>
                             </div>
-                        ) : (
-                            currentExercise?.target_word ? (
-                                <div className={styles.wordBadge} style={{ color: 'var(--color-mute, #7a7672)', fontWeight: 500, fontSize: '12px' }}>
-                                    <span>
-                                        {currentExercise.target_word.includes(' ')
-                                            ? `${currentExercise.target_word.trim().split(/\s+/).length} words`
-                                            : `${currentExercise.target_word.length} letters`}
-                                    </span>
-                                </div>
-                            ) : null
-                        )}
+                        ) : null}
                     </div>
 
                     {/* GAP FILL MODE */}
@@ -496,7 +496,14 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
 
                             {showHint && currentExercise.hint && (
                                 <div className={styles.hintText}>
-                                    💡 {currentExercise.hint}
+                                    <span>💡 {currentExercise.hint}</span>
+                                    {inputMode === 'type' && currentExercise.target_word && (
+                                        <span style={{ marginLeft: '6px', opacity: 0.75 }}>
+                                            ({currentExercise.target_word.includes(' ')
+                                                ? `${currentExercise.target_word.trim().split(/\s+/).length} words`
+                                                : `${currentExercise.target_word.length} letters`})
+                                        </span>
+                                    )}
                                 </div>
                             )}
 
