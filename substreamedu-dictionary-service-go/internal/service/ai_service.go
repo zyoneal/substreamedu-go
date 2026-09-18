@@ -1722,7 +1722,31 @@ func (s *AIService) getGrammarFallback(sentence, ruleHint string) *dto.AnalyzeGr
 		}
 	}
 
-	if tag == "passive_voice" || strings.Contains(lower, " was ") || strings.Contains(lower, " were ") || strings.Contains(lower, " been ") {
+	if tag == "passive_voice" || strings.Contains(lower, " was ") || strings.Contains(lower, " were ") || strings.Contains(lower, " been ") || strings.Contains(lower, " is used to ") || strings.Contains(lower, " are used to ") || strings.Contains(lower, "'s used to ") || strings.Contains(lower, "'re used to ") {
+		if strings.Contains(lower, "used to") {
+			return &dto.AnalyzeGrammarResponse{
+				RuleName:           "Passive Voice (Purpose / Instrument)",
+				StructureTag:       "passive_voice",
+				CefrLevel:          "B1",
+				Formula:            "be + used to + base verb",
+				Explanation:        "Expresses what an instrument, device, or material is utilized to accomplish (purpose in passive).",
+				NativeExplanation:  "Пассивный залог назначения: для чего используется предмет или инструмент (be used to + глагол).",
+				HighlightedSegment: "used to",
+				Exercise: dto.PracticeExercise{
+					ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+					Type:            "gap_fill",
+					TargetWord:      "cut",
+					Prompt:          "A pair of scissors is used to ___ paper and fabric.",
+					SentenceBefore:  "A pair of scissors is used to ",
+					SentenceAfter:   " paper and fabric.",
+					Hint:            "base verb form",
+					Options:         []string{"cut", "cutting", "cuts"},
+					AcceptedAnswers: []string{"cut"},
+					Explanation:     "When 'be used to' denotes purpose or tool function, it takes the base infinitive (verb).",
+				},
+			}
+		}
+
 		return &dto.AnalyzeGrammarResponse{
 			RuleName:           "Passive Voice",
 			StructureTag:       "passive_voice",
@@ -1746,7 +1770,7 @@ func (s *AIService) getGrammarFallback(sentence, ruleHint string) *dto.AnalyzeGr
 		}
 	}
 
-	if tag == "be_used_to" || (strings.Contains(lower, "used to") && (strings.Contains(lower, "get used to") || strings.Contains(lower, "got used to") || strings.Contains(lower, "am used to") || strings.Contains(lower, "is used to") || strings.Contains(lower, "are used to") || strings.Contains(lower, "be used to"))) {
+	if tag == "be_used_to" || (strings.Contains(lower, "used to") && (strings.Contains(lower, "get used to") || strings.Contains(lower, "got used to") || strings.Contains(lower, "used to calling") || strings.Contains(lower, "used to living") || strings.Contains(lower, "used to working") || strings.Contains(lower, "used to waking"))) {
 		return &dto.AnalyzeGrammarResponse{
 			RuleName:           "Be / Get used to (Accustomed)",
 			StructureTag:       "be_used_to",

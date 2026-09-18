@@ -156,23 +156,34 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     })
   },
 
-  // 7. Passive Voice (Perfect or Modal)
+  // 7. Passive Voice (Perfect, Modal, or Present/Past of Use)
   {
     tag: 'passive_voice',
     name: 'Passive Voice',
     shortLabel: 'Passive',
     cefrLevel: 'B1',
-    formula: 'be (in tense) + Past Participle (V3)',
-    explanation: 'Focuses attention on the recipient of the action or the result, rather than the doer.',
-    nativeExplanation: 'Страдательный (пассивный) залог: фокус на объекте или результате действия, а не на исполнителе.',
-    pattern: /\b(?:has\s+been|have\s+been|had\s+been|was\s+being|were\s+being|is\s+being|will\s+be|must\s+be|can\s+be|should\s+be)\s+(?:completed|built|written|discovered|created|delayed|canceled|approved|rejected|released|made|found|[a-z]{3,}ed)\b/i,
-    generateQuiz: () => ({
-      question: "The new software update ___ to all users next Monday.",
-      options: ["will be delivered", "will deliver", "delivering"],
-      answer: "will be delivered",
-      hint: "Future passive: will be + V3",
-      explanation: "Future passive uses 'will be + past participle'."
-    })
+    formula: 'be + Past Participle (V3)',
+    explanation: 'Focuses attention on the recipient of the action, outcome, or function/purpose rather than the doer.',
+    nativeExplanation: 'Страдательный (пассивный) залог: фокус на объекте, результате действия или назначении инструмента.',
+    pattern: /\b(?:(?:has|have|had)\s+been|was\s+being|were\s+being|is\s+being|will\s+be|must\s+be|can\s+be|should\s+be)\s+(?:completed|built|written|discovered|created|delayed|canceled|approved|rejected|released|made|found|cooked|[a-z]{3,}ed)\b|(?:\b(?:is|are|was|were)\b|['’](?:s|re))\s+used\s+to\s+(?![a-z]+ing\b)[a-z]{3,}|\b(?:rakes?|hose|towel|towels|shovel|shovels|knife|knives|machete|blade|tool|tools|device|devices|wire|dish|pan|pot|cloth|sponge|brush|thing|stuff)\s+used\s+to\s+(?![a-z]+ing\b)[a-z]{3,}/i,
+    generateQuiz: (matchedText: string) => {
+      if (matchedText.toLowerCase().includes('used to')) {
+        return {
+          question: "A pair of scissors is used to ___ paper and fabric.",
+          options: ["cut", "cutting", "cuts"],
+          answer: "cut",
+          hint: "Passive of purpose (be used to) takes the base verb (infinitive)",
+          explanation: "When 'be used to' describes the function of a tool, it uses the base verb form."
+        };
+      }
+      return {
+        question: "The new software update ___ to all users next Monday.",
+        options: ["will be delivered", "will deliver", "delivering"],
+        answer: "will be delivered",
+        hint: "Future passive: will be + V3",
+        explanation: "Future passive uses 'will be + past participle'."
+      };
+    }
   },
 
   // 8. Wish / If only
@@ -203,7 +214,7 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     formula: 'be / get + used to + noun / V-ing',
     explanation: 'Describes becoming or being accustomed to something familiar through habit or experience.',
     nativeExplanation: 'Конструкция be / get used to: привыкнуть к чему-либо или быть привыкшим (требует существительное или -ing).',
-    pattern: /\b(?:be|am|is|are|was|were|been|being|get|gets|got|getting)\s+used\s+to(?:\s+(?:[a-z]{2,}|the|a|an|my|your|his|her|our|their|this|that|it|real))?/i,
+    pattern: /(?:(?:\b(?:be|am|is|are|was|were|been|being)\b|['’](?:m|re|s))\s+used\s+to\s+(?:[a-z]+ing\b|(?:it|this|that|them|me|us|him|her)\b|(?:the|a|an|this|that|my|your|his|her|our|their|real)\s+[a-z]{2,}\b)|\b(?:get|gets|got|getting)\s+used\s+to(?:\s+(?:[a-z]{2,}|the|a|an|my|your|his|her|our|their|this|that|it|real))?)/i,
     generateQuiz: () => ({
       question: "It took him some time to get used to ___ early every morning.",
       options: ["waking up", "wake up", "woke up"],
@@ -222,7 +233,7 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     formula: 'used to + base verb / didn\'t use to',
     explanation: 'Contrasts past routines or states with the present, emphasizing that it is no longer true.',
     nativeExplanation: 'Конструкция used to: привычки или состояния в прошлом, которых больше нет.',
-    pattern: /(?<!\b(?:be|am|is|are|was|were|been|being|get|gets|got|getting)\s+)\b(?:used\s+to\s+[a-z]{3,}|didn't\s+use\s+to\s+[a-z]{3,})\b/i,
+    pattern: /(?<!\b(?:be|am|is|are|was|were|been|being|get|gets|got|getting)\s+)(?<!['’](?:m|re|s)\s+)\b(?:used\s+to\s+(?![a-z]+ing\b)[a-z]{3,}|didn't\s+use\s+to\s+[a-z]{3,})\b/i,
     generateQuiz: () => ({
       question: "She ___ live in Paris, but now she resides in Tokyo.",
       options: ["used to", "was used to", "use to"],

@@ -61,13 +61,50 @@ describe('grammarDetector', () => {
     expect(result?.name).toBe('Used to (Past Habit)');
   });
 
-  test('detects Be / Get used to (Accustomed) and does not confuse with past habit', () => {
+  test('detects true Used to for past state or preference', () => {
+    const text = "You could say I used to like trees.";
+    const result = detectGrammarInText(text);
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('used_to');
+  });
+
+  test('detects Be / Get used to (Accustomed) with noun phrase', () => {
     const text = "help your brain get used to real English.";
     const result = detectGrammarInText(text);
     expect(result).not.toBeNull();
     expect(result?.tag).toBe('be_used_to');
     expect(result?.cefrLevel).toBe('B2');
     expect(result?.shortLabel).toBe('Get used to');
+  });
+
+  test('detects Be / Get used to (Accustomed) with contraction and gerund', () => {
+    const text = "I'm used to calling it soccer because I grew up in the US.";
+    const result = detectGrammarInText(text);
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('be_used_to');
+    expect(result?.cefrLevel).toBe('B2');
+  });
+
+  test('classifies tool/purpose "is used to + base verb" as Passive Voice, not accustomed', () => {
+    const text = "The machete is used to cut down tall weeds in the garden.";
+    const result = detectGrammarInText(text);
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('passive_voice');
+    expect(result?.name).toBe('Passive Voice');
+  });
+
+  test('classifies tool contraction "it\'s used to clean / they\'re used to cut" as Passive Voice', () => {
+    const res1 = detectGrammarInText("it's used to clean your ear, a Q-tip.");
+    expect(res1?.tag).toBe('passive_voice');
+
+    const res2 = detectGrammarInText("and they're used to cut grass. Whipper snippers.");
+    expect(res2?.tag).toBe('passive_voice');
+  });
+
+  test('classifies reduced tool clause "a hand towel used to dry" as Passive Voice', () => {
+    const result = detectGrammarInText("This is a hand towel. A hand towel used to dry your hands.");
+    expect(result).not.toBeNull();
+    expect(result?.tag).toBe('passive_voice');
   });
 
   test('returns null for plain sentences without advanced grammar', () => {

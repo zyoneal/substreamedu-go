@@ -84,9 +84,9 @@
   - Created `src/components/VideoPage/components/GrammarSpotlightModal.tsx` & `.module.css` with formula card, quote breakdown, and 1-question interactive mini-quiz with immediate feedback.
   - Created `src/components/VideoPage/components/VideoGrammarIndexModal.tsx` & `.module.css` with CEFR filtering and video seek links.
   - Integrated grammar spotlight badge into active subtitle container (both normal and fullscreen) and added "Grammar in this Video" button into player controls bar in `VideoPlayer.tsx`.
-  - Added unit test suite `src/utils/grammarDetector.test.ts` (10 tests, 100% pass).
-  - Resolved subtitle timestamp parsing bug (`startTimeMs` vs `start`), updated `VideoPlayer.tsx` to pass clicked cue sentence `selectedGrammarSentence` directly to `GrammarSpotlightModal` instead of out-of-sync playback `currentSubtitle`, and differentiated `be_used_to` ("Be / Get used to (Accustomed)" B2) from `used_to` ("Used to (Past Habit)" B1).
-  - Verified: Go tests pass (`go test -v ./...`), Go build succeeds, TypeScript typecheck passes (`npx tsc --noEmit`), Jest test suite passes (18 suites, 75 tests), and production bundle builds cleanly (`npm run build`).
+  - Added unit test suite `src/utils/grammarDetector.test.ts` (15 tests, 100% pass).
+  - Resolved subtitle timestamp parsing bug (`startTimeMs` vs `start`), updated `VideoPlayer.tsx` to pass clicked cue sentence `selectedGrammarSentence` directly to `GrammarSpotlightModal`, and cleanly separated 3 distinct grammatical categories: (1) `passive_voice` (Purpose/Tool: `is/are/it's/they're used to + base verb` like `is used to cut` and reduced clauses like `towel used to dry`), (2) `be_used_to` (Accustomed: `be / get used to + V-ing/noun` like `I'm used to calling`, `get used to real English`), and (3) `used_to` (Past Habit: `used to + base verb` without `be/get` auxiliaries like `used to like`, `used to sit`).
+  - Verified: Go tests pass (`go test -v ./...`), Go build succeeds, TypeScript typecheck passes (`npx tsc --noEmit`), Jest test suite passes (18 suites, 80 tests), and production bundle builds cleanly (`npm run build`).
 - **Active Vocabulary Practice Engine (Completed 2026-09-18)**:
   - Implemented `GeneratePracticeExercises` and `EvaluateSentence` in `ai_service.go` with resilient algorithmic cloze fallbacks.
   - Added request/response DTOs (`PracticeExercisesRequest`, `EvaluateSentenceRequest`) and registered `/api/dictionary/practice/*` routes.
