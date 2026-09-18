@@ -15,6 +15,7 @@ import {
 import { parseSRT } from '../../utils/srtParser';
 import { extractMovieYear } from '../../utils/videoNameUtils';
 import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleCleaner';
+import { stitchSubtitleSentences } from '../../utils/subtitleSentenceStitcher';
 import styles from "../../components/VideoPage/css/VideoPlayerPopover.module.css";
 import { LanguageContext } from "../LanguageContext";
 import { AuthContext } from "../../store/AuthContext";
@@ -102,10 +103,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
     const sanitizeSubtitles = useCallback((subs: Subtitle[] | any[] | null): Subtitle[] | null => {
         if (!subs || !Array.isArray(subs)) return null;
-        return subs.map(sub => ({
+        const cleaned = subs.map(sub => ({
             ...sub,
             text: cleanSubtitleText(sub.text || '')
         }));
+        return stitchSubtitleSentences(cleaned);
     }, []);
 
     const [subtitlesForVideo, setSubtitlesForVideo] = useState<Subtitle[] | null>(
@@ -965,7 +967,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             debugLog('Parsed subtitles:', parsedSubtitles.length, 'items');
 
             
-            setSubtitlesForVideo(parsedSubtitles);
+            setSubtitlesForVideo(sanitizeSubtitles(parsedSubtitles));
             setFileName(subtitle.releaseName || subtitle.name);
 
             
@@ -1182,7 +1184,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     const text = await response.text();
                     const parsed = parseSRT(text, firstSub.name);
 
-                    setSubtitlesForVideo(parsed);
+                    setSubtitlesForVideo(sanitizeSubtitles(parsed));
                     setFileName(firstSub.name);
                     sessionStorage.setItem('subtitleName', firstSub.name);
                     // Store the parsed content for persistence

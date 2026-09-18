@@ -1,3 +1,5 @@
+import { stitchSubtitleSentences } from './subtitleSentenceStitcher';
+
 export interface GrammarMiniQuiz {
   question: string;
   options: string[];
@@ -262,7 +264,7 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
     })
   },
 
-  // 11. First Conditional
+  // 12. First Conditional
   {
     tag: 'first_conditional',
     name: 'First Conditional',
@@ -278,6 +280,101 @@ const GRAMMAR_RULES: GrammarRuleDefinition[] = [
       answer: "will reschedule",
       hint: "First conditional result clause uses 'will + base verb'",
       explanation: "First conditional pairs Present Simple in the if-clause with 'will + verb' in the main clause."
+    })
+  },
+
+  // 13. Present Perfect Continuous (B1)
+  {
+    tag: 'present_perfect_continuous',
+    name: 'Present Perfect Continuous',
+    shortLabel: 'Pres Perf Cont',
+    cefrLevel: 'B1',
+    formula: 'have / has + been + V-ing',
+    explanation: 'Emphasizes an ongoing activity that started in the past and continues to the present moment or just finished.',
+    nativeExplanation: 'Длительное действие, начавшееся в прошлом и продолжающееся в настоящий момент или только что завершившееся.',
+    pattern: /\b(?:have|has|'ve|'s)\s+been\s+(?:thinking|waiting|looking|trying|working|learning|living|doing|watching|studying|talking|playing|using|running|getting|[a-z]{3,}ing)\b/i,
+    generateQuiz: () => ({
+      question: "She ___ for over an hour and her presentation is almost ready.",
+      options: ["has been working", "has worked", "is working"],
+      answer: "has been working",
+      hint: "Ongoing duration leading up to present uses Present Perfect Continuous",
+      explanation: "'Has been working' emphasizes the duration of the ongoing activity."
+    })
+  },
+
+  // 14. Be supposed to (B2)
+  {
+    tag: 'be_supposed_to',
+    name: 'Be supposed to (Expectation / Obligation)',
+    shortLabel: 'Supposed to',
+    cefrLevel: 'B2',
+    formula: 'be + supposed to + base verb',
+    explanation: 'Expresses what is intended, expected, or required by rule, custom, or schedule.',
+    nativeExplanation: 'Конструкция be supposed to: предполагается, должен по правилам или договорённости.',
+    pattern: /\b(?:(?:am|is|are|was|were)\b|['’](?:m|re|s))\s+(?:not\s+)?supposed\s+to\s+[a-z]{3,}\b/i,
+    generateQuiz: () => ({
+      question: "You ___ park your car in front of the emergency exit.",
+      options: ["aren't supposed to", "don't suppose to", "aren't supposing to"],
+      answer: "aren't supposed to",
+      hint: "Negative obligation uses 'aren't supposed to + base verb'",
+      explanation: "'Be supposed to' describes rules and expectations."
+    })
+  },
+
+  // 15. Modal Deduction (B1)
+  {
+    tag: 'modal_deduction',
+    name: 'Modal Deduction (Certainty / Impossibility)',
+    shortLabel: 'Deduction',
+    cefrLevel: 'B1',
+    formula: 'must / can\'t + be + Adjective/Noun',
+    explanation: 'Draws a logical conclusion about a present situation based on clear evidence or context.',
+    nativeExplanation: 'Модальный глагол логической дедукции: уверенность или вывод (должно быть, не может быть).',
+    pattern: /\b(?:must|can't)\s+be\s+(?:(?:really|very|super|so|quite)\s+)?(?:hard|difficult|easy|true|expensive|crazy|exhausting|impossible|obvious|[a-z]{3,}ing|[a-z]{4,}ful)\b/i,
+    generateQuiz: () => ({
+      question: "They've traveled for 20 hours without sleep; they ___ exhausted.",
+      options: ["must be", "can be", "should being"],
+      answer: "must be",
+      hint: "Strong logical deduction of certainty uses 'must be'",
+      explanation: "'Must be' expresses logical certainty based on evidence."
+    })
+  },
+
+  // 16. Concession & Contrast (B2)
+  {
+    tag: 'concession',
+    name: 'Concession (Even though / Although)',
+    shortLabel: 'Concession',
+    cefrLevel: 'B2',
+    formula: 'Even though / Although + Clause, Main Clause',
+    explanation: 'Introduces a subordinate clause with a fact that makes the main clause surprising or unexpected.',
+    nativeExplanation: 'Придаточное предложение уступки: связывает факты вопреки трудностям или неожиданным обстоятельствам.',
+    pattern: /\b(?:even\s+though|although|despite\s+the\s+fact\s+that|in\s+spite\s+of\s+the\s+fact)\b[^.!?]{4,80}\b/i,
+    generateQuiz: () => ({
+      question: "___ it was raining heavily, they continued their hike through the canyon.",
+      options: ["Even though", "Despite", "In spite"],
+      answer: "Even though",
+      hint: "'Even though' is followed by a full subject-verb clause",
+      explanation: "'Even though' connects two contrasting full clauses."
+    })
+  },
+
+  // 17. Indirect Questions (B1)
+  {
+    tag: 'indirect_question',
+    name: 'Indirect / Embedded Question',
+    shortLabel: 'Indirect Q',
+    cefrLevel: 'B1',
+    formula: 'Introductory phrase + question word / if + Subject + Verb',
+    explanation: 'A polite, indirect way to ask for information where the word order remains affirmative.',
+    nativeExplanation: 'Косвенный вопрос: вежливая формулировка с прямым порядком слов (Subject + Verb).',
+    pattern: /\b(?:i\s+wonder\s+(?:if|whether|how|why|where|what|when)|do\s+you\s+know\s+(?:if|whether|how|why|where|what|when))\b/i,
+    generateQuiz: () => ({
+      question: "Do you know what time ___?",
+      options: ["the train arrives", "does the train arrive", "arrives the train"],
+      answer: "the train arrives",
+      hint: "Indirect questions use affirmative word order (Subject + Verb)",
+      explanation: "In indirect questions, auxiliary verbs like 'does' are omitted and normal order applies."
     })
   }
 ];
@@ -332,11 +429,13 @@ export function scanSubtitlesForGrammar(
     return [];
   }
 
+  // Pre-process and stitch broken subtitle fragments into full, grammatically unbroken sentences
+  const stitched = stitchSubtitleSentences(subtitles);
   const results: VideoGrammarMatch[] = [];
   const seenTagsPerMinute = new Map<string, number>();
 
-  for (let i = 0; i < subtitles.length; i++) {
-    const sub = subtitles[i];
+  for (let i = 0; i < stitched.length; i++) {
+    const sub = stitched[i];
     const text = typeof sub.text === 'string' ? sub.text : '';
     if (!text || text.length < 10) continue;
 

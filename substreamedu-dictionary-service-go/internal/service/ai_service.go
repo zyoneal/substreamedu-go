@@ -1818,6 +1818,126 @@ func (s *AIService) getGrammarFallback(sentence, ruleHint string) *dto.AnalyzeGr
 		}
 	}
 
+	if tag == "present_perfect_continuous" || (strings.Contains(lower, "been ") && (strings.Contains(lower, "have been ") || strings.Contains(lower, "has been ") || strings.Contains(lower, "'ve been ") || strings.Contains(lower, "'s been "))) {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Present Perfect Continuous",
+			StructureTag:       "present_perfect_continuous",
+			CefrLevel:          "B1",
+			Formula:            "have / has + been + V-ing",
+			Explanation:        "Emphasizes the duration or continuity of an activity leading up to the present moment.",
+			NativeExplanation:  "Длительное действие, начавшееся в прошлом и продолжающееся в настоящий момент или только что завершившееся.",
+			HighlightedSegment: "been",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "working",
+				Prompt:          "She has been ___ on this video all morning.",
+				SentenceBefore:  "She has been ",
+				SentenceAfter:   " on this video all morning.",
+				Hint:            "work (gerund -ing)",
+				Options:         []string{"working", "worked", "works"},
+				AcceptedAnswers: []string{"working"},
+				Explanation:     "Present perfect continuous pairs have/has been with the -ing verb form.",
+			},
+		}
+	}
+
+	if tag == "be_supposed_to" || strings.Contains(lower, "supposed to") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Be supposed to (Expectation / Obligation)",
+			StructureTag:       "be_supposed_to",
+			CefrLevel:          "B2",
+			Formula:            "be + supposed to + base verb",
+			Explanation:        "Expresses what is intended, expected, or required by rule, custom, or schedule.",
+			NativeExplanation:  "Конструкция be supposed to: предполагается, должен по правилам или договоренности.",
+			HighlightedSegment: "supposed to",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "wear",
+				Prompt:          "You are supposed to ___ safety equipment here.",
+				SentenceBefore:  "You are supposed to ",
+				SentenceAfter:   " safety equipment here.",
+				Hint:            "base verb form",
+				Options:         []string{"wear", "wearing", "wore"},
+				AcceptedAnswers: []string{"wear"},
+				Explanation:     "'Be supposed to' takes the bare infinitive (base verb).",
+			},
+		}
+	}
+
+	if tag == "modal_deduction" || (strings.Contains(lower, "must be") || strings.Contains(lower, "can't be")) {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Modal Deduction (Certainty / Impossibility)",
+			StructureTag:       "modal_deduction",
+			CefrLevel:          "B1",
+			Formula:            "must / can't + be + Adj/Noun",
+			Explanation:        "Draws a logical conclusion about a present situation based on clear evidence or context.",
+			NativeExplanation:  "Модальная дедукция: логический вывод о настоящем (должно быть, не может быть).",
+			HighlightedSegment: "be",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "must be",
+				Prompt:          "After traveling for 20 hours, they ___ exhausted.",
+				SentenceBefore:  "After traveling for 20 hours, they ",
+				SentenceAfter:   " exhausted.",
+				Hint:            "logical certainty (must + be)",
+				Options:         []string{"must be", "can be", "should being"},
+				AcceptedAnswers: []string{"must be"},
+				Explanation:     "'Must be' expresses strong logical deduction of certainty.",
+			},
+		}
+	}
+
+	if tag == "concession" || strings.Contains(lower, "even though") || strings.Contains(lower, "although") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Concession & Contrast",
+			StructureTag:       "concession",
+			CefrLevel:          "B2",
+			Formula:            "Even though / Although + Clause, Main Clause",
+			Explanation:        "Connects two facts where one circumstance makes the main clause unexpected or surprising.",
+			NativeExplanation:  "Придаточное уступки: связывает факты вопреки трудностям или неожиданным обстоятельствам.",
+			HighlightedSegment: "even though",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "Even though",
+				Prompt:          "___ it was raining heavily, they enjoyed the walk.",
+				SentenceBefore:  "",
+				SentenceAfter:   " it was raining heavily, they enjoyed the walk.",
+				Hint:            "Concession conjunction (2 words)",
+				Options:         []string{"Even though", "Despite", "Because"},
+				AcceptedAnswers: []string{"Even though"},
+				Explanation:     "'Even though' connects two full clauses with contrasting circumstances.",
+			},
+		}
+	}
+
+	if tag == "indirect_question" || strings.Contains(lower, "i wonder") || strings.Contains(lower, "do you know") {
+		return &dto.AnalyzeGrammarResponse{
+			RuleName:           "Indirect / Embedded Question",
+			StructureTag:       "indirect_question",
+			CefrLevel:          "B1",
+			Formula:            "Introductory phrase + wh-word / if + Subject + Verb",
+			Explanation:        "Polite, natural phrasing embedding a question inside a statement with normal word order.",
+			NativeExplanation:  "Косвенный вопрос: вежливая формулировка с прямым порядком слов.",
+			HighlightedSegment: "wonder",
+			Exercise: dto.PracticeExercise{
+				ID:              fmt.Sprintf("quiz-%d", time.Now().UnixNano()),
+				Type:            "gap_fill",
+				TargetWord:      "it starts",
+				Prompt:          "Do you know what time ___?",
+				SentenceBefore:  "Do you know what time ",
+				SentenceAfter:   "?",
+				Hint:            "affirmative order (subject + verb)",
+				Options:         []string{"it starts", "does it start", "starts it"},
+				AcceptedAnswers: []string{"it starts"},
+				Explanation:     "Indirect questions use affirmative word order without inversion or dummy auxiliaries.",
+			},
+		}
+	}
+
 	return &dto.AnalyzeGrammarResponse{
 		RuleName:           "Grammar in Context",
 		StructureTag:       "general_grammar",
