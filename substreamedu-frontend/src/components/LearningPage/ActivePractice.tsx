@@ -406,16 +406,40 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                         <div className={styles.typeBadge}>
                             {activeMode === 'gap_fill' ? 'Fill the Blank' : 'Produce a Sentence'}
                         </div>
-                        <div className={styles.wordBadge}>
-                            <span>{currentExercise?.target_word || currentWordItem?.word}</span>
-                            <button
-                                onClick={() => playTTS(currentExercise?.target_word || currentWordItem?.word, currentIndex, learningLanguage || 'en')}
-                                className={styles.ttsButton}
-                                title="Listen to pronunciation"
-                            >
-                                <Volume2 size={16} />
-                            </button>
-                        </div>
+
+                        {activeMode === 'sentence_builder' ? (
+                            <div className={styles.wordBadge}>
+                                <span>{currentExercise?.target_word || currentWordItem?.word}</span>
+                                <button
+                                    onClick={() => playTTS(currentExercise?.target_word || currentWordItem?.word, currentIndex, learningLanguage || 'en')}
+                                    className={styles.ttsButton}
+                                    title="Listen to pronunciation"
+                                >
+                                    <Volume2 size={16} />
+                                </button>
+                            </div>
+                        ) : isAnswerChecked ? (
+                            <div className={styles.wordBadge}>
+                                <span>{currentExercise?.target_word || currentWordItem?.word}</span>
+                                <button
+                                    onClick={() => playTTS(currentExercise?.target_word || currentWordItem?.word, currentIndex, learningLanguage || 'en')}
+                                    className={styles.ttsButton}
+                                    title="Listen to pronunciation"
+                                >
+                                    <Volume2 size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            currentExercise?.target_word ? (
+                                <div className={styles.wordBadge} style={{ color: 'var(--color-mute, #7a7672)', fontWeight: 500, fontSize: '12px' }}>
+                                    <span>
+                                        {currentExercise.target_word.includes(' ')
+                                            ? `${currentExercise.target_word.trim().split(/\s+/).length} words`
+                                            : `${currentExercise.target_word.length} letters`}
+                                    </span>
+                                </div>
+                            ) : null
+                        )}
                     </div>
 
                     {/* GAP FILL MODE */}

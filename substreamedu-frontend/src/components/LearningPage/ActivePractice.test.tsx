@@ -52,16 +52,19 @@ describe('ActivePractice Component', () => {
     );
   };
 
-  it('renders the initial Cloze gap-fill exercise with prompt and target word badge', () => {
+  it('renders the initial Cloze gap-fill exercise with prompt and hidden target word (no spoiler)', () => {
     renderComponent();
 
     expect(screen.getByText('Contextual Cloze')).toBeInTheDocument();
     expect(screen.getByText('AI Sentence Builder')).toBeInTheDocument();
-    expect(screen.getByText('brush off')).toBeInTheDocument();
+    // Target word should NOT be spoiled in header or prompt before checking
+    expect(screen.queryByText('brush off')).not.toBeInTheDocument();
+    // Subtle word/letter count clue is shown instead
+    expect(screen.getByText(/2 words/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Type the missing word/i)).toBeInTheDocument();
   });
 
-  it('allows user to type answer and validates correct match', () => {
+  it('allows user to type answer, validates correct match, and reveals target word', () => {
     renderComponent();
 
     const input = screen.getByPlaceholderText(/Type the missing word/i);
@@ -71,6 +74,7 @@ describe('ActivePractice Component', () => {
     fireEvent.click(checkBtn);
 
     expect(screen.getByText(/Excellent! Exact match/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/brush off/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /continue/i })).toBeInTheDocument();
   });
 
