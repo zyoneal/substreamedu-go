@@ -2,14 +2,23 @@
 
 ## Status Board
 
-- **Current Phase**: Phase 1: Core System Refactor & Stabilization (100% Complete)
-- **In Progress**: None (All Tasks Completed)
-- **Completed**:
+- **Current Phase**: Phase 2: Product Feature Expansion
+- **In Progress**: None
+- **Backlog (Phase 2 — Teacher Feedback Features)**:
+  - Spec 05A: Active Vocabulary Practice (P2)
+  - Spec 05D: Grammar Detection & Exercises (P2)
+  - Spec 05F: Writing Practice (P3)
+  - Spec 05B: Teacher Mode (P3)
+- **Completed (Phase 2)**:
+  - Spec 05C: Better Contextual Explanations (P1) (ADR-035)
+  - Spec 05E: Collocations & Chunks (P1) (ADR-035)
+- **Completed (Phase 1)**:
   - Context System & SDD Initialization (`/context/`, `AGENTS.md`)
   - Spec 01: System Audit & Core Stability Refactor (`/context/feature_specs/01_system_audit_refactor.md`)
   - Spec 02: Authentication Hardening & Boundary Security (`/context/feature_specs/02_auth_hardening.md`)
   - Spec 03: Asynchronous Task Offloading & Performance Optimization (`/context/feature_specs/03_async_task_offloading.md`)
   - Spec 04: Frontend Design Token Unification & UI Modernization (`/context/feature_specs/04_frontend_design_token_unification.md`)
+  - Spec 05: Teacher Feedback Feature Roadmap (`/context/feature_specs/05_teacher_feedback_features.md`)
   - Purge Legacy Reverso Integration & Dead Types (ADR-013)
   - Purge Dead, Unreferenced, and Obsolete Code across Frontend & Go Services (ADR-019)
   - Dynamic Diagonal Resize & Zero-Scroll Screen-Fit Player (ADR-027)
@@ -60,10 +69,25 @@
 | **ADR-032** | 2026-09-14 | Sleek Bottom Floating Onboarding Toast Redesign | Fixed top-positioned onboarding guide bar (top: 56px) on mobile directly occluded the video stream and subtitles, squished titles into 4 broken vertical words (STEP 1 OF / 2: CLICK / TO / TRANSLATE), and left the close button stranded in the bottom-left. | Repositioned onboarding guide to a non-intrusive bottom floating toast (bottom: 24px desktop, bottom: 84px mobile above Telegram FAB); replaced heavy 2-step indicator circles with a sleek `1/2` badge; anchored close button to top-right; eliminated radioactive yellow glow for refined warm dark glassmorphism. |
 | **ADR-033** | 2026-09-15 | Purge Yellow Outline on Active Streak Checkmark Circles | `.weekNodeToday` was unconditionally applied to current day even after completion, causing an unsightly neon yellow outline around the active checkmark circle. | Added `!isActive` guard in `DashboardPage.tsx` and override `.weekNodeActive.weekNodeToday` in `DashboardPage.module.css`. |
 | **ADR-034** | 2026-09-16 | FAANG-Grade User Timezone Awareness in SRS Daily Cards (`/srs/today`) | When local user time was past midnight (e.g. 00:06 UTC+3, Sept 16), the dashboard correctly identified 50 cards due for today via timezone-aware `GetDictionaryStats`. However, `/api/dictionary/srs/today` hardcoded UTC time (21:06 UTC, Sept 15), filtering out cards due on Sept 16 and falling back to 50 brand new cards (`status: 'new'`). Furthermore, review cache invalidation did not purge timezone-suffixed keys (`srs:stats:<userID>:<loc>`). | Added `loc *time.Location` parameter to `GetDailyCards` and resolved user location in `DictionaryHandler.GetDailyCards(c)`. Updated `learning_service` Redis cache invalidation to scan and delete all `srs:stats:<userID>*` keys upon review. 100% Go unit tests pass. |
+| **ADR-035** | 2026-09-18 | Rich Contextual Explanations, Register Badges, and Collocation Chunks in Popover (Spec 05C & 05E) | Add register, usage note, alternatives with register notes, typical contexts, and clickable multi-word chunks to LLM translation prompt (v3.0 cache key) and frontend popover UI. | Learners immediately understand nuance, formality level, and naturally occurring multi-word phrases; can click chunks to translate and save them directly as single vocabulary items. Zero DB schema changes needed. |
 
 ---
 
 ## Session Notes
+- **Rich Contextual Explanations, Register Badges & Collocation Chunks (Completed 2026-09-18)**:
+  - Extended LLM translation prompt in `ai_service.go` (`createTranslationPrompt`) with output schema for `register` (formal, informal, slang, neutral, academic, literary), `usage_note`, `alternatives`, `chunks` (multi-word units), and `typical_contexts`.
+  - Bumped translation cache key to `ai:translation:v3.0:` and optimal `maxTokens` to handle richer linguistic payload.
+  - Extended Go DTO `TranslationProdResponse` and mapped legacy/compatibility fields cleanly.
+  - Extended frontend `SubtitleService.ts` and `types.ts` (`TranslationData`, `INITIAL_TRANSLATION_DATA`).
+  - Mapped API response into `TranslationData` in `VideoPlayer.tsx` across all translation lifecycle events (initial, reset, selection).
+  - Enhanced popover UI in `VideoPlayer.tsx` with:
+    - Register badge pill adjacent to partOfSpeech with color-coded theme variants (`formal`, `informal`, `slang`, `academic`, `literary`, `neutral`).
+    - Contextual usage note explaining *why* this phrase is used in the subtitle context.
+    - Clickable multi-word chunks chips — clicking re-translates the full chunk and prepares it for 1-click saving as a vocabulary unit.
+    - Alternatives list with inline register pills and usage differences.
+    - Typical contexts tags indicating domains/situations where the term is used.
+  - Styled all new popover sections in `VideoPlayerPopover.module.css` following Cinematic Espresso design system tokens.
+  - Verified: Go tests pass (`go test -v ./...`), Go service builds (`go build ./cmd/...`), TypeScript typechecks clean (`npx tsc --noEmit`), Jest test suite passes (16 suites, 61 tests), and production bundle builds cleanly (`npm run build`).
 - **FAANG-Grade User Timezone Awareness in SRS Daily Cards (Completed 2026-09-16)**:
   - Propagated user timezone from HTTP request (`X-Timezone` header / `?tz=...` query) to `learningService.GetDailyCards(ctx, userID, loc)`.
   - Aligned `todayStart` and `dueCutoff` in `GetDailyCards` to user local calendar day, preventing premature fallback to random new cards when reviewing past midnight in local time.

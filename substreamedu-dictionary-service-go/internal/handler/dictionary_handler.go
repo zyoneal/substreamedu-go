@@ -516,6 +516,16 @@ func (h *DictionaryHandler) mapCompatibilityFields(response *dto.TranslationProd
 			}
 		}
 	}
+
+	// Fallback: populate register from style if LLM only returned style
+	if response.Register == "" && response.Style != "" {
+		response.Register = response.Style
+	}
+
+	// Promote context_analysis.collocations into top-level chunks when chunks is empty
+	if len(response.Chunks) == 0 && len(response.ContextAnalysis.Collocations) > 0 {
+		response.Chunks = response.ContextAnalysis.Collocations
+	}
 }
 
 func (h *DictionaryHandler) GenerateTextByLevel(c *gin.Context) {

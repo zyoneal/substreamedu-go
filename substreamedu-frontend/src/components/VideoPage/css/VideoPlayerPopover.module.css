@@ -4027,3 +4027,228 @@ video[playsinline] {
     color: #faf92f !important;
     text-shadow: 0 0 12px rgba(250, 249, 47, 0.4);
 }
+
+/* ===============================================
+   Contextual Explanation & Chunks (v3.0)
+   =============================================== */
+
+/* Register badge row (POS + register) */
+.registerRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 2px;
+    flex-wrap: wrap;
+}
+
+.posTag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-body, #9e988f);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+.registerBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-body, #9e988f);
+}
+
+.registerBadgeSm {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--color-mute, #666360);
+    flex-shrink: 0;
+}
+
+/* Register color variants */
+.register_formal {
+    color: #7cb3ff;
+    border-color: rgba(124, 179, 255, 0.2);
+    background: rgba(124, 179, 255, 0.08);
+}
+
+.register_informal {
+    color: #f0c674;
+    border-color: rgba(240, 198, 116, 0.2);
+    background: rgba(240, 198, 116, 0.08);
+}
+
+.register_slang {
+    color: #cc99cc;
+    border-color: rgba(204, 153, 204, 0.2);
+    background: rgba(204, 153, 204, 0.08);
+}
+
+.register_neutral {
+    color: var(--color-body, #9e988f);
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.register_academic {
+    color: #81a2be;
+    border-color: rgba(129, 162, 190, 0.2);
+    background: rgba(129, 162, 190, 0.08);
+}
+
+.register_literary {
+    color: #b5bd68;
+    border-color: rgba(181, 189, 104, 0.2);
+    background: rgba(181, 189, 104, 0.08);
+}
+
+/* Usage note section */
+.usageNoteSection {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 6px 0;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.usageNoteIcon {
+    color: var(--color-mute, #666360);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.usageNoteText {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--color-body, #9e988f);
+    line-height: 1.45;
+    font-style: italic;
+}
+
+/* Section headers (Chunks, Alternatives) */
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-mute, #666360);
+    letter-spacing: 0.04em;
+    margin-bottom: 5px;
+}
+
+.sectionHeaderIcon {
+    color: var(--color-mute, #666360);
+}
+
+/* Chunks section */
+.chunksSection {
+    margin: 6px 0;
+}
+
+.chunksList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.chunkChip {
+    cursor: pointer;
+    background: rgba(0, 69, 230, 0.1) !important;
+    border: 1px solid rgba(0, 69, 230, 0.2) !important;
+    color: #a0c4ff !important;
+    transition: all 0.15s ease;
+}
+
+.chunkChip:hover {
+    background: rgba(0, 69, 230, 0.2) !important;
+    border-color: rgba(0, 69, 230, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+/* Alternatives section */
+.alternativesSection {
+    margin: 6px 0;
+}
+
+.alternativesList {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.alternativeItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 3px 0;
+}
+
+.alternativeText {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-ink, #ede8e0);
+}
+
+.alternativeNote {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--color-mute, #666360);
+    font-style: italic;
+}
+
+/* Typical contexts section */
+.typicalContextsSection {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: 4px 0;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.typicalContextsLabel {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-mute, #666360);
+    letter-spacing: 0.04em;
+}
+
+.typicalContextTag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--color-body, #9e988f);
+}

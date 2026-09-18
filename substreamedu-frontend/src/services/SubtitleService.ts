@@ -24,6 +24,13 @@ export interface TranslationProdResponse {
         collocations?: string[];
         domain?: string;
     };
+
+    // Contextual explanation fields (v3.0)
+    register?: string;
+    usage_note?: string;
+    alternatives?: Array<{ text: string; register?: string; usage_note?: string }>;
+    chunks?: string[];
+    typical_contexts?: string[];
 }
 
 

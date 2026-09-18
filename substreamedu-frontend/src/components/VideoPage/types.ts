@@ -50,6 +50,12 @@ export interface TranslationData {
     collocations: string[] | null;
     recommendedSelections: string[] | null;
     minimalUnit: string | null;
+    // Contextual explanation fields (v3.0)
+    register: string | null;
+    usageNote: string | null;
+    alternatives: Array<{ text: string; register?: string; usageNote?: string }> | null;
+    chunks: string[] | null;
+    typicalContexts: string[] | null;
 }
 
 export const INITIAL_TRANSLATION_DATA: TranslationData = {
@@ -67,6 +73,11 @@ export const INITIAL_TRANSLATION_DATA: TranslationData = {
     collocations: null,
     recommendedSelections: null,
     minimalUnit: null,
+    register: null,
+    usageNote: null,
+    alternatives: null,
+    chunks: null,
+    typicalContexts: null,
 };
 
 export interface ReverseTranslation {

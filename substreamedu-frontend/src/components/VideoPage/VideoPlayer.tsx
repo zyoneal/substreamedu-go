@@ -31,6 +31,9 @@ import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
 import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
+import BookOpen from 'lucide-react/dist/esm/icons/book-open';
+import MessageCircle from 'lucide-react/dist/esm/icons/message-circle';
+import Layers from 'lucide-react/dist/esm/icons/layers';
 
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
@@ -123,6 +126,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         collocations: null,
         recommendedSelections: null,
         minimalUnit: null,
+        register: null,
+        usageNote: null,
+        alternatives: null,
+        chunks: null,
+        typicalContexts: null,
     });
 
     const [dictionaryItems, setDictionaryItems] = useState<DictionaryItem[]>([]);
@@ -1450,6 +1458,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             collocations: null,
             recommendedSelections: null,
             minimalUnit: null,
+            register: null,
+            usageNote: null,
+            alternatives: null,
+            chunks: null,
+            typicalContexts: null,
         });
         setNote('');
         setIsLoading(true);
@@ -1874,6 +1887,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     collocations: originalResult.context_analysis?.collocations || null,
                     recommendedSelections: originalResult.recommended_selections || null,
                     minimalUnit: originalResult.context_analysis?.minimal_unit || null,
+                    register: originalResult.register || originalResult.style || null,
+                    usageNote: originalResult.usage_note || null,
+                    alternatives: originalResult.alternatives?.map(a => ({ text: a.text, register: a.register, usageNote: a.usage_note })) || null,
+                    chunks: originalResult.chunks || null,
+                    typicalContexts: originalResult.typical_contexts || null,
                 }));
             }
 
@@ -1918,6 +1936,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             collocations: null,
             recommendedSelections: null,
             minimalUnit: null,
+            register: null,
+            usageNote: null,
+            alternatives: null,
+            chunks: null,
+            typicalContexts: null,
         });
         setNote('');
         setIsLoading(false);
@@ -2987,7 +3010,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         synonyms: translationData.synonyms,
                                         otherMeanings: translationData.otherMeanings,
                                         collocations: translationData.collocations,
-                                        recommendedSelections: translationData.recommendedSelections
+                                        recommendedSelections: translationData.recommendedSelections,
+                                        register: translationData.register,
+                                        usageNote: translationData.usageNote,
+                                        alternatives: translationData.alternatives,
+                                        chunks: translationData.chunks,
+                                        typicalContexts: translationData.typicalContexts,
                                     };
 
                                     const matchingSelections = (data.recommendedSelections || []).filter(
@@ -2997,6 +3025,28 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
                                     return (
                                         <>
+                                            {/* Register badge + Part of Speech */}
+                                            {(data.register || translationData.partOfSpeech) && (
+                                                <div className={styles.registerRow}>
+                                                    {translationData.partOfSpeech && (
+                                                        <span className={styles.posTag}>{translationData.partOfSpeech}</span>
+                                                    )}
+                                                    {data.register && (
+                                                        <span className={`${styles.registerBadge} ${styles[`register_${data.register}`] || ''}`}>
+                                                            {data.register}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Usage Note — WHY this word is used here */}
+                                            {data.usageNote && (
+                                                <div className={styles.usageNoteSection}>
+                                                    <MessageCircle size={13} className={styles.usageNoteIcon} />
+                                                    <span className={styles.usageNoteText}>{data.usageNote}</span>
+                                                </div>
+                                            )}
+
                                             {bestMatch && (
                                                 <div className={styles.aiHintBox}>
                                                     <span className={styles.aiHintIcon}><Lightbulb size={16} className="text-primary" /></span>
@@ -3011,6 +3061,61 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                         {data.examples.slice(0, 2).map((example, idx) => (
                                                             <div key={idx} className={styles.exampleItem}>
                                                                 {example}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Chunks — multi-word units (collocations, phrasal verbs, idioms) */}
+                                            {data.chunks && data.chunks.length > 0 && (
+                                                <div className={styles.chunksSection}>
+                                                    <div className={styles.sectionHeader}>
+                                                        <Layers size={13} className={styles.sectionHeaderIcon} />
+                                                        <span>Chunks</span>
+                                                    </div>
+                                                    <div className={styles.chunksList}>
+                                                        {data.chunks.slice(0, 4).map((chunk, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className={`${styles.tagChip} ${styles.chunkChip}`}
+                                                                onClick={() => {
+                                                                    // Re-translate the full chunk
+                                                                    if (selectedSentence) {
+                                                                        setSelectedText(chunk);
+                                                                        setIsLoading(true);
+                                                                        const extendedCtx = getExtendedSubtitleContext();
+                                                                        fetchTranslation(chunk, selectedSentence, false, extendedCtx);
+                                                                    }
+                                                                }}
+                                                                title={`Translate "${chunk}" as a unit`}
+                                                            >
+                                                                {chunk}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Alternatives — synonyms with register labels */}
+                                            {data.alternatives && data.alternatives.length > 0 && (
+                                                <div className={styles.alternativesSection}>
+                                                    <div className={styles.sectionHeader}>
+                                                        <BookOpen size={13} className={styles.sectionHeaderIcon} />
+                                                        <span>Alternatives</span>
+                                                    </div>
+                                                    <div className={styles.alternativesList}>
+                                                        {data.alternatives.slice(0, 3).map((alt, idx) => (
+                                                            <div key={idx} className={styles.alternativeItem}>
+                                                                <span className={styles.alternativeText}>{alt.text}</span>
+                                                                {alt.register && (
+                                                                    <span className={`${styles.registerBadgeSm} ${styles[`register_${alt.register}`] || ''}`}>
+                                                                        {alt.register}
+                                                                    </span>
+                                                                )}
+                                                                {alt.usageNote && (
+                                                                    <span className={styles.alternativeNote}>{alt.usageNote}</span>
+                                                                )}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -3051,6 +3156,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Typical Contexts — where this word is commonly used */}
+                                            {data.typicalContexts && data.typicalContexts.length > 0 && (
+                                                <div className={styles.typicalContextsSection}>
+                                                    <span className={styles.typicalContextsLabel}>Common in:</span>
+                                                    {data.typicalContexts.slice(0, 3).map((ctx, idx) => (
+                                                        <span key={idx} className={styles.typicalContextTag}>{ctx}</span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </>
                                     );
                                 })()}

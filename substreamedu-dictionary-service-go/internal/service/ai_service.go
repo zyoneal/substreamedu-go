@@ -85,7 +85,7 @@ func (s *AIService) TranslateWithContext(ctx context.Context, req dto.Dictionary
 		resolvedSource = val
 	}
 
-	cacheKey := fmt.Sprintf("ai:translation:v2.1:%s:%s:%s", req.HighlightedText, req.FluentLanguage, req.Context)
+	cacheKey := fmt.Sprintf("ai:translation:v3.0:%s:%s:%s", req.HighlightedText, req.FluentLanguage, req.Context)
 	if s.redis != nil {
 		if val, err := s.redis.Get(ctx, cacheKey).Result(); err == nil {
 			s.logger.Info("AI Cache Hit", zap.String("key", cacheKey))
@@ -213,7 +213,8 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 	isSentenceMode := wordCount >= 4
 
 	systemPrompt := "You are an ultra-fast, production-grade linguistic analysis and translation engine.\n" +
-		"Your mission is to provide accurate contextual translations, base dictionary lemmas, and visual keywords for language learners.\n" +
+		"Your mission is to provide accurate contextual translations, base dictionary lemmas, visual keywords, and rich contextual explanations for language learners.\n" +
+		"You explain WHY a word/phrase is used in context, identify its register, suggest alternatives, detect multi-word chunks (collocations, phrasal verbs, idioms), and note typical usage contexts.\n" +
 		"Return ONLY a strictly valid JSON object matching the requested schema. Do NOT include markdown code blocks, backticks, preamble, or any conversational text."
 
 	var sb strings.Builder
@@ -238,7 +239,10 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 		sb.WriteString("2. DO NOT translate word-by-word. Preserve tense, pragmatic intent, and nuance of the original.\n")
 		sb.WriteString("3. 'definition' must be a concise English meaning/paraphrase of the whole expression (max 6 words).\n")
 		sb.WriteString("4. 'hint' and 'recommended_selections' MUST be empty (\"\" and []).\n")
-		sb.WriteString("5. 'visual_keyword' should be a single concrete English noun if strongly visual, otherwise \"\".\n\n")
+		sb.WriteString("5. 'visual_keyword' should be a single concrete English noun if strongly visual, otherwise \"\".\n")
+		sb.WriteString("6. 'usage_note': Briefly explain WHY this expression is used here and what pragmatic effect it achieves (1 sentence).\n")
+		sb.WriteString("7. 'register': formal|informal|slang|neutral|academic|literary — the sociolinguistic register of this expression.\n")
+		sb.WriteString("8. 'chunks', 'alternatives', 'typical_contexts' MUST be empty ([], [], []).\n\n")
 	} else if isPartial || wordOrPhrase == "word" {
 		sb.WriteString("!!! LEMMA PRIORITY: ON !!!\n")
 		sb.WriteString("1. BASE FORM REQUIREMENT: The highlight is a SINGLE WORD or ROOT. You MUST return the absolute BASE DICTIONARY FORM in 'translation' (Infinitive for verbs, Nominative Singular for nouns/adjectives).\n")
@@ -246,13 +250,24 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 		sb.WriteString("3. LITERAL MATCH: Match characters exactly. If highlight is 'idiot' in 'idiots', translate 'idiot' (singular). If 'want' in 'wanted', translate 'want' (infinitive).\n")
 		sb.WriteString("4. TRANSCRIPTION: Provide exact, accurate IPA for the highlighted " + sourceLang + " text.\n")
 		sb.WriteString("5. VISUAL KEYWORD: Exactly ONE concrete, physically drawable English noun representing the specific contextual meaning (e.g., 'runner' for 'running', 'sword' for 'betrayal', 'gavel' for 'verdict'). Return \"\" for abstract or grammatical words (e.g., 'however', 'almost', 'because', 'furthermore').\n")
-		sb.WriteString("6. HINT & RECOMMENDED SELECTIONS: If \"" + text + "\" is part of a phrasal verb or idiom in the sentence, identify the complete expression in 'hint' and 'recommended_selections'. Otherwise MUST be empty (\"\" and []).\n\n")
+		sb.WriteString("6. HINT & RECOMMENDED SELECTIONS: If \"" + text + "\" is part of a phrasal verb or idiom in the sentence, identify the complete expression in 'hint' and 'recommended_selections'. Otherwise MUST be empty (\"\" and []).\n")
+		sb.WriteString("7. CONTEXTUAL EXPLANATION (NEW):\n")
+		sb.WriteString("   - 'register': formal|informal|slang|neutral|academic|literary — the sociolinguistic register of the word in this context.\n")
+		sb.WriteString("   - 'usage_note': 1 sentence explaining WHY this word is used here (e.g., \"Used to soften a refusal\" or \"Technical term in legal proceedings\").\n")
+		sb.WriteString("   - 'alternatives': 2-3 synonyms that could replace this word, each with its register. Format: [{\"text\": \"postpone\", \"register\": \"formal\", \"usage_note\": \"more formal, used in writing\"}].\n")
+		sb.WriteString("   - 'chunks': Multi-word units (collocations, phrasal verbs, idioms) containing this word found in the context. E.g., for 'make' in 'make a decision': [\"make a decision\", \"make up your mind\"].\n")
+		sb.WriteString("   - 'typical_contexts': 2-3 typical situations/domains where this word is commonly used (e.g., [\"business meetings\", \"academic writing\", \"casual conversation\"]).\n\n")
 	} else {
 		sb.WriteString("!!! PHRASE MODE !!!\n")
 		sb.WriteString("1. Translate the phrase as a cohesive linguistic unit into " + targetLang + ".\n")
 		sb.WriteString("2. 'definition' must be a concise English meaning (3-6 words) for this specific usage.\n")
 		sb.WriteString("3. 'visual_keyword': Single concrete drawable English noun representing the phrase, or \"\".\n")
-		sb.WriteString("4. If the phrase is part of a larger idiom/phrasal verb, include it in 'hint' and 'recommended_selections'. Otherwise empty.\n\n")
+		sb.WriteString("4. If the phrase is part of a larger idiom/phrasal verb, include it in 'hint' and 'recommended_selections'. Otherwise empty.\n")
+		sb.WriteString("5. 'register': formal|informal|slang|neutral|academic|literary — the sociolinguistic register.\n")
+		sb.WriteString("6. 'usage_note': 1 sentence explaining WHY this phrase is used in this context.\n")
+		sb.WriteString("7. 'alternatives': 2-3 alternative expressions with register labels.\n")
+		sb.WriteString("8. 'typical_contexts': 2-3 domains/situations where this phrase is commonly used.\n")
+		sb.WriteString("9. 'chunks': If this phrase is part of a larger fixed expression, include it. Otherwise [].\n\n")
 	}
 
 	sb.WriteString("OUTPUT SCHEMA:\n")
@@ -262,8 +277,14 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 	fmt.Fprintf(&sb, "  \"transcription\": \"string\",  // IPA transcription of original %s text\n", sourceLang)
 	sb.WriteString("  \"partOfSpeech\": \"string\",   // noun|verb|adjective|adverb|preposition|conjunction|pronoun|interjection|phrase|idiom\n")
 	sb.WriteString("  \"style\": \"string\",          // formal|informal|slang|neutral\n")
+	sb.WriteString("  \"register\": \"string\",       // formal|informal|slang|neutral|academic|literary\n")
+	sb.WriteString("  \"usage_note\": \"string\",     // 1 sentence: WHY this word/phrase is used in this specific context\n")
 	sb.WriteString("  \"hint\": \"string\",           // Full idiom/phrasal verb if applicable (max 25 chars), otherwise \"\"\n")
 	sb.WriteString("  \"recommended_selections\": [\"string\"], // 1 contextually relevant larger unit (idiom/phrasal verb) or empty []\n")
+	sb.WriteString("  \"other_meanings\": [\"string\"],  // 2-3 alternative translations for other common senses of this word\n")
+	sb.WriteString("  \"alternatives\": [{\"text\": \"string\", \"register\": \"string\", \"usage_note\": \"string\"}], // 2-3 synonyms with register and brief note\n")
+	sb.WriteString("  \"chunks\": [\"string\"],        // Multi-word units (collocations, phrasal verbs, idioms) containing this word from context, or []\n")
+	sb.WriteString("  \"typical_contexts\": [\"string\"], // 2-3 situations/domains where this word is commonly used, or []\n")
 	sb.WriteString("  \"visual_keyword\": \"string\"   // Single concrete drawable English noun, or \"\"\n")
 	sb.WriteString("}\n\n")
 
@@ -277,8 +298,14 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 		sb.WriteString("  \"transcription\": \"/haʊ loʊ kæn juː ɡoʊ/\",\n")
 		sb.WriteString("  \"partOfSpeech\": \"phrase\",\n")
 		sb.WriteString("  \"style\": \"informal\",\n")
+		sb.WriteString("  \"register\": \"informal\",\n")
+		sb.WriteString("  \"usage_note\": \"Rhetorical challenge implying moral or physical limits.\",\n")
 		sb.WriteString("  \"hint\": \"\",\n")
 		sb.WriteString("  \"recommended_selections\": [],\n")
+		sb.WriteString("  \"other_meanings\": [],\n")
+		sb.WriteString("  \"alternatives\": [],\n")
+		sb.WriteString("  \"chunks\": [],\n")
+		sb.WriteString("  \"typical_contexts\": [],\n")
 		sb.WriteString("  \"visual_keyword\": \"\"\n")
 		sb.WriteString("}\n\n")
 	} else {
@@ -291,8 +318,14 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 		sb.WriteString("  \"transcription\": \"/rʌn/\",\n")
 		sb.WriteString("  \"partOfSpeech\": \"verb\",\n")
 		sb.WriteString("  \"style\": \"neutral\",\n")
+		sb.WriteString("  \"register\": \"neutral\",\n")
+		sb.WriteString("  \"usage_note\": \"Technical sense meaning to execute or carry out, common in QA and engineering.\",\n")
 		sb.WriteString("  \"hint\": \"run a test\",\n")
 		sb.WriteString("  \"recommended_selections\": [\"run a test\"],\n")
+		sb.WriteString("  \"other_meanings\": [\"бежать\", \"управлять\"],\n")
+		sb.WriteString("  \"alternatives\": [{\"text\": \"execute\", \"register\": \"formal\", \"usage_note\": \"more formal, used in documentation\"}, {\"text\": \"perform\", \"register\": \"neutral\", \"usage_note\": \"general purpose synonym\"}],\n")
+		sb.WriteString("  \"chunks\": [\"run a test\", \"run an experiment\"],\n")
+		sb.WriteString("  \"typical_contexts\": [\"software development\", \"scientific research\", \"quality assurance\"],\n")
 		sb.WriteString("  \"visual_keyword\": \"runner\"\n")
 		sb.WriteString("}\n\n")
 	}
@@ -1257,13 +1290,15 @@ func (s *AIService) getMaxTokensForLevel(cefrLevel string) int {
 func (s *AIService) calculateOptimalMaxTokens(text string) int {
 	wordCount := len(strings.Split(strings.TrimSpace(text), " "))
 
+	// Increased token budget (+100) to accommodate richer contextual output:
+	// register, usage_note, alternatives, chunks, typical_contexts
 	if wordCount <= 3 {
-		return 400
-	}
-	if wordCount <= 10 {
 		return 500
 	}
-	return 600
+	if wordCount <= 10 {
+		return 600
+	}
+	return 700
 }
 
 // GenerateEmbedding is a no-op placeholder since embedding-service was decommissioned.

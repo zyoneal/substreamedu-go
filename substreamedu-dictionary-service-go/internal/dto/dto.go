@@ -134,46 +134,50 @@ type TranslationMetaDto struct {
 }
 
 type TranslationAlternativeDto struct {
-	Text		string		`json:"text"`
-	Register	string		`json:"register"`
-	UsageNote	interface{}	`json:"usage_note,omitempty"`
+	Text      string `json:"text"`
+	Register  string `json:"register"`
+	UsageNote string `json:"usage_note,omitempty"`
 }
 
 type TranslationPronunciationDto struct {
-	IPA		string		`json:"ipa"`
-	SourceScript	interface{}	`json:"source_script,omitempty"`
+	IPA          string      `json:"ipa"`
+	SourceScript interface{} `json:"source_script,omitempty"`
 }
 
 type TranslationLinguisticDto struct {
-	POS		string		`json:"pos"`
-	Lemma		string		`json:"lemma"`
-	Morphology	interface{}	`json:"morphology,omitempty"`
+	POS        string      `json:"pos"`
+	Lemma      string      `json:"lemma"`
+	Morphology interface{} `json:"morphology,omitempty"`
 }
 
 type TranslationContextAnalysisDto struct {
-	MinimalUnit	interface{}	`json:"minimal_unit,omitempty"`
-	Collocations	[]string	`json:"collocations"`
-	Domain		string		`json:"domain"`
+	MinimalUnit interface{} `json:"minimal_unit,omitempty"`
+	Collocations []string   `json:"collocations"`
+	Domain       string     `json:"domain"`
 }
 
 type TranslationProdResponse struct {
-	Translation		string		`json:"translation"`
-	Definition		string		`json:"definition"`
-	Transcription		string		`json:"transcription"`
-	IPA			string		`json:"ipa"`
-	PartOfSpeech		string		`json:"partOfSpeech"`
-	Hint			string		`json:"hint"`
-	Style			string		`json:"style"`
-	RecommendedSelections	[]string	`json:"recommended_selections"`
-	OtherMeanings		[]string	`json:"other_meanings"`
-	ImageUrl		string		`json:"imageUrl"`
+	Translation           string   `json:"translation"`
+	Definition            string   `json:"definition"`
+	Transcription         string   `json:"transcription"`
+	IPA                   string   `json:"ipa"`
+	PartOfSpeech          string   `json:"partOfSpeech"`
+	Hint                  string   `json:"hint"`
+	Style                 string   `json:"style"`
+	Register              string   `json:"register"`
+	UsageNote             string   `json:"usage_note"`
+	RecommendedSelections []string `json:"recommended_selections"`
+	OtherMeanings         []string `json:"other_meanings"`
+	Chunks                []string `json:"chunks"`
+	TypicalContexts       []string `json:"typical_contexts"`
+	ImageUrl              string   `json:"imageUrl"`
 
-	Meta		TranslationMetaDto		`json:"meta"`
-	Alternatives	[]TranslationAlternativeDto	`json:"alternatives"`
-	Pronunciation	TranslationPronunciationDto	`json:"pronunciation"`
-	Linguistic	TranslationLinguisticDto	`json:"linguistic"`
-	ContextAnalysis	TranslationContextAnalysisDto	`json:"context_analysis"`
-	VisualKeyword	string				`json:"visual_keyword"`
+	Meta            TranslationMetaDto            `json:"meta"`
+	Alternatives    []TranslationAlternativeDto    `json:"alternatives"`
+	Pronunciation   TranslationPronunciationDto    `json:"pronunciation"`
+	Linguistic      TranslationLinguisticDto       `json:"linguistic"`
+	ContextAnalysis TranslationContextAnalysisDto  `json:"context_analysis"`
+	VisualKeyword   string                         `json:"visual_keyword"`
 }
 
 type GenerateTextRequest struct {
