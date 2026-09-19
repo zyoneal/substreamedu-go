@@ -57,7 +57,7 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
         },
     };
 
-    const msg = messages[type];
+    const msg = messages[type] || messages.save;
 
     return (
         <div
@@ -71,7 +71,7 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                zIndex: 1000,
+                zIndex: 99999,
             }}
             onClick={onClose}
         >

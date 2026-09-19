@@ -85,6 +85,11 @@ export const useSaveWord = (
             queryClient.invalidateQueries({ queryKey: ['dictionaryResources'] });
         },
         onError: (err, variables, context) => {
+            const status = (err as any)?.status || (err as any)?.response?.status;
+            const message = ((err as any)?.message || (err as any)?.response?.data?.message || '').toLowerCase();
+            if (status === 403 || message.includes('save limit') || message.includes('word save')) {
+                window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
+            }
             (options as any)?.onError?.(err, variables, context);
             console.error("Mutation failed", err);
         },

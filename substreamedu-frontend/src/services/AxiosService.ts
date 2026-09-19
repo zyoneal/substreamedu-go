@@ -23,12 +23,17 @@ const axiosService = axios.create({
 
 let reqInterceptorId: number | null = null;
 let resInterceptorId: number | null = null;
+let globalOnPremiumLimit: ((type: 'translation' | 'save') => void) | null = null;
 
 export const setupInterceptors = (
   setIsLoggedIn: (value: boolean) => void,
   navigate: (path: string) => void,
   onPremiumLimit?: (type: 'translation' | 'save') => void
 ) => {
+  if (onPremiumLimit) {
+    globalOnPremiumLimit = onPremiumLimit;
+  }
+
   if (reqInterceptorId !== null) {
     axiosService.interceptors.request.eject(reqInterceptorId);
   }
@@ -93,15 +98,17 @@ export const setupInterceptors = (
         return Promise.reject(error);
       }
 
-      if (error.response && error.response.status === 403 && onPremiumLimit) {
+      if (error.response && error.response.status === 403) {
         const data = error.response.data as any;
         const msg = (data?.message || '').toLowerCase();
         const url = error.config?.url || '';
 
         if (msg.includes('translation limit') || url.includes('translation/prod')) {
-          onPremiumLimit('translation');
+          if (globalOnPremiumLimit) globalOnPremiumLimit('translation');
+          window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'translation' } }));
         } else if (msg.includes('save limit') || msg.includes('word save') || url.includes('translated')) {
-          onPremiumLimit('save');
+          if (globalOnPremiumLimit) globalOnPremiumLimit('save');
+          window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
         }
       }
 

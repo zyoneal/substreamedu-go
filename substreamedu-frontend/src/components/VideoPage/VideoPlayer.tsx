@@ -2276,7 +2276,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                 setHighlightedWords(context.previousItems);
             }
             const errorResponse = err as ErrorResponse;
-            if (errorResponse?.status === 503 && errorResponse?.message) {
+            const status = err?.status || err?.response?.status;
+            const message = (err?.message || err?.response?.data?.message || '').toLowerCase();
+
+            if (status === 403 || message.includes('save limit') || message.includes('word save')) {
+                window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
+            } else if (errorResponse?.status === 503 && errorResponse?.message) {
                 setTranslationData(prev => ({ ...prev, translation: errorResponse.message }));
                 setShowSubmitButton(false);
             } else {

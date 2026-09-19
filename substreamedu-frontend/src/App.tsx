@@ -81,13 +81,20 @@ const App: React.FC = () => {
     useEffect(() => {
         const handleGuestLimit = () => setPremiumLimitType('guest_limit');
         const handleGuestSave = () => setPremiumLimitType('guest_save');
+        const handlePremiumLimit = (e: Event) => {
+            const customEvent = e as CustomEvent<{ type?: 'translation' | 'save' }>;
+            const type = customEvent.detail?.type || 'save';
+            setPremiumLimitType(type);
+        };
 
         window.addEventListener('substreamedu:guest_limit_reached', handleGuestLimit);
         window.addEventListener('substreamedu:guest_save_reached', handleGuestSave);
+        window.addEventListener('substreamedu:premium_limit_reached', handlePremiumLimit);
 
         return () => {
             window.removeEventListener('substreamedu:guest_limit_reached', handleGuestLimit);
             window.removeEventListener('substreamedu:guest_save_reached', handleGuestSave);
+            window.removeEventListener('substreamedu:premium_limit_reached', handlePremiumLimit);
         };
     }, []);
 

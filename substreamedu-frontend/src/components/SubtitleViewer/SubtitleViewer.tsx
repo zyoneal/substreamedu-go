@@ -697,7 +697,14 @@ const SubtitleViewer: React.FC = () => {
             if (context?.previousHighlightedWords) {
                 setHighlightedWords(context.previousHighlightedWords);
             }
-            showNotification('Failed to save word. Please try again.');
+            const status = err?.status || err?.response?.status;
+            const message = (err?.message || err?.response?.data?.message || '').toLowerCase();
+
+            if (status === 403 || message.includes('save limit') || message.includes('word save')) {
+                window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
+            } else {
+                showNotification('Failed to save word. Please try again.');
+            }
             debugError("Mutation failed", err);
         },
     });
