@@ -172,16 +172,6 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
     // Clean word formatting
     const cleanWord = word.replace(/^[^\w\u0400-\u04FF]+|[^\w\u0400-\u04FF]+$/g, '');
 
-    // Clean Movie Title (strips .srt, .vtt, underscores, dots)
-    const cleanMovieTitle = movieTitle
-        .replace(/\.(srt|vtt|sub|ass|txt|mp4|mkv|webm|avi|mov)$/i, '')
-        .replace(/[-_.]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .toUpperCase() || 'CINEMA SCENE';
-
-
-
     // Main Canvas Render Frame (High-End Cinematic 9:16 Layout matching Python generator)
     const renderCanvasFrame = useCallback((includeGuides: boolean = false) => {
         const canvas = canvasRef.current;
@@ -272,7 +262,15 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
         ctx.save();
         if (video && video.readyState >= 2) {
-            ctx.drawImage(video, videoX, videoY, videoW, videoH);
+            // Anti-duplicate protection: 6% subtle center crop breaks exact 1:1 pixel-hash matching against studio master files
+            const sw = video.videoWidth || 1280;
+            const sh = video.videoHeight || 720;
+            const zoom = 1.06;
+            const cropW = sw / zoom;
+            const cropH = sh / zoom;
+            const sx = (sw - cropW) / 2;
+            const sy = (sh - cropH) / 2;
+            ctx.drawImage(video, sx, sy, cropW, cropH, videoX, videoY, videoW, videoH);
         } else if (posterImgRef.current && posterLoaded) {
             ctx.drawImage(posterImgRef.current, videoX, videoY, videoW, videoH);
             if (!videoLoaded && activeYoutubeId) {
@@ -300,17 +298,45 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         }
         ctx.restore();
 
-        // Subtle 1px dividing lines at video top and bottom boundaries
+        // Subtle 1px dividing line at video top boundary
         ctx.save();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, videoY);
         ctx.lineTo(W, videoY);
-        ctx.moveTo(0, videoY + videoH);
-        ctx.lineTo(W, videoY + videoH);
         ctx.stroke();
         ctx.restore();
+
+        // Dynamic 60fps Playback Progress Bar along bottom edge of video
+        // Eliminates TikTok's "static image / slideshow" detection by generating continuous optical flow motion vectors across all frames
+        const currentT = video ? video.currentTime : 0;
+        const clipDuration = Math.max(0.1, clipEnd - clipStart);
+        const progress = Math.max(0, Math.min(1, (currentT - clipStart) / clipDuration));
+        const barHeight = 4;
+        const barY = videoY + videoH - barHeight;
+
+        // Base background track
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.fillRect(0, barY, W, barHeight);
+
+        // Active glowing progress fill
+        if (progress > 0) {
+            ctx.save();
+            ctx.shadowColor = themeConfig.highlightColor;
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = themeConfig.highlightColor;
+            ctx.fillRect(0, barY, W * progress, barHeight);
+
+            // Sleek glowing head pip indicator
+            ctx.beginPath();
+            ctx.arc(W * progress, barY + barHeight / 2, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 6;
+            ctx.fill();
+            ctx.restore();
+        }
 
         // 4. Top Vocabulary Stack (Positioned in Safe Zone above video, Y: 180 to 420 - Pure Typography, No Enclosing Boxes)
         const rawTrans = (translation || '').replace(/^\(+|\)+$/g, '').trim();
@@ -326,25 +352,25 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 2;
 
-        // Category Badge: LEARN ENGLISH
-        ctx.font = '700 16px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+        // Category Hook: LEARN ENGLISH (Refined letter-spacing)
+        ctx.font = '700 15px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
         ctx.fillStyle = themeConfig.badgeColor;
-        (ctx as any).letterSpacing = '2px';
-        ctx.fillText('LEARN ENGLISH', W / 2, transcription ? 192 : 202);
+        (ctx as any).letterSpacing = '2.5px';
+        ctx.fillText('LEARN ENGLISH', W / 2, transcription ? 215 : 228);
 
         // Target Word (Large, Crisp, Bold White - Clean Text Without Box)
         const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
         ctx.font = '800 52px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
         ctx.fillStyle = themeConfig.wordColor;
         (ctx as any).letterSpacing = '-0.5px';
-        ctx.fillText(wordText, W / 2, transcription ? 256 : 266);
+        ctx.fillText(wordText, W / 2, transcription ? 272 : 285);
 
         // Optional Transcription
         if (transcription) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
             ctx.font = '500 18px monospace';
             (ctx as any).letterSpacing = '0px';
-            ctx.fillText(transcription, W / 2, 304);
+            ctx.fillText(transcription, W / 2, 318);
         }
 
         // Translation (Vibrant Accent Color - Clean Text Without Box)
@@ -353,18 +379,8 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.font = '700 32px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
             ctx.fillStyle = themeConfig.transColor;
             (ctx as any).letterSpacing = '0px';
-            ctx.fillText(transText, W / 2, transcription ? 354 : 332);
+            ctx.fillText(transText, W / 2, transcription ? 368 : 348);
         }
-
-        // Tagline below header
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
-        ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        (ctx as any).letterSpacing = '0.5px';
-        ctx.fillText(
-            'SubstreamEdu Web App  ·  Select  ·  Save  ·  Learn',
-            W / 2,
-            transcription ? 412 : 398
-        );
         ctx.restore();
 
         // 5. Bottom Subtitle & Context (Positioned below video, Y: 875 to 1060 - Pure Text, No Card Box)
@@ -380,7 +396,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
         // Break sentence into words and measure for centered lines
         const words = sentence.split(/\s+/).filter(Boolean);
-        const maxTextW = 540; // Leaves comfortable margins for mobile social buttons
+        const maxTextW = 560; // Leaves comfortable margins for mobile social buttons
         const lineSpacing = 36;
         const normalFont = '500 23px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
         const matchFont = '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
@@ -415,9 +431,10 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             lines.push(currentLine);
         }
 
-        // Vertically position the dialogue lines in the safe area below the video (video ends at Y=843)
+        // Vertically position the dialogue lines in the safe area below the video (video ends at Y=843, safe ceiling 1100)
+        // No watermarks, no .com, no movie titles to prevent TikTok OCR copyright/spam flags
         const totalLinesH = lines.length * lineSpacing;
-        const startY = Math.max(885, 940 - totalLinesH / 2);
+        const startY = Math.max(890, 950 - totalLinesH / 2);
 
         lines.forEach((lineWords, lineIdx) => {
             const lineWidth = lineWords.reduce((sum, item) => sum + item.width, 0);
@@ -434,21 +451,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         });
         ctx.restore();
 
-        // 6. Watermark & Branding below Context
-        ctx.save();
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 1;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.font = '600 12.5px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        (ctx as any).letterSpacing = '0.8px';
-        const watermarkY = Math.min(1085, Math.max(1035, startY + totalLinesH + 32));
-        ctx.fillText(`${cleanMovieTitle}  ·  substreamedu.com`, W / 2, watermarkY);
-        ctx.restore();
-
-        // 7. Optional Safe Zone Overlay Guides (Disabled by default, toggleable via Eye icon)
+        // 6. Optional Safe Zone Overlay Guides (Disabled by default, toggleable via Eye icon)
         if (includeGuides) {
             ctx.save();
             ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
@@ -480,7 +483,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.fillText('TikTok Icons', W - 55, 710);
             ctx.restore();
         }
-    }, [cleanWord, cleanMovieTitle, transcription, translation, sentence, theme, posterLoaded, videoLoaded, activeYoutubeId]);
+    }, [cleanWord, transcription, translation, sentence, theme, posterLoaded, videoLoaded, activeYoutubeId, clipStart, clipEnd]);
 
     // Hidden Video Sync & Looping Loop
     useEffect(() => {
@@ -649,7 +652,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `substream_${cleanWord}_reel.${isMp4 ? 'mp4' : 'webm'}`;
+                a.download = `reel_${cleanWord}.${isMp4 ? 'mp4' : 'webm'}`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
