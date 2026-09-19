@@ -312,152 +312,140 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.stroke();
         ctx.restore();
 
-        // 4. Top Vocabulary Stack (Positioned in Safe Zone above video, Y: 180 to 420)
+        // 4. Top Vocabulary Stack (Positioned in Safe Zone above video, Y: 180 to 420 - Pure Typography, No Enclosing Boxes)
         const rawTrans = (translation || '').replace(/^\(+|\)+$/g, '').trim();
         const displayTrans = rawTrans ? `(${rawTrans})` : '';
 
-        // Category Badge: LEARN ENGLISH
-        drawTextWithBox(
-            ctx,
-            'LEARN ENGLISH',
-            W / 2,
-            transcription ? 195 : 205,
-            '700 18px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
-            themeConfig.badgeColor,
-            themeConfig.badgeBg,
-            18,
-            8,
-            8,
-            themeConfig.badgeBorder
-        );
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-        // Target Word (Large, Crisp, Bold White)
+        // Deep drop shadow ensures razor-sharp legibility directly on blurred video backdrop
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+
+        // Category Badge: LEARN ENGLISH
+        ctx.font = '700 16px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+        ctx.fillStyle = themeConfig.badgeColor;
+        (ctx as any).letterSpacing = '2px';
+        ctx.fillText('LEARN ENGLISH', W / 2, transcription ? 192 : 202);
+
+        // Target Word (Large, Crisp, Bold White - Clean Text Without Box)
         const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
-        drawTextWithBox(
-            ctx,
-            wordText,
-            W / 2,
-            transcription ? 262 : 276,
-            '800 44px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
-            themeConfig.wordColor,
-            'rgba(0, 0, 0, 0.48)',
-            22,
-            10,
-            12,
-            'rgba(255, 255, 255, 0.14)'
-        );
+        ctx.font = '800 52px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+        ctx.fillStyle = themeConfig.wordColor;
+        (ctx as any).letterSpacing = '-0.5px';
+        ctx.fillText(wordText, W / 2, transcription ? 256 : 266);
 
         // Optional Transcription
         if (transcription) {
-            ctx.save();
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
-            ctx.font = '500 16px monospace';
-            ctx.fillText(transcription, W / 2, 310);
-            ctx.restore();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.font = '500 18px monospace';
+            (ctx as any).letterSpacing = '0px';
+            ctx.fillText(transcription, W / 2, 304);
         }
 
-        // Translation Pill (Vibrant Yellow / Theme Accent)
+        // Translation (Vibrant Accent Color - Clean Text Without Box)
         if (displayTrans) {
             const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
-            drawTextWithBox(
-                ctx,
-                transText,
-                W / 2,
-                transcription ? 354 : 346,
-                '700 28px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
-                themeConfig.transColor,
-                themeConfig.transBg,
-                20,
-                8,
-                10,
-                themeConfig.transBorder
-            );
+            ctx.font = '700 32px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.fillStyle = themeConfig.transColor;
+            (ctx as any).letterSpacing = '0px';
+            ctx.fillText(transText, W / 2, transcription ? 354 : 332);
         }
 
         // Tagline below header
-        ctx.save();
-        ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
-        ctx.font = '500 14px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.68)';
+        ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
         (ctx as any).letterSpacing = '0.5px';
         ctx.fillText(
             'SubstreamEdu Web App  ·  Select  ·  Save  ·  Learn',
             W / 2,
-            transcription ? 414 : 408
+            transcription ? 412 : 398
         );
         ctx.restore();
 
-        // 5. Bottom Subtitle & Context Box (Positioned below video, Y: 875 to 1050)
-        // Clean translucent glass card
-        const cardX = 36;
-        const cardY = 875;
-        const cardW = W - 72; // 648px
-        const cardH = 175;
-
+        // 5. Bottom Subtitle & Context (Positioned below video, Y: 875 to 1060 - Pure Text, No Card Box)
         ctx.save();
-        drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-        ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-        ctx.stroke();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-        // Clean Context Header
-        ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.font = '700 11px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        (ctx as any).letterSpacing = '1px';
-        ctx.fillText('ORIGINAL DIALOGUE CONTEXT', cardX + 24, cardY + 28);
+        // Deep drop shadow for crisp dialogue readability
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
 
-        // Subtitle Context Words with Highlighted Keyword
-        // maxTextW is 470px so text is never covered by right-side social actions
-        const words = sentence.split(/\s+/);
-        let curX = cardX + 24;
-        let curY = cardY + 68;
-        const lineSpacing = 32;
-        const maxTextW = 470;
+        // Break sentence into words and measure for centered lines
+        const words = sentence.split(/\s+/).filter(Boolean);
+        const maxTextW = 540; // Leaves comfortable margins for mobile social buttons
+        const lineSpacing = 36;
+        const normalFont = '500 23px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+        const matchFont = '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+
+        interface RenderWord {
+            text: string;
+            isMatch: boolean;
+            width: number;
+        }
+
+        const lines: RenderWord[][] = [];
+        let currentLine: RenderWord[] = [];
+        let currentLineWidth = 0;
 
         words.forEach((w) => {
             const stripped = w.replace(/^[^\w\u0400-\u04FF]+|[^\w\u0400-\u04FF]+$/g, '');
             const isMatch = stripped.toLowerCase() === cleanWord.toLowerCase();
+            ctx.font = isMatch ? matchFont : normalFont;
+            const wordW = ctx.measureText(w + ' ').width;
 
-            ctx.font = isMatch
-                ? '700 22px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
-                : '400 21px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
-
-            const wordMeasure = ctx.measureText(w + ' ');
-
-            if (curX + wordMeasure.width > cardX + 24 + maxTextW) {
-                curX = cardX + 24;
-                curY += lineSpacing;
+            if (currentLineWidth + wordW > maxTextW && currentLine.length > 0) {
+                lines.push(currentLine);
+                currentLine = [];
+                currentLineWidth = 0;
             }
 
-            if (isMatch) {
-                const pillH = 30;
-                const pillW = wordMeasure.width + 4;
-                drawRoundedRect(ctx, curX - 2, curY - 21, pillW, pillH, 6);
-                ctx.fillStyle = themeConfig.highlightBg;
-                ctx.fill();
-
-                ctx.fillStyle = themeConfig.highlightColor;
-            } else {
-                ctx.fillStyle = '#f8fafc';
-            }
-
-            ctx.fillText(w + ' ', curX, curY);
-            curX += wordMeasure.width;
+            currentLine.push({ text: w, isMatch, width: wordW });
+            currentLineWidth += wordW;
         });
 
+        if (currentLine.length > 0) {
+            lines.push(currentLine);
+        }
+
+        // Vertically position the dialogue lines in the safe area below the video (video ends at Y=843)
+        const totalLinesH = lines.length * lineSpacing;
+        const startY = Math.max(885, 940 - totalLinesH / 2);
+
+        lines.forEach((lineWords, lineIdx) => {
+            const lineWidth = lineWords.reduce((sum, item) => sum + item.width, 0);
+            let curX = (W - lineWidth) / 2; // Center each subtitle line horizontally
+            const lineY = startY + lineIdx * lineSpacing;
+
+            lineWords.forEach((item) => {
+                ctx.font = item.isMatch ? matchFont : normalFont;
+                ctx.fillStyle = item.isMatch ? themeConfig.highlightColor : '#ffffff';
+                ctx.textAlign = 'left';
+                ctx.fillText(item.text + ' ', curX, lineY);
+                curX += item.width;
+            });
+        });
         ctx.restore();
 
-        // 6. Watermark & Branding below Context Box
+        // 6. Watermark & Branding below Context
         ctx.save();
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 1;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
         ctx.font = '600 12.5px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
         (ctx as any).letterSpacing = '0.8px';
-        ctx.fillText(`${cleanMovieTitle}  ·  substreamedu.com`, W / 2, cardY + cardH + 34);
+        const watermarkY = Math.min(1085, Math.max(1035, startY + totalLinesH + 32));
+        ctx.fillText(`${cleanMovieTitle}  ·  substreamedu.com`, W / 2, watermarkY);
         ctx.restore();
 
         // 7. Optional Safe Zone Overlay Guides (Disabled by default, toggleable via Eye icon)

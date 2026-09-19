@@ -84,6 +84,10 @@
 ---
 
 ## Session Notes
+- **Pure Typography & Cardless Dialogue in 9:16 Social Reel (Completed 2026-09-19)**:
+  - Removed enclosing border/pill boxes around the target word, badge, and translation in `ReelGeneratorModal.tsx`, letting the typography breathe directly over the blurred video backdrop with deep drop shadows (`rgba(0, 0, 0, 0.85)`).
+  - Purged the enclosing dark card box and word highlight pill from the bottom context dialogue, rendering centered, pure subtitle lines with the target word highlighted via text color (`#facc15`).
+  - 19 test suites, 102 tests pass cleanly. Production build succeeded.
 - **Restore Premium Word Save & Translation Limit Modal Trigger (Completed 2026-09-19)**:
   - Investigated and resolved missing upgrade/subscription paywall modal when hitting the 50-word save limit on `POST /translated`.
   - Fixed interceptor callback clearing in `AxiosService.ts`: `globalOnPremiumLimit` is now persistent across subsequent `setupInterceptors` invocations.
