@@ -5,6 +5,7 @@ import Pause from 'lucide-react/dist/esm/icons/pause';
 import RotateCcw from 'lucide-react/dist/esm/icons/rotate-cw';
 import Download from 'lucide-react/dist/esm/icons/download';
 import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
+import Film from 'lucide-react/dist/esm/icons/film';
 import Eye from 'lucide-react/dist/esm/icons/eye';
 import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
@@ -121,6 +122,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [exportProgress, setExportProgress] = useState<number>(0);
     const [theme, setTheme] = useState<'classic-cyan' | 'cinematic-gold' | 'minimal-dark'>('classic-cyan');
+    const [framingMode, setFramingMode] = useState<'cinema-focus' | 'wide-fit'>('cinema-focus');
     const [showTikTokGuides, setShowTikTokGuides] = useState<boolean>(false);
 
     // YouTube clip handling and high-res poster preloading
@@ -231,46 +233,60 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             highlightBg: 'rgba(250, 204, 21, 0.24)',
         };
 
+        const isCinemaFocus = framingMode === 'cinema-focus';
+
         // 1. Background: Deep Cinematic Canvas Base
         ctx.fillStyle = '#0a0b0f';
         ctx.fillRect(0, 0, W, H);
 
         // 2. 100% Canvas Bleed Ambient Blurred Video Backdrop
+        // High brightness & saturation keeps background dynamic and prevents pitch-black static detection
         if (video && video.readyState >= 2) {
             ctx.save();
-            ctx.filter = 'blur(35px) brightness(0.38) saturate(1.25)';
-            ctx.drawImage(video, -30, -30, W + 60, H + 60);
+            ctx.filter = 'blur(26px) brightness(0.72) saturate(1.4)';
+            ctx.drawImage(video, -20, -20, W + 40, H + 40);
             ctx.restore();
         } else if (posterImgRef.current && posterLoaded) {
             ctx.save();
-            ctx.filter = 'blur(35px) brightness(0.38) saturate(1.25)';
-            ctx.drawImage(posterImgRef.current, -30, -30, W + 60, H + 60);
+            ctx.filter = 'blur(26px) brightness(0.72) saturate(1.4)';
+            ctx.drawImage(posterImgRef.current, -20, -20, W + 40, H + 40);
             ctx.restore();
         }
 
-        // Soft dark cinematic gradient overlay to guarantee perfect contrast
-        ctx.fillStyle = 'rgba(10, 11, 15, 0.42)';
+        // Soft gradient overlay to preserve background movement while ensuring crisp text contrast
+        ctx.fillStyle = 'rgba(10, 11, 15, 0.20)';
         ctx.fillRect(0, 0, W, H);
 
-        // 3. Center 16:9 Cinema Video (Edge-to-Edge, Full Width, Vertically Centered)
-        // Canvas is 720x1280. For 16:9 video: width = 720, height = 720 * 9 / 16 = 405px.
-        // Vertically centered: (1280 - 405) / 2 = 437.5 -> 438px.
+        // 3. Cinema Video Geometry
+        // Canvas is 720x1280.
+        // In 'cinema-focus': height = 675px (occupies 52.7% of vertical height, zooming in on actors/faces, eliminating the letterboxed 16:9 look)
+        // In 'wide-fit': height = 405px (classic 16:9 widescreen)
         const videoX = 0;
         const videoW = W; // 720px edge-to-edge
-        const videoH = Math.round((W * 9) / 16); // 405px
-        const videoY = Math.round((H - videoH) / 2); // 438px
+        const videoH = isCinemaFocus ? 675 : Math.round((W * 9) / 16); // 675px vs 405px
+        const videoY = isCinemaFocus ? 265 : Math.round((H - videoH) / 2); // 265px vs 438px
 
         ctx.save();
         if (video && video.readyState >= 2) {
-            // Anti-duplicate protection: 6% subtle center crop breaks exact 1:1 pixel-hash matching against studio master files
             const sw = video.videoWidth || 1280;
             const sh = video.videoHeight || 720;
-            const zoom = 1.06;
-            const cropW = sw / zoom;
-            const cropH = sh / zoom;
-            const sx = (sw - cropW) / 2;
-            const sy = (sh - cropH) / 2;
-            ctx.drawImage(video, sx, sy, cropW, cropH, videoX, videoY, videoW, videoH);
+            if (isCinemaFocus) {
+                // Focus crop: Center crop to 720:675 aspect ratio (zooms in on characters/faces)
+                const targetAspect = videoW / videoH;
+                const cropH = sh;
+                const cropW = Math.min(sw, Math.round(sh * targetAspect));
+                const sx = Math.max(0, Math.round((sw - cropW) / 2));
+                const sy = 0;
+                ctx.drawImage(video, sx, sy, cropW, cropH, videoX, videoY, videoW, videoH);
+            } else {
+                // 16:9 classic with subtle 1.06x anti-hash zoom
+                const zoom = 1.06;
+                const cropW = sw / zoom;
+                const cropH = sh / zoom;
+                const sx = (sw - cropW) / 2;
+                const sy = (sh - cropH) / 2;
+                ctx.drawImage(video, sx, sy, cropW, cropH, videoX, videoY, videoW, videoH);
+            }
         } else if (posterImgRef.current && posterLoaded) {
             ctx.drawImage(posterImgRef.current, videoX, videoY, videoW, videoH);
             if (!videoLoaded && activeYoutubeId) {
@@ -338,7 +354,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.restore();
         }
 
-        // 4. Top Vocabulary Stack (Positioned in Safe Zone above video, Y: 180 to 420 - Pure Typography, No Enclosing Boxes)
+        // 4. Top Vocabulary Stack (Positioned in Safe Zone above video - Pure Typography, No Enclosing Boxes)
         const rawTrans = (translation || '').replace(/^\(+|\)+$/g, '').trim();
         const displayTrans = rawTrans ? `(${rawTrans})` : '';
 
@@ -352,38 +368,57 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 2;
 
-        // Category Hook: LEARN ENGLISH (Refined letter-spacing)
-        ctx.font = '700 15px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
-        ctx.fillStyle = themeConfig.badgeColor;
-        (ctx as any).letterSpacing = '2.5px';
-        ctx.fillText('LEARN ENGLISH', W / 2, transcription ? 215 : 228);
+        if (isCinemaFocus) {
+            // Compact, stylish header positioned in Y: 150 to 255
+            ctx.font = '700 13.5px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.fillStyle = themeConfig.badgeColor;
+            (ctx as any).letterSpacing = '2.5px';
+            ctx.fillText('LEARN ENGLISH', W / 2, 168);
 
-        // Target Word (Large, Crisp, Bold White - Clean Text Without Box)
-        const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
-        ctx.font = '800 52px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
-        ctx.fillStyle = themeConfig.wordColor;
-        (ctx as any).letterSpacing = '-0.5px';
-        ctx.fillText(wordText, W / 2, transcription ? 272 : 285);
+            const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
+            ctx.font = '800 44px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.fillStyle = themeConfig.wordColor;
+            (ctx as any).letterSpacing = '-0.5px';
+            ctx.fillText(wordText, W / 2, 210);
 
-        // Optional Transcription
-        if (transcription) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-            ctx.font = '500 18px monospace';
-            (ctx as any).letterSpacing = '0px';
-            ctx.fillText(transcription, W / 2, 318);
-        }
+            if (displayTrans) {
+                const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
+                ctx.font = '700 26px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+                ctx.fillStyle = themeConfig.transColor;
+                (ctx as any).letterSpacing = '0px';
+                ctx.fillText(transText, W / 2, 248);
+            }
+        } else {
+            // Wide-fit header centered in Y: 180 to 420
+            ctx.font = '700 15px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.fillStyle = themeConfig.badgeColor;
+            (ctx as any).letterSpacing = '2.5px';
+            ctx.fillText('LEARN ENGLISH', W / 2, transcription ? 215 : 228);
 
-        // Translation (Vibrant Accent Color - Clean Text Without Box)
-        if (displayTrans) {
-            const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
-            ctx.font = '700 32px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
-            ctx.fillStyle = themeConfig.transColor;
-            (ctx as any).letterSpacing = '0px';
-            ctx.fillText(transText, W / 2, transcription ? 368 : 348);
+            const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
+            ctx.font = '800 52px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.fillStyle = themeConfig.wordColor;
+            (ctx as any).letterSpacing = '-0.5px';
+            ctx.fillText(wordText, W / 2, transcription ? 272 : 285);
+
+            if (transcription) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+                ctx.font = '500 18px monospace';
+                (ctx as any).letterSpacing = '0px';
+                ctx.fillText(transcription, W / 2, 318);
+            }
+
+            if (displayTrans) {
+                const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
+                ctx.font = '700 32px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+                ctx.fillStyle = themeConfig.transColor;
+                (ctx as any).letterSpacing = '0px';
+                ctx.fillText(transText, W / 2, transcription ? 368 : 348);
+            }
         }
         ctx.restore();
 
-        // 5. Bottom Subtitle & Context (Positioned below video, Y: 875 to 1060 - Pure Text, No Card Box)
+        // 5. Bottom Subtitle & Context (Positioned below video - Pure Text, No Card Box)
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -397,9 +432,13 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         // Break sentence into words and measure for centered lines
         const words = sentence.split(/\s+/).filter(Boolean);
         const maxTextW = 560; // Leaves comfortable margins for mobile social buttons
-        const lineSpacing = 36;
-        const normalFont = '500 23px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
-        const matchFont = '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+        const lineSpacing = isCinemaFocus ? 33 : 36;
+        const normalFont = isCinemaFocus
+            ? '500 22px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif'
+            : '500 23px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+        const matchFont = isCinemaFocus
+            ? '700 23px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
+            : '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
 
         interface RenderWord {
             text: string;
@@ -431,10 +470,12 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             lines.push(currentLine);
         }
 
-        // Vertically position the dialogue lines in the safe area below the video (video ends at Y=843, safe ceiling 1100)
+        // Vertically position the dialogue lines in the safe area below the video
         // No watermarks, no .com, no movie titles to prevent TikTok OCR copyright/spam flags
         const totalLinesH = lines.length * lineSpacing;
-        const startY = Math.max(890, 950 - totalLinesH / 2);
+        const startY = isCinemaFocus
+            ? Math.max(965, 1020 - totalLinesH / 2)
+            : Math.max(890, 950 - totalLinesH / 2);
 
         lines.forEach((lineWords, lineIdx) => {
             const lineWidth = lineWords.reduce((sum, item) => sum + item.width, 0);
@@ -483,7 +524,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.fillText('TikTok Icons', W - 55, 710);
             ctx.restore();
         }
-    }, [cleanWord, transcription, translation, sentence, theme, posterLoaded, videoLoaded, activeYoutubeId, clipStart, clipEnd]);
+    }, [cleanWord, transcription, translation, sentence, theme, framingMode, posterLoaded, videoLoaded, activeYoutubeId, clipStart, clipEnd]);
 
     // Hidden Video Sync & Looping Loop
     useEffect(() => {
@@ -787,6 +828,27 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
                                     onClick={() => setTheme('minimal-dark')}
                                 >
                                     <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#94a3b8', marginRight: 6 }} /> Minimal Slate
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Video Framing Picker */}
+                        <div className={styles.configCard}>
+                            <span className={styles.configCardTitle}>Video Framing</span>
+                            <div className={styles.themePicker}>
+                                <button
+                                    className={`${styles.themeOptionBtn} ${framingMode === 'cinema-focus' ? styles.activeTheme : ''}`}
+                                    onClick={() => setFramingMode('cinema-focus')}
+                                    title="Dominant vertical cinema crop (53% of screen, recommended for TikTok & Reels)"
+                                >
+                                    <Smartphone size={13} style={{ verticalAlign: 'middle', marginRight: 5 }} /> Focus (4:5)
+                                </button>
+                                <button
+                                    className={`${styles.themeOptionBtn} ${framingMode === 'wide-fit' ? styles.activeTheme : ''}`}
+                                    onClick={() => setFramingMode('wide-fit')}
+                                    title="Classic 16:9 widescreen"
+                                >
+                                    <Film size={13} style={{ verticalAlign: 'middle', marginRight: 5 }} /> Classic (16:9)
                                 </button>
                             </div>
                         </div>
