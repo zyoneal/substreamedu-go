@@ -518,7 +518,7 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                                                 value={userAnswer}
                                                 onChange={e => setUserAnswer(e.target.value)}
                                                 onKeyDown={handleKeyDown}
-                                                placeholder="Type the missing word or phrase..."
+                                                placeholder="Type the missing word..."
                                                 className={styles.textInput}
                                                 autoFocus
                                             />

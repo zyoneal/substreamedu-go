@@ -19,7 +19,7 @@ const LearningPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-[#0d0c0b] text-[#ede8e0] pt-[76px] pb-16">
+        <div className="w-full min-h-screen bg-[#0d0c0b] text-[#ede8e0] pt-[60px] sm:pt-[76px] pb-8 sm:pb-16">
             {activeTab === 'flashcards' ? (
                 <Flashcards onStartActivePractice={handleStartActivePractice} />
             ) : (
