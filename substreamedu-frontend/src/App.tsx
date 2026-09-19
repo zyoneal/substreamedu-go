@@ -117,7 +117,7 @@ const App: React.FC = () => {
     const allowedPaths = ['/login', '/', '/demo', '/tt', '/movies', '/dictionary-demo', '/review-demo', '/songs-demo', '/subtitles-demo', '/texts-demo', '/youtube-demo', '/videos', '/dashboard', '/dictionary', '/songs', '/text-paste', '/subtitles', '/subscribe', '/learning'];
 
 
-    if (!isLoggedIn && !allowedPaths.includes(location.pathname) && !location.pathname.startsWith('/dictionary/resources/') && !location.pathname.startsWith('/subtitles/')) {
+    if (!isLoggedIn && !allowedPaths.includes(location.pathname) && !location.pathname.startsWith('/dictionary/resources/') && !location.pathname.startsWith('/subtitles/') && !location.pathname.startsWith('/lesson/')) {
         return <Navigate to="/" />;
     }
 

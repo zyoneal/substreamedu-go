@@ -56,6 +56,11 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 			api.POST("/practice/evaluate-sentence", dh.EvaluateSentence)
 			api.POST("/grammar/analyze", dh.AnalyzeGrammar)
 
+			// Teacher Lesson Builder routes
+			api.POST("/lessons/generate", dh.GenerateLessonPlan)
+			api.POST("/lessons", dh.SaveLessonPlan)
+			api.GET("/lessons/share/:shareToken", dh.GetSharedLessonPlan)
+
 			// Mutations require strict JWT authentication
 			mutations := api.Group("")
 			mutations.Use(middleware.AuthMiddleware(jwtSecret))
@@ -65,6 +70,8 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 				mutations.DELETE("/resources/:name", dh.DeleteResource)
 				mutations.POST("/srs/today/refresh", dh.RefreshSRS)
 				mutations.POST("/item/:id/review2", dh.ReviewCard)
+				mutations.GET("/lessons/my", dh.GetMyLessons)
+				mutations.DELETE("/lessons/:id", dh.DeleteLessonPlan)
 			}
 
 			admin := api.Group("/admin")

@@ -84,8 +84,9 @@ func main() {
 	iamClient := client.NewIAMClient(cfg.IAMServiceURL, logger)
 
 	outboxProcessor := service.NewOutboxProcessor(outboxRepo, kafkaWriter, logger)
+	lessonRepo := repository.NewLessonRepository(dbPool)
 
-	dictHandler := handler.NewDictionaryHandler(vocabularyService, learningService, aiService, nounProjectService, iamClient)
+	dictHandler := handler.NewDictionaryHandler(vocabularyService, learningService, aiService, nounProjectService, iamClient, lessonRepo)
 
 	adminHandler := handler.NewAdminHandler(vocabularyService)
 

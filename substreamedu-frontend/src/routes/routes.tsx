@@ -23,7 +23,7 @@ import AdminDashboard from '../components/AdminDashboard/AdminDashboard';
 import ProtectedRoute from './ProtectedRoute';
 import { UserRole } from '../constants/roles';
 import PublicContentLanding from '../components/PublicContentLanding/PublicContentLanding';
-
+import StudentLessonPage from '../components/LessonPage/StudentLessonPage';
 
 const AppRoutes = () => {
     const { isLoggedIn } = useContext(AuthContext);
@@ -47,6 +47,7 @@ const AppRoutes = () => {
             <Route path="/dictionary/resources/:resourceName" element={<DictionaryItemsPage />} />
             <Route path="/text-paste" element={<TextPasteHighlighter />} />
             <Route path="/learn/media/:slug" element={<PublicContentLanding />} />
+            <Route path="/lesson/:shareToken" element={<StudentLessonPage />} />
 
             {}
             <Route element={<ProtectedRoute requiredRole={UserRole.SYSTEM_ADMIN} />}>

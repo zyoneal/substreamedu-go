@@ -2155,3 +2155,244 @@ func (s *AIService) resolveGrammarFallbackRule(sentence, ruleHint string) *dto.A
 	}
 }
 
+func (s *AIService) GenerateLessonPlan(ctx context.Context, req dto.GenerateLessonRequest) (*dto.LessonPlan, error) {
+	ctx, cancel := context.WithTimeout(ctx, 35*time.Second)
+	defer cancel()
+
+	level := req.TargetLevel
+	if level == "" {
+		level = "B1"
+	}
+
+	var transcriptBuilder strings.Builder
+	if len(req.Subtitles) > 0 {
+		limit := len(req.Subtitles)
+		if limit > 60 {
+			limit = 60
+		}
+		for i := 0; i < limit; i++ {
+			cue := req.Subtitles[i]
+			mins := int(cue.Start) / 60
+			secs := int(cue.Start) % 60
+			transcriptBuilder.WriteString(fmt.Sprintf("[%02d:%02d] %s\n", mins, secs, strings.TrimSpace(cue.Text)))
+		}
+	} else if req.Transcript != "" {
+		t := req.Transcript
+		if len(t) > 3500 {
+			t = t[:3500] + "..."
+		}
+		transcriptBuilder.WriteString(t)
+	}
+
+	transcriptText := transcriptBuilder.String()
+	if strings.TrimSpace(transcriptText) == "" {
+		transcriptText = "Video lesson focusing on English communication, context clues, and authentic conversation."
+	}
+
+	systemPrompt := `You are an expert Cambridge CELTA/DELTA master language instructor.
+Given a video transcript/subtitles with timestamps, target CEFR level, and video title, generate a high-quality, pedagogically sound, and engaging lesson plan for English language learners and teachers.
+
+The output MUST be strictly valid JSON matching this exact structure:
+{
+  "title": "A concise, engaging lesson title",
+  "level": "` + level + `",
+  "estimated_time_min": 45,
+  "summary": "2-3 sentences summarizing what learners will understand and achieve in this lesson",
+  "vocabulary": [
+    {
+      "word": "authentic keyword or phrase",
+      "definition": "clear definition suitable for ` + level + ` learners",
+      "context": "the actual sentence or fragment from the video where it appears",
+      "timestamp_sec": 14.5,
+      "cefr": "` + level + `"
+    }
+  ],
+  "comprehension_questions": [
+    {
+      "question": "Comprehension question testing meaning or detail?",
+      "type": "multiple-choice",
+      "options": ["Correct option", "Distractor 1", "Distractor 2", "Distractor 3"],
+      "correct_index": 0,
+      "explanation": "Why this answer is correct based on the video context."
+    }
+  ],
+  "grammar_focus": [
+    {
+      "pattern": "Grammar Pattern Name",
+      "rule": "Explanation of how and when to use this pattern",
+      "example_from_video": "Example from transcript",
+      "exercise_gap_fill": "Practice sentence with ___ gap",
+      "exercise_answer": "correct word/phrase"
+    }
+  ],
+  "speaking_prompts": [
+    "Discussion question 1?",
+    "Discussion question 2?"
+  ],
+  "homework_idea": "A creative, practical task learners can do outside class."
+}
+
+Rules:
+1. Provide 5 to 7 high-utility vocabulary items or authentic idiomatic collocations from the video transcript with realistic timestamps.
+2. Provide 3 to 5 comprehension questions (mix of multiple-choice and true/false) with valid correct_index.
+3. Provide 1 or 2 authentic grammar points with clear rules and gap-fill practice.
+4. Provide 2 to 4 speaking prompts for discussion.
+5. Vocabulary and questions MUST relate directly to the provided video transcript.
+6. Return ONLY valid raw JSON. No markdown code blocks, no preamble, no trailing text.`
+
+	userPrompt := fmt.Sprintf("Title: %s\nTarget Level: %s\nLanguage: %s\nCustom Focus: %s\n\nSubtitles & Timestamps:\n%s",
+		req.Title, level, req.Language, req.CustomFocus, transcriptText)
+
+	dsReq := dto.DeepSeekRequest{
+		Model: "deepseek-chat",
+		Messages: []dto.DeepSeekMessage{
+			{Role: "system", Content: systemPrompt},
+			{Role: "user", Content: userPrompt},
+		},
+		MaxTokens:   2000,
+		Temperature: 0.4,
+	}
+
+	respStr, err := s.callWithFallback(ctx, dsReq)
+	if err == nil {
+		clean := strings.TrimSpace(respStr)
+		if strings.HasPrefix(clean, "```json") {
+			clean = strings.TrimPrefix(clean, "```json")
+		} else if strings.HasPrefix(clean, "```") {
+			clean = strings.TrimPrefix(clean, "```")
+		}
+		clean = strings.TrimSuffix(clean, "```")
+		clean = strings.TrimSpace(clean)
+
+		var plan dto.LessonPlan
+		if unmarshalErr := json.Unmarshal([]byte(clean), &plan); unmarshalErr == nil && len(plan.Vocabulary) > 0 {
+			if plan.Level == "" {
+				plan.Level = level
+			}
+			if plan.Title == "" {
+				plan.Title = req.Title
+			}
+			return &plan, nil
+		}
+	}
+
+	return s.generateAlgorithmicLessonPlan(req), nil
+}
+
+func (s *AIService) generateAlgorithmicLessonPlan(req dto.GenerateLessonRequest) *dto.LessonPlan {
+	level := req.TargetLevel
+	if level == "" {
+		level = "B1"
+	}
+	title := req.Title
+	if title == "" {
+		title = "Video English Immersion Lesson"
+	}
+
+	vocabList := make([]dto.LessonVocabularyItem, 0)
+	stopWords := map[string]bool{
+		"the": true, "and": true, "for": true, "that": true, "this": true, "with": true,
+		"from": true, "have": true, "were": true, "will": true, "been": true, "there": true,
+		"what": true, "when": true, "where": true, "which": true, "about": true, "their": true,
+		"would": true, "could": true, "should": true, "they": true, "your": true, "some": true,
+	}
+
+	seenWords := make(map[string]bool)
+	if len(req.Subtitles) > 0 {
+		for _, cue := range req.Subtitles {
+			words := strings.Fields(cue.Text)
+			for _, w := range words {
+				cleanWord := strings.ToLower(strings.Trim(w, ",.?!\"'`:;()[]{}"))
+				if len(cleanWord) >= 5 && !stopWords[cleanWord] && !seenWords[cleanWord] {
+					seenWords[cleanWord] = true
+					vocabList = append(vocabList, dto.LessonVocabularyItem{
+						Word:         cleanWord,
+						Definition:   fmt.Sprintf("Key contextual term observed in video segment: \"%s\"", cleanWord),
+						Context:      cue.Text,
+						TimestampSec: cue.Start,
+						CEFR:         level,
+					})
+					if len(vocabList) >= 6 {
+						break
+					}
+				}
+			}
+			if len(vocabList) >= 6 {
+				break
+			}
+		}
+	}
+
+	if len(vocabList) == 0 {
+		vocabList = []dto.LessonVocabularyItem{
+			{
+				Word:         "perspective",
+				Definition:   "A particular attitude towards or way of regarding something; a point of view.",
+				Context:      "Examining key points from different perspectives.",
+				TimestampSec: 10.0,
+				CEFR:         level,
+			},
+			{
+				Word:         "clarification",
+				Definition:   "The action of making a statement or situation less confused and more comprehensible.",
+				Context:      "Seeking clarification on key dialogue lines.",
+				TimestampSec: 25.0,
+				CEFR:         level,
+			},
+			{
+				Word:         "nuance",
+				Definition:   "A subtle difference in or shade of meaning, expression, or sound.",
+				Context:      "Notice the cultural nuance in the phrasing.",
+				TimestampSec: 45.0,
+				CEFR:         level,
+			},
+		}
+	}
+
+	return &dto.LessonPlan{
+		Title:            title,
+		Level:            level,
+		EstimatedTimeMin: 45,
+		Summary:          fmt.Sprintf("Interactive lesson exploring authentic language patterns, targeted vocabulary, and comprehension nuances based on \"%s\".", title),
+		Vocabulary:       vocabList,
+		ComprehensionQuestions: []dto.LessonQuestion{
+			{
+				Question:     fmt.Sprintf("What is the central focus of the video discussion in \"%s\"?", title),
+				Type:         "multiple-choice",
+				Options:      []string{"Exploring key contextual ideas and authentic dialogue", "Discussing unrelated historical facts", "Reviewing technical mathematics", "Practicing silence and quiet reading"},
+				CorrectIndex: 0,
+				Explanation:  "The video centers on conversational English and meaningful dialogue exchange.",
+			},
+			{
+				Question:     "The speaker uses authentic conversational pacing and vocabulary throughout the segment.",
+				Type:         "true-false",
+				Options:      []string{"True", "False"},
+				CorrectIndex: 0,
+				Explanation:  "The video provides authentic, natural target-language speech samples.",
+			},
+			{
+				Question:     "Why is paying attention to timestamped context clues beneficial when reviewing this video?",
+				Type:         "multiple-choice",
+				Options:      []string{"It anchors word meaning to real-world visual and emotional cues", "It allows you to skip watching the video", "It replaces the need for dictionary definitions", "It makes the video playback slower"},
+				CorrectIndex: 0,
+				Explanation:  "Contextual cues anchor vocabulary in episodic memory.",
+			},
+		},
+		GrammarFocus: []dto.LessonGrammarPoint{
+			{
+				Pattern:          "Contextual Discourse & Clause Linkers",
+				Rule:             "Use connecting adverbs and subordinating conjunctions to link causes, contrasts, and narrative events naturally.",
+				ExampleFromVideo: "Authentic dialogue extracted from video playback.",
+				ExerciseGapFill:  "She wanted to understand the speaker clearly, ___ she paused and reviewed the subtitle cue.",
+				ExerciseAnswer:   "so",
+			},
+		},
+		SpeakingPrompts: []string{
+			fmt.Sprintf("In your own words, how would you summarize the main event or message of \"%s\" to a friend?", title),
+			"Have you encountered a similar situation or conversation in your own daily life? Describe what happened.",
+			"Which new word or phrase from this video will you try to use in your next English conversation?",
+		},
+		HomeworkIdea: fmt.Sprintf("Write a 4-5 sentence journal entry or record a 60-second voice note using at least 2 target vocabulary words from \"%s\".", title),
+	}
+}
+

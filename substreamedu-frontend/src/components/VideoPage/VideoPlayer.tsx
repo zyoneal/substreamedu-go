@@ -7,6 +7,7 @@ import { FilmSelectionModal } from './components/FilmSelectionModal';
 import { ReelGeneratorModal } from './components/ReelGeneratorModal';
 import { GrammarSpotlightModal } from './components/GrammarSpotlightModal';
 import { VideoGrammarIndexModal } from './components/VideoGrammarIndexModal';
+import { LessonStudioModal } from './components/LessonStudioModal';
 import {
     detectGrammarInText,
     scanSubtitlesForGrammar,
@@ -43,6 +44,7 @@ import BookOpen from 'lucide-react/dist/esm/icons/book-open';
 import MessageCircle from 'lucide-react/dist/esm/icons/message-circle';
 import Layers from 'lucide-react/dist/esm/icons/layers';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
+import GraduationCap from 'lucide-react/dist/esm/icons/graduation-cap';
 
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
@@ -220,6 +222,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const [selectedGrammarSentence, setSelectedGrammarSentence] = useState<string>('');
     const [isGrammarModalOpen, setIsGrammarModalOpen] = useState(false);
     const [isGrammarIndexOpen, setIsGrammarIndexOpen] = useState(false);
+    const [isLessonStudioOpen, setIsLessonStudioOpen] = useState(false);
 
     const activeGrammarPoint = useMemo(() => {
         return detectGrammarInText(currentSubtitle);
@@ -2706,6 +2709,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             </button>
                                             <button
                                                 className={styles.controlButton}
+                                                onClick={() => {
+                                                    pauseVideo();
+                                                    setIsLessonStudioOpen(true);
+                                                }}
+                                                title="Teacher Studio / Lesson Builder"
+                                                aria-label="Teacher Studio / Lesson Builder"
+                                            >
+                                                <GraduationCap size={22} />
+                                            </button>
+                                            <button
+                                                className={styles.controlButton}
                                                 onClick={() => setShowSubtitles(!showSubtitles)}
                                                 aria-label={showSubtitles ? "Hide subtitles" : "Show subtitles"}
                                             >
@@ -3483,6 +3497,28 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                         setSelectedGrammarPoint(match.grammar);
                         setSelectedGrammarSentence(match.text);
                         setIsGrammarModalOpen(true);
+                    }}
+                />
+
+                <LessonStudioModal
+                    isOpen={isLessonStudioOpen}
+                    onClose={() => setIsLessonStudioOpen(false)}
+                    videoTitle={selectedSubtitle || videoId || "English Video Lesson"}
+                    mediaSource={videoId ? "youtube" : "upload"}
+                    youtubeId={videoId || ""}
+                    subtitles={Array.isArray(subtitlesForVideo) ? subtitlesForVideo.map(s => ({
+                        start: s.startTimeMs / 1000,
+                        end: s.endTimeMs / 1000,
+                        text: s.text,
+                    })) : []}
+                    learningLanguage={learningLanguage}
+                    onSeekToTime={(timeSec) => {
+                        if (videoRef.current) {
+                            videoRef.current.currentTime = Math.max(0, timeSec);
+                        }
+                        if (youtubePlayerRef.current) {
+                            youtubePlayerRef.current.seekTo(Math.max(0, timeSec), true);
+                        }
                     }}
                 />
             </div>
