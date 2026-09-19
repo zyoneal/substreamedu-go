@@ -25,6 +25,70 @@ export interface ReelGeneratorModalProps {
     movieTitle?: string;
 }
 
+// Helper: Rounded Rectangle
+const drawRoundedRect = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    r: number
+) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+};
+
+// Helper: Pill Text with dark translucent backdrop box
+const drawTextWithBox = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    centerX: number,
+    centerY: number,
+    font: string,
+    textColor: string,
+    bgColor: string = 'rgba(0, 0, 0, 0.48)',
+    padX: number = 18,
+    padY: number = 8,
+    radius: number = 10,
+    borderColor?: string
+) => {
+    ctx.save();
+    ctx.font = font;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const textMetrics = ctx.measureText(text);
+    const textW = textMetrics.width;
+    const textAscent = textMetrics.actualBoundingBoxAscent || 14;
+    const textDescent = textMetrics.actualBoundingBoxDescent || 5;
+    const boxH = textAscent + textDescent + padY * 2;
+    const boxW = textW + padX * 2;
+    const boxX = centerX - boxW / 2;
+    const boxY = centerY - boxH / 2;
+
+    drawRoundedRect(ctx, boxX, boxY, boxW, boxH, radius);
+    ctx.fillStyle = bgColor;
+    ctx.fill();
+
+    if (borderColor) {
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = borderColor;
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = textColor;
+    ctx.fillText(text, centerX, centerY);
+    ctx.restore();
+};
+
 export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
     isOpen,
     onClose,
@@ -56,8 +120,8 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
     const [isPlaying, setIsPlaying] = useState<boolean>(true);
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [exportProgress, setExportProgress] = useState<number>(0);
-    const [theme, setTheme] = useState<'airbnb-coral' | 'minimal-dark' | 'editorial-slate'>('airbnb-coral');
-    const [showTikTokGuides, setShowTikTokGuides] = useState<boolean>(true);
+    const [theme, setTheme] = useState<'classic-cyan' | 'cinematic-gold' | 'minimal-dark'>('classic-cyan');
+    const [showTikTokGuides, setShowTikTokGuides] = useState<boolean>(false);
 
     // YouTube clip handling and high-res poster preloading
     const activeYoutubeId = youtubeVideoId || (() => {
@@ -116,29 +180,9 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         .trim()
         .toUpperCase() || 'CINEMA SCENE';
 
-    // Helper: Rounded Rectangle
-    const drawRoundedRect = (
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        r: number
-    ) => {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.arcTo(x + w, y, x + w, y + r, r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-        ctx.lineTo(x + r, y + h);
-        ctx.arcTo(x, y + h, x, y + h - r, r);
-        ctx.lineTo(x, y + r);
-        ctx.arcTo(x, y, x + r, y, r);
-        ctx.closePath();
-    };
 
-    // Main Canvas Render Frame (Optimized for TikTok / Reels Safe Zones)
+
+    // Main Canvas Render Frame (High-End Cinematic 9:16 Layout matching Python generator)
     const renderCanvasFrame = useCallback((includeGuides: boolean = false) => {
         const canvas = canvasRef.current;
         const video = hiddenVideoRef.current;
@@ -150,189 +194,253 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         const W = canvas.width;  // 720
         const H = canvas.height; // 1280
 
-        // 1. Background: Clean Deep Charcoal Base
-        ctx.fillStyle = '#0d0e12';
+        // Theme palette configurations
+        const themeConfig = {
+            'classic-cyan': {
+                badgeColor: '#38bdf8',
+                badgeBg: 'rgba(0, 0, 0, 0.48)',
+                badgeBorder: 'rgba(56, 189, 248, 0.35)',
+                wordColor: '#ffffff',
+                transColor: '#facc15',
+                transBg: 'rgba(0, 0, 0, 0.48)',
+                transBorder: 'rgba(250, 204, 21, 0.28)',
+                highlightColor: '#facc15',
+                highlightBg: 'rgba(250, 204, 21, 0.24)',
+            },
+            'cinematic-gold': {
+                badgeColor: '#fbbf24',
+                badgeBg: 'rgba(0, 0, 0, 0.48)',
+                badgeBorder: 'rgba(251, 191, 36, 0.35)',
+                wordColor: '#ffffff',
+                transColor: '#f59e0b',
+                transBg: 'rgba(0, 0, 0, 0.48)',
+                transBorder: 'rgba(245, 158, 11, 0.28)',
+                highlightColor: '#fbbf24',
+                highlightBg: 'rgba(251, 191, 36, 0.24)',
+            },
+            'minimal-dark': {
+                badgeColor: '#e2e8f0',
+                badgeBg: 'rgba(0, 0, 0, 0.55)',
+                badgeBorder: 'rgba(255, 255, 255, 0.20)',
+                wordColor: '#ffffff',
+                transColor: '#38bdf8',
+                transBg: 'rgba(0, 0, 0, 0.55)',
+                transBorder: 'rgba(56, 189, 248, 0.28)',
+                highlightColor: '#38bdf8',
+                highlightBg: 'rgba(56, 189, 248, 0.20)',
+            },
+        }[theme] || {
+            badgeColor: '#38bdf8',
+            badgeBg: 'rgba(0, 0, 0, 0.48)',
+            badgeBorder: 'rgba(56, 189, 248, 0.35)',
+            wordColor: '#ffffff',
+            transColor: '#facc15',
+            transBg: 'rgba(0, 0, 0, 0.48)',
+            transBorder: 'rgba(250, 204, 21, 0.28)',
+            highlightColor: '#facc15',
+            highlightBg: 'rgba(250, 204, 21, 0.24)',
+        };
+
+        // 1. Background: Deep Cinematic Canvas Base
+        ctx.fillStyle = '#0a0b0f';
         ctx.fillRect(0, 0, W, H);
 
-        // 2. Ambient Blurred Video Backdrop
+        // 2. 100% Canvas Bleed Ambient Blurred Video Backdrop
         if (video && video.readyState >= 2) {
             ctx.save();
-            ctx.filter = 'blur(45px) brightness(0.24) saturate(1.2)';
-            ctx.drawImage(video, -40, -40, W + 80, H + 80);
+            ctx.filter = 'blur(35px) brightness(0.38) saturate(1.25)';
+            ctx.drawImage(video, -30, -30, W + 60, H + 60);
             ctx.restore();
         } else if (posterImgRef.current && posterLoaded) {
             ctx.save();
-            ctx.filter = 'blur(45px) brightness(0.24) saturate(1.2)';
-            ctx.drawImage(posterImgRef.current, -40, -40, W + 80, H + 80);
+            ctx.filter = 'blur(35px) brightness(0.38) saturate(1.25)';
+            ctx.drawImage(posterImgRef.current, -30, -30, W + 60, H + 60);
             ctx.restore();
         }
 
-        // Soft dark overlay for crisp readability
-        ctx.fillStyle = 'rgba(10, 11, 15, 0.68)';
+        // Soft dark cinematic gradient overlay to guarantee perfect contrast
+        ctx.fillStyle = 'rgba(10, 11, 15, 0.42)';
         ctx.fillRect(0, 0, W, H);
 
-        // ----------------------------------------------------
-        // SAFE ZONE LAYOUT (Y: 170px to 955px)
-        // ----------------------------------------------------
-
-        // 3. Top Hero Word Card (Y: 170 to 365, Height: 195px)
-        const wordCardX = 36;
-        const wordCardY = 170;
-        const wordCardW = W - 72; // 648px
-        const wordCardH = 195;
+        // 3. Center 16:9 Cinema Video (Edge-to-Edge, Full Width, Vertically Centered)
+        // Canvas is 720x1280. For 16:9 video: width = 720, height = 720 * 9 / 16 = 405px.
+        // Vertically centered: (1280 - 405) / 2 = 437.5 -> 438px.
+        const videoX = 0;
+        const videoW = W; // 720px edge-to-edge
+        const videoH = Math.round((W * 9) / 16); // 405px
+        const videoY = Math.round((H - videoH) / 2); // 438px
 
         ctx.save();
-        // Glassmorphism Card
-        drawRoundedRect(ctx, wordCardX, wordCardY, wordCardW, wordCardH, 22);
-        ctx.fillStyle = 'rgba(20, 21, 28, 0.88)';
-        ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
-        ctx.stroke();
-
-        // Category Tag
-        ctx.textAlign = 'left';
-        ctx.fillStyle = theme === 'airbnb-coral' ? '#FF385C' : '#94a3b8';
-        ctx.font = '700 11px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        (ctx as any).letterSpacing = '1.5px';
-        ctx.fillText('TARGET VOCABULARY', wordCardX + 26, wordCardY + 32);
-
-        // Main Word
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '700 44px "e-Ukraine", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
-        (ctx as any).letterSpacing = '-0.5px';
-        ctx.fillText(cleanWord, wordCardX + 26, wordCardY + 82);
-
-        // Transcription
-        if (transcription) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-            ctx.font = '400 17px monospace';
-            ctx.fillText(transcription, wordCardX + 26, wordCardY + 116);
-        }
-
-        // Translation Pill
-        const transText = translation.length > 28 ? translation.slice(0, 26) + '...' : translation;
-        ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        const transWidth = ctx.measureText(transText).width + 30;
-        const pillY = wordCardY + 136;
-
-        drawRoundedRect(ctx, wordCardX + 26, pillY, transWidth, 34, 17);
-        ctx.fillStyle = theme === 'airbnb-coral' ? 'rgba(255, 56, 92, 0.16)' : 'rgba(255, 255, 255, 0.08)';
-        ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = theme === 'airbnb-coral' ? 'rgba(255, 56, 92, 0.38)' : 'rgba(255, 255, 255, 0.15)';
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(transText, wordCardX + 41, pillY + 22);
-        ctx.restore();
-
-        // 4. Center 16:9 Movie Video Frame (Y: 385 to 750, Height: 365px)
-        const videoX = 36;
-        const videoY = 385;
-        const videoW = W - 72; // 648px
-        const videoH = 365;
-
-        ctx.save();
-        drawRoundedRect(ctx, videoX, videoY, videoW, videoH, 20);
-        ctx.clip();
-
         if (video && video.readyState >= 2) {
             ctx.drawImage(video, videoX, videoY, videoW, videoH);
         } else if (posterImgRef.current && posterLoaded) {
             ctx.drawImage(posterImgRef.current, videoX, videoY, videoW, videoH);
             if (!videoLoaded && activeYoutubeId) {
-                const pillW = 160;
-                const pillH = 32;
-                const pillX = videoX + (videoW - pillW) / 2;
-                const pillY = videoY + (videoH - pillH) / 2;
-                drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 16);
-                ctx.fillStyle = 'rgba(13, 14, 18, 0.72)';
-                ctx.fill();
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-                ctx.stroke();
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Preparing HD Clip...', videoX + videoW / 2, pillY + 20);
+                drawTextWithBox(
+                    ctx,
+                    'Preparing HD Clip...',
+                    W / 2,
+                    videoY + videoH / 2,
+                    '600 13px -apple-system, BlinkMacSystemFont, "Inter", sans-serif',
+                    '#ffffff',
+                    'rgba(13, 14, 18, 0.75)',
+                    18,
+                    8,
+                    14,
+                    'rgba(255, 255, 255, 0.2)'
+                );
             }
         } else {
-            ctx.fillStyle = '#1a1b22';
+            ctx.fillStyle = '#14151c';
             ctx.fillRect(videoX, videoY, videoW, videoH);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.font = '500 15px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.font = '500 16px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('Cinema Scene', videoX + videoW / 2, videoY + videoH / 2);
+            ctx.fillText('Cinema Scene', W / 2, videoY + videoH / 2);
         }
         ctx.restore();
 
-        // Video Frame Border
+        // Subtle 1px dividing lines at video top and bottom boundaries
         ctx.save();
-        drawRoundedRect(ctx, videoX, videoY, videoW, videoH, 20);
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, videoY);
+        ctx.lineTo(W, videoY);
+        ctx.moveTo(0, videoY + videoH);
+        ctx.lineTo(W, videoY + videoH);
         ctx.stroke();
         ctx.restore();
 
-        // 5. Bottom Subtitle & Context Card (Y: 770 to 955, Height: 185px)
-        // Positioned safely above TikTok author description / tabs (Y > 960)
-        const subCardX = 36;
-        const subCardY = 770;
-        const subCardW = W - 72; // 648px
-        const subCardH = 185;
+        // 4. Top Vocabulary Stack (Positioned in Safe Zone above video, Y: 180 to 420)
+        const rawTrans = (translation || '').replace(/^\(+|\)+$/g, '').trim();
+        const displayTrans = rawTrans ? `(${rawTrans})` : '';
+
+        // Category Badge: LEARN ENGLISH
+        drawTextWithBox(
+            ctx,
+            'LEARN ENGLISH',
+            W / 2,
+            transcription ? 195 : 205,
+            '700 18px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+            themeConfig.badgeColor,
+            themeConfig.badgeBg,
+            18,
+            8,
+            8,
+            themeConfig.badgeBorder
+        );
+
+        // Target Word (Large, Crisp, Bold White)
+        const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
+        drawTextWithBox(
+            ctx,
+            wordText,
+            W / 2,
+            transcription ? 262 : 276,
+            '800 44px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+            themeConfig.wordColor,
+            'rgba(0, 0, 0, 0.48)',
+            22,
+            10,
+            12,
+            'rgba(255, 255, 255, 0.14)'
+        );
+
+        // Optional Transcription
+        if (transcription) {
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.font = '500 16px monospace';
+            ctx.fillText(transcription, W / 2, 310);
+            ctx.restore();
+        }
+
+        // Translation Pill (Vibrant Yellow / Theme Accent)
+        if (displayTrans) {
+            const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
+            drawTextWithBox(
+                ctx,
+                transText,
+                W / 2,
+                transcription ? 354 : 346,
+                '700 28px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+                themeConfig.transColor,
+                themeConfig.transBg,
+                20,
+                8,
+                10,
+                themeConfig.transBorder
+            );
+        }
+
+        // Tagline below header
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+        ctx.font = '500 14px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        (ctx as any).letterSpacing = '0.5px';
+        ctx.fillText(
+            'SubstreamEdu Web App  ·  Select  ·  Save  ·  Learn',
+            W / 2,
+            transcription ? 414 : 408
+        );
+        ctx.restore();
+
+        // 5. Bottom Subtitle & Context Box (Positioned below video, Y: 875 to 1050)
+        // Clean translucent glass card
+        const cardX = 36;
+        const cardY = 875;
+        const cardW = W - 72; // 648px
+        const cardH = 175;
 
         ctx.save();
-        drawRoundedRect(ctx, subCardX, subCardY, subCardW, subCardH, 22);
-        ctx.fillStyle = 'rgba(20, 21, 28, 0.88)';
+        drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
         ctx.fill();
         ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
         ctx.stroke();
 
-        // Clean Movie Title (No .srt or underscores)
+        // Clean Context Header
         ctx.textAlign = 'left';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.font = '600 11.5px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        (ctx as any).letterSpacing = '0.8px';
-        ctx.fillText(`${cleanMovieTitle.slice(0, 36)}`, subCardX + 26, subCardY + 30);
+        ctx.font = '700 11px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        (ctx as any).letterSpacing = '1px';
+        ctx.fillText('ORIGINAL DIALOGUE CONTEXT', cardX + 24, cardY + 28);
 
-        // Subtitle Context Text with Target Word Highlight
-        // maxTextW is 480px so text never touches TikTok Like/Comment buttons on the right!
+        // Subtitle Context Words with Highlighted Keyword
+        // maxTextW is 470px so text is never covered by right-side social actions
         const words = sentence.split(/\s+/);
-        let curX = subCardX + 26;
-        let curY = subCardY + 70;
-        const lineSpacing = 34;
-        const maxTextW = 480;
-
-        ctx.font = '500 22px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
-        (ctx as any).letterSpacing = '0px';
+        let curX = cardX + 24;
+        let curY = cardY + 68;
+        const lineSpacing = 32;
+        const maxTextW = 470;
 
         words.forEach((w) => {
             const stripped = w.replace(/^[^\w\u0400-\u04FF]+|[^\w\u0400-\u04FF]+$/g, '');
             const isMatch = stripped.toLowerCase() === cleanWord.toLowerCase();
 
             ctx.font = isMatch
-                ? '700 23px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
-                : '400 22px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+                ? '700 22px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
+                : '400 21px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
 
             const wordMeasure = ctx.measureText(w + ' ');
 
-            if (curX + wordMeasure.width > subCardX + 26 + maxTextW) {
-                curX = subCardX + 26;
+            if (curX + wordMeasure.width > cardX + 24 + maxTextW) {
+                curX = cardX + 24;
                 curY += lineSpacing;
             }
 
             if (isMatch) {
-                // Highlight pill behind target word
-                const pillH = 32;
-                const pillW = wordMeasure.width + 6;
-                drawRoundedRect(ctx, curX - 3, curY - 23, pillW, pillH, 7);
-                ctx.fillStyle = theme === 'airbnb-coral' ? 'rgba(255, 56, 92, 0.24)' : 'rgba(245, 158, 11, 0.22)';
+                const pillH = 30;
+                const pillW = wordMeasure.width + 4;
+                drawRoundedRect(ctx, curX - 2, curY - 21, pillW, pillH, 6);
+                ctx.fillStyle = themeConfig.highlightBg;
                 ctx.fill();
 
-                ctx.fillStyle = theme === 'airbnb-coral' ? '#FF385C' : '#fbbf24';
+                ctx.fillStyle = themeConfig.highlightColor;
             } else {
                 ctx.fillStyle = '#f8fafc';
             }
@@ -341,22 +449,20 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             curX += wordMeasure.width;
         });
 
-        // Bottom Brand Signature inside card
-        ctx.textAlign = 'center';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-        (ctx as any).letterSpacing = '1px';
-        ctx.fillText('substreamedu.com', W / 2, subCardY + subCardH - 16);
-
         ctx.restore();
 
-        // ----------------------------------------------------
-        // OPTIONAL: TIKTOK / REELS SAFE AREA OVERLAY (PREVIEW ONLY)
-        // ----------------------------------------------------
+        // 6. Watermark & Branding below Context Box
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.font = '600 12.5px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        (ctx as any).letterSpacing = '0.8px';
+        ctx.fillText(`${cleanMovieTitle}  ·  substreamedu.com`, W / 2, cardY + cardH + 34);
+        ctx.restore();
+
+        // 7. Optional Safe Zone Overlay Guides (Disabled by default, toggleable via Eye icon)
         if (includeGuides) {
             ctx.save();
-
-            // Top unsafe zone (Notch, Search, Following/For You tabs)
             ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
             ctx.fillRect(0, 0, W, 140);
             ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
@@ -369,15 +475,13 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.textAlign = 'center';
             ctx.fillText('TikTok Header / Search Zone (Y < 140px)', W / 2, 80);
 
-            // Bottom unsafe zone (Author description, Sound title, Navigation bar)
             ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
-            ctx.fillRect(0, 970, W, H - 970);
-            ctx.strokeRect(0, 970, W, H - 970);
+            ctx.fillRect(0, 1120, W, H - 1120);
+            ctx.strokeRect(0, 1120, W, H - 1120);
 
             ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
-            ctx.fillText('TikTok Author & Nav Bar Zone (Y > 970px)', W / 2, 1060);
+            ctx.fillText('TikTok Author & Nav Bar Zone (Y > 1120px)', W / 2, 1180);
 
-            // Right side action buttons zone (Like, Comment, Share, Sound disc)
             ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
             ctx.fillRect(W - 110, 480, 110, 470);
             ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
@@ -386,7 +490,6 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
             ctx.font = '600 10px sans-serif';
             ctx.fillText('TikTok Icons', W - 55, 710);
-
             ctx.restore();
         }
     }, [cleanWord, cleanMovieTitle, transcription, translation, sentence, theme, posterLoaded, videoLoaded, activeYoutubeId]);
@@ -608,7 +711,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
                         </div>
                         <div>
                             <h2 className={styles.headerTitle}>Vertical Reel Generator</h2>
-                            <p className={styles.headerSubtitle}>9:16 Minimalist Airbnb Design (TikTok & Reels Safe Zones)</p>
+                            <p className={styles.headerSubtitle}>9:16 Cinematic Social Video (TikTok, Reels & Shorts)</p>
                         </div>
                     </div>
                     <button className={styles.closeButton} onClick={onClose} aria-label="Close">
@@ -674,25 +777,25 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
                         {/* Theme Picker */}
                         <div className={styles.configCard}>
-                            <span className={styles.configCardTitle}>Visual Aesthetic</span>
+                            <span className={styles.configCardTitle}>Visual Palette</span>
                             <div className={styles.themePicker}>
                                 <button
-                                    className={`${styles.themeOptionBtn} ${theme === 'airbnb-coral' ? styles.activeTheme : ''}`}
-                                    onClick={() => setTheme('airbnb-coral')}
+                                    className={`${styles.themeOptionBtn} ${theme === 'classic-cyan' ? styles.activeTheme : ''}`}
+                                    onClick={() => setTheme('classic-cyan')}
                                 >
-                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#ff5a5f] mr-1.5 align-middle" /> Airbnb Coral
+                                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#38bdf8', marginRight: 6 }} /> Classic Cyan
+                                </button>
+                                <button
+                                    className={`${styles.themeOptionBtn} ${theme === 'cinematic-gold' ? styles.activeTheme : ''}`}
+                                    onClick={() => setTheme('cinematic-gold')}
+                                >
+                                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#f59e0b', marginRight: 6 }} /> Cinematic Gold
                                 </button>
                                 <button
                                     className={`${styles.themeOptionBtn} ${theme === 'minimal-dark' ? styles.activeTheme : ''}`}
                                     onClick={() => setTheme('minimal-dark')}
                                 >
-                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#1e1e1e] border border-white/30 mr-1.5 align-middle" /> Minimal Dark
-                                </button>
-                                <button
-                                    className={`${styles.themeOptionBtn} ${theme === 'editorial-slate' ? styles.activeTheme : ''}`}
-                                    onClick={() => setTheme('editorial-slate')}
-                                >
-                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#f8fafc] mr-1.5 align-middle" /> Slate Editorial
+                                    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: '#94a3b8', marginRight: 6 }} /> Minimal Slate
                                 </button>
                             </div>
                         </div>
