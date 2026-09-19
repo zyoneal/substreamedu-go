@@ -513,11 +513,21 @@ export function detectGrammarInText(
   const text = rawText.trim();
   if (text.length < 10) return null;
 
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
   for (const rule of GRAMMAR_RULES) {
     const match = rule.pattern.exec(text);
     if (match && match[0]) {
       const matchedText = match[0];
       const matchIndex = match.index;
+      const quiz = rule.generateQuiz(matchedText, text);
       return {
         tag: rule.tag,
         name: rule.name,
@@ -530,7 +540,10 @@ export function detectGrammarInText(
         matchedText,
         matchIndex,
         matchLength: matchedText.length,
-        miniQuiz: rule.generateQuiz(matchedText, text)
+        miniQuiz: {
+          ...quiz,
+          options: shuffleArray(quiz.options)
+        }
       };
     }
   }

@@ -21,6 +21,15 @@ interface ActivePracticeProps {
 
 type PracticeMode = 'gap_fill' | 'sentence_builder';
 
+function shuffleArray<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
 export const ActivePractice: React.FC<ActivePracticeProps> = ({
     initialWords,
     onBackToFlashcards
@@ -130,8 +139,8 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                 if (!options.includes(d) && d !== target) options.push(d);
             }
 
-            // Shuffle options
-            const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+            // Shuffle options using Fisher-Yates so correct answer is randomly distributed
+            const shuffledOptions = shuffleArray(options);
 
             return {
                 id: `ex_${idx + 1}`,
@@ -165,7 +174,32 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
         )?.then(resp => {
             if (resp && resp.exercises && resp.exercises.length > 0) {
                 const aiMap = new Map(
-                    resp.exercises.map(e => [e.target_word.toLowerCase().trim(), e])
+                    resp.exercises.map(e => {
+                        let opts = e.options ? [...e.options] : [];
+                        const targetLower = e.target_word.trim().toLowerCase();
+                        const hasTarget = opts.some(
+                            opt => opt.trim().toLowerCase() === targetLower
+                        );
+                        if (!hasTarget && e.target_word) {
+                            opts = [e.target_word, ...opts.slice(0, 3)];
+                        }
+                        const seen = new Set<string>();
+                        const uniqueOpts: string[] = [];
+                        for (const opt of opts) {
+                            const l = opt.trim().toLowerCase();
+                            if (!seen.has(l)) {
+                                seen.add(l);
+                                uniqueOpts.push(opt);
+                            }
+                        }
+                        return [
+                            targetLower,
+                            {
+                                ...e,
+                                options: shuffleArray(uniqueOpts)
+                            }
+                        ];
+                    })
                 );
                 setExercises(prev => prev.map((ex, idx) => {
                     const aiEx = aiMap.get(ex.target_word.toLowerCase().trim());

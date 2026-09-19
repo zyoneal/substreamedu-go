@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"strings"
 	"sync"
@@ -1306,6 +1307,18 @@ func (s *AIService) GenerateEmbedding(ctx context.Context, text string) ([]float
 	return nil, nil
 }
 
+func shuffleStrings(slice []string) []string {
+	if len(slice) <= 1 {
+		return slice
+	}
+	res := make([]string, len(slice))
+	copy(res, slice)
+	rand.Shuffle(len(res), func(i, j int) {
+		res[i], res[j] = res[j], res[i]
+	})
+	return res
+}
+
 func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.PracticeExercisesRequest) (*dto.PracticeExercisesResponse, error) {
 	resolvedLearning := req.LearningLanguage
 	if val, ok := s.languageCache[req.LearningLanguage]; ok {
@@ -1340,7 +1353,7 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 		}
 	}
 
-	prompt.WriteString("\nGenerate exactly 1 engaging, authentic exercise per word. Focus on \"gap_fill\": An authentic sentence where the target word/collocation is replaced with '______'. Provide 'sentence_before' and 'sentence_after', a helpful hint (in fluent language), 4 options (the correct word plus 3 plausible distractors of the same part of speech), accepted inflections in 'accepted_answers', and a brief pedagogical explanation.\n\n")
+	prompt.WriteString("\nGenerate exactly 1 engaging, authentic exercise per word. Focus on \"gap_fill\": An authentic sentence where the target word/collocation is replaced with '______'. Provide 'sentence_before' and 'sentence_after', a helpful hint (in fluent language), 4 options (the correct word plus 3 plausible distractors of the same part of speech in randomized order, so the correct answer is NOT always the first option), accepted inflections in 'accepted_answers', and a brief pedagogical explanation.\n\n")
 
 	prompt.WriteString("Return ONLY valid JSON matching this schema:\n")
 	prompt.WriteString("{\n")
@@ -1353,7 +1366,7 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 	prompt.WriteString("      \"sentence_before\": \"sentence part before blank\",\n")
 	prompt.WriteString("      \"sentence_after\": \"sentence part after blank\",\n")
 	prompt.WriteString("      \"hint\": \"concise hint\",\n")
-	prompt.WriteString("      \"options\": [\"correct\", \"distractor1\", \"distractor2\", \"distractor3\"],\n")
+	prompt.WriteString("      \"options\": [\"plausible_option_1\", \"plausible_option_2\", \"plausible_option_3\", \"plausible_option_4\"],\n")
 	prompt.WriteString("      \"accepted_answers\": [\"exact word\", \"inflected form\"],\n")
 	prompt.WriteString("      \"explanation\": \"brief pedagogical note\"\n")
 	prompt.WriteString("    }\n")
@@ -1385,6 +1398,9 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 		var result dto.PracticeExercisesResponse
 		var unmarshalErr error
 		if unmarshalErr = json.Unmarshal([]byte(clean), &result); unmarshalErr == nil && len(result.Exercises) > 0 {
+			for i := range result.Exercises {
+				result.Exercises[i].Options = shuffleStrings(result.Exercises[i].Options)
+			}
 			return &result, nil
 		}
 		s.logger.Warn("Failed to unmarshal AI practice exercises, falling back to algorithmic generator", zap.Error(unmarshalErr))
@@ -1456,6 +1472,8 @@ func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *d
 			}
 		}
 
+		shuffledOptions := shuffleStrings(options)
+
 		exercises = append(exercises, dto.PracticeExercise{
 			ID:              fmt.Sprintf("ex_%d", i+1),
 			Type:            "gap_fill",
@@ -1464,7 +1482,7 @@ func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *d
 			SentenceBefore:  before,
 			SentenceAfter:   after,
 			Hint:            item.Meaning,
-			Options:         options,
+			Options:         shuffledOptions,
 			AcceptedAnswers: []string{target, strings.ToLower(target)},
 			Explanation:     fmt.Sprintf("Target word: '%s' (%s)", target, item.Meaning),
 		})
@@ -1648,6 +1666,7 @@ func (s *AIService) AnalyzeGrammar(ctx context.Context, req dto.AnalyzeGrammarRe
 			if gResp.Exercise.ID == "" {
 				gResp.Exercise.ID = fmt.Sprintf("quiz-%d", time.Now().UnixNano())
 			}
+			gResp.Exercise.Options = shuffleStrings(gResp.Exercise.Options)
 			return &dto.AnalyzeGrammarResponse{
 				RuleName:           gResp.RuleName,
 				StructureTag:       gResp.StructureTag,
@@ -1790,6 +1809,9 @@ func (s *AIService) getGrammarFallback(sentence, ruleHint, fluentLanguage string
 	res := s.resolveGrammarFallbackRule(sentence, ruleHint)
 	if res != nil {
 		res.NativeExplanation = getGrammarFallbackNative(res.StructureTag, fluentLanguage)
+		if len(res.Exercise.Options) > 0 {
+			res.Exercise.Options = shuffleStrings(res.Exercise.Options)
+		}
 	}
 	return res
 }

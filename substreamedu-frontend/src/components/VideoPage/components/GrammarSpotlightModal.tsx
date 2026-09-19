@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Sparkles, X, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { DetectedGrammarPoint, getNativeExplanation } from '../../../utils/grammarDetector';
 import { DictionaryService, AnalyzeGrammarResponse } from '../../../services/DictionaryService';
@@ -19,19 +19,29 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
   onClose,
   grammarPoint,
   fullSentence,
-  learningLanguage = 'English',
-  fluentLanguage: propFluentLanguage
+  learningLanguage = 'en',
+  fluentLanguage = 'ru'
 }) => {
   const { fluentLanguage: contextFluentLanguage } = useContext(LanguageContext);
   const activeFluentLanguage =
-    propFluentLanguage ||
     contextFluentLanguage ||
-    (typeof window !== 'undefined' ? localStorage.getItem('fluentLanguage') : null) ||
+    (typeof window !== 'undefined' ? localStorage.getItem('fluentLanguage') || localStorage.getItem('fluent_language') : null) ||
+    fluentLanguage ||
     'ru';
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [isDeepDiving, setIsDeepDiving] = useState<boolean>(false);
+  const [isDeepDiving, setIsDeepDiving] = useState(false);
   const [deepDiveData, setDeepDiveData] = useState<AnalyzeGrammarResponse | null>(null);
+
+  const quizOptions = useMemo(() => {
+    if (!grammarPoint?.miniQuiz?.options) return [];
+    const arr = [...grammarPoint.miniQuiz.options];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [grammarPoint]);
 
   useEffect(() => {
     if (isOpen) {
@@ -162,7 +172,7 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
             </div>
             <p className={styles.quizPrompt}>{grammarPoint.miniQuiz.question}</p>
             <div className={styles.optionsGrid}>
-              {grammarPoint.miniQuiz.options.map((opt, i) => {
+              {quizOptions.map((opt, i) => {
                 const isSelected = selectedOption === opt;
                 let optClass = styles.optionButton;
                 if (isSelected) {
