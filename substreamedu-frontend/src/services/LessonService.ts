@@ -75,8 +75,9 @@ export const LessonService = {
       `${baseURL}${urls.dictionary}/lessons/generate`,
       req
     );
-    if (response.data && response.data.data) {
-      return response.data.data;
+    const result = response.data?.data || response.data;
+    if (result && (result.title || result.vocabulary || result.summary)) {
+      return result;
     }
     throw new Error(response.data?.message || "Failed to generate lesson plan");
   },
@@ -86,8 +87,9 @@ export const LessonService = {
       `${baseURL}${urls.dictionary}/lessons`,
       req
     );
-    if (response.data && response.data.data) {
-      return response.data.data;
+    const result = response.data?.data || response.data;
+    if (result && result.share_token) {
+      return result;
     }
     throw new Error(response.data?.message || "Failed to save lesson");
   },
@@ -96,8 +98,9 @@ export const LessonService = {
     const response = await axiosService.get(
       `${baseURL}${urls.dictionary}/lessons/share/${encodeURIComponent(shareToken)}`
     );
-    if (response.data && response.data.data) {
-      return response.data.data;
+    const result = response.data?.data || response.data;
+    if (result && (result.content || result.title)) {
+      return result;
     }
     throw new Error(response.data?.message || "Failed to retrieve shared lesson");
   },
@@ -107,8 +110,9 @@ export const LessonService = {
       const response = await axiosService.get(
         `${baseURL}${urls.dictionary}/lessons/my`
       );
-      if (response.data && Array.isArray(response.data.data)) {
-        return response.data.data;
+      const result = response.data?.data || response.data;
+      if (Array.isArray(result)) {
+        return result;
       }
       return [];
     } catch (error) {

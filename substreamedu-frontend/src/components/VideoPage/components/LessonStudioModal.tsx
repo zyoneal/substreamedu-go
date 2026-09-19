@@ -676,6 +676,14 @@ export const LessonStudioModal: React.FC<LessonStudioModalProps> = ({
             </div>
           </div>
         )}
+
+        {/* Floating Toast Notification */}
+        {toastMessage && (
+          <div className={styles.toastFloating}>
+            <Check size={16} color="var(--color-success)" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -15,6 +15,7 @@
   width: 100%;
   max-width: 960px;
   max-height: 90vh;
+  position: relative;
   background-color: var(--color-surface-elevated, #1a1917);
   border: 1px solid var(--color-hairline, #282522);
   border-radius: 16px;
@@ -667,6 +668,25 @@
   color: var(--color-success, #22c55e);
   font-size: 0.78rem;
   animation: fadeIn 0.2s ease;
+}
+
+.toastFloating {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: var(--color-surface, #141312);
+  border: 1px solid var(--color-hairline-strong, #3d3934);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  color: var(--color-ink, #ede8e0);
+  font-size: 0.85rem;
+  z-index: 1000;
+  animation: slideUp 0.2s ease;
 }
 
 /* PRINT MEDIA STYLES FOR TEACHER WORKSHEET */
