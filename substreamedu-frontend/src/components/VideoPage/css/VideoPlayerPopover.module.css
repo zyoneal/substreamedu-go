@@ -739,6 +739,64 @@
     z-index: 50;
 }
 
+/* QUICK PILL BUTTONS (Top Controls: Blur, Delay, 3x) */
+.quickPillButton {
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 9999px;
+    padding: 0 11px;
+    height: 30px;
+    box-sizing: border-box;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    line-height: 1;
+    user-select: none;
+    white-space: nowrap;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.quickPillButton:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.quickPillButton:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.quickPillButton.activePill {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.quickPillButton.activePill::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px #4ade80;
+    flex-shrink: 0;
+}
+
 /* SETTINGS DROPDOWN (Drops down from top right) */
 .settingsMenu {
     position: absolute;
@@ -768,6 +826,13 @@
 
     .topControlsRight {
         gap: 8px;
+    }
+
+    .quickPillButton {
+        height: 26px;
+        padding: 0 8px;
+        font-size: 11px;
+        gap: 3px;
     }
 
     .centerPlayButton {

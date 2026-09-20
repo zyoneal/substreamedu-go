@@ -29,7 +29,7 @@ import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
 import Pause from 'lucide-react/dist/esm/icons/pause';
 import Play from 'lucide-react/dist/esm/icons/play';
-import Settings from 'lucide-react/dist/esm/icons/settings';
+import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import Volume1 from 'lucide-react/dist/esm/icons/volume-1';
 import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
 import VolumeX from 'lucide-react/dist/esm/icons/volume-x';
@@ -195,7 +195,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     } | null>(null);
 
     // isPlaying, volume, isMuted, progress, duration, currentTime, showControls now come from useVideoPlayer hook
-    const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [showSubmitButton, setShowSubmitButton] = useState<boolean>(false);
     const [showSubscribeButton] = useState(false);
     const [showLanguageOverlay, setShowLanguageOverlay] = useState(false);
@@ -2223,6 +2222,32 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         }
     };
 
+    const handleRepeatCurrentSubtitle = async () => {
+        if (!subtitlesForVideo || subtitlesForVideo.length === 0) return;
+        let subtitle = subtitlesForVideo.find(
+            (sub) => sub.text === currentSubtitle
+        );
+        if (!subtitle) {
+            let curSec = 0;
+            if (youtubePlayerRef.current) {
+                try {
+                    curSec = await youtubePlayerRef.current.getCurrentTime();
+                } catch {}
+            } else if (videoRef.current) {
+                curSec = videoRef.current.currentTime;
+            }
+            const curTimeMs = curSec * 1000;
+            if (curTimeMs > 0) {
+                subtitle = subtitlesForVideo.find(
+                    (sub) => curTimeMs >= sub.startTimeMs && curTimeMs <= (sub.endTimeMs + 1500)
+                );
+            }
+        }
+        if (subtitle) {
+            repeatSubtitle(subtitle);
+        }
+    };
+
     const handleFullscreenChange = useCallback(() => {
         
         const isCurrentlyFullscreen = !!(document.fullscreenElement ||
@@ -2595,101 +2620,45 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             >
                                                 {showSubtitles ? <EyeOff size={20} /> : <Eye size={20} />}
                                             </button>
-                                            <div style={{ position: 'relative' }}>
-                                                <button
-                                                    className={styles.controlButton}
-                                                    onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                                                    aria-label="Settings"
-                                                    aria-expanded={showSettingsMenu}
-                                                    aria-controls="settings-menu"
-                                                    title="Settings"
-                                                >
-                                                    <Settings size={20} />
-                                                </button>
-                                                {showSettingsMenu && (
-                                                    <div id="settings-menu" className={styles.settingsMenu} role="menu">
-                                                        <div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                                                <h4 style={{ margin: 0 }}>Subtitle Delay</h4>
-                                                                <span style={{ fontSize: 11, color: delay !== 0 ? '#4ade80' : 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
-                                                                    {delay !== 0 ? `${delay}s` : '0s'}
-                                                                </span>
-                                                            </div>
-                                                            <div className={styles.settingsGroup} style={{ marginTop: 8 }}>
-                                                                <button
-                                                                    className={`${styles.settingsButton} ${delay === -2 ? styles.active : ''}`}
-                                                                    onClick={() => handleDelayChange(-2)}
-                                                                    title="Delay subtitles by 2 seconds to train listening"
-                                                                    aria-label="Set subtitle delay to -2 seconds"
-                                                                >
-                                                                    -2s
-                                                                </button>
-                                                                <button
-                                                                    className={`${styles.settingsButton} ${delay === 0 ? styles.active : ''}`}
-                                                                    onClick={() => handleDelayChange(0)}
-                                                                    title="No subtitle delay"
-                                                                    aria-label="Set subtitle delay to 0 seconds"
-                                                                >
-                                                                    0s
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <h4>Repeat Subtitle</h4>
-                                                            <div className={styles.settingsGroup}>
-                                                                <button
-                                                                    className={styles.settingsButton}
-                                                                    onClick={() => {
-                                                                        if (subtitlesForVideo) {
-                                                                            const subtitle = subtitlesForVideo.find(
-                                                                                (sub) => sub.text === currentSubtitle
-                                                                            );
-                                                                            if (subtitle) {
-                                                                                repeatSubtitle(subtitle);
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                    title="Repeat 3x"
-                                                                    aria-label="Repeat subtitle 3 times"
-                                                                >
-                                                                    3x
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ marginTop: 10 }}>
-                                                            <h4 style={{ margin: '0 0 6px 0' }}>Subtitle Mode</h4>
-                                                            <div className={styles.settingsGroup}>
-                                                                <button
-                                                                    className={`${styles.settingsButton} ${blurSubtitles ? styles.active : ''}`}
-                                                                    onClick={() => {
-                                                                        setBlurSubtitles(true);
-                                                                        try {
-                                                                            localStorage.setItem('substreamedu_subtitle_blur', 'true');
-                                                                        } catch {}
-                                                                    }}
-                                                                    title="Blur subtitles by default, reveal on hover/tap (Listening practice)"
-                                                                    aria-label="Blur subtitles by default"
-                                                                >
-                                                                    Blur (Listening)
-                                                                </button>
-                                                                <button
-                                                                    className={`${styles.settingsButton} ${!blurSubtitles ? styles.active : ''}`}
-                                                                    onClick={() => {
-                                                                        setBlurSubtitles(false);
-                                                                        try {
-                                                                            localStorage.setItem('substreamedu_subtitle_blur', 'false');
-                                                                        } catch {}
-                                                                    }}
-                                                                    title="Always show subtitles clearly"
-                                                                    aria-label="Always show subtitles clearly"
-                                                                >
-                                                                    Plain
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {/* 1. Subtitle Blur Toggle */}
+                                            <button
+                                                type="button"
+                                                className={`${styles.quickPillButton} ${blurSubtitles ? styles.activePill : ''}`}
+                                                onClick={() => {
+                                                    const next = !blurSubtitles;
+                                                    setBlurSubtitles(next);
+                                                    try {
+                                                        localStorage.setItem('substreamedu_subtitle_blur', String(next));
+                                                    } catch {}
+                                                }}
+                                                title={blurSubtitles ? "Subtitles blurred (Listening practice active) — click to show plain" : "Blur subtitles (Listening practice)"}
+                                                aria-label="Toggle blur subtitles"
+                                            >
+                                                Blur
+                                            </button>
+
+                                            {/* 2. Subtitle Delay Toggle */}
+                                            <button
+                                                type="button"
+                                                className={`${styles.quickPillButton} ${delay === -2 ? styles.activePill : ''}`}
+                                                onClick={() => handleDelayChange(delay === -2 ? 0 : -2)}
+                                                title={delay === -2 ? "Subtitle delay: -2s active — click for 0s" : "Delay subtitles by 2s (Listening practice)"}
+                                                aria-label="Toggle subtitle delay -2s"
+                                            >
+                                                {delay === -2 ? "-2s" : "Delay"}
+                                            </button>
+
+                                            {/* 3. Repeat Subtitle 3x */}
+                                            <button
+                                                type="button"
+                                                className={styles.quickPillButton}
+                                                onClick={handleRepeatCurrentSubtitle}
+                                                title="Repeat current subtitle 3 times"
+                                                aria-label="Repeat subtitle 3 times"
+                                            >
+                                                <RotateCcw size={12} />
+                                                <span>3x</span>
+                                            </button>
                                         </div>
                                     </div>
 
