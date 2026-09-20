@@ -27,8 +27,6 @@ import Eye from 'lucide-react/dist/esm/icons/eye';
 import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
 import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
-import Pause from 'lucide-react/dist/esm/icons/pause';
-import Play from 'lucide-react/dist/esm/icons/play';
 import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import Volume1 from 'lucide-react/dist/esm/icons/volume-1';
 import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
@@ -2660,22 +2658,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                 <span>3x</span>
                                             </button>
                                         </div>
-                                    </div>
-
-                                    {/* 2. CENTER PLAY / PAUSE BUTTON */}
-                                    <div className={styles.centerControls} onClick={(e) => e.stopPropagation()}>
-                                        <button
-                                            className={styles.centerPlayButton}
-                                            onClick={togglePlayPause}
-                                            aria-label={isPlaying ? "Pause" : "Play"}
-                                            title={isPlaying ? "Pause (Space)" : "Play (Space)"}
-                                        >
-                                            {isPlaying ? (
-                                                <Pause size={38} />
-                                            ) : (
-                                                <Play size={38} style={{ marginLeft: 3 }} />
-                                            )}
-                                        </button>
                                     </div>
 
                                     {/* 3. BOTTOM CONTROLS */}

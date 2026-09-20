@@ -548,44 +548,6 @@
     margin-left: auto;
 }
 
-/* CENTER CONTROLS (Big Play / Pause) */
-.centerControls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    pointer-events: none;
-    z-index: 32;
-}
-
-.centerPlayButton {
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    pointer-events: auto;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-}
-
-.centerPlayButton:hover {
-    transform: scale(1.1);
-    background: rgba(0, 0, 0, 0.65);
-    border-color: rgba(255, 255, 255, 0.4);
-}
-
-.centerPlayButton:active {
-    transform: scale(0.95);
-}
-
 /* BOTTOM CONTROLS (00:21 ──────⚪────── 21:20 ⛶) */
 .bottomControls {
     display: flex;
@@ -833,16 +795,6 @@
         padding: 0 8px;
         font-size: 11px;
         gap: 3px;
-    }
-
-    .centerPlayButton {
-        width: 56px;
-        height: 56px;
-    }
-
-    .centerPlayButton svg {
-        width: 30px !important;
-        height: 30px !important;
     }
 
     .bottomControls {
