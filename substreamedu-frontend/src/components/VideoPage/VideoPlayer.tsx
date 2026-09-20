@@ -29,8 +29,6 @@ import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
 import Pause from 'lucide-react/dist/esm/icons/pause';
 import Play from 'lucide-react/dist/esm/icons/play';
-import RotateCcw from 'lucide-react/dist/esm/icons/rotate-cw';
-import RotateCw from 'lucide-react/dist/esm/icons/rotate-cw';
 import Settings from 'lucide-react/dist/esm/icons/settings';
 import Volume1 from 'lucide-react/dist/esm/icons/volume-1';
 import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
@@ -298,14 +296,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         currentTime,
         isFullscreen,
         showControls,
-        showVolumeSlider,
         playbackError,
         togglePlayPause,
         pauseVideo,
         playVideo,
         seekTo,
         handleSeek,
-        handleSeekRelative,
         handleVolumeChange,
         toggleMute,
         toggleFullscreen,
@@ -317,9 +313,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         setCurrentTime,
         setProgress,
         setIsPlaying,
-        setShowVolumeSlider,
         setIsFullscreen,
+        setShowControls,
     } = videoPlayer;
+
+    // Auto-hide controls after 3.5 seconds of inactivity when video is playing
+    useEffect(() => {
+        if (!showControls || !isPlaying) return;
+        const timer = setTimeout(() => {
+            setShowControls(false);
+        }, 3500);
+        return () => clearTimeout(timer);
+    }, [showControls, isPlaying, setShowControls]);
 
     const handleTouchSeek = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
         const touch = (e.touches && e.touches.length > 0) ? e.touches[0] : (e.changedTouches && e.changedTouches.length > 0) ? e.changedTouches[0] : null;
@@ -2459,6 +2464,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                             <div
                                 className={styles.videoPlayerContainer}
                                 onClick={handleVideoClick}
+                                onMouseMove={() => {
+                                    if (!showControls) {
+                                        setShowControls(true);
+                                    }
+                                }}
                                 style={isFullscreen ? {
                                     position: 'absolute',
                                     top: 0,
@@ -2543,85 +2553,48 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                     </div>
                                 )}
 
-                                <div className={`${styles.controlsOverlay} ${showControls ? styles.visible : ''}`} style={{ pointerEvents: 'none' }}>
-                                    <div className={styles.bottomControls} style={{ pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
-                                        <div className={styles.controlsLeft}>
+                                <div
+                                    className={`${styles.controlsOverlay} ${showControls ? styles.visible : ''}`}
+                                    onClick={handleVideoClick}
+                                >
+                                    {/* 1. TOP CONTROLS */}
+                                    <div className={styles.topControls} onClick={(e) => e.stopPropagation()}>
+                                        <div className={styles.topControlsLeft}>
+                                            {/* Space for title or replace button */}
+                                        </div>
+                                        <div className={styles.topControlsRight}>
                                             <button
                                                 className={styles.controlButton}
-                                                onClick={togglePlayPause}
-                                                aria-label={isPlaying ? "Pause" : "Play"}
+                                                onClick={() => {
+                                                    pauseVideo();
+                                                    setIsGrammarIndexOpen(true);
+                                                }}
+                                                title="Grammar in this Video"
+                                                aria-label="Grammar in this Video"
                                             >
-                                                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                                                <Sparkles size={20} />
                                             </button>
-                                            <div className={styles.volumeControl}>
+                                            {!isMobile && (
                                                 <button
-                                                    className={styles.controlButton}
-                                                    onClick={() => isMobile ? setShowVolumeSlider(!showVolumeSlider) : toggleMute()}
-                                                    aria-label={isMuted ? "Unmute" : "Mute"}
-                                                    aria-expanded={isMobile ? showVolumeSlider : undefined}
+                                                    className={`${styles.controlButton} ${styles.desktopOnlyControl}`}
+                                                    onClick={() => {
+                                                        pauseVideo();
+                                                        setIsLessonStudioOpen(true);
+                                                    }}
+                                                    title="Teacher Studio / Lesson Builder"
+                                                    aria-label="Teacher Studio / Lesson Builder"
                                                 >
-                                                    {isMuted ? <VolumeX size={24} /> : volume > 0.5 ? <Volume2 size={24} /> :
-                                                        <Volume1 size={24} />}
+                                                    <GraduationCap size={20} />
                                                 </button>
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="1"
-                                                    step="0.05"
-                                                    value={isMuted ? 0 : volume}
-                                                    onChange={handleVolumeChange}
-                                                    className={styles.volumeSlider}
-                                                    aria-label="Volume slider"
-                                                />
-                                                {isMobile && showVolumeSlider && (
-                                                    <input
-                                                        type="range"
-                                                        min="0"
-                                                        max="1"
-                                                        step="0.05"
-                                                        value={isMuted ? 0 : volume}
-                                                        onChange={handleVolumeChange}
-                                                        className={styles.verticalVolumeSlider}
-                                                        aria-label="Volume slider"
-                                                    />
-                                                )}
-                                            </div>
-                                            <div className={styles.timeDisplay}>
-                                                {formatTime(currentTime)} / {formatTime(duration)}
-                                            </div>
-                                        </div>
-                                        <div className={styles.controlsMiddle}>
-                                            <div
-                                                className={styles.seekBar}
-                                                onClick={handleSeek}
-                                                onTouchStart={handleTouchSeek}
-                                                onTouchMove={handleTouchSeek}
-                                                onTouchEnd={handleTouchSeek}
-                                            >
-                                                <div className={styles.seekBarProgress} style={{ width: `${progress}%` }}></div>
-                                            </div>
-                                        </div>
-                                        <div className={styles.controlsRight}>
-                                            {isMobile && (
-                                                <>
-                                                    <button
-                                                        className={styles.controlButton}
-                                                        onClick={() => handleSeekRelative(-4)}
-                                                        aria-label="Rewind 4 seconds"
-                                                        title="Rewind 4 seconds (←)"
-                                                    >
-                                                        <RotateCcw size={24} />
-                                                    </button>
-                                                    <button
-                                                        className={styles.controlButton}
-                                                        onClick={() => handleSeekRelative(4)}
-                                                        aria-label="Fast forward 4 seconds"
-                                                        title="Fast forward 4 seconds (→)"
-                                                    >
-                                                        <RotateCw size={24} />
-                                                    </button>
-                                                </>
                                             )}
+                                            <button
+                                                className={styles.controlButton}
+                                                onClick={() => setShowSubtitles(!showSubtitles)}
+                                                aria-label={showSubtitles ? "Hide subtitles" : "Show subtitles"}
+                                                title={showSubtitles ? "Hide subtitles" : "Show subtitles"}
+                                            >
+                                                {showSubtitles ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            </button>
                                             <div style={{ position: 'relative' }}>
                                                 <button
                                                     className={styles.controlButton}
@@ -2629,8 +2602,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                     aria-label="Settings"
                                                     aria-expanded={showSettingsMenu}
                                                     aria-controls="settings-menu"
+                                                    title="Settings"
                                                 >
-                                                    <Settings size={24} />
+                                                    <Settings size={20} />
                                                 </button>
                                                 {showSettingsMenu && (
                                                     <div id="settings-menu" className={styles.settingsMenu} role="menu">
@@ -2677,7 +2651,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                                     }}
                                                                     title="Repeat 3x"
                                                                     aria-label="Repeat subtitle 3 times"
-                                                                >3x
+                                                                >
+                                                                    3x
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -2715,45 +2690,74 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                     </div>
                                                 )}
                                             </div>
-                                            <button
-                                                className={styles.controlButton}
-                                                onClick={() => {
-                                                    pauseVideo();
-                                                    setIsGrammarIndexOpen(true);
-                                                }}
-                                                title="Grammar in this Video"
-                                                aria-label="Grammar in this Video"
-                                            >
-                                                <Sparkles size={22} />
-                                            </button>
-                                            {!isMobile && (
-                                                <button
-                                                    className={`${styles.controlButton} ${styles.desktopOnlyControl}`}
-                                                    onClick={() => {
-                                                        pauseVideo();
-                                                        setIsLessonStudioOpen(true);
-                                                    }}
-                                                    title="Teacher Studio / Lesson Builder"
-                                                    aria-label="Teacher Studio / Lesson Builder"
-                                                >
-                                                    <GraduationCap size={22} />
-                                                </button>
-                                            )}
-                                            <button
-                                                className={styles.controlButton}
-                                                onClick={() => setShowSubtitles(!showSubtitles)}
-                                                aria-label={showSubtitles ? "Hide subtitles" : "Show subtitles"}
-                                            >
-                                                {showSubtitles ? <EyeOff size={24} /> : <Eye size={24} />}
-                                            </button>
-                                            <button
-                                                className={styles.controlButton}
-                                                onClick={toggleFullscreen}
-                                                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                                            >
-                                                {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
-                                            </button>
                                         </div>
+                                    </div>
+
+                                    {/* 2. CENTER PLAY / PAUSE BUTTON */}
+                                    <div className={styles.centerControls} onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                            className={styles.centerPlayButton}
+                                            onClick={togglePlayPause}
+                                            aria-label={isPlaying ? "Pause" : "Play"}
+                                            title={isPlaying ? "Pause (Space)" : "Play (Space)"}
+                                        >
+                                            {isPlaying ? (
+                                                <Pause size={38} />
+                                            ) : (
+                                                <Play size={38} style={{ marginLeft: 3 }} />
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    {/* 3. BOTTOM CONTROLS */}
+                                    <div className={styles.bottomControls} onClick={(e) => e.stopPropagation()}>
+                                        {!isMobile && (
+                                            <div className={`${styles.volumeControl} ${styles.desktopOnlyControl}`}>
+                                                <button
+                                                    className={styles.controlButton}
+                                                    onClick={toggleMute}
+                                                    aria-label={isMuted ? "Unmute" : "Mute"}
+                                                    title={isMuted ? "Unmute" : "Mute"}
+                                                >
+                                                    {isMuted ? <VolumeX size={18} /> : volume > 0.5 ? <Volume2 size={18} /> : <Volume1 size={18} />}
+                                                </button>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="1"
+                                                    step="0.05"
+                                                    value={isMuted ? 0 : volume}
+                                                    onChange={handleVolumeChange}
+                                                    className={styles.volumeSlider}
+                                                    aria-label="Volume slider"
+                                                />
+                                            </div>
+                                        )}
+                                        <div className={styles.timeCurrent}>
+                                            {formatTime(currentTime)}
+                                        </div>
+                                        <div
+                                            className={styles.seekBarWrapper}
+                                            onClick={handleSeek}
+                                            onTouchStart={handleTouchSeek}
+                                            onTouchMove={handleTouchSeek}
+                                            onTouchEnd={handleTouchSeek}
+                                        >
+                                            <div className={styles.seekBar}>
+                                                <div className={styles.seekBarProgress} style={{ width: `${progress}%` }}></div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.timeDuration}>
+                                            {formatTime(duration)}
+                                        </div>
+                                        <button
+                                            className={styles.controlButton}
+                                            onClick={toggleFullscreen}
+                                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                                            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                                        >
+                                            {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -507,12 +507,12 @@
     bottom: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    justify-content: space-between;
+    background: transparent;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
-    z-index: 10;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+    z-index: 30;
     pointer-events: none;
 }
 
@@ -520,236 +520,130 @@
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    z-index: 30;
 }
 
-.bottomControls {
+/* TOP CONTROLS */
+.topControls {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 14px 28px;
-    background: rgba(10, 10, 12, 0.75);
-    
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    margin: 0 24px 24px 24px;
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    justify-content: space-between;
+    padding: 16px 20px 32px 20px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.25) 70%, transparent 100%);
+    width: 100%;
+    box-sizing: border-box;
+    pointer-events: auto;
+    z-index: 35;
 }
 
-.controlsOverlay.visible .bottomControls {
-    opacity: 1;
-}
-
-.controlsLeft {
-    order: 1;
+.topControlsLeft {
     display: flex;
     align-items: center;
-    gap: 16px;
-    flex-shrink: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    gap: 12px;
 }
 
-.controlsRight {
-    order: 3;
+.topControlsRight {
     display: flex;
     align-items: center;
-    gap: 16px;
-    flex-shrink: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    gap: 12px;
+    margin-left: auto;
 }
 
-.controlsMiddle {
-    order: 2;
-    flex-grow: 1;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
-.desktopOnlyControl {
-    display: flex;
-}
-
-.controlsOverlay.visible .controlsLeft,
-.controlsOverlay.visible .controlsRight,
-.controlsOverlay.visible .controlsMiddle {
-    opacity: 1;
-}
-
-.controlButton {
-    background: none;
-    border: none;
-    color: #e8e8e8;
-    cursor: pointer;
-    padding: 0;
+/* CENTER CONTROLS (Big Play / Pause) */
+.centerControls {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease, opacity 0.3s ease-in-out;
-    opacity: 0;
+    flex: 1;
+    pointer-events: none;
+    z-index: 32;
 }
 
-.controlsOverlay.visible .controlButton {
-    opacity: 1;
-}
-
-.controlButton:hover {
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-    transition: all 0.2s ease;
-}
-
-.volumeControl {
+.centerPlayButton {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 8px;
-    position: relative;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
-.controlsOverlay.visible .volumeControl {
-    opacity: 1;
-}
-
-.volumeSlider {
-    width: 80px;
+    justify-content: center;
     cursor: pointer;
-    accent-color: #888888;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    pointer-events: auto;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-.controlsOverlay.visible .volumeSlider {
-    opacity: 1;
+.centerPlayButton:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.65);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
-.verticalVolumeSlider {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    writing-mode: bt-lr;
-    -webkit-appearance: slider-vertical;
-    appearance: slider-vertical;
-    width: 8px;
-    height: 100px;
-    padding: 0 5px;
-    background: rgba(28, 28, 28, 0.85);
-    border-radius: 8px;
-    accent-color: #888888;
-    z-index: 4;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+.centerPlayButton:active {
+    transform: scale(0.95);
 }
 
-.controlsOverlay.visible .verticalVolumeSlider {
-    opacity: 1;
+/* BOTTOM CONTROLS (00:21 ──────⚪────── 21:20 ⛶) */
+.bottomControls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 20px 16px 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 70%, transparent 100%);
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    pointer-events: auto;
+    z-index: 35;
 }
 
-@media (max-width: 768px) {
-    .volumeSlider {
-        display: none !important;
-    }
-
-    .timeDisplay {
-        display: none !important;
-    }
-
-    .bottomControls {
-        flex-wrap: wrap !important;
-        padding: 10px 14px 10px 14px !important;
-        gap: 8px 0 !important;
-        margin: 0 10px 10px 10px !important;
-        border-radius: 16px !important;
-    }
-
-    .controlsMiddle {
-        order: 1 !important;
-        width: 100% !important;
-        flex-basis: 100% !important;
-        padding: 4px 0 6px 0 !important;
-    }
-
-    .controlsLeft {
-        order: 2 !important;
-        gap: 10px !important;
-        align-items: center !important;
-    }
-
-    .controlsRight {
-        order: 3 !important;
-        margin-left: auto !important;
-        gap: 6px !important;
-        align-items: center !important;
-    }
-
-    .seekBar {
-        height: 6px !important;
-        padding: 6px 0 !important;
-        background-clip: content-box !important;
-        touch-action: none;
-    }
-
-    .seekBarProgress::after {
-        transform: translateY(-50%) scale(1) !important;
-        width: 14px !important;
-        height: 14px !important;
-        background: #ffffff !important;
-        box-shadow: 0 0 6px rgba(0, 0, 0, 0.6) !important;
-    }
-
-    .controlButton {
-        width: 32px !important;
-        height: 32px !important;
-        padding: 3px !important;
-    }
-
-    .controlButton svg {
-        width: 19px !important;
-        height: 19px !important;
-    }
-
-    .desktopOnlyControl {
-        display: none !important;
-    }
-}
-
-.timeDisplay {
-    color: #e8e8e8;
-    font-size: 14px;
+.timeCurrent,
+.timeDuration {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
     user-select: none;
-    min-width: 90px;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.5px;
+    min-width: 44px;
 }
 
-.controlsOverlay.visible .timeDisplay {
-    opacity: 1;
+.timeDuration {
+    text-align: right;
+}
+
+.seekBarWrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 32px;
+    cursor: pointer;
+    touch-action: none;
+    margin: 0 4px;
 }
 
 .seekBar {
     width: 100%;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.15);
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
     position: relative;
     border-radius: 9999px;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-in-out;
-    opacity: 0;
+    transition: height 0.15s ease, background-color 0.15s ease;
 }
 
-.seekBar:hover {
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.25);
-}
-
-.controlsOverlay.visible .seekBar {
-    opacity: 1;
+.seekBarWrapper:hover .seekBar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.45);
 }
 
 .seekBarProgress {
@@ -760,57 +654,155 @@
     left: 0;
     top: 0;
     pointer-events: none;
-    box-shadow: none;
 }
 
 .seekBarProgress::after {
     content: '';
     position: absolute;
-    right: -6px;
+    right: -7px;
     top: 50%;
-    transform: translateY(-50%) scale(0);
-    width: 12px;
-    height: 12px;
+    transform: translateY(-50%) scale(1);
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #ffffff;
-    box-shadow: none;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+    transition: transform 0.15s ease;
     pointer-events: none;
 }
 
-.seekBar:hover .seekBarProgress::after {
-    transform: translateY(-50%) scale(1);
+.seekBarWrapper:hover .seekBarProgress::after {
+    transform: translateY(-50%) scale(1.2);
 }
 
-.controlsOverlay.visible .settingsMenu {
+.controlButton {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    opacity: 0.9;
+}
+
+.controlButton:hover {
     opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-    pointer-events: auto;
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.12);
 }
 
+.controlButton:active {
+    transform: scale(0.95);
+}
+
+.desktopOnlyControl {
+    display: flex;
+}
+
+.volumeControl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.volumeSlider {
+    width: 70px;
+    cursor: pointer;
+    accent-color: #ffffff;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+
+.volumeSlider:hover {
+    opacity: 1;
+}
+
+.verticalVolumeSlider {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    writing-mode: bt-lr;
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    width: 8px;
+    height: 90px;
+    padding: 0 5px;
+    background: rgba(28, 28, 28, 0.9);
+    border-radius: 8px;
+    accent-color: #ffffff;
+    z-index: 50;
+}
+
+/* SETTINGS DROPDOWN (Drops down from top right) */
 .settingsMenu {
     position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(8px);
-    margin-bottom: 12px;
-    background-color: rgba(18, 18, 22, 0.92);
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+    transform: translateY(-4px);
+    background-color: rgba(18, 18, 22, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-radius: 14px;
     padding: 14px 16px;
-    z-index: 50;
+    z-index: 60;
     display: flex;
     flex-direction: column;
     gap: 12px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     width: 250px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
-    pointer-events: none;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+    .topControls {
+        padding: 12px 14px 20px 14px;
+    }
+
+    .topControlsRight {
+        gap: 8px;
+    }
+
+    .centerPlayButton {
+        width: 56px;
+        height: 56px;
+    }
+
+    .centerPlayButton svg {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .bottomControls {
+        padding: 20px 14px 12px 14px;
+        gap: 8px;
+    }
+
+    .timeCurrent,
+    .timeDuration {
+        font-size: 12px;
+        min-width: 38px;
+    }
+
+    .volumeControl {
+        display: none !important;
+    }
+
+    .desktopOnlyControl {
+        display: none !important;
+    }
+
+    .settingsMenu {
+        width: 230px;
+        right: -8px;
+    }
 }
 
 .settingsMenu h4 {
@@ -2945,16 +2937,7 @@
 
 @media (max-width: 600px) {
     .bottomControls {
-        padding: 8px 10px 8px 10px !important;
-        margin: 0 6px 6px 6px !important;
-    }
-
-    .controlsLeft {
-        gap: 8px !important;
-    }
-
-    .controlsRight {
-        gap: 4px !important;
+        padding: 16px 10px 10px 10px !important;
     }
 
     .fabButton {
