@@ -48,3 +48,34 @@ Every agent invocation that modifies repository state MUST update `/context/prog
    - Move the completed task to `Completed`.
    - Append any new architectural decisions to `Architectural Decisions Log`.
    - Summarize code changes and verification output in `Session Notes`.
+
+---
+
+## 3. Senior Engineering & Multi-Agent Guardrails
+
+### Rule 6: Task Classification (Ship vs Scout)
+Every development task belongs to one of two distinct categories:
+1. **Ship Tasks**:
+   - Aim to deliver production-grade code, migrations, or UI improvements.
+   - Must follow the full verification pipeline (Rule 4) and update tracker upon completion.
+2. **Scout Tasks**:
+   - Dedicated to research, bug reproduction, architectural discovery, third-party library benchmarking, or security audits.
+   - **Strictly read-only on project source files**: a Scout task must never mutate source code.
+   - Output is delivered as a structured markdown report (e.g. in artifacts or `/docs/`) without unspec'd repository side-effects.
+
+### Rule 7: Bug Diagnosis — Feedback Loop First
+When investigating any bug, regression, or unexpected behavior:
+1. **Never guess or patch code blindly**.
+2. **Construct a 1-command reproducible feedback loop FIRST** (failing unit test, integration test, or curl script) that deterministically turns **RED**.
+3. Only after the failure is reliably reproduced may the agent isolate variables and apply the surgical fix.
+4. The loop must transition from **RED to GREEN** and remain permanently in the test suite as a regression guard.
+
+### Rule 8: Deep Modules & Design It Twice
+When designing new components, service boundaries, or API endpoints:
+1. **Deep Modules**: Strive for maximum capability behind minimal, clean interfaces (John Ousterhout). Avoid shallow pass-through wrappers.
+2. **Design It Twice**: For non-trivial architectural decisions, formulate 2–3 alternative designs at the spec stage, evaluate tradeoffs (locality, depth, testability), and select the most robust option before coding.
+
+### Rule 9: Code Safety & Unlanded Work Protection
+- **Never tear down unlanded work**: Uncommitted user edits or working tree changes must never be discarded.
+- **Destructive Git commands are strictly forbidden**: Never run `git reset --hard`, `git checkout -- .`, `git clean -fd`, or `git push --force` without explicit, unambiguous user instruction.
+

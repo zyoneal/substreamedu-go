@@ -27,3 +27,8 @@ Every AI agent starting a new turn or task MUST read the following 6 context fil
    - **Start**: Record task start in `/context/progress_tracker.md` under `In Progress`.
    - **Finish**: Move task to `Completed`, log architectural decisions, and note test results.
 5. **Mandatory Verification**: Run all tests, linting, and build commands specified in the active spec's `Verification Checklist` before marking any task complete.
+6. **Task Classification (Ship vs Scout)**: Ship tasks deliver verified production code. Scout tasks are exploratory/audit-only, strictly read-only on project source files, and deliver findings as markdown reports.
+7. **Bug Diagnosis — Feedback Loop First**: Never patch code blindly. Build a single-command reproducible test/script that fails deterministically (turns RED) before fixing any bug.
+8. **Deep Modules & Design It Twice**: Encapsulate complexity behind clean seams. For non-trivial features, explore 2–3 alternative designs at the spec stage before choosing an implementation.
+9. **Never Tear Down Unlanded Work**: Never run destructive git commands (`reset --hard`, `checkout .`, `clean -fd`, `push --force`) that risk destroying uncommitted changes or altering remote history without explicit user instruction.
+
