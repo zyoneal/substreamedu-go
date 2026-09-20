@@ -303,6 +303,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         togglePlayPause,
         pauseVideo,
         playVideo,
+        seekTo,
         handleSeek,
         handleSeekRelative,
         handleVolumeChange,
@@ -319,6 +320,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         setShowVolumeSlider,
         setIsFullscreen,
     } = videoPlayer;
+
+    const handleTouchSeek = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+        const touch = (e.touches && e.touches.length > 0) ? e.touches[0] : (e.changedTouches && e.changedTouches.length > 0) ? e.changedTouches[0] : null;
+        if (!touch || !duration) return;
+        if (e.cancelable) {
+            e.preventDefault();
+        }
+        const seekBar = e.currentTarget;
+        const rect = seekBar.getBoundingClientRect();
+        const pos = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        seekTo(pos * duration);
+    }, [seekTo, duration]);
 
     
     const handleYoutubePlay = useCallback(() => {
@@ -2578,7 +2591,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             </div>
                                         </div>
                                         <div className={styles.controlsMiddle}>
-                                            <div className={styles.seekBar} onClick={handleSeek}>
+                                            <div
+                                                className={styles.seekBar}
+                                                onClick={handleSeek}
+                                                onTouchStart={handleTouchSeek}
+                                                onTouchMove={handleTouchSeek}
+                                                onTouchEnd={handleTouchSeek}
+                                            >
                                                 <div className={styles.seekBarProgress} style={{ width: `${progress}%` }}></div>
                                             </div>
                                         </div>
@@ -2707,17 +2726,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             >
                                                 <Sparkles size={22} />
                                             </button>
-                                            <button
-                                                className={styles.controlButton}
-                                                onClick={() => {
-                                                    pauseVideo();
-                                                    setIsLessonStudioOpen(true);
-                                                }}
-                                                title="Teacher Studio / Lesson Builder"
-                                                aria-label="Teacher Studio / Lesson Builder"
-                                            >
-                                                <GraduationCap size={22} />
-                                            </button>
+                                            {!isMobile && (
+                                                <button
+                                                    className={`${styles.controlButton} ${styles.desktopOnlyControl}`}
+                                                    onClick={() => {
+                                                        pauseVideo();
+                                                        setIsLessonStudioOpen(true);
+                                                    }}
+                                                    title="Teacher Studio / Lesson Builder"
+                                                    aria-label="Teacher Studio / Lesson Builder"
+                                                >
+                                                    <GraduationCap size={22} />
+                                                </button>
+                                            )}
                                             <button
                                                 className={styles.controlButton}
                                                 onClick={() => setShowSubtitles(!showSubtitles)}
@@ -3500,27 +3521,29 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     }}
                 />
 
-                <LessonStudioModal
-                    isOpen={isLessonStudioOpen}
-                    onClose={() => setIsLessonStudioOpen(false)}
-                    videoTitle={selectedSubtitle || videoId || "English Video Lesson"}
-                    mediaSource={videoId ? "youtube" : "upload"}
-                    youtubeId={videoId || ""}
-                    subtitles={Array.isArray(subtitlesForVideo) ? subtitlesForVideo.map(s => ({
-                        start: s.startTimeMs / 1000,
-                        end: s.endTimeMs / 1000,
-                        text: s.text,
-                    })) : []}
-                    learningLanguage={learningLanguage}
-                    onSeekToTime={(timeSec) => {
-                        if (videoRef.current) {
-                            videoRef.current.currentTime = Math.max(0, timeSec);
-                        }
-                        if (youtubePlayerRef.current) {
-                            youtubePlayerRef.current.seekTo(Math.max(0, timeSec), true);
-                        }
-                    }}
-                />
+                {!isMobile && (
+                    <LessonStudioModal
+                        isOpen={isLessonStudioOpen}
+                        onClose={() => setIsLessonStudioOpen(false)}
+                        videoTitle={selectedSubtitle || videoId || "English Video Lesson"}
+                        mediaSource={videoId ? "youtube" : "upload"}
+                        youtubeId={videoId || ""}
+                        subtitles={Array.isArray(subtitlesForVideo) ? subtitlesForVideo.map(s => ({
+                            start: s.startTimeMs / 1000,
+                            end: s.endTimeMs / 1000,
+                            text: s.text,
+                        })) : []}
+                        learningLanguage={learningLanguage}
+                        onSeekToTime={(timeSec) => {
+                            if (videoRef.current) {
+                                videoRef.current.currentTime = Math.max(0, timeSec);
+                            }
+                            if (youtubePlayerRef.current) {
+                                youtubePlayerRef.current.seekTo(Math.max(0, timeSec), true);
+                            }
+                        }}
+                    />
+                )}
             </div>
         </>
     );

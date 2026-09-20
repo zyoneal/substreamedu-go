@@ -542,8 +542,18 @@
     opacity: 1;
 }
 
-.controlsLeft,
+.controlsLeft {
+    order: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
 .controlsRight {
+    order: 3;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -553,9 +563,14 @@
 }
 
 .controlsMiddle {
+    order: 2;
     flex-grow: 1;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
+}
+
+.desktopOnlyControl {
+    display: flex;
 }
 
 .controlsOverlay.visible .controlsLeft,
@@ -637,7 +652,69 @@
 
 @media (max-width: 768px) {
     .volumeSlider {
-        display: none;
+        display: none !important;
+    }
+
+    .timeDisplay {
+        display: none !important;
+    }
+
+    .bottomControls {
+        flex-wrap: wrap !important;
+        padding: 10px 14px 10px 14px !important;
+        gap: 8px 0 !important;
+        margin: 0 10px 10px 10px !important;
+        border-radius: 16px !important;
+    }
+
+    .controlsMiddle {
+        order: 1 !important;
+        width: 100% !important;
+        flex-basis: 100% !important;
+        padding: 4px 0 6px 0 !important;
+    }
+
+    .controlsLeft {
+        order: 2 !important;
+        gap: 10px !important;
+        align-items: center !important;
+    }
+
+    .controlsRight {
+        order: 3 !important;
+        margin-left: auto !important;
+        gap: 6px !important;
+        align-items: center !important;
+    }
+
+    .seekBar {
+        height: 6px !important;
+        padding: 6px 0 !important;
+        background-clip: content-box !important;
+        touch-action: none;
+    }
+
+    .seekBarProgress::after {
+        transform: translateY(-50%) scale(1) !important;
+        width: 14px !important;
+        height: 14px !important;
+        background: #ffffff !important;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .controlButton {
+        width: 32px !important;
+        height: 32px !important;
+        padding: 3px !important;
+    }
+
+    .controlButton svg {
+        width: 19px !important;
+        height: 19px !important;
+    }
+
+    .desktopOnlyControl {
+        display: none !important;
     }
 }
 
@@ -2867,18 +2944,17 @@
 }
 
 @media (max-width: 600px) {
-    .timeDisplay {
-        display: none;
-    }
-
     .bottomControls {
-        padding: 8px 12px;
-        gap: 8px;
+        padding: 8px 10px 8px 10px !important;
+        margin: 0 6px 6px 6px !important;
     }
 
-    .controlsLeft,
+    .controlsLeft {
+        gap: 8px !important;
+    }
+
     .controlsRight {
-        gap: 8px;
+        gap: 4px !important;
     }
 
     .fabButton {
