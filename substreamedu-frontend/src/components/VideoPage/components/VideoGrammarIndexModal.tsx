@@ -40,6 +40,15 @@ export const VideoGrammarIndexModal: React.FC<VideoGrammarIndexModalProps> = ({
     ? grammarMatches
     : grammarMatches.filter(m => m.grammar.cefrLevel === selectedCefr);
 
+  const getCefrClass = (level: string) => {
+    switch (level) {
+      case 'B1': return styles.cefrB1;
+      case 'B2': return styles.cefrB2;
+      case 'C1': return styles.cefrC1;
+      default: return styles.cefrDefault;
+    }
+  };
+
   const renderHighlightedSnippet = (text: string, matchedSegment: string) => {
     const idx = text.toLowerCase().indexOf(matchedSegment.toLowerCase());
     if (idx === -1) {
@@ -65,9 +74,10 @@ export const VideoGrammarIndexModal: React.FC<VideoGrammarIndexModalProps> = ({
         <div className={styles.header}>
           <div className={styles.titleArea}>
             <div className={styles.iconWrapper}>
-              <Sparkles size={20} />
+              <Sparkles size={19} strokeWidth={2} />
             </div>
-            <div>
+            <div className={styles.titleInfo}>
+              <span className={styles.eyebrow}>Grammar Discovery</span>
               <h3 className={styles.title}>Grammar in this Video</h3>
               <div className={styles.subtitleCount}>
                 {grammarMatches.length} authentic {grammarMatches.length === 1 ? 'pattern' : 'patterns'} detected
@@ -75,35 +85,39 @@ export const VideoGrammarIndexModal: React.FC<VideoGrammarIndexModalProps> = ({
             </div>
           </div>
           <button className={styles.closeButton} onClick={onClose} aria-label="Close modal">
-            <X size={20} />
+            <X size={18} strokeWidth={2} />
           </button>
         </div>
 
         {/* Filter bar */}
         <div className={styles.filterBar}>
           <button
+            type="button"
             className={`${styles.filterButton} ${selectedCefr === 'all' ? styles.active : ''}`}
             onClick={() => setSelectedCefr('all')}
           >
-            All ({grammarMatches.length})
+            All <span className={styles.filterCount}>({grammarMatches.length})</span>
           </button>
           <button
+            type="button"
             className={`${styles.filterButton} ${selectedCefr === 'B1' ? styles.active : ''}`}
             onClick={() => setSelectedCefr('B1')}
           >
-            B1 ({b1Count})
+            B1 <span className={styles.filterCount}>({b1Count})</span>
           </button>
           <button
+            type="button"
             className={`${styles.filterButton} ${selectedCefr === 'B2' ? styles.active : ''}`}
             onClick={() => setSelectedCefr('B2')}
           >
-            B2 ({b2Count})
+            B2 <span className={styles.filterCount}>({b2Count})</span>
           </button>
           <button
+            type="button"
             className={`${styles.filterButton} ${selectedCefr === 'C1' ? styles.active : ''}`}
             onClick={() => setSelectedCefr('C1')}
           >
-            C1 ({c1Count})
+            C1 <span className={styles.filterCount}>({c1Count})</span>
           </button>
         </div>
 
@@ -111,7 +125,7 @@ export const VideoGrammarIndexModal: React.FC<VideoGrammarIndexModalProps> = ({
         <div className={styles.listContainer}>
           {filteredMatches.length === 0 ? (
             <div className={styles.emptyState}>
-              <BookOpen size={32} />
+              <BookOpen size={32} strokeWidth={1.5} />
               <p>No grammar patterns match the selected filter.</p>
             </div>
           ) : (
@@ -135,19 +149,21 @@ export const VideoGrammarIndexModal: React.FC<VideoGrammarIndexModalProps> = ({
                 <div className={styles.itemLeft}>
                   <div className={styles.itemMeta}>
                     <span className={styles.timestampPill}>
-                      <Clock size={12} />
+                      <Clock size={11} strokeWidth={2} />
                       {item.formattedTimestamp}
                     </span>
                     <span className={styles.ruleName}>{item.grammar.name}</span>
-                    <span className={styles.cefrPill}>{item.grammar.cefrLevel}</span>
+                    <span className={`${styles.cefrPill} ${getCefrClass(item.grammar.cefrLevel)}`}>
+                      {item.grammar.cefrLevel}
+                    </span>
                   </div>
                   <p className={styles.itemText}>
                     {renderHighlightedSnippet(item.text, item.grammar.matchedText)}
                   </p>
                 </div>
 
-                <div className={styles.actionButton} title="Jump to timestamp">
-                  <Play size={14} style={{ fill: 'currentColor', marginLeft: 2 }} />
+                <div className={styles.actionButton} title="Jump to timestamp and review">
+                  <Play size={13} style={{ fill: 'currentColor', marginLeft: 2 }} />
                 </div>
               </div>
             ))
@@ -157,3 +173,4 @@ export const VideoGrammarIndexModal: React.FC<VideoGrammarIndexModalProps> = ({
     </div>
   );
 };
+
