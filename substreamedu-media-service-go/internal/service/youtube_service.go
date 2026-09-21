@@ -36,7 +36,7 @@ func (s *YouTubeService) SearchVideos(ctx context.Context, query string) ([]dto.
 	return s.client.SearchVideos(ctx, query)
 }
 
-var ytVideoIDRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]{11}$`)
+var ytVideoIDRegex = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]{10}$`)
 
 func (s *YouTubeService) GetClip(ctx context.Context, videoID string, startSec, endSec float64) (string, error) {
 	if !ytVideoIDRegex.MatchString(videoID) {

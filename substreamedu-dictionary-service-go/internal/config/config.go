@@ -21,6 +21,7 @@ type Config struct {
 	NounProject	NounProjectConfig
 	Pixabay		PixabayConfig
 	IAMServiceURL	string
+	InternalServiceKey string
 	OTLPEndpoint	string
 }
 
@@ -124,6 +125,7 @@ func Load() *Config {
 			APIKey: getEnv("PIXABAY_API_KEY", ""),
 		},
 		IAMServiceURL:	getEnv("IAM_SERVICE_URL", "http://iam-service:3002"),
+		InternalServiceKey: getEnv("INTERNAL_SERVICE_KEY", ""),
 		OTLPEndpoint:	getEnv("OTLP_ENDPOINT", "jaeger:4317"),
 	}
 }

@@ -81,7 +81,7 @@ func main() {
 	vocabularyService := service.NewVocabularyService(dictRepo, learningService, rdb, aiService, logger)
 	nounProjectService := service.NewNounProjectService(cfg.NounProject.APIKey, cfg.NounProject.APISecret, cfg.Pixabay.APIKey, logger)
 
-	iamClient := client.NewIAMClient(cfg.IAMServiceURL, logger)
+	iamClient := client.NewIAMClient(cfg.IAMServiceURL, cfg.InternalServiceKey, logger)
 
 	outboxProcessor := service.NewOutboxProcessor(outboxRepo, kafkaWriter, logger)
 	lessonRepo := repository.NewLessonRepository(dbPool)
@@ -113,9 +113,11 @@ func main() {
 
 	r := gin.New()
 
-	pprof.Register(r, "/dictionary-service/debug/pprof")
+	if os.Getenv("ENABLE_PPROF") == "true" {
+		pprof.Register(r, "/dictionary-service/debug/pprof")
+	}
 	rateLimiter := middleware.NewRateLimiter(600, time.Minute)
-	router.Setup(r, cfg.Server.ContextPath, dictHandler, adminHandler, healthHandler, logger, cfg.JWT.SecretKey, rateLimiter)
+	router.Setup(r, cfg.Server.ContextPath, dictHandler, adminHandler, healthHandler, logger, cfg.JWT.SecretKey, cfg.InternalServiceKey, rateLimiter)
 
 	srv := &http.Server{
 		Addr:		":" + cfg.Server.Port,

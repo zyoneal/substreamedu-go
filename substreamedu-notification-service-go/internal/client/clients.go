@@ -16,18 +16,20 @@ import (
 )
 
 type IAMClient struct {
-	baseURL		string
-	httpClient	*http.Client
-	logger		*zap.Logger
+	baseURL            string
+	internalServiceKey string
+	httpClient         *http.Client
+	logger             *zap.Logger
 }
 
 func NewIAMClient(cfg *config.ServicesConfig, logger *zap.Logger) *IAMClient {
 	return &IAMClient{
-		baseURL:	cfg.IAMURL,
+		baseURL:            cfg.IAMURL,
+		internalServiceKey: cfg.InternalServiceKey,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-		logger:	logger,
+		logger: logger,
 	}
 }
 
@@ -37,6 +39,9 @@ func (c *IAMClient) GetUserByTelegramToken(ctx context.Context, token string) (*
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
+	}
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
 	}
 
 	resp, err := c.httpClient.Do(req)
@@ -67,18 +72,20 @@ func (c *IAMClient) GetUserByTelegramToken(ctx context.Context, token string) (*
 }
 
 type DictionaryClient struct {
-	baseURL		string
-	httpClient	*http.Client
-	logger		*zap.Logger
+	baseURL            string
+	internalServiceKey string
+	httpClient         *http.Client
+	logger             *zap.Logger
 }
 
 func NewDictionaryClient(cfg *config.ServicesConfig, logger *zap.Logger) *DictionaryClient {
 	return &DictionaryClient{
-		baseURL:	cfg.DictionaryURL,
+		baseURL:            cfg.DictionaryURL,
+		internalServiceKey: cfg.InternalServiceKey,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-		logger:	logger,
+		logger: logger,
 	}
 }
 
@@ -90,6 +97,9 @@ func (c *DictionaryClient) GetRandomWord(ctx context.Context, userID uuid.UUID) 
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("X-User-Id", userID.String())
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -126,6 +136,9 @@ func (c *DictionaryClient) GetSrsCardsForToday(ctx context.Context, userID uuid.
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("X-User-Id", userID.String())
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -169,6 +182,9 @@ func (c *DictionaryClient) ReviewCard(ctx context.Context, userID uuid.UUID, car
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-User-Id", userID.String())
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -205,6 +221,9 @@ func (c *DictionaryClient) GetDictionaryStats(ctx context.Context, userID uuid.U
 	}
 
 	req.Header.Set("X-User-Id", userID.String())
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -241,6 +260,9 @@ func (c *DictionaryClient) GetStreak(ctx context.Context, userID uuid.UUID) (int
 		return 0, fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("X-User-Id", userID.String())
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

@@ -40,26 +40,24 @@ func (w *cacheResponseWriter) Write(b []byte) (int, error) {
 func Cache(responseCache *cache.ResponseCache) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userId := r.Header.Get("X-User-Id")
-			if userId == "" {
-				userId = r.URL.Query().Get("userId")
-			}
-
-			if r.Method != http.MethodGet {
-				if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete || r.Method == http.MethodPatch {
-					if userId != "" {
-						responseCache.InvalidateUserCache(r.Context(), userId)
-					}
-				}
+			// SECURITY: Never trust client-supplied X-User-Id or ?userId= for cache identity.
+			// Authenticated requests (with Authorization or Cookie) must not be cached at edge gateway
+			// to prevent cache poisoning and cross-user data leaks.
+			if r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" {
 				next.ServeHTTP(w, r)
 				return
 			}
-			
-			pathWithQuery := r.URL.Path + r.URL.RawQuery
-			if userId != "" {
-				pathWithQuery += ":uid:" + userId
+
+			if r.Method != http.MethodGet {
+				next.ServeHTTP(w, r)
+				return
 			}
-			
+
+			pathWithQuery := r.URL.Path
+			if r.URL.RawQuery != "" {
+				pathWithQuery += "?" + r.URL.RawQuery
+			}
+
 			key := responseCache.Key(r.Method, pathWithQuery)
 
 			if data, ok := responseCache.Get(r.Context(), key); ok {

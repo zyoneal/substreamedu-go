@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah *handler.AdminHandler, hh *handler.HealthHandler, logger *zap.Logger, jwtSecret string, rateLimiter *middleware.RateLimiter) {
+func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah *handler.AdminHandler, hh *handler.HealthHandler, logger *zap.Logger, jwtSecret string, internalServiceKey string, rateLimiter *middleware.RateLimiter) {
 
 	r.Use(middleware.MaxBodySize(1 << 20))
 	r.Use(middleware.ValidateContentType())
@@ -25,7 +25,7 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 	root := r.Group(contextPath)
 	{
 		root.Use(middleware.RateLimit(rateLimiter))
-		root.Use(middleware.OptionalAuthMiddleware(jwtSecret))
+		root.Use(middleware.OptionalAuthMiddleware(jwtSecret, internalServiceKey))
 
 		root.POST("/subtitles/generate-text", dh.GenerateTextByLevel)
 
@@ -63,7 +63,7 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 
 			// Mutations require strict JWT authentication
 			mutations := api.Group("")
-			mutations.Use(middleware.AuthMiddleware(jwtSecret))
+			mutations.Use(middleware.AuthMiddleware(jwtSecret, internalServiceKey))
 			{
 				mutations.POST("/translated", dh.AddWord)
 				mutations.DELETE("/resources/:name/items/:id", dh.DeleteWord)
@@ -76,7 +76,7 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 
 			admin := api.Group("/admin")
 
-			admin.Use(middleware.AuthMiddleware(jwtSecret))
+			admin.Use(middleware.AuthMiddleware(jwtSecret, internalServiceKey))
 			admin.Use(middleware.AdminMiddleware())
 			{
 				admin.GET("/users/top-words", ah.GetTopUsers)

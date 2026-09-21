@@ -71,11 +71,10 @@ func (rl *RateLimiter) allow(ip string) bool {
 	return true
 }
 
+// clientIP extracts the client IP from RemoteAddr.
+// SECURITY: We do NOT trust X-Forwarded-For because it can be spoofed by clients.
+// Caddy (our trusted reverse proxy) sets RemoteAddr to the actual client IP.
 func (rl *RateLimiter) clientIP(r *http.Request) string {
-	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
-		parts := strings.Split(fwd, ",")
-		return strings.TrimSpace(parts[0])
-	}
 	ip := r.RemoteAddr
 	if idx := strings.LastIndex(ip, ":"); idx != -1 {
 		ip = ip[:idx]

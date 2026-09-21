@@ -1,6 +1,15 @@
 substreamedu.com, www.substreamedu.com {
     # Automatic SSL is handled by Caddy by default
 
+    # SECURITY: Block internal, debug, and pprof endpoints at the reverse proxy edge
+    @blockedPaths {
+        path */debug/*
+        path /gateway/debug/*
+        path /debug/pprof/*
+        path */internal/*
+    }
+    respond @blockedPaths 403
+
     # API Gateway Routing
     handle /api* {
         reverse_proxy gateway:8080 {
@@ -46,7 +55,7 @@ substreamedu.com, www.substreamedu.com {
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.youtube.com https://s.ytimg.com https://accounts.google.com https://apis.google.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob: https://i.ytimg.com; media-src 'self' blob: https:; connect-src 'self' wss: https: https://accounts.google.com https://cdn.jsdelivr.net blob: data:; worker-src 'self' blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com;"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://www.youtube.com https://s.ytimg.com https://accounts.google.com https://apis.google.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob: https://i.ytimg.com; media-src 'self' blob: https:; connect-src 'self' wss: https: https://accounts.google.com https://cdn.jsdelivr.net blob: data:; worker-src 'self' blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com; frame-ancestors 'none';"
     }
 
     # Logging

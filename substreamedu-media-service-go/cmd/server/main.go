@@ -107,7 +107,9 @@ func main() {
 	r.Use(middleware.MaxBodySize(1 << 20))
 	r.Use(middleware.RateLimit(middleware.NewRateLimiter(600, time.Minute)))
 	r.Use(gin.Recovery())
-	pprof.Register(r, "/media-service/debug/pprof")
+	if os.Getenv("ENABLE_PPROF") == "true" {
+		pprof.Register(r, "/media-service/debug/pprof")
+	}
 	router.Setup(r, cfg.Server.ContextPath, mediaHandler, adminHandler, healthHandler, cfg.JWTSecret)
 
 	go func() {

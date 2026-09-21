@@ -21,6 +21,7 @@ type Config struct {
 	ServerPort	string
 	OTLPEndpoint	string
 	RedisHost	string
+	RedisPassword	string
 	Routes		[]RouteConfig
 	CORS		CORSConfig
 }
@@ -30,8 +31,9 @@ func Load() *Config {
 		ServerPort:	getEnv("SERVER_PORT", "8080"),
 		OTLPEndpoint:	getEnv("OTLP_ENDPOINT", "jaeger:4317"),
 		RedisHost:	getEnv("REDIS_HOST", "localhost"),
+		RedisPassword:	getEnv("REDIS_PASSWORD", ""),
 		CORS: CORSConfig{
-			AllowedOrigins: strings.Split(getEnv("ALLOWED_ORIGINS", "*"), ","),
+			AllowedOrigins: parseAllowedOrigins(getEnv("ALLOWED_ORIGINS", "")),
 		},
 		Routes: []RouteConfig{
 			{
@@ -92,4 +94,18 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func parseAllowedOrigins(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+	var origins []string
+	for _, o := range strings.Split(raw, ",") {
+		trimmed := strings.TrimSpace(o)
+		if trimmed != "" {
+			origins = append(origins, trimmed)
+		}
+	}
+	return origins
 }

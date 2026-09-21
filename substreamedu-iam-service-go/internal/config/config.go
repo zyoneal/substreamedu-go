@@ -8,13 +8,14 @@ import (
 )
 
 type Config struct {
-	Server		ServerConfig
-	Database	DatabaseConfig
-	JWT		JWTConfig
-	Google		GoogleConfig
-	Mail		MailConfig
-	Redis		RedisConfig
-	otlpEndpoint	string
+	Server			ServerConfig
+	Database		DatabaseConfig
+	JWT			JWTConfig
+	Google			GoogleConfig
+	Mail			MailConfig
+	Redis			RedisConfig
+	InternalServiceKey	string
+	otlpEndpoint		string
 }
 
 type ServerConfig struct {
@@ -48,8 +49,9 @@ type MailConfig struct {
 }
 
 type RedisConfig struct {
-	Host	string
-	Port	string
+	Host     string
+	Port     string
+	Password string
 }
 
 func Load() (*Config, error) {
@@ -83,12 +85,14 @@ func Load() (*Config, error) {
 			Password:	getEnv("SPRING_MAIL_PASSWORD", ""),
 		},
 		Redis: RedisConfig{
-			Host:	getEnv("REDIS_HOST", "localhost"),
-			Port:	getEnv("REDIS_PORT", "6379"),
+			Host:     getEnv("REDIS_HOST", "localhost"),
+			Port:     getEnv("REDIS_PORT", "6379"),
+			Password: getEnv("REDIS_PASSWORD", ""),
 		},
 	}
 
 	cfg.otlpEndpoint = getEnv("OTLP_ENDPOINT", "jaeger:4317")
+	cfg.InternalServiceKey = getEnv("INTERNAL_SERVICE_KEY", "")
 
 	if err := cfg.Validate(); err != nil {
 		return nil, err
@@ -106,6 +110,12 @@ func (c *Config) Validate() error {
 	}
 	if c.Database.User == "" || c.Database.Password == "" {
 		return fmt.Errorf("POSTGRES_USER_APP and POSTGRES_PASSWORD_APP are required")
+	}
+	if c.InternalServiceKey == "" {
+		return fmt.Errorf("INTERNAL_SERVICE_KEY is required")
+	}
+	if len(c.InternalServiceKey) < 32 {
+		return fmt.Errorf("INTERNAL_SERVICE_KEY must be at least 32 characters")
 	}
 	return nil
 }

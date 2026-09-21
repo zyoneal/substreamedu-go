@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"strings"
 	"sync"
@@ -21,14 +22,27 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func AuthMiddleware(secretKey string) gin.HandlerFunc {
+func AuthMiddleware(secretKey string, internalServiceKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Internal service key authentication
+		if internalServiceKey != "" {
+			providedKey := c.GetHeader("X-Internal-Service-Key")
+			if providedKey != "" && subtle.ConstantTimeCompare([]byte(internalServiceKey), []byte(providedKey)) == 1 {
+				if uid := c.GetHeader("X-User-Id"); uid != "" {
+					c.Set("userID", uid)
+					c.Set("userRole", "INTERNAL_SERVICE")
+					c.Next()
+					return
+				}
+			}
+		}
+
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" || len(authHeader) < 7 {
+		if !strings.HasPrefix(authHeader, "Bearer ") {
 			c.AbortWithStatusJSON(401, gin.H{"success": false, "message": "Unauthorized"})
 			return
 		}
-		tokenString := authHeader[7:]
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
@@ -50,11 +64,24 @@ func AuthMiddleware(secretKey string) gin.HandlerFunc {
 	}
 }
 
-func OptionalAuthMiddleware(secretKey string) gin.HandlerFunc {
+func OptionalAuthMiddleware(secretKey string, internalServiceKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if internalServiceKey != "" {
+			providedKey := c.GetHeader("X-Internal-Service-Key")
+			if providedKey != "" && subtle.ConstantTimeCompare([]byte(internalServiceKey), []byte(providedKey)) == 1 {
+				if uid := c.GetHeader("X-User-Id"); uid != "" {
+					c.Set("userID", uid)
+					c.Set("userRole", "INTERNAL_SERVICE")
+					c.Set("isPremium", true)
+					c.Next()
+					return
+				}
+			}
+		}
+
 		authHeader := c.GetHeader("Authorization")
-		if authHeader != "" && len(authHeader) >= 7 {
-			tokenString := authHeader[7:]
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 			token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, jwt.ErrSignatureInvalid

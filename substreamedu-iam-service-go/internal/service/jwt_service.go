@@ -65,17 +65,18 @@ func (s *JWTService) GenerateToken(user *model.User) (string, error) {
 
 func (s *JWTService) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		switch token.Method.(type) {
-		case *jwt.SigningMethodRSA:
-			if s.rsaKeyManager != nil && s.rsaKeyManager.PublicKey != nil {
-				return s.rsaKeyManager.PublicKey, nil
+		// SECURITY (H-005): Pin expected signing method to prevent algorithm confusion attacks.
+		if s.rsaKeyManager != nil && s.rsaKeyManager.PublicKey != nil {
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v (expected RS256)", token.Header["alg"])
 			}
-			return nil, fmt.Errorf("RSA public key unavailable")
-		case *jwt.SigningMethodHMAC:
-			return s.secretKey, nil
-		default:
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return s.rsaKeyManager.PublicKey, nil
 		}
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v (expected HS256)", token.Header["alg"])
+		}
+		return s.secretKey, nil
 	})
 
 	if err != nil {

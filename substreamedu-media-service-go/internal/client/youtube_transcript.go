@@ -73,7 +73,13 @@ func NewYouTubeTranscriptClient(logger *zap.Logger) *YouTubeTranscriptClient {
 	}
 }
 
+var ytVideoIDRegex = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]{10}$`)
+
 func (c *YouTubeTranscriptClient) FetchTranscript(ctx context.Context, videoID string) ([]dto.SubtitleResponseDto, error) {
+	if !ytVideoIDRegex.MatchString(videoID) {
+		return nil, fmt.Errorf("invalid video ID: %s", videoID)
+	}
+
 	c.logger.Info("Starting transcript fetch", zap.String("videoId", videoID))
 
 	if cached := c.cache.get(videoID); cached != nil {

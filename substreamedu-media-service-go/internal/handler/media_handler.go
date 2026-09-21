@@ -3,6 +3,7 @@ package handler
 import (
 	"io"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -11,6 +12,9 @@ import (
 	"github.com/substreamedu/substreamedu-media-service/internal/dto"
 	"github.com/substreamedu/substreamedu-media-service/internal/service"
 )
+
+var ytVideoIDRegex = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]{10}$`)
+var extSubtitleIDRegex = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9_-]{0,63}$`)
 
 type MediaHandler struct {
 	youtubeService		*service.YouTubeService
@@ -56,6 +60,8 @@ func (h *MediaHandler) respondSuccess(c *gin.Context, data interface{}) {
 }
 
 func (h *MediaHandler) getUserId(c *gin.Context) (uuid.UUID, bool) {
+	// SECURITY: userId must come exclusively from verified JWT claims.
+	// Never trust client-supplied X-User-Id headers or ?userId= query params.
 	if authIDVal, exists := c.Get("userID"); exists {
 		if uid, ok := authIDVal.(uuid.UUID); ok && uid != uuid.Nil {
 			return uid, true
@@ -67,22 +73,8 @@ func (h *MediaHandler) getUserId(c *gin.Context) (uuid.UUID, bool) {
 		}
 	}
 
-	userIDStr := c.Request.Header.Get("X-User-Id")
-	if userIDStr == "" {
-		userIDStr = c.Query("userId")
-	}
-
-	if userIDStr == "" || userIDStr == "undefined" || userIDStr == "null" {
-		h.respondError(c, http.StatusBadRequest, "Invalid userId")
-		return uuid.Nil, false
-	}
-
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "Invalid userId format")
-		return uuid.Nil, false
-	}
-	return uid, true
+	h.respondError(c, http.StatusUnauthorized, "Authentication required")
+	return uuid.Nil, false
 }
 
 func (h *MediaHandler) SearchYoutube(c *gin.Context) {
@@ -105,6 +97,10 @@ func (h *MediaHandler) SearchYoutube(c *gin.Context) {
 
 func (h *MediaHandler) GetYoutubeVideo(c *gin.Context) {
 	videoID := c.Param("videoId")
+	if !ytVideoIDRegex.MatchString(videoID) {
+		h.respondError(c, http.StatusBadRequest, "invalid videoId format: must be 11-character YouTube video ID")
+		return
+	}
 	video, err := h.youtubeService.GetVideoInfo(c.Request.Context(), videoID)
 	if err != nil {
 		h.respondError(c, http.StatusInternalServerError, err.Error())
@@ -115,8 +111,8 @@ func (h *MediaHandler) GetYoutubeVideo(c *gin.Context) {
 
 func (h *MediaHandler) GetYoutubeVideoInfo(c *gin.Context) {
 	videoID := c.Query("videoId")
-	if videoID == "" {
-		h.respondError(c, http.StatusBadRequest, "videoId is required")
+	if videoID == "" || !ytVideoIDRegex.MatchString(videoID) {
+		h.respondError(c, http.StatusBadRequest, "videoId is required and must be 11-character YouTube video ID")
 		return
 	}
 	video, err := h.youtubeService.GetVideoInfo(c.Request.Context(), videoID)
@@ -129,13 +125,17 @@ func (h *MediaHandler) GetYoutubeVideoInfo(c *gin.Context) {
 
 func (h *MediaHandler) GetYoutubeClip(c *gin.Context) {
 	videoID := c.Param("videoId")
-	if videoID == "" {
-		h.respondError(c, http.StatusBadRequest, "videoId is required")
+	if !ytVideoIDRegex.MatchString(videoID) {
+		h.respondError(c, http.StatusBadRequest, "invalid videoId format: must be 11-character YouTube video ID")
 		return
 	}
 
-	startSec, _ := strconv.ParseFloat(c.DefaultQuery("start", "0"), 64)
-	endSec, _ := strconv.ParseFloat(c.DefaultQuery("end", "10"), 64)
+	startSec, errStart := strconv.ParseFloat(c.DefaultQuery("start", "0"), 64)
+	endSec, errEnd := strconv.ParseFloat(c.DefaultQuery("end", "10"), 64)
+	if errStart != nil || errEnd != nil || startSec < 0 || endSec <= startSec || (endSec-startSec) > 60 {
+		h.respondError(c, http.StatusBadRequest, "invalid clip range: start must be >= 0, end > start, and maximum clip length is 60 seconds")
+		return
+	}
 
 	filePath, err := h.youtubeService.GetClip(c.Request.Context(), videoID, startSec, endSec)
 	if err != nil {
@@ -300,6 +300,10 @@ func (h *MediaHandler) GetSubtitlesForVideo(c *gin.Context) {
 
 func (h *MediaHandler) GetSubtitlesForYoutubeVideo(c *gin.Context) {
 	videoID := c.Param("videoId")
+	if !ytVideoIDRegex.MatchString(videoID) {
+		h.respondError(c, http.StatusBadRequest, "invalid videoId format: must be 11-character YouTube video ID")
+		return
+	}
 	res, err := h.subtitleService.GetSubtitlesForYoutubeVideo(c.Request.Context(), videoID)
 	if err != nil {
 		h.respondError(c, http.StatusInternalServerError, err.Error())
@@ -370,6 +374,10 @@ func (h *MediaHandler) SearchExternalSubtitles(c *gin.Context) {
 
 func (h *MediaHandler) DownloadExternalSubtitle(c *gin.Context) {
 	subtitleID := c.Param("id")
+	if !extSubtitleIDRegex.MatchString(subtitleID) {
+		h.respondError(c, http.StatusBadRequest, "invalid subtitle ID format: must be alphanumeric")
+		return
+	}
 	data, err := h.externalSubtitleService.DownloadSubtitle(c.Request.Context(), subtitleID)
 	if err != nil {
 		h.respondError(c, http.StatusInternalServerError, err.Error())

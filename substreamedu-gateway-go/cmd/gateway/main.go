@@ -32,7 +32,10 @@ func main() {
 	shutdown := telemetry.InitTracing("gateway", cfg.OTLPEndpoint)
 	defer shutdown(context.Background())
 
-	rdb := redis.NewClient(&redis.Options{Addr: cfg.RedisHost + ":6379"})
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisHost + ":6379",
+		Password: cfg.RedisPassword,
+	})
 	responseCache := cache.NewResponseCache(rdb)
 
 	proxyHandler := proxy.NewProxyHandler(cfg.Routes, logger)
@@ -49,23 +52,29 @@ func main() {
 	mux.HandleFunc("/api/gateway/health", healthHandler.Health)
 	mux.HandleFunc("/api/health", healthHandler.Health)
 
-	mux.HandleFunc("/gateway/debug/pprof/", pprof.Index)
-	mux.HandleFunc("/gateway/debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc("/gateway/debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc("/gateway/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/gateway/debug/pprof/trace", pprof.Trace)
+	// SECURITY: pprof is gated behind ENABLE_PPROF env var to prevent
+	// exposure of goroutine dumps, heap profiles, and CPU profiles in production.
+	if os.Getenv("ENABLE_PPROF") == "true" {
+		mux.HandleFunc("/gateway/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/gateway/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/gateway/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/gateway/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/gateway/debug/pprof/trace", pprof.Trace)
+	}
 
 	gatewayLimiter := middleware.NewRateLimiter(100, time.Minute)
-	finalHandler := middleware.SecurityHeaders()(
-		middleware.CORS(cfg.CORS.AllowedOrigins)(
-			middleware.RateLimit(gatewayLimiter)(
-				middleware.BlockInternalRoutes()(
-					middleware.TokenRevocation(responseCache, logger)(
-						middleware.Gzip(
-							middleware.Cache(responseCache)(
-								middleware.Tracing("gateway")(
-									middleware.Logging(logger)(
-										middleware.MaxBodySize(1 << 20)(proxyHandler),
+	finalHandler := middleware.StripSpoofableHeaders()(
+		middleware.SecurityHeaders()(
+			middleware.CORS(cfg.CORS.AllowedOrigins)(
+				middleware.RateLimit(gatewayLimiter)(
+					middleware.BlockInternalRoutes()(
+						middleware.TokenRevocation(responseCache, logger)(
+							middleware.Gzip(
+								middleware.Cache(responseCache)(
+									middleware.Tracing("gateway")(
+										middleware.Logging(logger)(
+											middleware.MaxBodySize(1 << 20)(proxyHandler),
+										),
 									),
 								),
 							),

@@ -52,7 +52,8 @@ func main() {
 	defer pool.Close()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: cfg.Redis.Host + ":" + cfg.Redis.Port,
+		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
+		Password: cfg.Redis.Password,
 	})
 	defer rdb.Close()
 
@@ -64,7 +65,7 @@ func main() {
 
 	deps := initDependencies(cfg, pool, rdb, logger)
 
-	r := router.New(deps.authHandler, deps.userHandler, deps.adminHandler, deps.healthHandler, deps.promoHandler, deps.usageHandler, deps.jwtService, logger)
+	r := router.New(deps.authHandler, deps.userHandler, deps.adminHandler, deps.healthHandler, deps.promoHandler, deps.usageHandler, deps.jwtService, cfg.InternalServiceKey, logger)
 	engine := r.Setup()
 
 	server := &http.Server{

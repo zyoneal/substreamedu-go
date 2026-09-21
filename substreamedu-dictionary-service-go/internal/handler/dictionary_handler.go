@@ -48,6 +48,8 @@ func NewDictionaryHandler(vs *service.VocabularyService, ls *service.LearningSer
 }
 
 func (h *DictionaryHandler) getUserId(c *gin.Context) (uuid.UUID, bool) {
+	// SECURITY: userId must come exclusively from verified JWT claims.
+	// Never trust client-supplied X-User-Id headers or ?userId= query params.
 	if authIDVal, exists := c.Get("userID"); exists {
 		if authIDStr, ok := authIDVal.(string); ok && authIDStr != "" {
 			if uid, err := uuid.Parse(authIDStr); err == nil {
@@ -56,41 +58,17 @@ func (h *DictionaryHandler) getUserId(c *gin.Context) (uuid.UUID, bool) {
 		}
 	}
 
-	userIDStr := c.Query("userId")
-	if userIDStr == "" {
-		userIDStr = c.Request.Header.Get("X-User-Id")
-	}
-
-	if userIDStr == "" || userIDStr == "undefined" || userIDStr == "null" {
-		c.JSON(http.StatusBadRequest, dto.ApiResponse{Status: "error", Message: "Invalid userId"})
-		return uuid.Nil, false
-	}
-
-	uid, err := uuid.Parse(userIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ApiResponse{Status: "error", Message: "Invalid userId format"})
-		return uuid.Nil, false
-	}
-	return uid, true
+	c.JSON(http.StatusUnauthorized, dto.ApiResponse{Status: "error", Message: "Authentication required"})
+	return uuid.Nil, false
 }
 
 func (h *DictionaryHandler) getOptionalUserId(c *gin.Context) *uuid.UUID {
+	// SECURITY: userId must come exclusively from verified JWT claims.
 	if authIDVal, exists := c.Get("userID"); exists {
 		if authIDStr, ok := authIDVal.(string); ok && authIDStr != "" {
 			if uid, err := uuid.Parse(authIDStr); err == nil {
 				return &uid
 			}
-		}
-	}
-
-	userIDStr := c.Query("userId")
-	if userIDStr == "" {
-		userIDStr = c.Request.Header.Get("X-User-Id")
-	}
-
-	if userIDStr != "" && userIDStr != "undefined" && userIDStr != "null" {
-		if uid, err := uuid.Parse(userIDStr); err == nil {
-			return &uid
 		}
 	}
 	return nil

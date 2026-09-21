@@ -31,8 +31,9 @@ type KafkaConfig struct {
 }
 
 type ServicesConfig struct {
-	IAMURL		string
-	DictionaryURL	string
+	IAMURL             string
+	DictionaryURL      string
+	InternalServiceKey string
 }
 
 type DatabaseConfig struct {
@@ -72,8 +73,9 @@ func Load() *Config {
 			Topic:		getEnv("KAFKA_REVIEW_TOPIC", "word-reviewed-events"),
 		},
 		Services: ServicesConfig{
-			IAMURL:		"http://" + iamHost + ":3002/auth-service",
-			DictionaryURL:	"http://" + dictHost + ":3003/dictionary-service",
+			IAMURL:             "http://" + iamHost + ":3002/auth-service",
+			DictionaryURL:      "http://" + dictHost + ":3003/dictionary-service",
+			InternalServiceKey: getEnv("INTERNAL_SERVICE_KEY", ""),
 		},
 		Database: DatabaseConfig{
 			Host:		getEnv("POSTGRES_HOST", "localhost"),

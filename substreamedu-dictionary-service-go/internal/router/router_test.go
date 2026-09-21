@@ -24,7 +24,7 @@ func TestRouter_RoutesRegistered(t *testing.T) {
 	logger := zap.NewNop()
 	rateLimiter := middleware.NewRateLimiter(100, 100)
 
-	router.Setup(r, "/api", dh, ah, hh, logger, "test-secret", rateLimiter)
+	router.Setup(r, "/api", dh, ah, hh, logger, "test-secret", "test-internal-key", rateLimiter)
 
 	routes := r.Routes()
 	routeMap := make(map[string]string)

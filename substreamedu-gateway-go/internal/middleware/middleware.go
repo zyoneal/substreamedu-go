@@ -34,6 +34,7 @@ func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
 			if origin != "" {
 				if originsMap[origin] {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
 				} else if originsMap["*"] {
 					w.Header().Set("Access-Control-Allow-Origin", "*")
 				} else {
@@ -45,9 +46,8 @@ func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
 			}
 
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Accept-Language, X-Requested-With, X-Request-ID, X-Correlation-ID, X-User-Id, X-User-Email, traceparent, tracestate, baggage, sentry-trace, refresh-token")
+			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Accept-Language, X-Requested-With, X-Request-ID, X-Correlation-ID, traceparent, tracestate, baggage, sentry-trace, refresh-token")
 			w.Header().Set("Access-Control-Expose-Headers", "X-Request-ID, X-Correlation-ID, Authorization")
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Max-Age", "3600")
 
 			if r.Method == http.MethodOptions {
@@ -79,6 +79,20 @@ func Logging(logger *zap.Logger) func(http.Handler) http.Handler {
 				zap.String("client_ip", r.RemoteAddr),
 				zap.String("user_agent", r.UserAgent()),
 			)
+		})
+	}
+}
+
+// StripSpoofableHeaders removes headers that must only be set by trusted
+// internal services (not by external clients). This prevents IDOR attacks
+// where a malicious client sets X-User-Id to impersonate another user.
+func StripSpoofableHeaders() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Header.Del("X-User-Id")
+			r.Header.Del("X-User-Email")
+			r.Header.Del("X-Internal-Service-Key")
+			next.ServeHTTP(w, r)
 		})
 	}
 }

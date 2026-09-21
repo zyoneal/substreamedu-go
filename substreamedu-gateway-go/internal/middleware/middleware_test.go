@@ -118,4 +118,29 @@ func TestSecurityHeaders(t *testing.T) {
 	if w.Header().Get("X-Frame-Options") != "DENY" {
 		t.Error("missing X-Frame-Options: DENY")
 	}
+	if w.Header().Get("Content-Security-Policy") != "frame-ancestors 'none'" {
+		t.Error("missing Content-Security-Policy: frame-ancestors 'none'")
+	}
+}
+
+func TestStripSpoofableHeaders(t *testing.T) {
+	var capturedUserId, capturedUserEmail string
+	handler := StripSpoofableHeaders()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedUserId = r.Header.Get("X-User-Id")
+		capturedUserEmail = r.Header.Get("X-User-Email")
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+	req.Header.Set("X-User-Id", "spoofed-user-id")
+	req.Header.Set("X-User-Email", "spoofed@evil.com")
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	if capturedUserId != "" {
+		t.Errorf("expected X-User-Id to be stripped, got %q", capturedUserId)
+	}
+	if capturedUserEmail != "" {
+		t.Errorf("expected X-User-Email to be stripped, got %q", capturedUserEmail)
+	}
 }

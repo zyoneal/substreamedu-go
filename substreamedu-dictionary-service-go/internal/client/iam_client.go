@@ -25,23 +25,25 @@ type usageCacheEntry struct {
 }
 
 type IAMClient struct {
-	baseURL		string
-	httpClient	*http.Client
-	cache		map[string]*usageCacheEntry
-	mu		sync.RWMutex
-	cacheTTL	time.Duration
-	logger		*zap.Logger
+	baseURL            string
+	internalServiceKey string
+	httpClient         *http.Client
+	cache              map[string]*usageCacheEntry
+	mu                 sync.RWMutex
+	cacheTTL           time.Duration
+	logger             *zap.Logger
 }
 
-func NewIAMClient(baseURL string, logger *zap.Logger) *IAMClient {
+func NewIAMClient(baseURL string, internalServiceKey string, logger *zap.Logger) *IAMClient {
 	return &IAMClient{
-		baseURL:	baseURL,
+		baseURL:            baseURL,
+		internalServiceKey: internalServiceKey,
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		cache:		make(map[string]*usageCacheEntry),
-		cacheTTL:	60 * time.Second,
-		logger:		logger,
+		cache:    make(map[string]*usageCacheEntry),
+		cacheTTL: 60 * time.Second,
+		logger:   logger,
 	}
 }
 
@@ -79,6 +81,9 @@ func (c *IAMClient) fetchUsage(ctx context.Context, userID uuid.UUID) (*UsageInf
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
+	}
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
 	}
 
 	resp, err := c.httpClient.Do(req)
@@ -127,6 +132,9 @@ func (c *IAMClient) IncrementUsage(ctx context.Context, userID uuid.UUID, usageT
 		return fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if c.internalServiceKey != "" {
+		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

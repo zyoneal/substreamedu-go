@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/substreamedu/substreamedu-iam-service/internal/model"
@@ -38,7 +39,7 @@ func RequestID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		reqID := c.Request.Header.Get("X-Request-ID")
 		if reqID == "" {
-			reqID = time.Now().Format("20060102150405") + "-" + c.ClientIP()
+			reqID = uuid.New().String()
 		}
 		c.Set("RequestID", reqID)
 		c.Header("X-Request-ID", reqID)
@@ -106,11 +107,11 @@ func Recovery(logger *zap.Logger) gin.HandlerFunc {
 func AuthMiddleware(jwtService *service.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" || len(authHeader) < 7 {
+		if !strings.HasPrefix(authHeader, "Bearer ") {
 			c.AbortWithStatusJSON(401, gin.H{"success": false, "message": "Unauthorized"})
 			return
 		}
-		tokenString := authHeader[7:]
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		claims, err := jwtService.ValidateToken(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"success": false, "message": "Invalid token"})

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"os"
 	"time"
 
 	"github.com/gin-contrib/gzip"
@@ -13,15 +14,16 @@ import (
 )
 
 type Router struct {
-	authHandler	*handler.AuthHandler
-	userHandler	*handler.UserHandler
-	adminHandler	*handler.AdminHandler
-	healthHandler	*handler.HealthHandler
-	promoHandler	*handler.PromoHandler
-	usageHandler	*handler.UsageHandler
-	jwtService	*service.JWTService
-	authLimiter	*middleware.RateLimiter
-	logger		*zap.Logger
+	authHandler		*handler.AuthHandler
+	userHandler		*handler.UserHandler
+	adminHandler		*handler.AdminHandler
+	healthHandler		*handler.HealthHandler
+	promoHandler		*handler.PromoHandler
+	usageHandler		*handler.UsageHandler
+	jwtService		*service.JWTService
+	authLimiter		*middleware.RateLimiter
+	internalServiceKey	string
+	logger			*zap.Logger
 }
 
 func New(
@@ -32,18 +34,20 @@ func New(
 	promoHandler *handler.PromoHandler,
 	usageHandler *handler.UsageHandler,
 	jwtService *service.JWTService,
+	internalServiceKey string,
 	logger *zap.Logger,
 ) *Router {
 	return &Router{
-		authHandler:	authHandler,
-		userHandler:	userHandler,
-		adminHandler:	adminHandler,
-		healthHandler:	healthHandler,
-		promoHandler:	promoHandler,
-		usageHandler:	usageHandler,
-		jwtService:	jwtService,
-		authLimiter:	middleware.NewRateLimiter(10, time.Minute),
-		logger:		logger,
+		authHandler:		authHandler,
+		userHandler:		userHandler,
+		adminHandler:		adminHandler,
+		healthHandler:		healthHandler,
+		promoHandler:		promoHandler,
+		usageHandler:		usageHandler,
+		jwtService:		jwtService,
+		authLimiter:		middleware.NewRateLimiter(10, time.Minute),
+		internalServiceKey:	internalServiceKey,
+		logger:			logger,
 	}
 }
 
@@ -61,7 +65,11 @@ func (r *Router) Setup() *gin.Engine {
 	engine.Use(middleware.Recovery(r.logger))
 	engine.Use(middleware.Logger(r.logger))
 
-	pprof.Register(engine, "/auth-service/debug/pprof")
+	// SECURITY: pprof is gated behind ENABLE_PPROF env var to prevent
+	// exposure of goroutine dumps, heap profiles, and CPU profiles in production.
+	if os.Getenv("ENABLE_PPROF") == "true" {
+		pprof.Register(engine, "/auth-service/debug/pprof")
+	}
 
 	api := engine.Group("/auth-service")
 	{
@@ -91,7 +99,10 @@ func (r *Router) Setup() *gin.Engine {
 			admin.PATCH("/users/:userId", r.adminHandler.UpdateUser)
 		}
 
+		// SECURITY: Internal inter-service endpoints protected by shared secret.
+		// Requests without valid X-Internal-Service-Key header are rejected.
 		internal := api.Group("/auth/internal")
+		internal.Use(middleware.InternalServiceKeyAuth(r.internalServiceKey))
 		{
 			internal.GET("/user/:userId/usage", r.usageHandler.GetUsage)
 			internal.POST("/user/:userId/usage/increment", r.usageHandler.IncrementUsage)
