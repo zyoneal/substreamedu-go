@@ -241,7 +241,7 @@ export interface UseSubtitlesReturn {
     setShowSubtitles: (show: boolean) => void;
     setDelay: (delay: number) => void;
     handleSubtitleClick: (name: string) => Promise<void>;
-    searchSubtitlesForVideo: () => Promise<void>;
+    searchSubtitlesForVideo: (customQuery?: string | React.MouseEvent) => Promise<void>;
     fetchYoutubeSubtitles: (videoId: string) => Promise<void>;
     handleSelectSubtitleFromSearch: (subtitle: SubtitleWithScore) => Promise<void>;
     handleQuickTest: (subtitle: SubtitleWithScore) => Promise<void>;

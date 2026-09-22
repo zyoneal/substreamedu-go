@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useIntl } from 'react-intl';
 
 import Cloud from 'lucide-react/dist/esm/icons/cloud';
+import Film from 'lucide-react/dist/esm/icons/film';
 import Check from 'lucide-react/dist/esm/icons/check';
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import Clipboard from 'lucide-react/dist/esm/icons/clipboard';
@@ -22,6 +23,7 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
 }) => {
     const intl = useIntl();
     const [linkInput, setLinkInput] = useState<string>('');
+    const [titleInput, setTitleInput] = useState<string>('');
     const [error, setError] = useState<string>('');
 
     const trimmedInput = linkInput.trim();
@@ -42,7 +44,8 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
         }
 
         setError('');
-        onFileSelected(fileId, 'Google Drive Video');
+        const fileTitle = titleInput.trim() || 'Google Drive Video';
+        onFileSelected(fileId, fileTitle);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -82,58 +85,106 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
                 </p>
             </div>
 
-            <div
-                className={`${styles.inputContainer} ${
-                    isValid === true ? styles.valid : error || isValid === false ? styles.invalid : ''
-                }`}
-            >
-                <div className={styles.driveIconContainer}>
-                    <Cloud className={styles.driveIcon} />
+            <div className={styles.formFields}>
+                <div className={styles.fieldGroup}>
+                    <div
+                        className={`${styles.inputContainer} ${
+                            isValid === true ? styles.valid : error || isValid === false ? styles.invalid : ''
+                        }`}
+                    >
+                        <div className={styles.driveIconContainer}>
+                            <Cloud className={styles.driveIcon} />
+                        </div>
+
+                        <input
+                            type="url"
+                            value={linkInput}
+                            onChange={(e) => {
+                                setLinkInput(e.target.value);
+                                if (error) setError('');
+                            }}
+                            onKeyDown={handleKeyDown}
+                            disabled={disabled}
+                            placeholder={intl.formatMessage({
+                                id: 'videoPage.googleDriveLinkPlaceholder',
+                                defaultMessage: 'e.g. https://drive.google.com/file/d/1BxiMVs.../view',
+                            })}
+                            className={styles.input}
+                            autoComplete="off"
+                            spellCheck="false"
+                        />
+
+                        <div className={styles.rightIcons}>
+                            {isValid === true && <Check size={18} className={styles.checkIcon} />}
+                            {linkInput ? (
+                                <button
+                                    type="button"
+                                    onClick={handleClearInput}
+                                    disabled={disabled}
+                                    className={styles.clearButton}
+                                    title="Clear input"
+                                    aria-label="Clear input"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handlePasteFromClipboard}
+                                    disabled={disabled}
+                                    className={styles.pasteButton}
+                                    title="Paste from clipboard"
+                                    aria-label="Paste Google Drive link from clipboard"
+                                >
+                                    <Clipboard size={16} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                <input
-                    type="url"
-                    value={linkInput}
-                    onChange={(e) => {
-                        setLinkInput(e.target.value);
-                        if (error) setError('');
-                    }}
-                    onKeyDown={handleKeyDown}
-                    disabled={disabled}
-                    placeholder={intl.formatMessage({
-                        id: 'videoPage.googleDriveLinkPlaceholder',
-                        defaultMessage: 'e.g. https://drive.google.com/file/d/1BxiMVs.../view',
-                    })}
-                    className={styles.input}
-                    autoComplete="off"
-                    spellCheck="false"
-                />
+                <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
+                        {intl.formatMessage({
+                            id: 'videoPage.googleDriveTitleLabel',
+                            defaultMessage: 'Movie or series title (for subtitle search)',
+                        })}
+                    </label>
+                    <div className={styles.titleInputContainer}>
+                        <div className={styles.driveIconContainer}>
+                            <Film className={styles.titleIcon} />
+                        </div>
 
-                <div className={styles.rightIcons}>
-                    {isValid === true && <Check size={18} className={styles.checkIcon} />}
-                    {linkInput ? (
-                        <button
-                            type="button"
-                            onClick={handleClearInput}
+                        <input
+                            type="text"
+                            value={titleInput}
+                            onChange={(e) => setTitleInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             disabled={disabled}
-                            className={styles.clearButton}
-                            title="Clear input"
-                            aria-label="Clear input"
-                        >
-                            <Trash2 size={16} />
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={handlePasteFromClipboard}
-                            disabled={disabled}
-                            className={styles.pasteButton}
-                            title="Paste from clipboard"
-                            aria-label="Paste Google Drive link from clipboard"
-                        >
-                            <Clipboard size={16} />
-                        </button>
-                    )}
+                            placeholder={intl.formatMessage({
+                                id: 'videoPage.googleDriveTitlePlaceholder',
+                                defaultMessage: 'e.g. Inception 2010, Friends S01E01 (optional)',
+                            })}
+                            className={styles.input}
+                            autoComplete="off"
+                            spellCheck="false"
+                        />
+
+                        {titleInput && (
+                            <div className={styles.rightIcons}>
+                                <button
+                                    type="button"
+                                    onClick={() => setTitleInput('')}
+                                    disabled={disabled}
+                                    className={styles.clearButton}
+                                    title="Clear title"
+                                    aria-label="Clear title input"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

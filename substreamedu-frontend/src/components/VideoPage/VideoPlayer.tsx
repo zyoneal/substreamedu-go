@@ -639,17 +639,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         return cleanName;
     };
 
-    const searchSubtitlesForVideo = async () => {
+    const searchSubtitlesForVideo = async (customQuery?: string | React.MouseEvent) => {
         if (videoId) {
             debugLog('Skipping search - YouTube video detected');
             return;
         }
 
-        
-        let videoName = sessionStorage.getItem('videoFileName');
-        debugLog('Video file name from sessionStorage:', videoName);
+        const queryStr = typeof customQuery === 'string' ? customQuery.trim() : undefined;
+        let videoName = queryStr || sessionStorage.getItem('videoFileName');
+        debugLog('Video file name for subtitle search:', videoName);
 
-        
         if (!videoName) {
             videoName = extractVideoNameFromUrl(videoUrl);
             debugLog('Extracted video name from URL:', videoName);
@@ -657,13 +656,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
         debugLog('Original video URL:', videoUrl);
 
+        // If videoName is unknown, empty, or generic "Google Drive Video" and user didn't supply a custom query
+        if ((!videoName || videoName.toLowerCase() === 'google drive video') && !queryStr) {
+            debugLog('Generic or missing video title, opening film search modal');
+            setSearchQueryForFilms('');
+            setAvailableFilms([]);
+            setShowFilmSelection(true);
+            showNotification('Please enter the movie or series title to find subtitles.');
+            return;
+        }
+
         if (!videoName) {
             debugLog('Could not extract video name');
             showNotification('Please click "Select another video" and upload the video again to enable automatic subtitle search.');
             return;
         }
 
-        
+        if (queryStr) {
+            sessionStorage.setItem('videoFileName', queryStr);
+        }
+
         videoName = videoName
             .replace(/\.(mp4|mkv|avi|mov|wmv|flv|webm)$/i, '')
             .replace(/[._-]/g, ' ')
@@ -870,8 +882,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                 if (!hasEpisodeInfo && looksLikeSeries) {
                     showNotification(`No subtitles found for "${videoName}". For TV series, rename file to include S01E01 format (e.g., "Show.Name.S01E01.720p.mkv")`);
                 } else {
-                    showNotification(`No subtitles found for "${videoName}". Try uploading manually.`);
+                    showNotification(`No subtitles found for "${videoName}". Try searching with another title.`);
                 }
+
+                // Open film selection modal so user can re-search with another query
+                setSearchQueryForFilms(targetTitle);
+                setAvailableFilms(response.results || []);
+                setShowFilmSelection(true);
             }
         } catch (error) {
             debugError('Error searching subtitles:', error);
@@ -892,7 +909,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         setIsSearchingSubtitles(true);
 
         try {
-            
+            sessionStorage.setItem('videoFileName', film.name);
             
             debugLog('Calling SubtitleService.searchSubtitlesSubDL with:');
             debugLog('  filmName:', film.name);
@@ -2960,7 +2977,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                     }
                                                 </p>
                                                 <button
-                                                    onClick={searchSubtitlesForVideo}
+                                                    onClick={() => searchSubtitlesForVideo()}
                                                     className={styles.minimalistButton}
                                                     disabled={isSearchingSubtitles}
                                                 >
@@ -3434,6 +3451,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     onSelectFilm={handleSelectFilmForSubtitles}
                     isLoading={isSearchingSubtitles}
                     searchQuery={searchQueryForFilms}
+                    onSearchAgain={searchSubtitlesForVideo}
                 />
 
                 {isReelModalOpen && reelModalData && (

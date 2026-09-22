@@ -11,6 +11,7 @@ jest.mock('lucide-react/dist/esm/icons/trash-2', () => () => <span data-testid="
 jest.mock('lucide-react/dist/esm/icons/clipboard', () => () => <span data-testid="icon-clipboard" />);
 jest.mock('lucide-react/dist/esm/icons/alert-triangle', () => () => <span data-testid="icon-alert" />);
 jest.mock('lucide-react/dist/esm/icons/info', () => () => <span data-testid="icon-info" />);
+jest.mock('lucide-react/dist/esm/icons/film', () => () => <span data-testid="icon-film" />);
 
 describe('GoogleDriveService', () => {
     describe('extractFileId', () => {
@@ -84,6 +85,53 @@ describe('GoogleDriveButton Component', () => {
             expect(onFileSelected).toHaveBeenCalledWith(
                 '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',
                 'Google Drive Video'
+            );
+        });
+    });
+
+    it('allows entering a custom movie/series title and passes it to onFileSelected', async () => {
+        const onFileSelected = jest.fn();
+        renderComponent(onFileSelected);
+
+        const linkInput = screen.getByPlaceholderText(/drive\.google\.com/i);
+        const titleInput = screen.getByPlaceholderText(/Inception 2010/i);
+        const loadButton = screen.getByRole('button', { name: /load video/i });
+
+        fireEvent.change(linkInput, {
+            target: { value: 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view' },
+        });
+        fireEvent.change(titleInput, {
+            target: { value: 'Inception 2010' },
+        });
+        fireEvent.click(loadButton);
+
+        await waitFor(() => {
+            expect(onFileSelected).toHaveBeenCalledWith(
+                '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',
+                'Inception 2010'
+            );
+        });
+    });
+
+    it('submits on Enter keypress from the title input field', async () => {
+        const onFileSelected = jest.fn();
+        renderComponent(onFileSelected);
+
+        const linkInput = screen.getByPlaceholderText(/drive\.google\.com/i);
+        const titleInput = screen.getByPlaceholderText(/Inception 2010/i);
+
+        fireEvent.change(linkInput, {
+            target: { value: 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view' },
+        });
+        fireEvent.change(titleInput, {
+            target: { value: 'Breaking Bad S01E01' },
+        });
+        fireEvent.keyDown(titleInput, { key: 'Enter', code: 'Enter' });
+
+        await waitFor(() => {
+            expect(onFileSelected).toHaveBeenCalledWith(
+                '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',
+                'Breaking Bad S01E01'
             );
         });
     });

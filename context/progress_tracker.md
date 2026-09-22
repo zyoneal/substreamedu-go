@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Custom Movie/Series Title for Google Drive Videos & Interactive Subtitle Search (ADR-059)
   - Resilient Google Drive Video Loading & Unresponsive GoogleDriveButton Fix (ADR-058)
   - Guest Demo Mode & 401 Graceful Degradation (ADR-057)
   - Security Hardening & Zero-Trust Boundary Remediation (Cloudflare Methodology) (ADR-055)
@@ -96,10 +97,27 @@
 | **ADR-056** | 2026-09-21 | Defense-in-Depth: SSRF Elimination, Input/Command Hardening & CSP Frame-Ancestors | Following Cloudflare Security Audit methodology: (1) Prevent blind SSRF and metadata/internal port exfiltration in `dictionary-service` async image downloader; (2) Prevent command argument injection, path traversal, and DoS in `media-service` (`yt-dlp`, `subdl`); (3) Modernize Clickjacking defenses with `frame-ancestors 'none'`. | (1) Added `IsSafePublicImageURL` in `dictionary-service` validating HTTP/S scheme, banning container hostnames, loopbacks, RFC 1918 private IPs, and link-local ranges via DNS lookup; enforced `image/*` Content-Type and 5MB payload limit; (2) Enforced `^[a-zA-Z0-9_][a-zA-Z0-9_-]{10}$` on YouTube `videoId` across handlers and clients, bounded clip duration to max 60s, and sanitized external subtitle IDs; (3) Added `frame-ancestors 'none'` to gateway security headers and Caddyfile CSP. 100% tests pass. |
 | **ADR-057** | 2026-09-22 | Guest Demo Mode & 401 Graceful Degradation | Commit e72ef1f1 (ADR-055) hardened endpoints returning personal/saved resources to reject unauthenticated requests with 401. AxiosService response interceptor redirected all 401s to /login, breaking 'Try without signup' buttons on homepage (/youtube-demo, /songs-demo, /texts-demo). | (1) Go microservices (media, dictionary) allow unauthenticated guest queries on read-only endpoints (GetAllSubtitles, GetSubtitlesForVideo, GetAllLexemes, GetByResource, GetAllGroups, GetDailyCards, GetStreak, GetDictionaryStats) returning 200 OK with empty payloads instead of 401; (2) AxiosService avoids redirecting to /login when 401 occurs on demo/public routes or for guest sessions; (3) Frontend components guard personal dictionary/subtitle fetching when unauthenticated. All 21 frontend test suites (108 tests) and Go test suites pass cleanly. |
 | **ADR-058** | 2026-09-22 | Streamlined Google Drive Direct Link Player & Eliminate Fragile Picker | Google Picker suffers from browser Cross-Origin-Opener-Policy (COOP), iframe CSP (`docs.google.com`), and mandatory developer API key requirements. Meanwhile, direct link streaming (`/file/d/<id>`) works 100% reliably without external popups or cloud credentials. | (1) Redesigned Google Drive tab into a dedicated direct link input matching `YouTubeUrlInput` aesthetic and Warm Cinematic Espresso tokens; (2) Added real-time URL validation, clear button, and clipboard paste; (3) Added `extractFileId` supporting all Google Drive sharing URLs; (4) Eliminated fragile GIS popup and Picker iframe dependencies; (5) All 22 test suites (119 tests) pass, production build verified. |
+| **ADR-059** | 2026-09-23 | Custom Movie/Series Title for Google Drive Videos & Interactive Subtitle Search | Google Drive video links do not convey movie/series names, previously defaulting to hardcoded "Google Drive Video" and triggering broken SubDL queries (`filmName=Google+Drive+Video`). Subtitle search also lacked an interactive search bar in the modal when no subtitles matched. | (1) Added movie/series title input in `GoogleDriveButton.tsx` with Warm Cinematic Espresso tokens, clear button, and Enter submit; (2) Added interactive search bar to `FilmSelectionModal.tsx` allowing query re-submission directly from the modal; (3) Updated `VideoPlayer.tsx` `searchSubtitlesForVideo` to accept custom queries, gracefully prompt on generic/missing titles, and persist selected film names into `sessionStorage`; (4) 23 test suites (125 tests) pass, production build verified. |
 
 ---
 
 ## Session Notes
+- **Custom Movie/Series Title for Google Drive Videos & Interactive Subtitle Search (Completed 2026-09-23)**:
+  - Solved user report where subtitle search queried `filmName=Google+Drive+Video` because Google Drive links lacked an explicit title.
+  - Added dedicated Movie / Series Title input in `GoogleDriveButton.tsx`:
+    - Clean amber Film icon (`<Film className={styles.titleIcon} />`).
+    - Clear title button and Enter submission support.
+    - Defaults gracefully to `'Google Drive Video'` if left blank.
+  - Upgraded `FilmSelectionModal.tsx` with an interactive search bar:
+    - Search input pre-populated with current query, clear button, and Search CTA.
+    - Real-time `onSearchAgain` hook into SubDL search pipeline.
+    - Contextual headers adapting between search input state and matching title lists.
+  - Enhanced `VideoPlayer.tsx`:
+    - `searchSubtitlesForVideo(customQuery?: string | React.MouseEvent)` handles both direct clicks and typed search queries.
+    - If video title is `"Google Drive Video"` or empty, opens `FilmSelectionModal` with search bar focused instead of firing a doomed SubDL query.
+    - When 0 subtitles are found, opens `FilmSelectionModal` with the search bar so the user can easily re-query.
+    - Saves resolved `film.name` into `sessionStorage('videoFileName')` upon selection.
+  - Verified with 13 tests in `GoogleDriveButton.test.tsx`, 4 tests in `FilmSelectionModal.test.tsx`, full test suite (23 suites, 125 tests pass), and `npm run build` exits 0.
 - **Streamlined Google Drive Direct Link Player (Completed 2026-09-22)**:
   - Eliminated fragile Google Picker button and GIS popup flow, which caused browser COOP (`Cross-Origin-Opener-Policy`) and CSP iframe framing violations on `docs.google.com`.
   - Upgraded Google Drive tab (`GoogleDriveButton.tsx`) to a first-class direct link player component visually and functionally harmonized with `YouTubeUrlInput`:

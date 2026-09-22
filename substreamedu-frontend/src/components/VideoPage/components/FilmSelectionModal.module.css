@@ -322,3 +322,119 @@
 .selectButton:hover .tooltip {
     opacity: 1;
 }
+
+.searchBarWrapper {
+    padding: 16px 40px;
+    background: #141312;
+    border-bottom: 1px solid #282522;
+}
+
+.searchForm {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.searchInputContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    background: #1a1917;
+    border: 1px solid #282522;
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: border-color 0.2s ease;
+}
+
+.searchInputContainer:hover {
+    border-color: #3d3934;
+}
+
+.searchInputContainer:focus-within {
+    border-color: #ede8e0;
+}
+
+.searchIcon {
+    width: 18px;
+    height: 18px;
+    color: #666360;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: #ede8e0;
+    min-width: 0;
+}
+
+.searchInput::placeholder {
+    color: #666360;
+}
+
+.clearSearchButton {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666360;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.clearSearchButton:hover {
+    color: #ede8e0;
+    background: #282522;
+}
+
+.searchSubmitButton {
+    padding: 10px 18px;
+    background: #faf92f;
+    color: #0d0c0b;
+    border: none;
+    border-radius: 8px;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.searchSubmitButton:hover:not(:disabled) {
+    background: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(250, 249, 47, 0.25);
+}
+
+.searchSubmitButton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .modalHeader {
+        padding: 20px;
+    }
+    .searchBarWrapper {
+        padding: 12px 20px;
+    }
+    .modalContent {
+        padding: 20px;
+    }
+}
