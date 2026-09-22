@@ -1,3 +1,122 @@
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.contentColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.directInputCard {
+    width: 100%;
+    box-sizing: border-box;
+    background: #141312;
+    border: 1px solid #282522;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inputWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #0d0c0b;
+    border: 1px solid #282522;
+    border-radius: 8px;
+    padding: 4px 6px 4px 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inputWrapper:focus-within {
+    border-color: #3d3934;
+    box-shadow: 0 0 0 1px #3d3934;
+}
+
+.inputIcon {
+    color: #666360;
+    flex-shrink: 0;
+}
+
+.linkInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ede8e0;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    min-width: 0;
+}
+
+.linkInput::placeholder {
+    color: #666360;
+}
+
+.loadButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    background: #ede8e0;
+    color: #0d0c0b;
+    border: none;
+    cursor: pointer;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    transition: background 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0;
+}
+
+.loadButton:hover:not(:disabled) {
+    background: #faf92f;
+    color: #0d0c0b;
+}
+
+.loadButton:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.loadButton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.dividerRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 1px;
+    background: #282522;
+}
+
+.dividerText {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #666360;
+    letter-spacing: 0.05em;
+}
+
 .googleDriveButton {
     display: inline-flex;
     justify-content: center;
@@ -18,6 +137,8 @@
     border: none;
     transition: background 0.2s ease, transform 0.1s ease;
     min-width: 280px;
+    width: 100%;
+    max-width: 340px;
 }
 
 .googleDriveButton:hover:not(:disabled) {
@@ -84,7 +205,6 @@
     padding: 14px;
     border-radius: 10px;
     width: 100%;
-    max-width: 450px;
     box-sizing: border-box;
     background: #141312;
     border: 1px solid #282522;
@@ -93,7 +213,7 @@
 .noticeRow {
     display: flex;
     align-items: start;
-    gap: 8px;
+    gap: 10px;
 }
 
 .noticeContent {

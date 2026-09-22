@@ -5,6 +5,10 @@ import Cloud from 'lucide-react/dist/esm/icons/cloud';
 import Check from 'lucide-react/dist/esm/icons/check';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import LinkIcon from 'lucide-react/dist/esm/icons/link';
+import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
+import Info from 'lucide-react/dist/esm/icons/info';
+
 import { GoogleDriveService } from '../../../services/GoogleDriveService';
 import { GoogleDriveFile } from '../../../types/googleDriveTypes';
 import styles from './GoogleDriveButton.module.css';
@@ -22,6 +26,7 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<GoogleDriveFile | null>(null);
     const [error, setError] = useState<string>('');
+    const [linkInput, setLinkInput] = useState<string>('');
 
     const handleSelectFile = async () => {
         setIsLoading(true);
@@ -34,27 +39,105 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
                 setSelectedFile(file);
                 onFileSelected(file.id, file.name);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error selecting Google Drive file:', err);
-            setError(
-                intl.formatMessage({
-                    id: 'videoPage.googleDriveError',
-                    defaultMessage: 'Failed to access Google Drive. Please try again.',
-                })
-            );
+            const rawMsg = err?.message || '';
+            const isUserCancel = rawMsg.includes('cancelled') || rawMsg.includes('closed');
+
+            if (!isUserCancel) {
+                setError(
+                    intl.formatMessage({
+                        id: 'videoPage.googleDriveError',
+                        defaultMessage: 'Failed to access Google Drive. Please try again.',
+                    })
+                );
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleLinkSubmit = () => {
+        const trimmed = linkInput.trim();
+        if (!trimmed) return;
+
+        setError('');
+        const fileId = GoogleDriveService.extractFileId(trimmed);
+
+        if (!fileId) {
+            setError(
+                intl.formatMessage({
+                    id: 'videoPage.googleDriveInvalidLink',
+                    defaultMessage: 'Please enter a valid Google Drive video link.',
+                })
+            );
+            return;
+        }
+
+        onFileSelected(fileId, 'Google Drive Video');
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleLinkSubmit();
+        }
+    };
+
     return (
         <div className={styles.container}>
-            {}
-            <div className="flex flex-col items-center gap-4 w-full">
+            <div className={styles.contentColumn}>
+                {/* 1. Direct Link Input Form */}
+                <div className={styles.directInputCard}>
+                    <div className={styles.inputWrapper}>
+                        <LinkIcon size={16} className={styles.inputIcon} />
+                        <input
+                            type="text"
+                            value={linkInput}
+                            onChange={(e) => setLinkInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={intl.formatMessage({
+                                id: 'videoPage.googleDriveLinkPlaceholder',
+                                defaultMessage: 'Paste Google Drive video link...',
+                            })}
+                            disabled={disabled || isLoading}
+                            className={styles.linkInput}
+                        />
+                        <button
+                            type="button"
+                            onClick={handleLinkSubmit}
+                            disabled={disabled || isLoading || !linkInput.trim()}
+                            className={styles.loadButton}
+                        >
+                            <span>
+                                {intl.formatMessage({
+                                    id: 'videoPage.googleDriveLoad',
+                                    defaultMessage: 'Load',
+                                })}
+                            </span>
+                            <ArrowRight size={14} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* 2. Visual Divider */}
+                <div className={styles.dividerRow}>
+                    <div className={styles.dividerLine} />
+                    <span className={styles.dividerText}>
+                        {intl.formatMessage({
+                            id: 'videoPage.googleDriveOr',
+                            defaultMessage: 'or',
+                        })}
+                    </span>
+                    <div className={styles.dividerLine} />
+                </div>
+
+                {/* 3. Google Picker Trigger Button */}
                 <button
                     onClick={handleSelectFile}
                     disabled={disabled || isLoading}
                     className={styles.googleDriveButton}
+                    type="button"
                 >
                     <div className={styles.buttonContent}>
                         {isLoading ? (
@@ -101,10 +184,10 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
                     })}
                 </p>
 
-                {}
+                {/* 4. Permissions & Sharing Notice */}
                 <div className={styles.noticeContainer}>
                     <div className={styles.noticeRow}>
-                        <span className="text-lg">ℹ️</span>
+                        <Info size={18} className="text-mute shrink-0 mt-0.5" />
                         <div className={styles.noticeContent}>
                             <p className={styles.noticeTitle}>
                                 {intl.formatMessage({

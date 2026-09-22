@@ -27,13 +27,14 @@ declare global {
                         client_id: string;
                         scope: string;
                         callback: (response: GoogleAuthResponse) => void;
+                        error_callback?: (error: any) => void;
                     }) => {
                         requestAccessToken: () => void;
                     };
                 };
             };
             picker: {
-                api: {
+                api?: {
                     load: (callback: () => void) => void;
                 };
                 DocsView: new (viewId?: any) => {
@@ -48,6 +49,7 @@ declare global {
                     addView: (view: any) => any;
                     setOAuthToken: (token: string) => any;
                     setDeveloperKey: (key: string) => any;
+                    setAppId: (appId: string) => any;
                     setCallback: (callback: (data: GooglePickerResponse) => void) => any;
                     setOrigin: (origin: string) => any;
                     build: () => {
@@ -65,13 +67,13 @@ declare global {
             };
         };
         gapi: {
-            load: (api: string, callback: () => void) => void;
-            client: {
+            load: (api: string, optionsOrCb: any) => void;
+            client?: {
                 init: (config: {
                     apiKey: string;
                     discoveryDocs: string[];
                 }) => Promise<void>;
-                drive: {
+                drive?: {
                     files: {
                         get: (params: { fileId: string; fields: string }) => Promise<any>;
                     };
