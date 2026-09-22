@@ -7,10 +7,9 @@ import enMessages from '../../../locales/en.json';
 
 jest.mock('lucide-react/dist/esm/icons/cloud', () => () => <span data-testid="icon-cloud" />);
 jest.mock('lucide-react/dist/esm/icons/check', () => () => <span data-testid="icon-check" />);
-jest.mock('lucide-react/dist/esm/icons/loader-2', () => () => <span data-testid="icon-loader" />);
+jest.mock('lucide-react/dist/esm/icons/trash-2', () => () => <span data-testid="icon-trash" />);
+jest.mock('lucide-react/dist/esm/icons/clipboard', () => () => <span data-testid="icon-clipboard" />);
 jest.mock('lucide-react/dist/esm/icons/alert-triangle', () => () => <span data-testid="icon-alert" />);
-jest.mock('lucide-react/dist/esm/icons/link', () => () => <span data-testid="icon-link" />);
-jest.mock('lucide-react/dist/esm/icons/arrow-right', () => () => <span data-testid="icon-arrow-right" />);
 jest.mock('lucide-react/dist/esm/icons/info', () => () => <span data-testid="icon-info" />);
 
 describe('GoogleDriveService', () => {
@@ -63,18 +62,18 @@ describe('GoogleDriveButton Component', () => {
         jest.clearAllMocks();
     });
 
-    it('renders the Google Drive button and link input', () => {
+    it('renders the Google Drive input and load button', () => {
         renderComponent();
-        expect(screen.getByRole('button', { name: /select from google drive/i })).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/paste google drive video link/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/drive\.google\.com/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /load video/i })).toBeInTheDocument();
     });
 
     it('handles direct Google Drive link input and invokes onFileSelected', async () => {
         const onFileSelected = jest.fn();
         renderComponent(onFileSelected);
 
-        const input = screen.getByPlaceholderText(/paste google drive video link/i);
-        const loadButton = screen.getByRole('button', { name: /load/i });
+        const input = screen.getByPlaceholderText(/drive\.google\.com/i);
+        const loadButton = screen.getByRole('button', { name: /load video/i });
 
         fireEvent.change(input, {
             target: { value: 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view' },
@@ -89,53 +88,49 @@ describe('GoogleDriveButton Component', () => {
         });
     });
 
-    it('displays error when invalid Google Drive link is submitted', async () => {
+    it('submits on Enter keypress with a valid link', async () => {
         const onFileSelected = jest.fn();
         renderComponent(onFileSelected);
 
-        const input = screen.getByPlaceholderText(/paste google drive video link/i);
-        const loadButton = screen.getByRole('button', { name: /load/i });
+        const input = screen.getByPlaceholderText(/drive\.google\.com/i);
 
         fireEvent.change(input, {
-            target: { value: 'https://invalid-link.com/video.mp4' },
+            target: { value: 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view' },
         });
-        fireEvent.click(loadButton);
+        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
         await waitFor(() => {
-            expect(screen.getByText(/please enter a valid google drive video link/i)).toBeInTheDocument();
-            expect(onFileSelected).not.toHaveBeenCalled();
+            expect(onFileSelected).toHaveBeenCalledWith(
+                '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',
+                'Google Drive Video'
+            );
         });
     });
 
-    it('handles Google Drive button click and shows error gracefully if Picker fails or is unconfigured', async () => {
-        jest.spyOn(GoogleDriveService, 'selectVideoFile').mockRejectedValue(new Error('Google Picker API not loaded'));
+    it('disables the Load button when input is empty or invalid', () => {
+        renderComponent();
+        const loadButton = screen.getByRole('button', { name: /load video/i });
+        expect(loadButton).toBeDisabled();
 
-        const onFileSelected = jest.fn();
-        renderComponent(onFileSelected);
-
-        const button = screen.getByRole('button', { name: /select from google drive/i });
-        fireEvent.click(button);
-
-        await waitFor(() => {
-            expect(screen.getByText(/failed to access google drive/i)).toBeInTheDocument();
+        const input = screen.getByPlaceholderText(/drive\.google\.com/i);
+        fireEvent.change(input, {
+            target: { value: 'https://invalid-url.com/movie.mp4' },
         });
+        expect(loadButton).toBeDisabled();
     });
 
-    it('invokes onFileSelected when selectVideoFile resolves with a file', async () => {
-        jest.spyOn(GoogleDriveService, 'selectVideoFile').mockResolvedValue({
-            id: 'mock-file-123',
-            name: 'test-movie.mp4',
-            mimeType: 'video/mp4',
+    it('clears input when clear button is clicked', () => {
+        renderComponent();
+        const input = screen.getByPlaceholderText(/drive\.google\.com/i) as HTMLInputElement;
+
+        fireEvent.change(input, {
+            target: { value: 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view' },
         });
+        expect(input.value).toBe('https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view');
 
-        const onFileSelected = jest.fn();
-        renderComponent(onFileSelected);
+        const clearButton = screen.getByTitle('Clear input');
+        fireEvent.click(clearButton);
 
-        const button = screen.getByRole('button', { name: /select from google drive/i });
-        fireEvent.click(button);
-
-        await waitFor(() => {
-            expect(onFileSelected).toHaveBeenCalledWith('mock-file-123', 'test-movie.mp4');
-        });
+        expect(input.value).toBe('');
     });
 });

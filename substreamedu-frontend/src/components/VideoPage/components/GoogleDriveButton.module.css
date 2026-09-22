@@ -1,245 +1,281 @@
 .container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
+  width: 100%;
+  max-width: 620px;
+  background: #141312;
+  border: 1px solid #282522;
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
-.contentColumn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    max-width: 480px;
+.textSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: stretch;
+  text-align: left;
 }
 
-.directInputCard {
-    width: 100%;
-    box-sizing: border-box;
-    background: #141312;
-    border: 1px solid #282522;
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.description {
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #b0a99e;
+  margin: 0;
+  text-align: left;
+  width: 100%;
 }
 
-.inputWrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #0d0c0b;
-    border: 1px solid #282522;
-    border-radius: 8px;
-    padding: 4px 6px 4px 12px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1a1917;
+  border: 1px solid #282522;
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
 }
 
-.inputWrapper:focus-within {
-    border-color: #3d3934;
-    box-shadow: 0 0 0 1px #3d3934;
+.inputContainer:hover {
+  border-color: #3d3934;
 }
 
-.inputIcon {
-    color: #666360;
-    flex-shrink: 0;
+.inputContainer:focus-within {
+  border-color: #ede8e0;
+  background: #1a1917;
 }
 
-.linkInput {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #ede8e0;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    min-width: 0;
+.inputContainer.valid {
+  border-color: #4ade80;
 }
 
-.linkInput::placeholder {
-    color: #666360;
+.inputContainer.invalid {
+  border-color: #ef4444;
+}
+
+.driveIconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.driveIcon {
+  width: 20px;
+  height: 20px;
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ede8e0;
+  min-width: 0;
+}
+
+.input::placeholder {
+  color: #666360;
+  font-weight: 300;
+}
+
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+  color: #4ade80;
+  stroke-width: 2.5px;
+  flex-shrink: 0;
+}
+
+.clearButton,
+.pasteButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+  color: #666360;
+}
+
+.clearButton:hover,
+.pasteButton:hover {
+  color: #ede8e0;
+  background: #1e1c1a;
+}
+
+.clearButton:active,
+.pasteButton:active {
+  transform: scale(0.95);
+}
+
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: #f87171;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.buttonSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
 }
 
 .loadButton {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 6px;
-    background: #ede8e0;
-    color: #0d0c0b;
-    border: none;
-    cursor: pointer;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    transition: background 0.15s ease, transform 0.1s ease;
-    flex-shrink: 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 100px;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: #ede8e0;
+  color: #0d0c0b;
+  border: none;
+  transition: background 0.2s ease, transform 0.1s ease;
+  width: 100%;
 }
 
 .loadButton:hover:not(:disabled) {
-    background: #faf92f;
-    color: #0d0c0b;
+  background: #faf92f;
+  color: #0d0c0b;
 }
 
 .loadButton:active:not(:disabled) {
-    transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .loadButton:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #ede8e0;
+  color: #0d0c0b;
 }
 
-.dividerRow {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-}
-
-.dividerLine {
-    flex: 1;
-    height: 1px;
-    background: #282522;
-}
-
-.dividerText {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #666360;
-    letter-spacing: 0.05em;
-}
-
-.googleDriveButton {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    box-sizing: border-box;
-    cursor: pointer;
-    height: 48px;
-    padding: 0 24px;
-    border-radius: 100px;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    background: #ede8e0;
-    color: #0d0c0b;
-    border: none;
-    transition: background 0.2s ease, transform 0.1s ease;
-    min-width: 280px;
-    width: 100%;
-    max-width: 340px;
-}
-
-.googleDriveButton:hover:not(:disabled) {
-    background: #faf92f;
-    color: #0d0c0b;
-}
-
-.googleDriveButton:active:not(:disabled) {
-    transform: scale(0.98);
-}
-
-.googleDriveButton:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    background: #ede8e0;
-    color: #0d0c0b;
-}
-
-.buttonContent {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.icon {
-    width: 18px;
-    height: 18px;
+.buttonText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .hint {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-weight: 300;
-    font-size: 11px;
-    line-height: 1.5;
-    color: #666360;
-    text-align: center;
-    max-width: 450px;
-    padding: 0 16px;
-    margin: 0;
-    align-self: center;
-    width: 100%;
-}
-
-.errorContainer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
-    font-weight: 300;
-    padding: 8px 12px;
-    border-radius: 6px;
-    width: 100%;
-    box-sizing: border-box;
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    color: #f87171;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #666360;
+  text-align: center;
+  margin: 0;
+  width: 100%;
 }
 
 .noticeContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px;
-    border-radius: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    background: #141312;
-    border: 1px solid #282522;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #0d0c0b;
+  border: 1px solid #282522;
 }
 
 .noticeRow {
-    display: flex;
-    align-items: start;
-    gap: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .noticeContent {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #9e988f;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9e988f;
 }
 
 .noticeTitle {
-    font-weight: 400;
-    color: #ede8e0;
-    font-size: 13px;
-    margin: 0;
+  font-weight: 500;
+  color: #ede8e0;
+  font-size: 12px;
+  margin: 0;
 }
 
 .noticeText {
-    margin: 0;
+  margin: 0;
 }
 
 .noticeInstructions {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #666360;
-    margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #666360;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 20px 16px;
+    border-radius: 12px;
+  }
+
+  .input {
+    font-size: 13px;
+  }
+
+  .loadButton {
+    height: 44px;
+    font-size: 12px;
+  }
 }

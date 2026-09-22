@@ -3,14 +3,12 @@ import { useIntl } from 'react-intl';
 
 import Cloud from 'lucide-react/dist/esm/icons/cloud';
 import Check from 'lucide-react/dist/esm/icons/check';
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
+import Clipboard from 'lucide-react/dist/esm/icons/clipboard';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
-import LinkIcon from 'lucide-react/dist/esm/icons/link';
-import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
 import Info from 'lucide-react/dist/esm/icons/info';
 
 import { GoogleDriveService } from '../../../services/GoogleDriveService';
-import { GoogleDriveFile } from '../../../types/googleDriveTypes';
 import styles from './GoogleDriveButton.module.css';
 
 interface GoogleDriveButtonProps {
@@ -23,46 +21,15 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
     disabled = false,
 }) => {
     const intl = useIntl();
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<GoogleDriveFile | null>(null);
-    const [error, setError] = useState<string>('');
     const [linkInput, setLinkInput] = useState<string>('');
+    const [error, setError] = useState<string>('');
 
-    const handleSelectFile = async () => {
-        setIsLoading(true);
-        setError('');
+    const trimmedInput = linkInput.trim();
+    const fileId = trimmedInput ? GoogleDriveService.extractFileId(trimmedInput) : null;
+    const isValid = trimmedInput.length > 0 ? Boolean(fileId) : null;
 
-        try {
-            const file = await GoogleDriveService.selectVideoFile();
-
-            if (file) {
-                setSelectedFile(file);
-                onFileSelected(file.id, file.name);
-            }
-        } catch (err: any) {
-            console.error('Error selecting Google Drive file:', err);
-            const rawMsg = err?.message || '';
-            const isUserCancel = rawMsg.includes('cancelled') || rawMsg.includes('closed');
-
-            if (!isUserCancel) {
-                setError(
-                    intl.formatMessage({
-                        id: 'videoPage.googleDriveError',
-                        defaultMessage: 'Failed to access Google Drive. Please try again.',
-                    })
-                );
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleLinkSubmit = () => {
-        const trimmed = linkInput.trim();
-        if (!trimmed) return;
-
-        setError('');
-        const fileId = GoogleDriveService.extractFileId(trimmed);
+    const handleSubmit = () => {
+        if (!trimmedInput) return;
 
         if (!fileId) {
             setError(
@@ -74,107 +41,123 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
             return;
         }
 
+        setError('');
         onFileSelected(fileId, 'Google Drive Video');
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !disabled && trimmedInput) {
             e.preventDefault();
-            handleLinkSubmit();
+            handleSubmit();
         }
+    };
+
+    const handlePasteFromClipboard = async () => {
+        try {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                const text = await navigator.clipboard.readText();
+                if (text && text.trim()) {
+                    setLinkInput(text.trim());
+                    setError('');
+                }
+            }
+        } catch (clipErr) {
+            console.warn('Failed to read from clipboard:', clipErr);
+        }
+    };
+
+    const handleClearInput = () => {
+        setLinkInput('');
+        setError('');
     };
 
     return (
         <div className={styles.container}>
-            <div className={styles.contentColumn}>
-                {/* 1. Direct Link Input Form */}
-                <div className={styles.directInputCard}>
-                    <div className={styles.inputWrapper}>
-                        <LinkIcon size={16} className={styles.inputIcon} />
-                        <input
-                            type="text"
-                            value={linkInput}
-                            onChange={(e) => setLinkInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder={intl.formatMessage({
-                                id: 'videoPage.googleDriveLinkPlaceholder',
-                                defaultMessage: 'Paste Google Drive video link...',
-                            })}
-                            disabled={disabled || isLoading}
-                            className={styles.linkInput}
-                        />
+            <div className={styles.textSection}>
+                <p className={styles.description}>
+                    {intl.formatMessage({
+                        id: 'videoPage.googleDriveDescription',
+                        defaultMessage: 'Paste the link of any Google Drive video, and we will stream it directly.',
+                    })}
+                </p>
+            </div>
+
+            <div
+                className={`${styles.inputContainer} ${
+                    isValid === true ? styles.valid : error || isValid === false ? styles.invalid : ''
+                }`}
+            >
+                <div className={styles.driveIconContainer}>
+                    <Cloud className={styles.driveIcon} />
+                </div>
+
+                <input
+                    type="url"
+                    value={linkInput}
+                    onChange={(e) => {
+                        setLinkInput(e.target.value);
+                        if (error) setError('');
+                    }}
+                    onKeyDown={handleKeyDown}
+                    disabled={disabled}
+                    placeholder={intl.formatMessage({
+                        id: 'videoPage.googleDriveLinkPlaceholder',
+                        defaultMessage: 'e.g. https://drive.google.com/file/d/1BxiMVs.../view',
+                    })}
+                    className={styles.input}
+                    autoComplete="off"
+                    spellCheck="false"
+                />
+
+                <div className={styles.rightIcons}>
+                    {isValid === true && <Check size={18} className={styles.checkIcon} />}
+                    {linkInput ? (
                         <button
                             type="button"
-                            onClick={handleLinkSubmit}
-                            disabled={disabled || isLoading || !linkInput.trim()}
-                            className={styles.loadButton}
+                            onClick={handleClearInput}
+                            disabled={disabled}
+                            className={styles.clearButton}
+                            title="Clear input"
+                            aria-label="Clear input"
                         >
-                            <span>
-                                {intl.formatMessage({
-                                    id: 'videoPage.googleDriveLoad',
-                                    defaultMessage: 'Load',
-                                })}
-                            </span>
-                            <ArrowRight size={14} />
+                            <Trash2 size={16} />
                         </button>
-                    </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handlePasteFromClipboard}
+                            disabled={disabled}
+                            className={styles.pasteButton}
+                            title="Paste from clipboard"
+                            aria-label="Paste Google Drive link from clipboard"
+                        >
+                            <Clipboard size={16} />
+                        </button>
+                    )}
                 </div>
+            </div>
 
-                {/* 2. Visual Divider */}
-                <div className={styles.dividerRow}>
-                    <div className={styles.dividerLine} />
-                    <span className={styles.dividerText}>
+            {error && (
+                <div className={styles.errorAlert} role="alert" aria-live="polite">
+                    <AlertTriangle size={16} className="shrink-0 text-red-400 inline mr-1" />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            <div className={styles.buttonSection}>
+                <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={disabled || !trimmedInput || isValid === false}
+                    className={styles.loadButton}
+                >
+                    <span className={styles.buttonText}>
                         {intl.formatMessage({
-                            id: 'videoPage.googleDriveOr',
-                            defaultMessage: 'or',
+                            id: 'videoPage.googleDriveLoad',
+                            defaultMessage: 'LOAD VIDEO',
                         })}
                     </span>
-                    <div className={styles.dividerLine} />
-                </div>
-
-                {/* 3. Google Picker Trigger Button */}
-                <button
-                    onClick={handleSelectFile}
-                    disabled={disabled || isLoading}
-                    className={styles.googleDriveButton}
-                    type="button"
-                >
-                    <div className={styles.buttonContent}>
-                        {isLoading ? (
-                            <>
-                                <Loader2 className={`${styles.icon} animate-spin`} />
-                                <span>
-                                    {intl.formatMessage({
-                                        id: 'videoPage.loading',
-                                        defaultMessage: 'Loading...',
-                                    })}
-                                </span>
-                            </>
-                        ) : selectedFile ? (
-                            <>
-                                <Check className={styles.icon} />
-                                <span className="truncate max-w-xs">{selectedFile.name}</span>
-                            </>
-                        ) : (
-                            <>
-                                <Cloud className={styles.icon} />
-                                <span>
-                                    {intl.formatMessage({
-                                        id: 'videoPage.selectFromDrive',
-                                        defaultMessage: 'Select from Google Drive',
-                                    })}
-                                </span>
-                            </>
-                        )}
-                    </div>
                 </button>
-
-                {error && (
-                    <div className={styles.errorContainer} role="alert">
-                        <AlertTriangle size={18} className="text-red-400 shrink-0" />
-                        <span>{error}</span>
-                    </div>
-                )}
 
                 <p className={styles.hint}>
                     {intl.formatMessage({
@@ -184,7 +167,6 @@ export const GoogleDriveButton: React.FC<GoogleDriveButtonProps> = ({
                     })}
                 </p>
 
-                {/* 4. Permissions & Sharing Notice */}
                 <div className={styles.noticeContainer}>
                     <div className={styles.noticeRow}>
                         <Info size={18} className="text-mute shrink-0 mt-0.5" />
