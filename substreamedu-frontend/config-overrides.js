@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const process = require('process');
 
-module.exports = function override(config) {
+function overrideWebpack(config) {
     const fallback = config.resolve.fallback || {};
     Object.assign(fallback, {
         "zlib": require.resolve("browserify-zlib"),
@@ -34,4 +34,16 @@ module.exports = function override(config) {
     config.ignoreWarnings = [/Failed to parse source map/];
 
     return config;
+}
+
+function overrideJest(config) {
+    config.moduleNameMapper = Object.assign({}, config.moduleNameMapper, {
+        '^axios$': require.resolve('axios'),
+    });
+    return config;
+}
+
+module.exports = {
+    webpack: overrideWebpack,
+    jest: overrideJest,
 };

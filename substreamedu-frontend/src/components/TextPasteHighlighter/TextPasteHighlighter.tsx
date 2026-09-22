@@ -8,6 +8,7 @@ import Clipboard from 'lucide-react/dist/esm/icons/clipboard';
 import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
 import styles from './TextPasteHighlighter.module.css';
 import { DictionaryService } from '../../services/DictionaryService';
+import { AuthService } from '../../services/AuthService';
 import { createPortal } from 'react-dom';
 import { LanguageContext } from "../LanguageContext";
 import { useIntl } from 'react-intl';
@@ -379,6 +380,11 @@ const TextPasteHighlighter: React.FC = () => {
     };
 
     const fetchHighlightedWords = async () => {
+        if (!AuthService.getUserEmail()) {
+            setDictionaryItems([]);
+            setHighlightedWords([]);
+            return;
+        }
         try {
             const items = await DictionaryService.fetchDictionaryItemsByUser();
             const actualItems = Array.isArray(items) ? items : (items && (items as any).items ? (items as any).items : []);

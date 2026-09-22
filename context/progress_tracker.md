@@ -3,10 +3,11 @@
 ## Status Board
 
 - **Current Phase**: Phase 2: Product Feature Expansion
-- **In Progress**: None (Ready for next task)
+- **In Progress**: None
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Guest Demo Mode & 401 Graceful Degradation (ADR-057)
   - Security Hardening & Zero-Trust Boundary Remediation (Cloudflare Methodology) (ADR-055)
   - Spec 08: Teacher Mode & Interactive Lesson Builder (Spec 05B) (ADR-048)
   - Spec 07: Grammar Detection & Exercises (Spec 05D) (ADR-037)
@@ -92,10 +93,18 @@
 | **ADR-054** | 2026-09-20 | Grammar Discovery Modal Design Alignment with Homepage Aesthetic | User requested redesigning the Video Grammar Index Modal to match the authentic homepage look ("тут надо дизайн сделать такой же как на хоумпейдже"), replacing generic dark boxes and clashing electric blue with Warm Cinematic Espresso. | (1) Replaced dark container with glassmorphic modal card featuring overhead projector beam glow (`radial-gradient`); (2) Added JetBrains Mono uppercase eyebrow (`GRAMMAR DISCOVERY`) and refined typography; (3) Redesigned filter tabs to sleek pill controls with parchment cream active state; (4) Rebuilt grammar cards with translucent glass, 1px hairlines, and hover lift; (5) Aligned dialogue subtitle highlight to exact homepage `.selectedPhrase` (gold underline with soft amber glow); (6) Replaced square action button with circular play button that transitions to glowing cinema yellow (`#faf92f`); (7) Harmonized `GrammarSpotlightModal.module.css` with matching tokens. 21 test suites, 108 tests pass cleanly. Production build verified. |
 | **ADR-055** | 2026-09-21 | Security Hardening & Zero-Trust Boundary Remediation (Cloudflare Methodology) | Eliminate confirmed vulnerabilities: IDOR on dictionary/media endpoints, unauthenticated internal API routes, production pprof interfaces, spoofable rate limiter IP, CORS wildcard credentials, unauthenticated Redis, and algorithm confusion across all 5 Go services, gateway, Caddy, and Docker compose. | Zero IDOR via client-supplied headers/queries; internal endpoints protected by constant-time shared secret (`X-Internal-Service-Key`); pprof gated behind `ENABLE_PPROF`; Redis password-protected; 100% tests passing across all microservices and frontend. |
 | **ADR-056** | 2026-09-21 | Defense-in-Depth: SSRF Elimination, Input/Command Hardening & CSP Frame-Ancestors | Following Cloudflare Security Audit methodology: (1) Prevent blind SSRF and metadata/internal port exfiltration in `dictionary-service` async image downloader; (2) Prevent command argument injection, path traversal, and DoS in `media-service` (`yt-dlp`, `subdl`); (3) Modernize Clickjacking defenses with `frame-ancestors 'none'`. | (1) Added `IsSafePublicImageURL` in `dictionary-service` validating HTTP/S scheme, banning container hostnames, loopbacks, RFC 1918 private IPs, and link-local ranges via DNS lookup; enforced `image/*` Content-Type and 5MB payload limit; (2) Enforced `^[a-zA-Z0-9_][a-zA-Z0-9_-]{10}$` on YouTube `videoId` across handlers and clients, bounded clip duration to max 60s, and sanitized external subtitle IDs; (3) Added `frame-ancestors 'none'` to gateway security headers and Caddyfile CSP. 100% tests pass. |
+| **ADR-057** | 2026-09-22 | Guest Demo Mode & 401 Graceful Degradation | Commit e72ef1f1 (ADR-055) hardened endpoints returning personal/saved resources to reject unauthenticated requests with 401. AxiosService response interceptor redirected all 401s to /login, breaking 'Try without signup' buttons on homepage (/youtube-demo, /songs-demo, /texts-demo). | (1) Go microservices (media, dictionary) allow unauthenticated guest queries on read-only endpoints (GetAllSubtitles, GetSubtitlesForVideo, GetAllLexemes, GetByResource, GetAllGroups, GetDailyCards, GetStreak, GetDictionaryStats) returning 200 OK with empty payloads instead of 401; (2) AxiosService avoids redirecting to /login when 401 occurs on demo/public routes or for guest sessions; (3) Frontend components guard personal dictionary/subtitle fetching when unauthenticated. All 21 frontend test suites (108 tests) and Go test suites pass cleanly. |
 
 ---
 
 ## Session Notes
+- **Guest Demo Mode & 401 Graceful Degradation (Completed 2026-09-22)**:
+  - Repaired "Try without signup:" homepage guest navigation across Movie Player (`/youtube-demo`), Synced Lyrics (`/songs-demo`), and AI Stories (`/texts-demo`).
+  - Updated backend Go handlers (`media-service`, `dictionary-service`) to use `getOptionalUserId` on read-only endpoints, returning empty datasets (200 OK) for guests rather than throwing 401 Unauthorized.
+  - Updated `AxiosService.ts` 401 interceptor to detect demo and public routes (`/youtube-demo`, `/songs-demo`, `/texts-demo`, `/demo`, `/movies`, `/subtitles-demo`, `/dictionary-demo`, `/review-demo`, `/lesson/*`, `/learn/*`, `/`), clearing stale tokens without bouncing the user to `/login`.
+  - Added frontend guest guards in `VideoPage.tsx`, `VideoPlayer.tsx`, `TextPasteHighlighter.tsx`, `SubtitlesPage.tsx`, and `DictionaryPage.tsx`.
+  - Added Jest configuration override in `config-overrides.js` mapping `axios` to CommonJS.
+  - Verified with comprehensive tests: 21 React test suites (108 tests) pass, `npm run build` exits 0, and all Go test suites pass with code 0.
 - **Grammar Discovery Modal Homepage Design Alignment (Completed 2026-09-20)**:
   - Redesigned `VideoGrammarIndexModal` and `GrammarSpotlightModal` to match the high-end Warm Cinematic Espresso homepage design.
   - 21 test suites, 108 tests pass; production build verified (`npm run build` exits 0).

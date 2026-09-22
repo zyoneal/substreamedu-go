@@ -77,6 +77,21 @@ func (h *MediaHandler) getUserId(c *gin.Context) (uuid.UUID, bool) {
 	return uuid.Nil, false
 }
 
+func (h *MediaHandler) getOptionalUserId(c *gin.Context) *uuid.UUID {
+	// SECURITY: userId must come exclusively from verified JWT claims.
+	if authIDVal, exists := c.Get("userID"); exists {
+		if uid, ok := authIDVal.(uuid.UUID); ok && uid != uuid.Nil {
+			return &uid
+		}
+		if uidStr, ok := authIDVal.(string); ok && uidStr != "" {
+			if uid, err := uuid.Parse(uidStr); err == nil {
+				return &uid
+			}
+		}
+	}
+	return nil
+}
+
 func (h *MediaHandler) SearchYoutube(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
@@ -255,12 +270,13 @@ func (h *MediaHandler) UploadSubtitles(c *gin.Context) {
 }
 
 func (h *MediaHandler) GetAllSubtitles(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	uid := h.getOptionalUserId(c)
+	if uid == nil {
+		h.respondSuccess(c, []dto.SubtitleDto{})
 		return
 	}
 
-	res, err := h.subtitleService.GetAll(c.Request.Context(), userID)
+	res, err := h.subtitleService.GetAll(c.Request.Context(), *uid)
 	if err != nil {
 		h.respondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -282,12 +298,14 @@ func (h *MediaHandler) DeleteSubtitle(c *gin.Context) {
 }
 
 func (h *MediaHandler) GetSubtitlesForVideo(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	uid := h.getOptionalUserId(c)
+	if uid == nil {
+		h.respondSuccess(c, []dto.SubtitleResponseDto{})
 		return
 	}
+
 	name := c.Param("name")
-	res, err := h.subtitleService.GetSubtitlesForVideo(c.Request.Context(), userID, name)
+	res, err := h.subtitleService.GetSubtitlesForVideo(c.Request.Context(), *uid, name)
 	if err != nil {
 		h.respondError(c, http.StatusInternalServerError, err.Error())
 		return

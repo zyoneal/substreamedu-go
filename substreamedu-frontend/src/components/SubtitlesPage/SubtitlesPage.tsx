@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
+import { AuthService } from '../../services/AuthService';
 import styles from './css/SubtitlesPage.module.css';
 import { useIntl } from "react-intl";
 import BinButton from "../DictionaryItemsPage/BinButton";
@@ -22,6 +23,11 @@ const SubtitlesPage: React.FC = () => {
 	const fetchSubtitles = async () => {
 		setIsLoading(true);
 		setError('');
+		if (!AuthService.getUserEmail()) {
+			setSubtitles([]);
+			setIsLoading(false);
+			return;
+		}
 		try {
 			const resources = await SubtitleService.fetchAllSubtitles();
 			setSubtitles(resources);

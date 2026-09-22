@@ -92,9 +92,19 @@ export const setupInterceptors = (
     },
     (error: AxiosError) => {
       if (error.response && error.response.status === 401) {
+        const hadAuth = !!AuthService.getToken() || !!AuthService.getUserEmail();
         AuthService.clearUser();
         setIsLoggedIn(false);
-        navigate('/login');
+
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isPublicOrDemo =
+          ['/', '/demo', '/youtube-demo', '/movies', '/songs-demo', '/texts-demo', '/subtitles-demo', '/dictionary-demo', '/review-demo', '/login'].includes(currentPath) ||
+          currentPath.startsWith('/lesson/') ||
+          currentPath.startsWith('/learn/');
+
+        if (hadAuth && !isPublicOrDemo) {
+          navigate('/login');
+        }
         return Promise.reject(error);
       }
 

@@ -77,3 +77,71 @@ func TestAIGeneration_ValidationAndTimeout(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 }
+
+func TestDictionary_GuestAllowed(t *testing.T) {
+	h := &DictionaryHandler{}
+
+	t.Run("GetAllLexemes unauthenticated guest gets 200 OK and empty items", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/resources/items", nil)
+
+		h.GetAllLexemes(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetAllLexemes must return 200 OK, not 401 Unauthorized")
+	})
+
+	t.Run("GetAllLexemesLight unauthenticated guest gets 200 OK and empty items", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/resources/items/light", nil)
+
+		h.GetAllLexemesLight(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetAllLexemesLight must return 200 OK, not 401 Unauthorized")
+	})
+
+	t.Run("GetByResource unauthenticated guest gets 200 OK and empty items", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Params = gin.Params{{Key: "name", Value: "demo-video"}}
+		c.Request, _ = http.NewRequest("GET", "/resources/demo-video/items", nil)
+
+		h.GetByResource(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetByResource must return 200 OK, not 401 Unauthorized")
+	})
+
+	t.Run("GetAllGroups unauthenticated guest gets 200 OK and empty groups", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/resources", nil)
+
+		h.GetAllGroups(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetAllGroups must return 200 OK, not 401 Unauthorized")
+	})
+
+	t.Run("GetDailyCards unauthenticated guest gets 200 OK and empty cards", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/srs/today", nil)
+
+		h.GetDailyCards(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetDailyCards must return 200 OK, not 401 Unauthorized")
+	})
+
+	t.Run("GetStreak unauthenticated guest gets 200 OK and 0 streak", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/streak", nil)
+
+		h.GetStreak(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetStreak must return 200 OK, not 401 Unauthorized")
+	})
+
+	t.Run("GetDictionaryStats unauthenticated guest gets 200 OK and empty stats", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/srs/stats", nil)
+
+		h.GetDictionaryStats(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetDictionaryStats must return 200 OK, not 401 Unauthorized")
+	})
+}

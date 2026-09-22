@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { SubtitleService } from '../../services/SubtitleService';
+import { AuthService } from '../../services/AuthService';
 import VideoPlayer from './VideoPlayer';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { useVideoUpload } from '../../hooks/useVideoUpload';
@@ -106,6 +107,10 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
   }, [videoState.videoUrl]);
 
   const fetchSubtitles = async () => {
+    if (!AuthService.getUserEmail()) {
+      setSubtitles([]);
+      return;
+    }
     try {
       const subtitles = await SubtitleService.fetchAllSubtitles();
       setSubtitles(subtitles);

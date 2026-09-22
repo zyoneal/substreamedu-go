@@ -149,13 +149,20 @@ func (h *DictionaryHandler) AddWord(c *gin.Context) {
 }
 
 func (h *DictionaryHandler) GetDailyCards(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	userID := h.getOptionalUserId(c)
+	if userID == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: &dto.DailySessionDto{
+				Cards:               []dto.DictionaryItemDto{},
+				TotalDictionarySize: 0,
+			},
+		})
 		return
 	}
 
 	loc := h.resolveLocation(c)
-	res, err := h.learningService.GetDailyCards(c.Request.Context(), userID, loc)
+	res, err := h.learningService.GetDailyCards(c.Request.Context(), *userID, loc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
@@ -201,8 +208,15 @@ func (h *DictionaryHandler) ReviewCard(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 func (h *DictionaryHandler) GetAllLexemes(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	uid := h.getOptionalUserId(c)
+	if uid == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: &dto.PaginatedResponse{
+				Items:   []dto.DictionaryItemDto{},
+				HasMore: false,
+			},
+		})
 		return
 	}
 
@@ -220,7 +234,7 @@ func (h *DictionaryHandler) GetAllLexemes(c *gin.Context) {
 		}
 	}
 
-	res, err := h.vocabularyService.GetAllLexemesPaginated(c.Request.Context(), userID, cursor, limit)
+	res, err := h.vocabularyService.GetAllLexemesPaginated(c.Request.Context(), *uid, cursor, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
@@ -230,8 +244,15 @@ func (h *DictionaryHandler) GetAllLexemes(c *gin.Context) {
 }
 
 func (h *DictionaryHandler) GetAllLexemesLight(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	uid := h.getOptionalUserId(c)
+	if uid == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: &dto.PaginatedResponse{
+				Items:   []dto.LexemeLightDto{},
+				HasMore: false,
+			},
+		})
 		return
 	}
 
@@ -249,7 +270,7 @@ func (h *DictionaryHandler) GetAllLexemesLight(c *gin.Context) {
 		}
 	}
 
-	res, err := h.vocabularyService.GetAllLexemesLightPaginated(c.Request.Context(), userID, cursor, limit)
+	res, err := h.vocabularyService.GetAllLexemesLightPaginated(c.Request.Context(), *uid, cursor, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
@@ -259,10 +280,18 @@ func (h *DictionaryHandler) GetAllLexemesLight(c *gin.Context) {
 }
 
 func (h *DictionaryHandler) GetByResource(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	uid := h.getOptionalUserId(c)
+	if uid == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: &dto.PaginatedResponse{
+				Items:   []dto.DictionaryItemDto{},
+				HasMore: false,
+			},
+		})
 		return
 	}
+
 
 	name, err := url.PathUnescape(c.Param("name"))
 	if err != nil {
@@ -284,7 +313,7 @@ func (h *DictionaryHandler) GetByResource(c *gin.Context) {
 	}
 
 	start := time.Now()
-	res, err := h.vocabularyService.GetLexemesByResourcePaginated(c.Request.Context(), userID, name, cursor, limit)
+	res, err := h.vocabularyService.GetLexemesByResourcePaginated(c.Request.Context(), *uid, name, cursor, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
@@ -302,12 +331,13 @@ func (h *DictionaryHandler) GetByResource(c *gin.Context) {
 }
 
 func (h *DictionaryHandler) GetAllGroups(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	uid := h.getOptionalUserId(c)
+	if uid == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.DictionaryGroup{}})
 		return
 	}
 
-	res, err := h.vocabularyService.GetVocabularyGroups(c.Request.Context(), userID)
+	res, err := h.vocabularyService.GetVocabularyGroups(c.Request.Context(), *uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
@@ -319,6 +349,7 @@ func (h *DictionaryHandler) GetAllGroups(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: res})
 }
+
 
 func (h *DictionaryHandler) GetRandomWord(c *gin.Context) {
 	userID, ok := h.getUserId(c)
@@ -353,24 +384,31 @@ func (h *DictionaryHandler) resolveLocation(c *gin.Context) *time.Location {
 }
 
 func (h *DictionaryHandler) GetStreak(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	userID := h.getOptionalUserId(c)
+	if userID == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: 0})
 		return
 	}
 
 	loc := h.resolveLocation(c)
-	streak := h.vocabularyService.CalculateStreak(c.Request.Context(), userID, loc)
+	streak := h.vocabularyService.CalculateStreak(c.Request.Context(), *userID, loc)
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: streak})
 }
 
 func (h *DictionaryHandler) GetDictionaryStats(c *gin.Context) {
-	userID, ok := h.getUserId(c)
-	if !ok {
+	userID := h.getOptionalUserId(c)
+	if userID == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: &dto.DictionaryStatsDto{
+				WeekDays: []bool{false, false, false, false, false, false, false},
+			},
+		})
 		return
 	}
 
 	loc := h.resolveLocation(c)
-	stats, err := h.vocabularyService.GetDictionaryStats(c.Request.Context(), userID, loc)
+	stats, err := h.vocabularyService.GetDictionaryStats(c.Request.Context(), *userID, loc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return

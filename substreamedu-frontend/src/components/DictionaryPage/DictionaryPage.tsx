@@ -24,6 +24,7 @@ import Layers from 'lucide-react/dist/esm/icons/layers';
 import X from 'lucide-react/dist/esm/icons/x';
 
 import { DictionaryService } from '../../services/DictionaryService';
+import { AuthService } from '../../services/AuthService';
 import { debugError } from '../../utils/debug';
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
@@ -182,6 +183,13 @@ const DictionaryPage: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            if (!AuthService.getUserEmail()) {
+                setResources([]);
+                setAllWords([]);
+                setStatus('success');
+                setIsLoadingWords(false);
+                return;
+            }
             setStatus('loading');
             try {
                 if (view.mode === 'groups') {

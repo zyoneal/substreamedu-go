@@ -200,5 +200,29 @@ func TestDownloadExternalSubtitle_Validation(t *testing.T) {
 	})
 }
 
+func TestGetAllSubtitles_GuestAllowed(t *testing.T) {
+	h := &MediaHandler{}
 
+	t.Run("Unauthenticated guest user gets 200 OK and empty list", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/subtitles", nil)
 
+		h.GetAllSubtitles(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetAllSubtitles must return 200 OK, not 401 Unauthorized")
+	})
+}
+
+func TestGetSubtitlesForVideo_GuestAllowed(t *testing.T) {
+	h := &MediaHandler{}
+
+	t.Run("Unauthenticated guest user gets 200 OK and empty list", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Params = gin.Params{{Key: "name", Value: "demo-video"}}
+		c.Request, _ = http.NewRequest("GET", "/subtitles/video/demo-video", nil)
+
+		h.GetSubtitlesForVideo(c)
+		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetSubtitlesForVideo must return 200 OK, not 401 Unauthorized")
+	})
+}

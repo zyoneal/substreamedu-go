@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState, useMemo, useCallback } 
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { SubtitleService, SubDLSubtitle, SubDLSearchResult, SubtitleWithScore, calculateSyncScore } from '../../services/SubtitleService';
 import { DictionaryService } from '../../services/DictionaryService';
+import { AuthService } from '../../services/AuthService';
 import { SubtitleSearchModal } from './components/SubtitleSearchModal';
 import { FilmSelectionModal } from './components/FilmSelectionModal';
 import { ReelGeneratorModal } from './components/ReelGeneratorModal';
@@ -2078,6 +2079,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const lastFetchedResourceRef = useRef<string | null>(null);
 
     const fetchDictionaryItemsForCards = useCallback(async (resourceId?: string, force: boolean = false) => {
+        if (!AuthService.getUserEmail()) {
+            setDictionaryItems([]);
+            return;
+        }
         const name = resourceId || fileName;
         if (!name) {
             debugLog('No fileName available for cards dictionary fetch');
