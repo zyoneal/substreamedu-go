@@ -784,6 +784,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                 if (!isExactMatch) {
                     debugLog('Multiple films found, showing selection modal:', response.results);
                     setAvailableFilms(response.results);
+                    setShowSubtitleSearchModal(false);
                     setShowFilmSelection(true);
                     setIsSearchingSubtitles(false);
                     showNotification(`Found ${response.results.length} matching titles. Please select the correct one.`);
@@ -872,6 +873,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     showNotification(`Found ${allSubtitles.length} subtitles. Sorted by ratings. Test manually.`);
                 }
 
+                setShowFilmSelection(false);
                 setAvailableSubtitles(allSubtitles);
                 setShowSubtitleSearchModal(true);
             } else {
@@ -886,6 +888,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                 }
 
                 // Open film selection modal so user can re-search with another query
+                setShowSubtitleSearchModal(false);
                 setSearchQueryForFilms(targetTitle);
                 setAvailableFilms(response.results || []);
                 setShowFilmSelection(true);
@@ -3442,6 +3445,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     onSelectSubtitle={handleSelectSubtitleFromSearch}
                     onQuickTest={handleQuickTest}
                     isLoading={isSearchingSubtitles}
+                    onSearchDifferentTitle={() => {
+                        setShowSubtitleSearchModal(false);
+                        setShowFilmSelection(true);
+                    }}
                 />
 
                 <FilmSelectionModal

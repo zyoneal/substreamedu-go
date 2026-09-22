@@ -5,6 +5,7 @@ import X from 'lucide-react/dist/esm/icons/x';
 import Download from 'lucide-react/dist/esm/icons/download';
 import Star from 'lucide-react/dist/esm/icons/star';
 import Zap from 'lucide-react/dist/esm/icons/zap';
+import Search from 'lucide-react/dist/esm/icons/search';
 import styles from './SubtitleSearchModal.module.css';
 
 interface SubtitleSearchModalProps {
@@ -14,6 +15,7 @@ interface SubtitleSearchModalProps {
     onSelectSubtitle: (subtitle: SubtitleWithScore) => void;
     onQuickTest?: (subtitle: SubtitleWithScore) => void;
     isLoading?: boolean;
+    onSearchDifferentTitle?: () => void;
 }
 
 export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
@@ -23,6 +25,7 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
     onSelectSubtitle,
     onQuickTest,
     isLoading = false,
+    onSearchDifferentTitle,
 }) => {
     if (!isOpen) return null;
 
@@ -54,6 +57,17 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
                         </p>
                     </div>
                     <div className={styles.headerActions}>
+                        {onSearchDifferentTitle && (
+                            <button
+                                type="button"
+                                onClick={onSearchDifferentTitle}
+                                className={styles.searchDifferentButton}
+                                title="Search for a different title"
+                            >
+                                <Search size={14} />
+                                <span>Change title</span>
+                            </button>
+                        )}
                         <button onClick={onClose} className={styles.closeButton} aria-label="Close">
                             <X className={styles.closeIcon} />
                         </button>

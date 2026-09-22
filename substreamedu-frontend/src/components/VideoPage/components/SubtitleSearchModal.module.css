@@ -87,6 +87,34 @@
     flex-shrink: 0;
 }
 
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.searchDifferentButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #1a1917;
+    border: 1px solid #282522;
+    border-radius: 8px;
+    color: #ede8e0;
+    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.searchDifferentButton:hover {
+    background: #282522;
+    border-color: #3d3934;
+    color: #faf92f;
+}
+
 .closeButton {
     padding: 10px;
     border-radius: 14px;
