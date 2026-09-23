@@ -1801,8 +1801,8 @@
     position: relative;
     line-height: 1.4;
     font-family: var(--font-body, 'e-Ukraine'), system-ui, -apple-system, sans-serif;
-    padding: 20px 20px 8px 20px;
-    max-height: 340px;
+    padding: 14px 16px 8px 16px;
+    max-height: 380px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -1858,13 +1858,13 @@
 .selectedText {
     color: #ffffff;
     font-weight: 700;
-    font-size: 1.75rem;
-    letter-spacing: -0.03em;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
     margin: 0;
     word-break: break-word;
     overflow-wrap: break-word;
     max-width: 100%;
-    line-height: 1.1;
+    line-height: 1.15;
 }
 
 .transcription {
@@ -4446,4 +4446,233 @@ video[playsinline] {
     font-size: 10px;
     font-weight: 500;
     color: var(--color-body, #9e988f);
+}
+
+/* ===============================================
+   Compact Minimalist Popover & Interactive Options (v3.1)
+   =============================================== */
+
+.mainTranslationRow {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 2px 0 3px 0;
+}
+
+.mainTranslationText {
+    font-size: 19px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.inlineBadges {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.posTagSm {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    font-size: 9.5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1.3;
+}
+
+.popoverDefinitionSubtitle {
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--color-body, #a8a29e);
+    line-height: 1.35;
+    margin: 2px 0 4px 0;
+}
+
+.compactUsageNote {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin: 4px 0;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: 6px;
+    border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.usageNoteIconSm {
+    color: var(--color-mute, #666360);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.compactUsageNoteText {
+    font-size: 11px;
+    color: var(--color-mute, #8a857e);
+    line-height: 1.35;
+    font-style: italic;
+}
+
+.optionsSection {
+    margin: 6px 0 4px 0;
+}
+
+.sectionHeaderSm {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-mute, #666360);
+    letter-spacing: 0.04em;
+    margin-bottom: 5px;
+}
+
+.optionsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.optionPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--color-ink, #ede8e0);
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+    outline: none;
+    font-family: inherit;
+}
+
+.optionPill:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+.optionPillActive {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.optionCheck {
+    font-size: 10px;
+    color: #4ade80;
+    font-weight: 700;
+}
+
+.optionPillText {
+    white-space: nowrap;
+}
+
+.optionRegisterTag {
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    text-transform: lowercase;
+    opacity: 0.85;
+}
+
+.optionAlsoTag {
+    font-size: 8.5px;
+    color: var(--color-mute, #78716c);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.chunksSectionCompact {
+    margin: 5px 0 3px 0;
+}
+
+.chunksListCompact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.chunkPill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    background: rgba(0, 69, 230, 0.08);
+    border: 1px solid rgba(0, 69, 230, 0.2);
+    border-radius: 6px;
+    color: #a0c4ff;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.chunkPill:hover {
+    background: rgba(0, 69, 230, 0.18);
+    border-color: rgba(0, 69, 230, 0.35);
+    transform: translateY(-1px);
+}
+
+.compactTagRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    margin: 3px 0;
+}
+
+.compactExamples {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin: 4px 0 2px 0;
+    font-size: 11px;
+    color: var(--color-body, #9e988f);
+    font-style: italic;
+    line-height: 1.35;
+}
+
+.compactExampleLabel {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-mute, #666360);
+    font-style: normal;
+}
+
+.compactExampleText {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.aiHintBoxCompact {
+    background-color: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 3px 0;
+    font-size: 11.5px;
+    color: #e8e8e8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.3;
 }

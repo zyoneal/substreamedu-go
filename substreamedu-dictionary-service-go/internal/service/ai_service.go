@@ -86,7 +86,7 @@ func (s *AIService) TranslateWithContext(ctx context.Context, req dto.Dictionary
 		resolvedSource = val
 	}
 
-	cacheKey := fmt.Sprintf("ai:translation:v3.0:%s:%s:%s", req.HighlightedText, req.FluentLanguage, req.Context)
+	cacheKey := fmt.Sprintf("ai:translation:v3.1:%s:%s:%s", req.HighlightedText, req.FluentLanguage, req.Context)
 	if s.redis != nil {
 		if val, err := s.redis.Get(ctx, cacheKey).Result(); err == nil {
 			s.logger.Info("AI Cache Hit", zap.String("key", cacheKey))
@@ -234,6 +234,15 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 	fmt.Fprintf(&sb, "Translate the %s highlighted %s \"%s\" into %s.\n\n", sourceLang, wordOrPhrase, text, targetLang)
 
 	sb.WriteString("CRITICAL RULES:\n")
+	sb.WriteString("MANDATORY SENSE COHERENCE (TRANSLATION & EXPLANATION MUST MATCH):\n")
+	sb.WriteString("1. 'translation' (in " + targetLang + ") and 'definition' (in English) MUST DESCRIBE THE EXACT SAME SENSE IN CONTEXT.\n")
+	sb.WriteString("2. 'translation' MUST be the natural " + targetLang + " translation of the specific CONTEXTUAL meaning, NEVER a literal or out-of-context word-for-word translation.\n")
+	sb.WriteString("   - Example: 'sudden death' in sports/competition/gaming context means 'решающий раунд' or 'игра до первого гола/очка' -> 'translation' MUST be 'решающий раунд' or 'игра до первого гола', NEVER medical 'внезапная смерть'.\n")
+	sb.WriteString("   - Example: 'strike' in baseball means 'страйк', in labor means 'забастовка', in combat means 'удар'. Choose the contextual meaning!\n")
+	sb.WriteString("3. If a word or phrase has literal or other unrelated meanings, NEVER put them in 'translation' — put them strictly into 'other_meanings' with an identifying label (e.g. 'внезапная смерть (медицинский термин)').\n")
+	sb.WriteString("4. 'definition' MUST be a concise English gloss (3-6 words) that directly explains 'translation' in this specific context.\n")
+	sb.WriteString("5. 'usage_note' MUST explain WHY this specific word/phrase is used in this context without contradicting 'translation' or 'definition'.\n\n")
+
 	if isSentenceMode {
 		sb.WriteString("!!! SENTENCE / LONG PHRASE MODE !!!\n")
 		sb.WriteString("1. The highlight is a SENTENCE or LONG PHRASE. Translate it naturally, idiomatically, and cohesively as a single complete unit into " + targetLang + ".\n")
@@ -252,28 +261,28 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 		sb.WriteString("4. TRANSCRIPTION: Provide exact, accurate IPA for the highlighted " + sourceLang + " text.\n")
 		sb.WriteString("5. VISUAL KEYWORD: Exactly ONE concrete, physically drawable English noun representing the specific contextual meaning (e.g., 'runner' for 'running', 'sword' for 'betrayal', 'gavel' for 'verdict'). Return \"\" for abstract or grammatical words (e.g., 'however', 'almost', 'because', 'furthermore').\n")
 		sb.WriteString("6. HINT & RECOMMENDED SELECTIONS: If \"" + text + "\" is part of a phrasal verb or idiom in the sentence, identify the complete expression in 'hint' and 'recommended_selections'. Otherwise MUST be empty (\"\" and []).\n")
-		sb.WriteString("7. CONTEXTUAL EXPLANATION (NEW):\n")
+		sb.WriteString("7. CONTEXTUAL EXPLANATION:\n")
 		sb.WriteString("   - 'register': formal|informal|slang|neutral|academic|literary — the sociolinguistic register of the word in this context.\n")
 		sb.WriteString("   - 'usage_note': 1 sentence explaining WHY this word is used here (e.g., \"Used to soften a refusal\" or \"Technical term in legal proceedings\").\n")
-		sb.WriteString("   - 'alternatives': 2-3 synonyms that could replace this word, each with its register. Format: [{\"text\": \"postpone\", \"register\": \"formal\", \"usage_note\": \"more formal, used in writing\"}].\n")
+		sb.WriteString("   - 'alternatives': 2-3 alternative translations into " + targetLang + " (or close contextual synonyms) that could replace this in context. Each MUST include its register and a brief English explanation note. Format: [{\"text\": \"string in " + targetLang + "\", \"register\": \"string\", \"usage_note\": \"brief note explaining this alternative\"}].\n")
 		sb.WriteString("   - 'chunks': Multi-word units (collocations, phrasal verbs, idioms) containing this word found in the context. E.g., for 'make' in 'make a decision': [\"make a decision\", \"make up your mind\"].\n")
 		sb.WriteString("   - 'typical_contexts': 2-3 typical situations/domains where this word is commonly used (e.g., [\"business meetings\", \"academic writing\", \"casual conversation\"]).\n\n")
 	} else {
 		sb.WriteString("!!! PHRASE MODE !!!\n")
-		sb.WriteString("1. Translate the phrase as a cohesive linguistic unit into " + targetLang + ".\n")
-		sb.WriteString("2. 'definition' must be a concise English meaning (3-6 words) for this specific usage.\n")
+		sb.WriteString("1. Translate the phrase as a cohesive linguistic unit into " + targetLang + " (matching its specific contextual sense).\n")
+		sb.WriteString("2. 'definition' must be a concise English meaning (3-6 words) for this specific contextual usage.\n")
 		sb.WriteString("3. 'visual_keyword': Single concrete drawable English noun representing the phrase, or \"\".\n")
 		sb.WriteString("4. If the phrase is part of a larger idiom/phrasal verb, include it in 'hint' and 'recommended_selections'. Otherwise empty.\n")
 		sb.WriteString("5. 'register': formal|informal|slang|neutral|academic|literary — the sociolinguistic register.\n")
 		sb.WriteString("6. 'usage_note': 1 sentence explaining WHY this phrase is used in this context.\n")
-		sb.WriteString("7. 'alternatives': 2-3 alternative expressions with register labels.\n")
+		sb.WriteString("7. 'alternatives': 2-3 alternative translations into " + targetLang + " with register labels and brief English explanation notes.\n")
 		sb.WriteString("8. 'typical_contexts': 2-3 domains/situations where this phrase is commonly used.\n")
 		sb.WriteString("9. 'chunks': If this phrase is part of a larger fixed expression, include it. Otherwise [].\n\n")
 	}
 
 	sb.WriteString("OUTPUT SCHEMA:\n")
 	sb.WriteString("{\n")
-	fmt.Fprintf(&sb, "  \"translation\": \"string\",  // %s translation of the highlighted text (in base lemma for single words)\n", targetLang)
+	fmt.Fprintf(&sb, "  \"translation\": \"string\",  // Natural %s translation of the contextual meaning (MUST match 'definition'; NEVER an uncontextual literal translation)\n", targetLang)
 	sb.WriteString("  \"definition\": \"string\",   // Concise English meaning (3-6 words) for this specific contextual usage\n")
 	fmt.Fprintf(&sb, "  \"transcription\": \"string\",  // IPA transcription of original %s text\n", sourceLang)
 	sb.WriteString("  \"partOfSpeech\": \"string\",   // noun|verb|adjective|adverb|preposition|conjunction|pronoun|interjection|phrase|idiom\n")
@@ -282,8 +291,8 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 	sb.WriteString("  \"usage_note\": \"string\",     // 1 sentence: WHY this word/phrase is used in this specific context\n")
 	sb.WriteString("  \"hint\": \"string\",           // Full idiom/phrasal verb if applicable (max 25 chars), otherwise \"\"\n")
 	sb.WriteString("  \"recommended_selections\": [\"string\"], // 1 contextually relevant larger unit (idiom/phrasal verb) or empty []\n")
-	sb.WriteString("  \"other_meanings\": [\"string\"],  // 2-3 alternative translations for other common senses of this word\n")
-	sb.WriteString("  \"alternatives\": [{\"text\": \"string\", \"register\": \"string\", \"usage_note\": \"string\"}], // 2-3 synonyms with register and brief note\n")
+	fmt.Fprintf(&sb, "  \"other_meanings\": [\"string\"],  // 2-3 alternative translations into %s for other senses (with qualifier in parentheses if applicable)\n", targetLang)
+	fmt.Fprintf(&sb, "  \"alternatives\": [{\"text\": \"string\", \"register\": \"string\", \"usage_note\": \"string\"}], // 2-3 alternative translations in %s with register and brief note\n", targetLang)
 	sb.WriteString("  \"chunks\": [\"string\"],        // Multi-word units (collocations, phrasal verbs, idioms) containing this word from context, or []\n")
 	sb.WriteString("  \"typical_contexts\": [\"string\"], // 2-3 situations/domains where this word is commonly used, or []\n")
 	sb.WriteString("  \"visual_keyword\": \"string\"   // Single concrete drawable English noun, or \"\"\n")

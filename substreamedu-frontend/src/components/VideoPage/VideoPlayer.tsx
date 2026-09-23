@@ -62,6 +62,7 @@ import {
     Subtitle as SubtitleType,
     DictionaryItem as DictionaryItemType,
     TranslationData as TranslationDataType,
+    TranslationOption,
     SelectionPosition as SelectionPositionType,
     ErrorResponse
 } from './types';
@@ -140,7 +141,103 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         alternatives: null,
         chunks: null,
         typicalContexts: null,
+        selectedOptionText: null,
     });
+
+    const originalTranslationRef = useRef<{
+        translation: string | null;
+        definition: string | null;
+        usageNote: string | null;
+        register: string | null;
+    }>({ translation: null, definition: null, usageNote: null, register: null });
+
+    const translationOptions = useMemo<TranslationOption[]>(() => {
+        const options: TranslationOption[] = [];
+        const seen = new Set<string>();
+
+        const primaryText = originalTranslationRef.current?.translation?.trim() || translationData.translation?.trim();
+        if (primaryText) {
+            seen.add(primaryText.toLowerCase());
+            options.push({
+                text: primaryText,
+                definition: originalTranslationRef.current?.definition || translationData.definition || undefined,
+                usageNote: originalTranslationRef.current?.usageNote || translationData.usageNote || undefined,
+                register: originalTranslationRef.current?.register || translationData.register || undefined,
+                isPrimary: true,
+                source: 'primary'
+            });
+        }
+
+        if (translationData.alternatives && translationData.alternatives.length > 0) {
+            translationData.alternatives.forEach(alt => {
+                const cleanText = alt.text?.trim();
+                if (cleanText && !seen.has(cleanText.toLowerCase())) {
+                    seen.add(cleanText.toLowerCase());
+                    options.push({
+                        text: cleanText,
+                        definition: alt.usageNote || undefined,
+                        usageNote: alt.usageNote || undefined,
+                        register: alt.register || undefined,
+                        isPrimary: false,
+                        source: 'alternative'
+                    });
+                }
+            });
+        }
+
+        if (translationData.otherMeanings && translationData.otherMeanings.length > 0) {
+            translationData.otherMeanings.forEach(meaning => {
+                if (!meaning) return;
+                const match = meaning.match(/^([^(]+)(?:\((.*)\))?$/);
+                const cleanText = match ? match[1].trim() : meaning.trim();
+                const note = match && match[2] ? match[2].trim() : undefined;
+
+                if (cleanText && !seen.has(cleanText.toLowerCase())) {
+                    seen.add(cleanText.toLowerCase());
+                    options.push({
+                        text: cleanText,
+                        definition: note || undefined,
+                        usageNote: note || undefined,
+                        register: undefined,
+                        isPrimary: false,
+                        source: 'also'
+                    });
+                }
+            });
+        }
+
+        return options;
+    }, [
+        translationData.alternatives,
+        translationData.otherMeanings,
+        translationData.translation,
+        translationData.definition,
+        translationData.usageNote,
+        translationData.register
+    ]);
+
+    const handleSelectOption = useCallback((opt: TranslationOption) => {
+        setTranslationData(prev => {
+            let newDefinition = opt.definition;
+            let newUsageNote = opt.usageNote;
+            let newRegister = opt.register;
+
+            if (opt.isPrimary && originalTranslationRef.current) {
+                newDefinition = originalTranslationRef.current.definition || newDefinition;
+                newUsageNote = originalTranslationRef.current.usageNote || newUsageNote;
+                newRegister = originalTranslationRef.current.register || newRegister;
+            }
+
+            return {
+                ...prev,
+                translation: opt.text,
+                definition: newDefinition || null,
+                usageNote: newUsageNote || null,
+                register: newRegister || null,
+                selectedOptionText: opt.text,
+            };
+        });
+    }, []);
 
     const [dictionaryItems, setDictionaryItems] = useState<DictionaryItem[]>([]);
 
@@ -1937,6 +2034,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
             if (originalResult) {
                 debugLog('Original translation result:', originalResult);
+                originalTranslationRef.current = {
+                    translation: originalResult.translation || null,
+                    definition: originalResult.definition || null,
+                    usageNote: originalResult.usage_note || null,
+                    register: originalResult.register || originalResult.style || null,
+                };
                 setTranslationData(prev => ({
                     ...prev,
                     translation: originalResult.translation || ' ',
@@ -1958,6 +2061,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     alternatives: originalResult.alternatives?.map(a => ({ text: a.text, register: a.register, usageNote: a.usage_note })) || null,
                     chunks: originalResult.chunks || null,
                     typicalContexts: originalResult.typical_contexts || null,
+                    selectedOptionText: originalResult.translation || null,
                 }));
             }
 
@@ -1987,6 +2091,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const resetPopoverState = useCallback(() => {
         setSelectedText(null);
         setSelectedSentence(null);
+        originalTranslationRef.current = {
+            translation: null,
+            definition: null,
+            usageNote: null,
+            register: null
+        };
         setTranslationData({
             translation: null,
             definition: null,
@@ -2007,6 +2117,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             alternatives: null,
             chunks: null,
             typicalContexts: null,
+            selectedOptionText: null,
         });
         setNote('');
         setIsLoading(false);
@@ -3078,23 +3189,45 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
                                 <div className={styles.popoverBody}>
                                     <div className={styles.popoverBodyText}>
-                                        {translationData.definition ? (
-                                            <div className={styles.definitionRow}>
+                                        {/* Prominent main translation in target language */}
+                                        {translationData.translation?.trim() && (
+                                            <div className={styles.mainTranslationRow}>
                                                 <span
-                                                    className={`${styles.translationText} ${(translationData.translation?.includes('could not translate') || translationData.translation?.includes('Error fetching translation')) ? styles.errorText : ''}`}>
-                                                    {translationData.definition}
-                                                    {translationData.translation?.trim() && (
-                                                        <span style={{ opacity: 0.5, fontSize: '0.9em' }}><br/>({translationData.translation})</span>
-                                                    )}
+                                                    className={`${styles.mainTranslationText} ${(translationData.translation?.includes('could not translate') || translationData.translation?.includes('Error fetching translation')) ? styles.errorText : ''}`}
+                                                >
+                                                    {translationData.translation}
                                                 </span>
+                                                {(translationData.partOfSpeech || translationData.register) && (
+                                                    <div className={styles.inlineBadges}>
+                                                        {translationData.partOfSpeech && (
+                                                            <span className={styles.posTagSm}>{translationData.partOfSpeech}</span>
+                                                        )}
+                                                        {translationData.register && (
+                                                            <span className={`${styles.registerBadgeSm} ${styles[`register_${translationData.register}`] || ''}`}>
+                                                                {translationData.register}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
-                                        ) : (
-                                            translationData.translation?.trim() && (
-                                                <div className={styles.translationRow}>
-                                                    <span
-                                                        className={`${styles.translationText} ${(translationData.translation?.includes('could not translate') || translationData.translation?.includes('Error fetching translation')) ? styles.errorText : ''}`}>{translationData.translation}</span>
-                                                </div>
-                                            )
+                                        )}
+
+                                        {/* Strictly matched concise explanation / definition */}
+                                        {translationData.definition && translationData.definition.trim() !== '' && translationData.definition !== translationData.translation && (
+                                            <div className={styles.popoverDefinitionSubtitle}>
+                                                {translationData.definition}
+                                            </div>
+                                        )}
+
+                                        {/* Context nuance if distinct from definition */}
+                                        {translationData.usageNote &&
+                                         translationData.usageNote.trim() !== '' &&
+                                         translationData.usageNote !== translationData.definition &&
+                                         !translationData.definition?.toLowerCase().includes(translationData.usageNote.toLowerCase().slice(0, 15)) && (
+                                            <div className={styles.compactUsageNote}>
+                                                <MessageCircle size={11} className={styles.usageNoteIconSm} />
+                                                <span className={styles.compactUsageNoteText}>{translationData.usageNote}</span>
+                                            </div>
                                         )}
                                     </div>
 
@@ -3143,62 +3276,62 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
                                     return (
                                         <>
-                                            {/* Register badge + Part of Speech */}
-                                            {(data.register || translationData.partOfSpeech) && (
-                                                <div className={styles.registerRow}>
-                                                    {translationData.partOfSpeech && (
-                                                        <span className={styles.posTag}>{translationData.partOfSpeech}</span>
-                                                    )}
-                                                    {data.register && (
-                                                        <span className={`${styles.registerBadge} ${styles[`register_${data.register}`] || ''}`}>
-                                                            {data.register}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {/* Usage Note — WHY this word is used here */}
-                                            {data.usageNote && (
-                                                <div className={styles.usageNoteSection}>
-                                                    <MessageCircle size={13} className={styles.usageNoteIcon} />
-                                                    <span className={styles.usageNoteText}>{data.usageNote}</span>
-                                                </div>
-                                            )}
-
                                             {bestMatch && (
-                                                <div className={styles.aiHintBox}>
-                                                    <span className={styles.aiHintIcon}><Lightbulb size={16} className="text-primary" /></span>
+                                                <div className={styles.aiHintBoxCompact}>
+                                                    <Lightbulb size={12} className="text-primary flex-shrink-0" />
                                                     <span className={styles.aiHintText}>{bestMatch}</span>
                                                 </div>
                                             )}
 
-                                            {data.examples && data.examples.length > 0 && (
-                                                <div className={styles.exampleContainer}>
-                                                    <div className={styles.exampleLabel}>Examples</div>
-                                                    <div className={styles.exampleList}>
-                                                        {data.examples.slice(0, 2).map((example, idx) => (
-                                                            <div key={idx} className={styles.exampleItem}>
-                                                                {example}
-                                                            </div>
-                                                        ))}
+                                            {/* Interactive Options & Alternatives Pill Grid */}
+                                            {translationOptions.length > 1 && (
+                                                <div className={styles.optionsSection}>
+                                                    <div className={styles.sectionHeaderSm}>
+                                                        <BookOpen size={11} className={styles.sectionHeaderIcon} />
+                                                        <span>Alternatives & Meanings</span>
+                                                    </div>
+                                                    <div className={styles.optionsList}>
+                                                        {translationOptions.map((opt, idx) => {
+                                                            const isSelected = (translationData.translation?.trim().toLowerCase() === opt.text.trim().toLowerCase());
+                                                            return (
+                                                                <button
+                                                                    key={idx}
+                                                                    type="button"
+                                                                    className={`${styles.optionPill} ${isSelected ? styles.optionPillActive : ''}`}
+                                                                    onClick={() => handleSelectOption(opt)}
+                                                                    title={opt.usageNote || opt.definition || opt.text}
+                                                                >
+                                                                    {isSelected && <span className={styles.optionCheck}>✓</span>}
+                                                                    <span className={styles.optionPillText}>{opt.text}</span>
+                                                                    {opt.register && (
+                                                                        <span className={`${styles.optionRegisterTag} ${styles[`register_${opt.register}`] || ''}`}>
+                                                                            {opt.register}
+                                                                        </span>
+                                                                    )}
+                                                                    {opt.source === 'also' && !isSelected && (
+                                                                        <span className={styles.optionAlsoTag}>also</span>
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
                                             )}
 
                                             {/* Chunks — multi-word units (collocations, phrasal verbs, idioms) */}
                                             {data.chunks && data.chunks.length > 0 && (
-                                                <div className={styles.chunksSection}>
-                                                    <div className={styles.sectionHeader}>
-                                                        <Layers size={13} className={styles.sectionHeaderIcon} />
+                                                <div className={styles.chunksSectionCompact}>
+                                                    <div className={styles.sectionHeaderSm}>
+                                                        <Layers size={11} className={styles.sectionHeaderIcon} />
                                                         <span>Chunks</span>
                                                     </div>
-                                                    <div className={styles.chunksList}>
+                                                    <div className={styles.chunksListCompact}>
                                                         {data.chunks.slice(0, 4).map((chunk, idx) => (
-                                                            <span
+                                                            <button
                                                                 key={idx}
-                                                                className={`${styles.tagChip} ${styles.chunkChip}`}
+                                                                type="button"
+                                                                className={styles.chunkPill}
                                                                 onClick={() => {
-                                                                    // Re-translate the full chunk
                                                                     if (selectedSentence) {
                                                                         setSelectedText(chunk);
                                                                         setIsLoading(true);
@@ -3209,76 +3342,47 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                                                 title={`Translate "${chunk}" as a unit`}
                                                             >
                                                                 {chunk}
-                                                            </span>
+                                                            </button>
                                                         ))}
                                                     </div>
                                                 </div>
                                             )}
 
-                                            {/* Alternatives — synonyms with register labels */}
-                                            {data.alternatives && data.alternatives.length > 0 && (
-                                                <div className={styles.alternativesSection}>
-                                                    <div className={styles.sectionHeader}>
-                                                        <BookOpen size={13} className={styles.sectionHeaderIcon} />
-                                                        <span>Alternatives</span>
-                                                    </div>
-                                                    <div className={styles.alternativesList}>
-                                                        {data.alternatives.slice(0, 3).map((alt, idx) => (
-                                                            <div key={idx} className={styles.alternativeItem}>
-                                                                <span className={styles.alternativeText}>{alt.text}</span>
-                                                                {alt.register && (
-                                                                    <span className={`${styles.registerBadgeSm} ${styles[`register_${alt.register}`] || ''}`}>
-                                                                        {alt.register}
-                                                                    </span>
-                                                                )}
-                                                                {alt.usageNote && (
-                                                                    <span className={styles.alternativeNote}>{alt.usageNote}</span>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                            {/* Tags row: Synonyms & Collocations */}
+                                            {(((data.synonyms && data.synonyms.length > 0)) || ((data.collocations && data.collocations.length > 0))) && (
+                                                <div className={styles.tagGroup}>
+                                                    {data.synonyms && data.synonyms.length > 0 && (
+                                                        <div className={styles.compactTagRow}>
+                                                            <span className={styles.tagLabel}>Syn:</span>
+                                                            {data.synonyms.slice(0, 3).map((syn, idx) => (
+                                                                <span key={idx} className={styles.tagChip}>{syn}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {data.collocations && data.collocations.length > 0 && (
+                                                        <div className={styles.compactTagRow}>
+                                                            <span className={styles.tagLabel}>Use with:</span>
+                                                            {data.collocations.slice(0, 3).map((collocation, idx) => (
+                                                                <span key={idx} className={`${styles.tagChip} ${styles.tagChipContrast}`}>{collocation}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
 
-                                            <div className={styles.tagGroup}>
-                                                {data.synonyms && data.synonyms.length > 0 && (
-                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                                                        <span className={styles.tagLabel}>Syn:</span>
-                                                        {data.synonyms.slice(0, 3).map((syn, idx) => (
-                                                            <span key={idx} className={styles.tagChip}>{syn}</span>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                            {/* Examples — 1 compact item */}
+                                            {data.examples && data.examples.length > 0 && (
+                                                <div className={styles.compactExamples}>
+                                                    <span className={styles.compactExampleLabel}>Ex:</span>
+                                                    <span className={styles.compactExampleText}>"{data.examples[0]}"</span>
+                                                </div>
+                                            )}
 
-                                                {data.otherMeanings && data.otherMeanings.length > 0 && (
-                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                                                        <span className={styles.tagLabel}>Also:</span>
-                                                        {data.otherMeanings.slice(0, 3).map((meaning, idx) => (
-                                                            <span
-                                                                key={idx}
-                                                                className={`${styles.tagChip} ${styles.tagChipContrast} ${styles.tagChipInteractive}`}
-                                                                onClick={() => setTranslationData(prev => ({ ...prev, translation: meaning }))}
-                                                            >
-                                                                {meaning}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {data.collocations && data.collocations.length > 0 && (
-                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                                                        <span className={styles.tagLabel}>Use with:</span>
-                                                        {data.collocations.slice(0, 3).map((collocation, idx) => (
-                                                            <span key={idx} className={`${styles.tagChip} ${styles.tagChipContrast}`}>{collocation}</span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Typical Contexts — where this word is commonly used */}
+                                            {/* Typical Contexts */}
                                             {data.typicalContexts && data.typicalContexts.length > 0 && (
-                                                <div className={styles.typicalContextsSection}>
-                                                    <span className={styles.typicalContextsLabel}>Common in:</span>
+                                                <div className={styles.compactTagRow} style={{ paddingTop: '2px' }}>
+                                                    <span className={styles.tagLabel}>In:</span>
                                                     {data.typicalContexts.slice(0, 3).map((ctx, idx) => (
                                                         <span key={idx} className={styles.typicalContextTag}>{ctx}</span>
                                                     ))}

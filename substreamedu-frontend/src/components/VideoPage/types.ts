@@ -50,12 +50,22 @@ export interface TranslationData {
     collocations: string[] | null;
     recommendedSelections: string[] | null;
     minimalUnit: string | null;
-    // Contextual explanation fields (v3.0)
+    // Contextual explanation fields (v3.0 & v3.1)
     register: string | null;
     usageNote: string | null;
     alternatives: Array<{ text: string; register?: string; usageNote?: string }> | null;
     chunks: string[] | null;
     typicalContexts: string[] | null;
+    selectedOptionText?: string | null;
+}
+
+export interface TranslationOption {
+    text: string;
+    definition?: string;
+    usageNote?: string;
+    register?: string;
+    isPrimary?: boolean;
+    source: 'primary' | 'alternative' | 'also';
 }
 
 export const INITIAL_TRANSLATION_DATA: TranslationData = {
@@ -78,6 +88,7 @@ export const INITIAL_TRANSLATION_DATA: TranslationData = {
     alternatives: null,
     chunks: null,
     typicalContexts: null,
+    selectedOptionText: null,
 };
 
 export interface ReverseTranslation {
