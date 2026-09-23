@@ -38,7 +38,6 @@ import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
 import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
 import BookOpen from 'lucide-react/dist/esm/icons/book-open';
-import MessageCircle from 'lucide-react/dist/esm/icons/message-circle';
 import Layers from 'lucide-react/dist/esm/icons/layers';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import GraduationCap from 'lucide-react/dist/esm/icons/graduation-cap';
@@ -3216,17 +3215,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         {translationData.definition && translationData.definition.trim() !== '' && translationData.definition !== translationData.translation && (
                                             <div className={styles.popoverDefinitionSubtitle}>
                                                 {translationData.definition}
-                                            </div>
-                                        )}
-
-                                        {/* Context nuance if distinct from definition */}
-                                        {translationData.usageNote &&
-                                         translationData.usageNote.trim() !== '' &&
-                                         translationData.usageNote !== translationData.definition &&
-                                         !translationData.definition?.toLowerCase().includes(translationData.usageNote.toLowerCase().slice(0, 15)) && (
-                                            <div className={styles.compactUsageNote}>
-                                                <MessageCircle size={11} className={styles.usageNoteIconSm} />
-                                                <span className={styles.compactUsageNoteText}>{translationData.usageNote}</span>
                                             </div>
                                         )}
                                     </div>

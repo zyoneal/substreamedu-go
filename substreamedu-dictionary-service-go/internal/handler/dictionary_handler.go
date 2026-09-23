@@ -558,9 +558,17 @@ func (h *DictionaryHandler) mapCompatibilityFields(response *dto.TranslationProd
 		}
 	}
 
-	// Fallback: populate register from style if LLM only returned style
+	// Compatibility fallback for Hint: populate from RecommendedSelections[0]
+	if response.Hint == "" && len(response.RecommendedSelections) > 0 {
+		response.Hint = response.RecommendedSelections[0]
+	}
+
+	// Bi-directional compatibility fallback for Register and Style
 	if response.Register == "" && response.Style != "" {
 		response.Register = response.Style
+	}
+	if response.Style == "" && response.Register != "" {
+		response.Style = response.Register
 	}
 
 	// Promote context_analysis.collocations into top-level chunks when chunks is empty

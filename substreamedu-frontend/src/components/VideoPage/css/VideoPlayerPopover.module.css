@@ -4498,30 +4498,6 @@ video[playsinline] {
     margin: 2px 0 4px 0;
 }
 
-.compactUsageNote {
-    display: flex;
-    align-items: flex-start;
-    gap: 5px;
-    margin: 4px 0;
-    padding: 4px 8px;
-    background: rgba(255, 255, 255, 0.025);
-    border-radius: 6px;
-    border-left: 2px solid rgba(255, 255, 255, 0.12);
-}
-
-.usageNoteIconSm {
-    color: var(--color-mute, #666360);
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.compactUsageNoteText {
-    font-size: 11px;
-    color: var(--color-mute, #8a857e);
-    line-height: 1.35;
-    font-style: italic;
-}
-
 .optionsSection {
     margin: 6px 0 4px 0;
 }
