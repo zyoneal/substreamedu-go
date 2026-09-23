@@ -295,6 +295,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         isFullscreen,
         showControls,
         playbackError,
+        safePlay,
         togglePlayPause,
         pauseVideo,
         playVideo,
@@ -466,6 +467,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         }
         if (videoRef.current) {
             videoRef.current.currentTime = 0;
+            if (videoUrl && videoRef.current.src !== videoUrl) {
+                videoRef.current.load();
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [videoUrl, videoId]);
@@ -2175,13 +2179,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             }
             else if (videoRef.current) {
                 if (videoRef.current.paused) {
-                    videoRef.current.play();
+                    playVideo();
                 } else {
-                    videoRef.current.pause();
+                    pauseVideo();
                 }
             }
         }
-    }, [videoId, youtubePlayerRef, videoRef, resetPopoverState, toggleMaxFit]);
+    }, [videoId, youtubePlayerRef, videoRef, playVideo, pauseVideo, resetPopoverState, toggleMaxFit]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -2226,7 +2230,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             const repeatLoop = () => {
                 if (videoRef.current && currentRepeat < repeatCount) {
                     videoRef.current.currentTime = startTimeMs / 1000;
-                    videoRef.current.play();
+                    safePlay();
 
                     videoRef.current.ontimeupdate = () => {
                         if (videoRef.current && videoRef.current?.currentTime >= endTimeMs / 1000) {
@@ -2548,8 +2552,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                     </div>
                                 ) : (
                                     <video
-                                        key={videoUrl}
                                         ref={videoRef}
+                                        src={videoUrl}
                                         className={`${styles.videoPlayer} ${isFullscreen ? styles.fullscreenVideoMode : ''}`}
                                         playsInline
                                         autoPlay
@@ -2569,7 +2573,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             objectFit: 'contain'
                                         } : undefined}
                                     >
-                                        <source src={videoUrl} />
                                         Your browser does not support the video tag.
                                     </video>
                                 )}
@@ -2581,15 +2584,22 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                             <h3>
                                                 {playbackError === 'codec_unsupported'
                                                     ? 'Video Codec Unsupported'
-                                                    : 'Playback Error'}
+                                                    : (sessionStorage.getItem('videoSource') === 'googledrive' || (videoUrl && videoUrl.includes('drive.google.com')))
+                                                        ? 'Google Drive Video Playback Error'
+                                                        : 'Playback Error'}
                                             </h3>
                                             <p>
                                                 {playbackError === 'codec_unsupported'
                                                     ? 'Your device (likely Chromebook) cannot decode this specific MP4/MKV video track. Only audio is playing.'
-                                                    : 'An error occurred while trying to play this video.'}
+                                                    : (sessionStorage.getItem('videoSource') === 'googledrive' || (videoUrl && videoUrl.includes('drive.google.com')))
+                                                        ? 'The video could not be streamed from Google Drive. Ensure the file sharing is set to "Anyone with the link can view", the file is an MP4/WebM video, and daily download limits are not exceeded.'
+                                                        : 'An error occurred while trying to play this video.'}
                                             </p>
                                             <div className={styles.playbackErrorAdvice}>
-                                                <strong>Tip:</strong> Try converting the file to <strong>MP4 (H.264)</strong> or <strong>WebM</strong> for better compatibility.
+                                                <strong>Tip:</strong>{' '}
+                                                {(sessionStorage.getItem('videoSource') === 'googledrive' || (videoUrl && videoUrl.includes('drive.google.com')))
+                                                    ? 'Check Google Drive sharing settings (Right click file → Share → "Anyone with the link").'
+                                                    : 'Try converting the file to MP4 (H.264) or WebM for better compatibility.'}
                                             </div>
                                             <button
                                                 className={styles.minimalistButton}

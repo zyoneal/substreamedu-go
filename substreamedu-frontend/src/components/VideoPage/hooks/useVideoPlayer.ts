@@ -39,6 +39,7 @@ export interface UseVideoPlayerReturn {
     youtubePlayerRef: React.MutableRefObject<YouTubePlayer | null>;
 
     
+    safePlay: () => void;
     togglePlayPause: () => void;
     pauseVideo: () => void;
     playVideo: () => void;
@@ -97,6 +98,42 @@ export const useVideoPlayer = (options: UseVideoPlayerOptions): UseVideoPlayerRe
     const videoWrapperRef = useRef<HTMLDivElement>(null);
     const youtubePlayerRef = useRef<YouTubePlayer | null>(null);
 
+    const safePlay = useCallback(() => {
+        if (!videoRef.current) return;
+        try {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch((err: unknown) => {
+                    // AbortError is normal when play() is interrupted by pause, src change, or DOM removal
+                    // NotAllowedError is normal when browser autoplay policy blocks unmuted audio
+                    if (err instanceof Error && (err.name === 'AbortError' || err.name === 'NotAllowedError')) {
+                        return;
+                    }
+                    debugError("Video playback failed:", err);
+                });
+            }
+        } catch (err: unknown) {
+            if (err instanceof Error && (err.name === 'AbortError' || err.name === 'NotAllowedError')) {
+                return;
+            }
+            debugError("Synchronous video playback error:", err);
+        }
+    }, []);
+
+    // Gracefully pause video element on hook unmount to prevent dangling play promises
+    useEffect(() => {
+        const videoElement = videoRef.current;
+        return () => {
+            if (videoElement && typeof videoElement.pause === 'function') {
+                try {
+                    videoElement.pause();
+                } catch {
+                    // Ignore pause failure during unmount
+                }
+            }
+        };
+    }, []);
+
     
     const pauseVideo = useCallback(() => {
         if (videoId && youtubePlayerRef.current) {
@@ -112,10 +149,10 @@ export const useVideoPlayer = (options: UseVideoPlayerOptions): UseVideoPlayerRe
         if (videoId && youtubePlayerRef.current) {
             youtubePlayerRef.current.playVideo();
         } else if (videoRef.current) {
-            videoRef.current.play().catch(debugError);
+            safePlay();
         }
         setIsPlaying(true);
-    }, [videoId, isPopoverOpen]);
+    }, [videoId, isPopoverOpen, safePlay]);
 
     const pauseVideoFromClick = useCallback(() => {
         pauseVideo();
@@ -432,7 +469,7 @@ export const useVideoPlayer = (options: UseVideoPlayerOptions): UseVideoPlayerRe
         videoWrapperRef,
         youtubePlayerRef,
 
-        
+        safePlay,
         togglePlayPause,
         pauseVideo,
         playVideo,

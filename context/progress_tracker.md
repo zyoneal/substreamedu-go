@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Resilient HTML5 Video Playback Lifecycle & Elimination of Google Drive AbortError (ADR-060)
   - Custom Movie/Series Title for Google Drive Videos & Interactive Subtitle Search (ADR-059)
   - Resilient Google Drive Video Loading & Unresponsive GoogleDriveButton Fix (ADR-058)
   - Guest Demo Mode & 401 Graceful Degradation (ADR-057)
@@ -39,6 +40,7 @@
 
 | ADR ID | Date | Decision | Rationale | Impact |
 | :--- | :--- | :--- | :--- | :--- |
+| **ADR-060** | 2026-09-23 | Resilient HTML5 Video Playback Lifecycle & Elimination of Google Drive AbortError | Google Drive video load previously triggered "AbortError: The play() request was interrupted because the media was removed from the document." Root causes: (1) `<video key={videoUrl}><source src={videoUrl} /></video>` forced React to destroy and unmount the DOM element on URL changes while play() was in-flight; (2) `useVideoPlayer` and `VideoPlayer` called `video.play()` without catching or gracefully handling DOMException `AbortError` and `NotAllowedError`, routing normal interruptions to `console.error`; (3) `VideoPlayer` unmounted without pausing in-flight playback; (4) Spacebar and repeat subtitle loops invoked unhandled raw `video.play()`. | (1) Removed `key={videoUrl}` from `<video>` and passed `src={videoUrl}` directly, preserving DOM element across URL updates; (2) Created `safePlay` wrapper in `useVideoPlayer` suppressing benign `AbortError` and `NotAllowedError`; (3) Added unmount pause cleanup in `useVideoPlayer`; (4) Replaced raw `play()` in Spacebar handler with `playVideo()`/`pauseVideo()` and repeat loops with `safePlay()`; (5) Added contextual Google Drive sharing instructions in `playbackErrorOverlay`. 25 test suites (131 tests) pass, production build verified code 0. |
 | **ADR-001** | 2026-09-11 | Adopt Spec-Driven Development (SDD) via `/context/` System | Prevent AI context drift and unintended cross-boundary code modifications. | All AI agents must follow `/context/ai_workflow_rules.md` and read `AGENTS.md`. |
 | **ADR-002** | 2026-09-11 | Standardize on `golang-migrate` across all Go Services | Unify database migration approach; replace ad-hoc `ALTER TABLE` in `InitSchema()` and unversioned SQL loops. | Predictable, reversible schema state with `schema_migrations` tracking tables in all DBs. |
 | **ADR-003** | 2026-09-11 | Strict JWT Authorization on Mutations | Eliminate IDOR vulnerabilities (`/api/users/:userId`) and unauthenticated subtitle/dictionary mutations (`?userId=...`). | Token verification required on all mutation endpoints; `userId` extracted strictly from validated claims. |
@@ -102,6 +104,23 @@
 ---
 
 ## Session Notes
+- **Resilient HTML5 Video Playback Lifecycle & Elimination of Google Drive AbortError (Completed 2026-09-23)**:
+  - Investigated and resolved user error: `AbortError: The play() request was interrupted because the media was removed from the document. https://goo.gl/LdLk22 после загрузки видео по ссылке с гугдрайв`.
+  - Root causes identified:
+    1. `<video key={videoUrl}><source src={videoUrl} /></video>`: Using `key={videoUrl}` forced React to unmount and destroy the `<video>` element on URL changes while asynchronous `play()` promises were pending, triggering Chromium's `HTMLMediaElement::RemovedFrom` AbortError rejection.
+    2. Lack of DOMException handling on `video.play()`: In `useVideoPlayer.ts`, `videoRef.current.play().catch(debugError)` directly channeled benign browser interruptions (`AbortError`, `NotAllowedError`) into `debugError` (`console.error`), causing false alarm error logging.
+    3. Unhandled raw `.play()` calls in `VideoPlayer.tsx`: Spacebar shortcut and `repeatSubtitle` loops invoked `videoRef.current.play()` without Promise `.catch()` handlers.
+    4. Unmount cleanup omission: When switching videos or navigating away, `VideoPlayer` unmounted without explicitly pausing in-flight video playback.
+  - Engineering solutions implemented:
+    - Created `safePlay` wrapper in `useVideoPlayer.ts`: gracefully captures and suppresses benign `AbortError` (interrupted by pause, source change, or DOM unmount) and `NotAllowedError` (autoplay restrictions) while continuing to report true decoding and network playback errors.
+    - Updated `VideoPlayer.tsx` to mount `<video ref={videoRef} src={videoUrl} ...>` without `key={videoUrl}`, maintaining element stability in the DOM and updating the media stream via native `src` attribute assignment.
+    - Added unmount cleanup hook in `useVideoPlayer.ts` safely pausing active playback when components unmount.
+    - Standardized keyboard Spacebar shortcut and repeat loops to route through `playVideo()` / `pauseVideo()` and `safePlay()`.
+    - Added contextual troubleshooting in `playbackErrorOverlay` for Google Drive sources ("Anyone with the link can view", MP4 format check).
+  - Verification:
+    - Created seam unit test suite `useVideoPlayer.test.ts` (100% passing) verifying suppression of `AbortError` and `NotAllowedError` and logging of authentic errors.
+    - Full test suite verified: 25 test suites, 131 tests passing cleanly.
+    - Production build verified: `npm run build` exits 0 with zero lint errors.
 - **Custom Movie/Series Title for Google Drive Videos & Interactive Subtitle Search (Completed 2026-09-23)**:
   - Solved user report where subtitle search queried `filmName=Google+Drive+Video` because Google Drive links lacked an explicit title.
   - Resolved modal overlap collision: When typing a query (e.g. "cars 3"), `searchSubtitlesForVideo` fetched subtitles and opened `SubtitleSearchModal` without closing `FilmSelectionModal`. Because both modals shared `z-index: 2000`, the empty `FilmSelectionModal` ("No results found for 'cars 3'") was rendered in front of the actual subtitles list.
