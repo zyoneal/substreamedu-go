@@ -10,6 +10,11 @@ import { VideoControlsOverlay } from './components/VideoControlsOverlay';
 import { SubtitleOverlay } from './components/SubtitleOverlay';
 import { useSubtitleSearch } from './hooks/useSubtitleSearch';
 import { useVideoKeyboardShortcuts } from './hooks/useVideoKeyboardShortcuts';
+import { useSubtitleTranslation } from './hooks/useSubtitleTranslation';
+import {
+    formatSubtitleForDisplay,
+    renderHighlightedSubtitle,
+} from './utils/subtitleHighlightUtils';
 import { extractVideoNameFromUrl, formatSrtTimestamp } from './utils/subtitleSearchUtils';
 import {
     detectGrammarInText,
@@ -17,7 +22,7 @@ import {
     DetectedGrammarPoint
 } from '../../utils/grammarDetector';
 import { parseSRT } from '../../utils/srtParser';
-import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleCleaner';
+import { cleanSubtitleText } from '../../utils/subtitleCleaner';
 import { stitchSubtitleSentences } from '../../utils/subtitleSentenceStitcher';
 import styles from "../../components/VideoPage/css/VideoPlayerPopover.module.css";
 import { LanguageContext } from "../LanguageContext";
@@ -32,11 +37,8 @@ import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
 import MobileHint from '../shared/MobileHint';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
-import { useSaveWord, SaveWordData, SaveWordContext, useUserDictionaryItemsLight } from '../../hooks/useDictionary';
-import { useQueryClient } from '@tanstack/react-query';
+import { useUserDictionaryItemsLight } from '../../hooks/useDictionary';
 import { OnboardingGuideBar, OnboardingStep } from './components/OnboardingGuideBar';
-
-import { AxiosError } from 'axios';
 
 import { debugLog, debugError } from '../../utils/debug';
 
@@ -45,10 +47,6 @@ import { useVideoPlayer } from './hooks/useVideoPlayer';
 import {
     Subtitle as SubtitleType,
     DictionaryItem as DictionaryItemType,
-    TranslationData as TranslationDataType,
-    TranslationOption,
-    SelectionPosition as SelectionPositionType,
-    ErrorResponse
 } from './types';
 
 
@@ -66,8 +64,6 @@ interface VideoPlayerProps {
 
 type Subtitle = SubtitleType;
 type DictionaryItem = DictionaryItemType;
-type TranslationData = TranslationDataType;
-type SelectionPosition = SelectionPositionType;
 
 declare global {
     interface Window {
@@ -103,139 +99,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const [videoFileName, setVideoFileName] = useState<string>('');
     const [selectedSubtitle, setSelectedSubtitle] = useState<string | null>(null);
     const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
-    const [selectedText, setSelectedText] = useState<string | null>(null);
-    const [selectedSentence, setSelectedSentence] = useState<string | null>(null);
-    const [translationData, setTranslationData] = useState<TranslationData>({
-        translation: null,
-        definition: null,
-        imageUrl: null,
-        showImage: true,
-        transcription: null,
-        hint: null,
-        examples: null,
-        synonyms: null,
-        style: null,
-        partOfSpeech: null,
-        otherMeanings: null,
-        collocations: null,
-        recommendedSelections: null,
-        minimalUnit: null,
-        register: null,
-        usageNote: null,
-        alternatives: null,
-        chunks: null,
-        typicalContexts: null,
-        selectedOptionText: null,
-    });
-
-    const originalTranslationRef = useRef<{
-        translation: string | null;
-        definition: string | null;
-        usageNote: string | null;
-        register: string | null;
-    }>({ translation: null, definition: null, usageNote: null, register: null });
-
-    const translationOptions = useMemo<TranslationOption[]>(() => {
-        const options: TranslationOption[] = [];
-        const seen = new Set<string>();
-
-        const primaryText = originalTranslationRef.current?.translation?.trim() || translationData.translation?.trim();
-        if (primaryText) {
-            seen.add(primaryText.toLowerCase());
-            options.push({
-                text: primaryText,
-                definition: originalTranslationRef.current?.definition || translationData.definition || undefined,
-                usageNote: originalTranslationRef.current?.usageNote || translationData.usageNote || undefined,
-                register: originalTranslationRef.current?.register || translationData.register || undefined,
-                isPrimary: true,
-                source: 'primary'
-            });
-        }
-
-        if (translationData.alternatives && translationData.alternatives.length > 0) {
-            translationData.alternatives.forEach(alt => {
-                const cleanText = alt.text?.trim();
-                if (cleanText && !seen.has(cleanText.toLowerCase())) {
-                    seen.add(cleanText.toLowerCase());
-                    options.push({
-                        text: cleanText,
-                        definition: alt.usageNote || undefined,
-                        usageNote: alt.usageNote || undefined,
-                        register: alt.register || undefined,
-                        isPrimary: false,
-                        source: 'alternative'
-                    });
-                }
-            });
-        }
-
-        if (translationData.otherMeanings && translationData.otherMeanings.length > 0) {
-            translationData.otherMeanings.forEach(meaning => {
-                if (!meaning) return;
-                const match = meaning.match(/^([^(]+)(?:\((.*)\))?$/);
-                const cleanText = match ? match[1].trim() : meaning.trim();
-                const note = match && match[2] ? match[2].trim() : undefined;
-
-                if (cleanText && !seen.has(cleanText.toLowerCase())) {
-                    seen.add(cleanText.toLowerCase());
-                    options.push({
-                        text: cleanText,
-                        definition: note || undefined,
-                        usageNote: note || undefined,
-                        register: undefined,
-                        isPrimary: false,
-                        source: 'also'
-                    });
-                }
-            });
-        }
-
-        return options;
-    }, [
-        translationData.alternatives,
-        translationData.otherMeanings,
-        translationData.translation,
-        translationData.definition,
-        translationData.usageNote,
-        translationData.register
-    ]);
-
-    const handleSelectOption = useCallback((opt: TranslationOption) => {
-        setTranslationData(prev => {
-            let newDefinition = opt.definition;
-            let newUsageNote = opt.usageNote;
-            let newRegister = opt.register;
-
-            if (opt.isPrimary && originalTranslationRef.current) {
-                newDefinition = originalTranslationRef.current.definition || newDefinition;
-                newUsageNote = originalTranslationRef.current.usageNote || newUsageNote;
-                newRegister = originalTranslationRef.current.register || newRegister;
-            }
-
-            return {
-                ...prev,
-                translation: opt.text,
-                definition: newDefinition || null,
-                usageNote: newUsageNote || null,
-                register: newRegister || null,
-                selectedOptionText: opt.text,
-            };
-        });
-    }, []);
-
     const [dictionaryItems, setDictionaryItems] = useState<DictionaryItem[]>([]);
-
+    const [highlightedWords, setHighlightedWords] = useState<DictionaryItem[]>([]);
     const [notification, setNotification] = useState<string | null>(null);
-    // videoRef, videoWrapperRef, videoContainerRef now come from useVideoPlayer hook
-    const [isLoading, setIsLoading] = useState(false);
-    const [note, setNote] = useState("");
     const intl = useIntl();
     const [delay, setDelay] = useState<number>(0);
-
-    const [selectionPosition, setSelectionPosition] = useState<SelectionPosition | null>(null);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [highlightedWords, setHighlightedWords] = useState<DictionaryItem[]>([]);
-    const [activeSelection, setActiveSelection] = useState<{ text: string, range: Range } | null>(null);
 
     const [showSubtitles, setShowSubtitles] = useState(true);
     const [blurSubtitles, setBlurSubtitles] = useState<boolean>(() => {
@@ -258,7 +127,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     } | null>(null);
 
     // isPlaying, volume, isMuted, progress, duration, currentTime, showControls now come from useVideoPlayer hook
-    const [showSubmitButton, setShowSubmitButton] = useState<boolean>(false);
     const [showSubscribeButton] = useState(false);
     const [showLanguageOverlay, setShowLanguageOverlay] = useState(false);
 
@@ -689,6 +557,42 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         showNotification,
     });
 
+    const {
+        translationData,
+        setTranslationData,
+        selectedText,
+        setSelectedText,
+        selectedSentence,
+        isLoading,
+        showSubmitButton,
+        selectionPosition,
+        translationOptions,
+        handleSelectOption,
+        handleTextSelection,
+        fetchTranslation,
+        resetPopoverState,
+        saveToDict,
+        isSaving,
+    } = useSubtitleTranslation({
+        currentSubtitle,
+        subtitlesForVideo,
+        fluentLanguage,
+        learningLanguage,
+        getResourceName,
+        isMobile,
+        pauseVideo,
+        playVideo,
+        showNotification,
+        isMountedRef,
+        dictionaryItems,
+        setDictionaryItems,
+        setHighlightedWords,
+        setOnboardingStep,
+        onRequireLanguageSelection: () => setShowLanguageOverlay(true),
+        isPopoverOpen,
+        setIsPopoverOpen,
+    });
+
     useEffect(() => {
         const fetchYoutubeSubtitles = async (id: string) => {
             try {
@@ -814,558 +718,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         setDelay(newDelay);
     };
 
-    const cleanTextForSelection = (text: string): string => {
-        return cleanSubtitleSelection(text);
-    };
-
-        const findSentenceForSubtitle = (selected: string | null): string | null => {
-        if (!selected || !currentSubtitle) {
-            debugLog('No selected text or current subtitle');
-            return null;
-        }
-
-        try {
-            
-            const fullExtendedContext = getExtendedSubtitleContext();
-            const cleanedContext = cleanTextForSelection(fullExtendedContext);
-
-            
-            const escapedSelection = selected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-            
-            const selectionIndex = cleanedContext.toLowerCase().indexOf(selected.toLowerCase());
-            if (selectionIndex === -1) {
-                console.warn('Selected text not found in context, using current subtitle');
-                return cleanTextForSelection(currentSubtitle);
-            }
-
-            
-
-            
-            const sentenceRegex = new RegExp(
-                `[^.!?]*\\b${escapedSelection}\\b[^.!?]*[.!?]+`,
-                'gi'
-            );
-            const sentenceMatches = cleanedContext.match(sentenceRegex);
-
-            if (Array.isArray(sentenceMatches) && sentenceMatches.length > 0) {
-                const sentence = cleanTextForSelection(sentenceMatches[0]);
-                debugLog('✅ Found sentence with punctuation:', sentence);
-                setSelectedSentence(sentence);
-                return sentence;
-            }
-
-            
-            const logicalBoundaryRegex = new RegExp(
-                `(?:^|[.!?]\\s+)([^.!?]*\\b${escapedSelection}\\b[^.!?]*)(?:[.!?]|$)`,
-                'gi'
-            );
-            const logicalMatches = cleanedContext.match(logicalBoundaryRegex);
-
-            if (Array.isArray(logicalMatches) && logicalMatches.length > 0) {
-                const sentence = cleanTextForSelection(logicalMatches[0].replace(/^[.!?]\s+/, ''));
-                debugLog('✅ Found sentence with logical boundaries:', sentence);
-                setSelectedSentence(sentence);
-                return sentence;
-            }
-
-            // Strategy 3: Extract surrounding context (N words before/after)
-            const words = cleanedContext.split(/\s+/);
-            const selectedWords = selected.split(/\s+/);
-            const selectedStartIndex = words.findIndex((word, idx) => {
-                const phrase = words.slice(idx, idx + selectedWords.length).join(' ');
-                return phrase.toLowerCase() === selected.toLowerCase();
-            });
-
-            if (selectedStartIndex !== -1) {
-                const contextWindowSize = 10; // words before/after
-                const startIdx = Math.max(0, selectedStartIndex - contextWindowSize);
-                const endIdx = Math.min(words.length, selectedStartIndex + selectedWords.length + contextWindowSize);
-                const contextSentence = words.slice(startIdx, endIdx).join(' ');
-
-                debugLog('✅ Found contextual window:', contextSentence);
-                setSelectedSentence(contextSentence);
-                return contextSentence;
-            }
-
-            // Fallback: Use extended context or current subtitle
-            const fallback = fullExtendedContext.length > currentSubtitle.length
-                ? cleanedContext
-                : cleanTextForSelection(currentSubtitle);
-
-            debugLog('⚠️ Using fallback context:', fallback);
-            setSelectedSentence(fallback);
-            return fallback;
-
-        } catch (error) {
-            debugError('Error in findSentenceForSubtitle:', error);
-            const fallback = cleanTextForSelection(currentSubtitle);
-            setSelectedSentence(fallback);
-            return fallback;
-        }
-    };
-
-    /**
-     * Gets extended subtitle context by combining previous, current, and next subtitles.
-     * This provides better context for sentence boundary detection.
-     */
-    const getExtendedSubtitleContext = (): string => {
-        if (!Array.isArray(subtitlesForVideo) || !currentSubtitle) {
-            return cleanSubtitleSelection(currentSubtitle || '');
-        }
-
-        // Find current subtitle index
-        const currentIndex = subtitlesForVideo.findIndex(sub => sub.text === currentSubtitle);
-
-        if (currentIndex === -1) {
-            return cleanSubtitleSelection(currentSubtitle);
-        }
-
-        // Collect context: previous + current + next
-        const contextParts: string[] = [];
-
-        // Add previous subtitle (if exists)
-        if (currentIndex > 0) {
-            contextParts.push(cleanSubtitleText(subtitlesForVideo[currentIndex - 1].text));
-        }
-
-        // Add current subtitle
-        contextParts.push(cleanSubtitleText(currentSubtitle));
-
-        // Add next subtitle (if exists)
-        if (currentIndex < subtitlesForVideo.length - 1) {
-            contextParts.push(cleanSubtitleText(subtitlesForVideo[currentIndex + 1].text));
-        }
-
-        return cleanSubtitleSelection(contextParts.join(' '));
-    };
-
-    const showSelectionTooltip = (range: Range) => {
-        try {
-            const rect = range.getBoundingClientRect();
-
-            if (!rect || rect.width === 0) return;
-
-            const portalParent = (document.fullscreenElement || document.body) as HTMLElement;
-            const parentRect = portalParent.getBoundingClientRect();
-
-            // Find container rect if range is inside currentSubtitleContainer
-            const node = range.commonAncestorContainer;
-            const element = node.nodeType === 1 ? (node as HTMLElement) : node.parentElement;
-            const subtitleContainerEl = element?.closest(`.${styles.currentSubtitleContainer}`) as HTMLElement | null;
-            const containerRect = subtitleContainerEl?.getBoundingClientRect();
-
-            // Estimated popover height for small screens (14" diagonal ≈ 768px height)
-            const estimatedPopoverHeight = 350;
-            const minPopoverHeight = 150; // Minimum usable height for popover
-            const minPopoverWidth = 160; // Half of max-width 320px for centering
-
-            let showBelow = false;
-            let isConstrained = false;
-            let maxHeight: number | undefined = undefined;
-
-            // Anchor directly to container boundary if present, otherwise to selected text
-            const topBoundary = containerRect ? containerRect.top : rect.top;
-            const bottomBoundary = containerRect ? containerRect.bottom : rect.bottom;
-
-            // Calculate available space above and below the anchor in viewport
-            const spaceAbove = topBoundary;
-            const spaceBelow = window.innerHeight - bottomBoundary;
-
-            const GAP = 8; // Clean gap right above/below subtitle block
-
-            // Calculate X relative to portalParent
-            let x = rect.left - parentRect.left + (rect.width / 2);
-
-            // Constrain X position within viewport bounds relative to portalParent
-            const minX = -parentRect.left + minPopoverWidth;
-            const maxX = -parentRect.left + window.innerWidth - minPopoverWidth;
-            if (x < minX) x = minX;
-            if (x > maxX) x = maxX;
-
-            // Calculate Y relative to portalParent so popover moves seamlessly with page scroll
-            let y: number;
-            if (spaceAbove >= estimatedPopoverHeight) {
-                y = topBoundary - parentRect.top - GAP;
-                showBelow = false;
-            } else if (spaceBelow >= estimatedPopoverHeight) {
-                showBelow = true;
-                y = bottomBoundary - parentRect.top + GAP;
-            } else if (spaceBelow > spaceAbove) {
-                showBelow = true;
-                isConstrained = true;
-                y = bottomBoundary - parentRect.top + GAP;
-                maxHeight = Math.max(spaceBelow - 20, minPopoverHeight);
-            } else {
-                showBelow = false;
-                isConstrained = true;
-                y = topBoundary - parentRect.top - GAP;
-                maxHeight = Math.max(spaceAbove - 20, minPopoverHeight);
-            }
-
-            setSelectionPosition({
-                x,
-                y,
-                showBelow,
-                isConstrained,
-                maxHeight
-            });
-
-            setIsPopoverOpen(true);
-        } catch (err) {
-            debugError('Error showing selection tooltip:', err);
-        }
-    };
-
-    const handleTextSelection = () => {
-        const selection = window.getSelection();
-        if (!selection || selection.toString().trim().length < 2) {
-            setIsPopoverOpen(false);
-            return;
-        }
-
-        const selectedText = selection.toString().trim();
-        const range = selection.getRangeAt(0);
-
-        debugLog('handleTextSelection called:', { selectedText, isMobile });
-
-        if (isMobile) {
-            setTimeout(() => {
-                processSelection(selectedText, range);
-            }, 300);
-        } else {
-            processSelection(selectedText, range);
-        }
-    };
-
-    const processSelection = (selectedText: string, range: Range) => {
-        if (!selectedText) {
-            debugError('processSelection called with null/undefined selectedText');
-            return;
-        }
-
-        setActiveSelection({ text: selectedText, range });
-
-        const wordCount = selectedText.split(/\s+/).length;
-        const isSingleWord = wordCount === 1;
-
-        setTranslationData({
-            translation: null,
-            definition: null,
-            imageUrl: null,
-            showImage: true,
-            transcription: null,
-            hint: null,
-            examples: null,
-            synonyms: null,
-            style: null,
-            partOfSpeech: null,
-            otherMeanings: null,
-            collocations: null,
-            recommendedSelections: null,
-            minimalUnit: null,
-            register: null,
-            usageNote: null,
-            alternatives: null,
-            chunks: null,
-            typicalContexts: null,
-        });
-        setNote('');
-        setIsLoading(true);
-
-        setSelectedText(selectedText);
-
-        pauseVideo();
-
-        showSelectionTooltip(range);
-        const sentence = findSentenceForSubtitle(selectedText);
-        debugLog('Found sentence:', sentence);
-        if (sentence) {
-            setSelectedSentence(sentence);
-            // Get extended context for backend
-            const extendedCtx = getExtendedSubtitleContext();
-            fetchTranslation(selectedText, sentence, isSingleWord, extendedCtx);
-        }
-    };
-
-    const formatSubtitleForDisplay = (text: string): string => {
-        if (!text) return '';
-
-        // 1. Sanitize ASS/SSA tags, HTML markup, and convert \N into \n
-        let formatted = cleanSubtitleText(text);
-
-        // 2. Collapse non-dialogue newlines into a single space
-        formatted = formatted.replace(/\n(?![ \t]*[-–—])/g, ' ');
-
-        // 3. Ensure dialogue lines start on fresh lines with '- '
-        formatted = formatted.replace(/([^\n])\s+[-–—]\s+/g, '$1\n- ');
-        formatted = formatted.replace(/\s+[-–—]\s+/g, '\n- ');
-
-        // 4. Collapse duplicate horizontal spaces and trim
-        return formatted.replace(/[ \t]{2,}/g, ' ').trim();
-    };
-
-    const renderHighlightedText = (text: string) => {
-        if (!text) return null;
-
-        const wordMap = new Map<string, { translations: string[], definitions: string[] }>();
-
-        for (const item of highlightedWords) {
-            const searchTerm = item.highlightedText.trim().toLowerCase();
-            if (!searchTerm) continue;
-
-            if (!wordMap.has(searchTerm)) {
-                wordMap.set(searchTerm, { translations: [], definitions: [] });
-            }
-
-            const entry = wordMap.get(searchTerm)!;
-
-            const translation = item.translatedText && item.translatedText.trim()
-                ? item.translatedText.trim()
-                : item.definition && item.definition.trim()
-                    ? item.definition.trim()
-                    : null;
-
-            if (translation) {
-                entry.translations.push(translation);
-            }
-        }
-
-        const sortedSearchTerms = Array.from(wordMap.keys()).sort((a, b) => b.length - a.length);
-
-        const allMatches: Array<{
-            start: number;
-            end: number;
-            translation: string;
-            definition: string;
-            originalText: string;
-        }> = [];
-
-        for (const searchTerm of sortedSearchTerms) {
-            const entry = wordMap.get(searchTerm)!;
-
-            const filteredTranslations = (Array.isArray(entry.translations) ? entry.translations : []).filter(t => t && t.trim().length > 0);
-            const uniqueTranslations = Array.from(new Set(filteredTranslations));
-
-            const translations = uniqueTranslations.join(', ');
-
-            const isPhrase = searchTerm.includes(' ');
-            let searchIndex = 0;
-
-            while (searchIndex < text.length) {
-                const matchResult = isPhrase
-                    ? findPhraseMatch(text, searchTerm, searchIndex)
-                    : findWordMatch(text, searchTerm, searchIndex);
-
-                if (!matchResult.found) break;
-
-                if (matchResult.isValid && !isRangeOverlapping(matchResult.start, matchResult.end, allMatches)) {
-                    const originalWord = text.slice(matchResult.start, matchResult.end);
-                    allMatches.push({
-                        start: matchResult.start,
-                        end: matchResult.end,
-                        translation: translations,
-                        definition: '',
-                        originalText: originalWord
-                    });
-                }
-
-                searchIndex = matchResult.nextSearchIndex;
-            }
-        }
-
-        allMatches.sort((a, b) => b.start - a.start);
-
-        const escapeHtmlAttribute = (str: string) => {
-            if (!str) return '';
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#x27;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-        };
-
-        let result = text;
-        for (const match of allMatches) {
-            const escapedTranslation = escapeHtmlAttribute(match.translation);
-            const escapedDefinition = escapeHtmlAttribute(match.definition);
-            const escapedOriginalText = match.originalText
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-
-            const spanHtml = `<span class="${styles.dictionaryWord}" data-translation="${escapedTranslation}" data-definition="${escapedDefinition}">${escapedOriginalText}</span>`;
-            result = result.slice(0, match.start) + spanHtml + result.slice(match.end);
-        }
-
-        
-        
-        result = result.replace(/\n/g, '<br>');
-
-        return <span key={highlightedWords.length} dangerouslySetInnerHTML={{ __html: result }} />;
-    };
-
-    function findPhraseMatch(text: string, searchPhrase: string, startIndex: number) {
-        const foundIndex = text.toLowerCase().indexOf(searchPhrase.toLowerCase(), startIndex);
-
-        if (foundIndex === -1) {
-            return { found: false, nextSearchIndex: text.length };
-        }
-
-        const isWordStart = foundIndex === 0 || !/[a-zA-Z]/.test(text[foundIndex - 1]);
-
-        if (!isWordStart) {
-            return {
-                found: true,
-                isValid: false,
-                start: foundIndex,
-                end: foundIndex + searchPhrase.length,
-                nextSearchIndex: foundIndex + 1
-            };
-        }
-
-        let endIndex = foundIndex + searchPhrase.length;
-        const remainingText = text.slice(endIndex);
-
-        let punctuationLength = 0;
-        let hasValidEnd = false;
-
-        if (remainingText.length === 0) {
-            hasValidEnd = true;
-        } else {
-            for (let i = 0; i < remainingText.length; i++) {
-                const char = remainingText[i];
-                if (/[.,!?;:"']/.test(char)) {
-                    punctuationLength++;
-                } else if (/\s/.test(char)) {
-                    hasValidEnd = true;
-                    break;
-                } else if (/[a-zA-Z]/.test(char)) {
-                    break;
-                } else {
-                    hasValidEnd = true;
-                    break;
-                }
-            }
-
-            if (punctuationLength > 0 && punctuationLength === remainingText.length) {
-                hasValidEnd = true;
-            }
-        }
-
-        return {
-            found: true,
-            isValid: hasValidEnd,
-            start: foundIndex,
-            end: endIndex + punctuationLength,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
-
-    function findWordMatch(text: string, searchTerm: string, startIndex: number) {
-        const VALID_ENDINGS = [
-            "s", "es", "’s", "ed", "d", "ing",
-            "er", "r", "est",
-
-            "ly",
-
-            "ness", "ment", "ion", "tion", "sion", "ity",
-            "or", "ist", "ship", "hood", "dom",
-
-            "able", "ible", "ous", "ful", "less", "al", "ic", "ish", "y",
-
-            "ize", "ise", "en", "ify",
-
-            "ward", "wards", "wise"
-        ];
-
-        const foundIndex = text.toLowerCase().indexOf(searchTerm.toLowerCase(), startIndex);
-
-        if (foundIndex === -1) {
-            return { found: false, nextSearchIndex: text.length };
-        }
-
-        const isWordStart = foundIndex === 0 || !/[a-zA-Z]/.test(text[foundIndex - 1]);
-
-        if (!isWordStart) {
-            return {
-                found: true,
-                isValid: false,
-                start: foundIndex,
-                end: foundIndex + searchTerm.length,
-                nextSearchIndex: foundIndex + 1
-            };
-        }
-
-        const remainingText = text.slice(foundIndex + searchTerm.length);
-
-        if (remainingText.length === 0 || !/[a-zA-Z]/.test(remainingText[0])) {
-            return {
-                found: true,
-                isValid: true,
-                start: foundIndex,
-                end: foundIndex + searchTerm.length,
-                nextSearchIndex: foundIndex + 1
-            };
-        }
-
-        for (const ending of VALID_ENDINGS) {
-            if (remainingText.toLowerCase().startsWith(ending)) {
-                const afterEnding = remainingText.slice(ending.length);
-
-                if (afterEnding.length === 0 || !/[a-zA-Z]/.test(afterEnding[0])) {
-                    return {
-                        found: true,
-                        isValid: true,
-                        start: foundIndex,
-                        end: foundIndex + searchTerm.length,
-                        nextSearchIndex: foundIndex + searchTerm.length + ending.length
-                    };
-                }
-            }
-        }
-
-        return {
-            found: true,
-            isValid: false,
-            start: foundIndex,
-            end: foundIndex + searchTerm.length,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
-
-    function isRangeOverlapping(
-        start: number,
-        end: number,
-        existingRanges: Array<{ start: number, end: number }>
-    ): boolean {
-        return existingRanges.some(range =>
-            start < range.end && end > range.start
-        );
-    }
-
-
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (activeSelection) {
-                showSelectionTooltip(activeSelection.range);
-            }
-        };
-
-        if (isPopoverOpen) {
-            window.addEventListener('scroll', handleScroll, true);
-            window.addEventListener('touchmove', handleScroll, { passive: true, capture: true } as AddEventListenerOptions);
-            window.addEventListener('resize', handleScroll);
-        }
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll, true);
-            window.removeEventListener('touchmove', handleScroll, true);
-            window.removeEventListener('resize', handleScroll);
-        };
-    }, [isPopoverOpen, activeSelection, isFullscreen]);
+    // Subtitle selection, sentence matching, and popover positioning are now handled by useSubtitleTranslation hook and subtitleTranslationUtils
 
     useEffect(() => {
         const decodeHtmlEntities = (str: string): string => {
@@ -1432,184 +785,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         };
     }, [dictionaryItems, highlightedWords, tooltipState]);
 
-    const fetchTranslation = async (text: string, sentence: string, isSingleWord: boolean, extended?: string) => {
-        if (!isMountedRef.current) return;
-
-        setIsLoading(true);
-        setShowSubmitButton(false);
-
-        pauseVideo();
-
-        if (!fluentLanguage) {
-            showNotification(intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' }));
-            setShowLanguageOverlay(true);
-            setIsLoading(false);
-            return;
-        }
-
-        const originalPromise = SubtitleService.getTranslationProd({
-            resourceName: getResourceName(),
-            highlightedText: text,
-            context: sentence,
-            extendedContext: extended,
-            learningLanguage: learningLanguage,
-            fluentLanguage: fluentLanguage,
-        }).catch(error => {
-            if (error?.message === 'GUEST_LIMIT_REACHED') {
-                setIsLoading(false);
-                setIsPopoverOpen(false);
-                return null;
-            }
-            debugError('Error in original translation:', error);
-            const axiosError = error as AxiosError;
-            if (axiosError.response?.status === 404) {
-                setTranslationData(prev => ({ ...prev, translation: 'Try selecting a nearby phrase — we could not translate the selected word.' }));
-            } else {
-                setTranslationData(prev => ({ ...prev, translation: 'Error fetching translation.' }));
-            }
-            return null;
-        });
-
-        try {
-            const originalResult = await originalPromise;
-
-            if (!isMountedRef.current) return;
-
-            if (originalResult) {
-                debugLog('Original translation result:', originalResult);
-                originalTranslationRef.current = {
-                    translation: originalResult.translation || null,
-                    definition: originalResult.definition || null,
-                    usageNote: originalResult.usage_note || null,
-                    register: originalResult.register || originalResult.style || null,
-                };
-                setTranslationData(prev => ({
-                    ...prev,
-                    translation: originalResult.translation || ' ',
-                    definition: originalResult.definition,
-                    transcription: originalResult.transcription,
-                    imageUrl: originalResult.imageUrl,
-                    showImage: true,
-                    hint: originalResult.hint || null,
-                    examples: originalResult.examples || null,
-                    synonyms: originalResult.synonyms || null,
-                    style: originalResult.style || null,
-                    partOfSpeech: originalResult.partOfSpeech || null,
-                    otherMeanings: originalResult.other_meanings || null,
-                    collocations: originalResult.context_analysis?.collocations || null,
-                    recommendedSelections: originalResult.recommended_selections || null,
-                    minimalUnit: originalResult.context_analysis?.minimal_unit || null,
-                    register: originalResult.register || originalResult.style || null,
-                    usageNote: originalResult.usage_note || null,
-                    alternatives: originalResult.alternatives?.map(a => ({ text: a.text, register: a.register, usageNote: a.usage_note })) || null,
-                    chunks: originalResult.chunks || null,
-                    typicalContexts: originalResult.typical_contexts || null,
-                    selectedOptionText: originalResult.translation || null,
-                }));
-            }
-
-            const hasValidOriginal = originalResult &&
-                originalResult.translation &&
-                originalResult.translation.trim() !== "" &&
-                !originalResult.translation.startsWith("You have reached");
-
-            const hasValidDefinition = originalResult &&
-                originalResult.definition !== null &&
-                originalResult.definition !== undefined &&
-                String(originalResult.definition).trim() !== "";
-
-            if (hasValidOriginal || hasValidDefinition) {
-                setShowSubmitButton(true);
-            } else {
-                setShowSubmitButton(false);
-            }
-        } catch (error) {
-            debugError('Error in fetchTranslation:', error);
-            setShowSubmitButton(false);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const resetPopoverState = useCallback(() => {
-        setSelectedText(null);
-        setSelectedSentence(null);
-        originalTranslationRef.current = {
-            translation: null,
-            definition: null,
-            usageNote: null,
-            register: null
-        };
-        setTranslationData({
-            translation: null,
-            definition: null,
-            imageUrl: null,
-            showImage: true,
-            transcription: null,
-            hint: null,
-            examples: null,
-            synonyms: null,
-            style: null,
-            partOfSpeech: null,
-            otherMeanings: null,
-            collocations: null,
-            recommendedSelections: null,
-            minimalUnit: null,
-            register: null,
-            usageNote: null,
-            alternatives: null,
-            chunks: null,
-            typicalContexts: null,
-            selectedOptionText: null,
-        });
-        setNote('');
-        setIsLoading(false);
-        setShowSubmitButton(false);
-        setSelectionPosition(null);
-        setActiveSelection(null);
-        setNotification(null);
-        setIsPopoverOpen(false);
-    }, []);
-
-
-    useEffect(() => {
-        if (isPopoverOpen || isLoading) {
-            pauseVideo();
-        } else {
-            playVideo();
-        }
-    }, [isPopoverOpen, isLoading, pauseVideo, playVideo]);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const popover = document.getElementById("popover-id");
-            const loadingPopover = document.getElementById("popover-loading");
-            const target = event.target as HTMLElement;
-
-            const isClickInsidePopover = popover?.contains(target);
-            const isClickInsideLoadingPopover = loadingPopover?.contains(target);
-
-            if (!isClickInsidePopover && !isClickInsideLoadingPopover) {
-                if (isPopoverOpen) {
-                    resetPopoverState();
-                    if (window.getSelection) {
-                        window.getSelection()?.removeAllRanges();
-                    }
-
-                    playVideo();
-
-                    event.stopPropagation();
-                }
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isPopoverOpen, playVideo, resetPopoverState]);
-
     useEffect(() => {
         const preventContextMenu = (e: Event) => {
             if (videoWrapperRef.current?.contains(e.target as Node)) {
@@ -1624,12 +799,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    useEffect(() => {
-        if (!isPopoverOpen) {
-            setShowSubmitButton(false);
-        }
-    }, [isPopoverOpen]);
 
     useEffect(() => {
         const intervalId = setInterval(updateSubtitles, 100);
@@ -1736,84 +905,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         }
     }, [dictionaryItems]);
 
-    const queryClient = useQueryClient();
-
-    const saveWordMutation = useSaveWord({
-        onMutate: async (newData: SaveWordData) => {
-            await queryClient.cancelQueries({ queryKey: ['dictionaryItems', 'user'] });
-
-            setOnboardingStep('completed');
-            try {
-                localStorage.setItem('substreamedu_onboarding_completed', 'true');
-            } catch {}
-
-            const previousItems = dictionaryItems;
-
-            const optimisticItem: DictionaryItem = {
-                id: Date.now(),
-                resourceName: newData.resourceName,
-                highlightedText: newData.highlightedText,
-                translatedText: newData.translation || '',
-                context: newData.context,
-                definition: newData.definition || ''
-            };
-
-            setDictionaryItems(prev => [...prev, optimisticItem]);
-            setHighlightedWords(prev => [...prev, optimisticItem]);
-
-            showNotification('The word has been added to the dictionary');
-            setShowSubmitButton(false);
-            setIsPopoverOpen(false);
-            resetPopoverState();
-
-            return { previousItems };
-        },
-        onError: (err: any, _variables: SaveWordData, context: SaveWordContext | undefined) => {
-            if (context?.previousItems) {
-                setDictionaryItems(context.previousItems);
-                setHighlightedWords(context.previousItems);
-            }
-            const errorResponse = err as ErrorResponse;
-            const status = err?.status || err?.response?.status;
-            const message = (err?.message || err?.response?.data?.message || '').toLowerCase();
-
-            if (status === 403 || message.includes('save limit') || message.includes('word save')) {
-                window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
-            } else if (errorResponse?.status === 503 && errorResponse?.message) {
-                setTranslationData(prev => ({ ...prev, translation: errorResponse.message }));
-                setShowSubmitButton(false);
-            } else {
-                showNotification('Failed to save word. Please try again.');
-            }
-            debugError("Mutation failed", err);
-        }
-    });
-
-    const saveToDict = () => {
-        if (!selectedText || !selectedSentence || !isMountedRef.current) return;
-
-        const translationDataToSave = {
-            translation: translationData.translation,
-            definition: translationData.definition,
-            transcription: translationData.transcription,
-            imageUrl: translationData.showImage ? translationData.imageUrl : null
-        };
-
-        
-        const extendedCtx = getExtendedSubtitleContext();
-
-        saveWordMutation.mutate({
-            resourceName: getResourceName(),
-            highlightedText: selectedText,
-            context: selectedSentence,
-            extendedContext: extendedCtx || undefined,
-            translation: translationDataToSave.translation || '',
-            note: note,
-            transcription: translationDataToSave.transcription || '',
-            definition: translationDataToSave.definition || '',
-            imageUrl: translationDataToSave.imageUrl || ''
-        });
-    };
+    // Subtitle translation, selection, popover state and dictionary save are now handled by useSubtitleTranslation hook
 
     // NOTE: The following functions are now provided by useVideoPlayer hook:
     // pauseVideo, playVideo, pauseVideoFromClick, playVideoFromClick, togglePlayPause,
@@ -2098,7 +1190,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         }}
                                         onPauseVideo={pauseVideo}
                                         onPlayVideo={playVideo}
-                                        renderedSubtitle={renderHighlightedText(formatSubtitleForDisplay(currentSubtitle || ''))}
+                                        renderedSubtitle={renderHighlightedSubtitle(formatSubtitleForDisplay(currentSubtitle || ''), highlightedWords)}
                                     />
                                 )
                             }
@@ -2150,7 +1242,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     selectedSentence={selectedSentence}
                     translationData={translationData}
                     translationOptions={translationOptions}
-                    isSaving={saveWordMutation.isPending}
+                    isSaving={isSaving}
                     isAdmin={isAdmin}
                     showSubmitButton={showSubmitButton}
                     showSubscribeButton={showSubscribeButton}
@@ -2158,9 +1250,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     onChunkClick={(chunk) => {
                         if (selectedSentence) {
                             setSelectedText(chunk);
-                            setIsLoading(true);
-                            const extendedCtx = getExtendedSubtitleContext();
-                            fetchTranslation(chunk, selectedSentence, false, extendedCtx);
+                            fetchTranslation(chunk, selectedSentence, false);
                         }
                     }}
                     onSaveToDict={saveToDict}
