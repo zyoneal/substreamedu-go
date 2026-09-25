@@ -9,6 +9,7 @@ import { ReelGeneratorModal } from './components/ReelGeneratorModal';
 import { GrammarSpotlightModal } from './components/GrammarSpotlightModal';
 import { VideoGrammarIndexModal } from './components/VideoGrammarIndexModal';
 import { LessonStudioModal } from './components/LessonStudioModal';
+import { VideoTranslationPopover } from './components/VideoTranslationPopover';
 import {
     detectGrammarInText,
     scanSubtitlesForGrammar,
@@ -32,13 +33,8 @@ import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import Volume1 from 'lucide-react/dist/esm/icons/volume-1';
 import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
 import VolumeX from 'lucide-react/dist/esm/icons/volume-x';
-import X from 'lucide-react/dist/esm/icons/x';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
-import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
-import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
-import BookOpen from 'lucide-react/dist/esm/icons/book-open';
-import Layers from 'lucide-react/dist/esm/icons/layers';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import GraduationCap from 'lucide-react/dist/esm/icons/graduation-cap';
 
@@ -3135,333 +3131,57 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     {notification && <div className={styles.notification}>{notification}</div>}
                 </div>
 
-                {
-                    selectionPosition && isPopoverOpen && (translationData.translation || isLoading) && createPortal(
-                        <div
-                            id="popover-id"
-                            className={`${styles.popover} ${styles.glass3d} ${selectionPosition?.showBelow ? styles.popoverBelow : ''} ${selectionPosition?.isConstrained ? styles.popoverConstrained : ''}`}
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                top: 0,
-                                transform: selectionPosition?.showBelow
-                                    ? `translate(${isMobile ? window.innerWidth / 2 : selectionPosition!.x}px, ${selectionPosition!.y}px) translate(-50%, 0)`
-                                    : `translate(${isMobile ? window.innerWidth / 2 : selectionPosition!.x}px, ${selectionPosition!.y}px) translate(-50%, -100%)`,
+                <VideoTranslationPopover
+                    selectionPosition={selectionPosition}
+                    isPopoverOpen={isPopoverOpen}
+                    isLoading={isLoading}
+                    isMobile={isMobile}
+                    selectedText={selectedText}
+                    selectedSentence={selectedSentence}
+                    translationData={translationData}
+                    translationOptions={translationOptions}
+                    isSaving={saveWordMutation.isPending}
+                    isAdmin={isAdmin}
+                    showSubmitButton={showSubmitButton}
+                    showSubscribeButton={showSubscribeButton}
+                    onSelectOption={handleSelectOption}
+                    onChunkClick={(chunk) => {
+                        if (selectedSentence) {
+                            setSelectedText(chunk);
+                            setIsLoading(true);
+                            const extendedCtx = getExtendedSubtitleContext();
+                            fetchTranslation(chunk, selectedSentence, false, extendedCtx);
+                        }
+                    }}
+                    onSaveToDict={saveToDict}
+                    onOpenReelModal={() => {
+                        if (!selectedText) return;
+                        const curSub = subtitlesForVideo?.find(s => currentTime >= s.startTimeMs / 1000 - 0.5 && currentTime <= s.endTimeMs / 1000 + 0.5);
+                        const startSec = curSub ? curSub.startTimeMs / 1000 : Math.max(0, currentTime - 2);
+                        const endSec = curSub ? curSub.endTimeMs / 1000 : currentTime + 3;
+                        const sentence = curSub ? curSub.text : selectedSentence || selectedText;
 
-                                ...(typeof CSS !== 'undefined' && CSS.supports && CSS.supports('backdrop-filter', 'blur(25px)')
-                                    ? {
-                                        backdropFilter: 'blur(25px)',
-                                        WebkitBackdropFilter: 'blur(25px)'
-                                    }
-                                    : {
-                                        background: 'rgba(22, 22, 28, 0.6)'
-                                    }),
-                                zIndex: 1001,
-                                ...(selectionPosition?.maxHeight ? { maxHeight: `${selectionPosition.maxHeight}px` } : {})
-                            }}
-                            onMouseEnter={() => {
-                                pauseVideo();
-                            }}
-                        >
-                            <div className={styles.popoverArrow}></div>
-                            <div className={styles.popoverContent}>
-                                <div className={styles.selectedTextRow}>
-                                    <h3 className={styles.selectedText}>{selectedText}</h3>
-                                    {(() => {
-                                        const currentTranscription = translationData.transcription;
-                                        if (currentTranscription) {
-                                            return <span className={styles.transcription}>[/{currentTranscription}/]</span>;
-                                        }
-                                        return null;
-                                    })()}
-                                </div>
-
-                                {isLoading && (
-                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-                                        <div className={styles.loader}>
-                                            <p className={styles['loader-text']}>Loading</p>
-                                            <div className={styles.load}></div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className={styles.popoverBody}>
-                                    <div className={styles.popoverBodyText}>
-                                        {/* Prominent main translation in target language */}
-                                        {translationData.translation?.trim() && (
-                                            <div className={styles.mainTranslationRow}>
-                                                <span
-                                                    className={`${styles.mainTranslationText} ${(translationData.translation?.includes('could not translate') || translationData.translation?.includes('Error fetching translation')) ? styles.errorText : ''}`}
-                                                >
-                                                    {translationData.translation}
-                                                </span>
-                                                {(translationData.partOfSpeech || translationData.register) && (
-                                                    <div className={styles.inlineBadges}>
-                                                        {translationData.partOfSpeech && (
-                                                            <span className={styles.posTagSm}>{translationData.partOfSpeech}</span>
-                                                        )}
-                                                        {translationData.register && (
-                                                            <span className={`${styles.registerBadgeSm} ${styles[`register_${translationData.register}`] || ''}`}>
-                                                                {translationData.register}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Strictly matched concise explanation / definition */}
-                                        {translationData.definition && translationData.definition.trim() !== '' && translationData.definition !== translationData.translation && (
-                                            <div className={styles.popoverDefinitionSubtitle}>
-                                                {translationData.definition}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {translationData.imageUrl && translationData.showImage && (
-                                        <div className={styles.popoverBodyImage} style={{ position: 'relative' }}>
-                                            <img
-                                                src={translationData.imageUrl}
-                                                alt="Visual reference"
-                                                className={styles.translationImage}
-                                            />
-                                            <button
-                                                className={styles.imageCloseButton}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setTranslationData(prev => ({ ...prev, showImage: false }));
-                                                }}
-                                                title="Remove image"
-                                                aria-label="Remove image"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {(() => {
-                                    const data = {
-                                        translation: translationData.translation,
-                                        hint: translationData.hint,
-                                        examples: translationData.examples,
-                                        synonyms: translationData.synonyms,
-                                        otherMeanings: translationData.otherMeanings,
-                                        collocations: translationData.collocations,
-                                        recommendedSelections: translationData.recommendedSelections,
-                                        register: translationData.register,
-                                        usageNote: translationData.usageNote,
-                                        alternatives: translationData.alternatives,
-                                        chunks: translationData.chunks,
-                                        typicalContexts: translationData.typicalContexts,
-                                    };
-
-                                    const matchingSelections = (data.recommendedSelections || []).filter(
-                                        rec => selectedSentence?.toLowerCase().includes(rec.toLowerCase())
-                                    );
-                                    const bestMatch = matchingSelections.sort((a, b) => b.length - a.length)[0];
-
-                                    return (
-                                        <>
-                                            {bestMatch && (
-                                                <div className={styles.aiHintBoxCompact}>
-                                                    <Lightbulb size={12} className="text-primary flex-shrink-0" />
-                                                    <span className={styles.aiHintText}>{bestMatch}</span>
-                                                </div>
-                                            )}
-
-                                            {/* Interactive Options & Alternatives Pill Grid */}
-                                            {translationOptions.length > 1 && (
-                                                <div className={styles.optionsSection}>
-                                                    <div className={styles.sectionHeaderSm}>
-                                                        <BookOpen size={11} className={styles.sectionHeaderIcon} />
-                                                        <span>Alternatives & Meanings</span>
-                                                    </div>
-                                                    <div className={styles.optionsList}>
-                                                        {translationOptions.map((opt, idx) => {
-                                                            const isSelected = (translationData.translation?.trim().toLowerCase() === opt.text.trim().toLowerCase());
-                                                            return (
-                                                                <button
-                                                                    key={idx}
-                                                                    type="button"
-                                                                    className={`${styles.optionPill} ${isSelected ? styles.optionPillActive : ''}`}
-                                                                    onClick={() => handleSelectOption(opt)}
-                                                                    title={opt.usageNote || opt.definition || opt.text}
-                                                                >
-                                                                    {isSelected && <span className={styles.optionCheck}>✓</span>}
-                                                                    <span className={styles.optionPillText}>{opt.text}</span>
-                                                                    {opt.register && (
-                                                                        <span className={`${styles.optionRegisterTag} ${styles[`register_${opt.register}`] || ''}`}>
-                                                                            {opt.register}
-                                                                        </span>
-                                                                    )}
-                                                                    {opt.source === 'also' && !isSelected && (
-                                                                        <span className={styles.optionAlsoTag}>also</span>
-                                                                    )}
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Chunks — multi-word units (collocations, phrasal verbs, idioms) */}
-                                            {data.chunks && data.chunks.length > 0 && (
-                                                <div className={styles.chunksSectionCompact}>
-                                                    <div className={styles.sectionHeaderSm}>
-                                                        <Layers size={11} className={styles.sectionHeaderIcon} />
-                                                        <span>Chunks</span>
-                                                    </div>
-                                                    <div className={styles.chunksListCompact}>
-                                                        {data.chunks.slice(0, 4).map((chunk, idx) => (
-                                                            <button
-                                                                key={idx}
-                                                                type="button"
-                                                                className={styles.chunkPill}
-                                                                onClick={() => {
-                                                                    if (selectedSentence) {
-                                                                        setSelectedText(chunk);
-                                                                        setIsLoading(true);
-                                                                        const extendedCtx = getExtendedSubtitleContext();
-                                                                        fetchTranslation(chunk, selectedSentence, false, extendedCtx);
-                                                                    }
-                                                                }}
-                                                                title={`Translate "${chunk}" as a unit`}
-                                                            >
-                                                                {chunk}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Tags row: Synonyms & Collocations */}
-                                            {(((data.synonyms && data.synonyms.length > 0)) || ((data.collocations && data.collocations.length > 0))) && (
-                                                <div className={styles.tagGroup}>
-                                                    {data.synonyms && data.synonyms.length > 0 && (
-                                                        <div className={styles.compactTagRow}>
-                                                            <span className={styles.tagLabel}>Syn:</span>
-                                                            {data.synonyms.slice(0, 3).map((syn, idx) => (
-                                                                <span key={idx} className={styles.tagChip}>{syn}</span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-
-                                                    {data.collocations && data.collocations.length > 0 && (
-                                                        <div className={styles.compactTagRow}>
-                                                            <span className={styles.tagLabel}>Use with:</span>
-                                                            {data.collocations.slice(0, 3).map((collocation, idx) => (
-                                                                <span key={idx} className={`${styles.tagChip} ${styles.tagChipContrast}`}>{collocation}</span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {/* Examples — 1 compact item */}
-                                            {data.examples && data.examples.length > 0 && (
-                                                <div className={styles.compactExamples}>
-                                                    <span className={styles.compactExampleLabel}>Ex:</span>
-                                                    <span className={styles.compactExampleText}>"{data.examples[0]}"</span>
-                                                </div>
-                                            )}
-
-                                            {/* Typical Contexts */}
-                                            {data.typicalContexts && data.typicalContexts.length > 0 && (
-                                                <div className={styles.compactTagRow} style={{ paddingTop: '2px' }}>
-                                                    <span className={styles.tagLabel}>In:</span>
-                                                    {data.typicalContexts.slice(0, 3).map((ctx, idx) => (
-                                                        <span key={idx} className={styles.typicalContextTag}>{ctx}</span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </>
-                                    );
-                                })()}
-
-                                <div className={styles.popoverActions}>
-                                    <div className={styles.actionButtons}>
-                                        {showSubmitButton &&
-                                            !(translationData.translation && translationData.translation.includes('You have reached your free limit of 100 translations')) && (
-                                                <button
-                                                    onClick={saveToDict}
-                                                    className={styles.saveButton}
-                                                    disabled={saveWordMutation.isPending}
-                                                    title={saveWordMutation.isPending ? "Saving..." : "Add to dictionary"}
-                                                >
-                                                    <span>{saveWordMutation.isPending ? "SAVING..." : "SAVE"}</span>
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                                                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                                                        <polyline points="7 3 7 8 15 8"></polyline>
-                                                    </svg>
-                                                </button>
-                                            )}
-                                        {isAdmin && selectedText && (
-                                            <button
-                                                onClick={() => {
-                                                    const curSub = subtitlesForVideo?.find(s => currentTime >= s.startTimeMs / 1000 - 0.5 && currentTime <= s.endTimeMs / 1000 + 0.5);
-                                                    const startSec = curSub ? curSub.startTimeMs / 1000 : Math.max(0, currentTime - 2);
-                                                    const endSec = curSub ? curSub.endTimeMs / 1000 : currentTime + 3;
-                                                    const sentence = curSub ? curSub.text : selectedSentence || selectedText;
-
-                                                    setReelModalData({
-                                                        word: selectedText,
-                                                        translation: translationData.translation || '',
-                                                        transcription: translationData.transcription || undefined,
-                                                        sentence: sentence,
-                                                        startSec,
-                                                        endSec,
-                                                    });
-                                                    setIsReelModalOpen(true);
-                                                }}
-                                                className={styles.reelButton}
-                                                title="Generate 9:16 Reel / TikTok"
-                                            >
-                                                <span className="flex items-center gap-1.5"><Smartphone size={14} /> REEL</span>
-                                            </button>
-                                        )}
-                                        {
-                                            (showSubscribeButton || translationData.translation?.startsWith("You have reached")) && (
-                                                <button
-                                                    className={styles.iconButton}
-                                                    style={{ color: '#D4AF37', background: 'rgba(255, 215, 0, 0.1)' }}
-                                                    onClick={() => {
-                                                        window.location.href = "/subscribe";
-                                                    }}
-                                                    aria-label={intl.formatMessage({
-                                                        id: "subscribeNow",
-                                                        defaultMessage: "Subscribe"
-                                                    })}
-                                                    title={intl.formatMessage({
-                                                        id: "subscribeNow",
-                                                        defaultMessage: "Subscribe"
-                                                    })}
-                                                >
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                                                    </svg>
-                                                </button>
-                                            )
-                                        }
-                                        <button
-                                            className={styles.closeButton}
-                                            onClick={() => {
-                                                setIsPopoverOpen(false);
-                                                resetPopoverState();
-                                            }}
-                                            aria-label="Close translation"
-                                        >
-                                            <X size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        ,
-                        document.fullscreenElement || document.body
-                    )
-                }
+                        setReelModalData({
+                            word: selectedText,
+                            translation: translationData.translation || '',
+                            transcription: translationData.transcription || undefined,
+                            sentence: sentence,
+                            startSec,
+                            endSec,
+                        });
+                        setIsReelModalOpen(true);
+                    }}
+                    onClose={() => {
+                        setIsPopoverOpen(false);
+                        resetPopoverState();
+                    }}
+                    onMouseEnter={() => {
+                        pauseVideo();
+                    }}
+                    onRemoveImage={() => {
+                        setTranslationData(prev => ({ ...prev, showImage: false }));
+                    }}
+                />
 
                 {
                     showLanguageOverlay && createPortal(
