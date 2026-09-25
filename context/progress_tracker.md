@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Spec 11: VideoPlayer Modular Decomposition (Part 3 — Subtitle Overlay) (ADR-067)
   - Spec 10: VideoPlayer Modular Decomposition (Part 2 — Controls Overlay) (ADR-066)
   - Spec 09: VideoPlayer Modular Decomposition (Part 1 — Translation Popover & Options Grid) (ADR-065)
   - Phase 1 Quick Compliance Fixes: Async Loading Guards (R11), Humble Object Decoupling (R10), and Semantic A11y (R12) (ADR-064)
@@ -45,6 +46,7 @@
 
 | ADR ID | Date | Decision | Rationale | Impact |
 | :--- | :--- | :--- | :--- | :--- |
+| **ADR-067** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 3 — Subtitle Overlay) | `VideoPlayer.tsx` duplicated subtitle rendering markup between inline mode and fullscreen mode across 208 lines of JSX, duplicating touch-reveal timer state, blur logic, grammar CEFR badges, and tokenized text selection. | Extracted `SubtitleOverlay.tsx` (164 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 200 lines off `VideoPlayer.tsx` (now down to 3,055 lines from original 3,639). Encapsulated touch reveal timers and eliminated duplicated DOM structures between fullscreen and inline modes. Created unit test suite `SubtitleOverlay.test.tsx` (7 tests). All 29 frontend test suites (152 tests) and Go microservices pass. Production build verified code 0. |
 | **ADR-066** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 2 — Controls Overlay) | `VideoPlayer.tsx` still contained the complete inline controls overlay spanning ~135 lines of top and bottom controls JSX, volume slider, progress scrubber, and practice pills. | Extracted `VideoControlsOverlay.tsx` (204 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 106 lines off `VideoPlayer.tsx` and pruned 9 unused icon imports (`Eye`, `EyeOff`, `Maximize`, `Minimize`, `RotateCcw`, `Volume1`, `Volume2`, `VolumeX`, `GraduationCap`). Created unit test suite `VideoControlsOverlay.test.tsx` (5 tests). All 28 frontend test suites (145 tests) pass cleanly. Production build verified code 0. |
 | **ADR-065** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 1 — Translation Popover & Options Grid) | `VideoPlayer.tsx` exceeded 3,600 lines, violating Rule 13 (250-line cap). The translation popover contained complex nested JSX spanning ~330 lines including options grid, synonym pills, collocation tags, examples, audio hints, and dictionary/reel actions. | Extracted `TranslationOptionsGrid.tsx` (151 lines) and `VideoTranslationPopover.tsx` (240 lines), strictly respecting the 250-line rule. Shaved 330 lines off `VideoPlayer.tsx`. Created unit test suites `TranslationOptionsGrid.test.tsx` and `VideoTranslationPopover.test.tsx` (140 tests passing across 27 suites). Production build clean. |
 | **ADR-064** | 2026-09-26 | Phase 1 Quick Compliance Fixes: Async Loading Guards (R11), Humble Object Decoupling (R10), and Semantic A11y (R12) | Static code audit revealed violations of newly established senior rules: (1) `saveToDict` buttons in 4 components lacked `disabled` guards during active mutation, risking rapid duplicate clicks; (2) Direct `axios`/`fetch` calls inside `SongSearchPlayer.tsx` and `VideoPlayer.tsx` violated Frontend Humble Object pattern; (3) Clickable `<div>` elements in Header logout, quiz options, and modals lacked native button semantics and keyboard accessibility. | (1) Added `disabled={saveWordMutation.isPending}` and pending text states across `VideoPlayer.tsx`, `TextPasteHighlighter.tsx`, `SongSearchPlayer.tsx`, and `SubtitleViewer.tsx`; (2) Created `SpotifyService.ts` and added `fetchSubtitleFileContent` to `SubtitleService.ts`, purging raw network calls from components; (3) Converted Header logout and StudentLessonPage quiz options to native `<button type="button">`; (4) Added window `Escape` key listener, `role="dialog"`, and `aria-modal="true"` to `PremiumLimitModal.tsx`. 25 frontend test suites (131 tests) and Go tests pass cleanly; production build verified. |
@@ -115,6 +117,13 @@
 ---
 
 ## Session Notes
+- **Spec 11: VideoPlayer Modular Decomposition — Part 3: Subtitle Overlay (Completed 2026-09-26)**:
+  - Extracted dual fullscreen and inline subtitle rendering from `VideoPlayer.tsx` into unified component:
+    - `substreamedu-frontend/src/components/VideoPage/components/SubtitleOverlay.tsx` (164 lines): manages conditional container styling (`isFullscreen` vs inline), touch-reveal timeout listeners (`isTouchRevealed` state encapsulated inside), subtitle loading spinner and empty states, grammar spotlight CEFR indicator badge with `Sparkles`, and highlighted text selection.
+  - Strictly adheres to Rule 13 (164 lines $\le 250$-line limit).
+  - Shaved 200 lines off `VideoPlayer.tsx` (now down to 3,055 lines from original 3,639) and pruned unused icon import `Sparkles`.
+  - Created unit test suite `SubtitleOverlay.test.tsx` (7 tests verifying rendered text, loading state, empty state, grammar button interaction, mouse selection, and touch reveal behavior).
+  - All 29 frontend test suites (152 tests) and all 5 backend Go microservices pass cleanly; production build verified code 0.
 - **Spec 10: VideoPlayer Modular Decomposition — Part 2: Controls Overlay (Completed 2026-09-26)**:
   - Extracted inline top and bottom player controls from `VideoPlayer.tsx` into isolated presentation/interaction component:
     - `substreamedu-frontend/src/components/VideoPage/components/VideoControlsOverlay.tsx` (204 lines): manages top control buttons (Grammar index launcher, Teacher Studio launcher, subtitle toggle, blur listening toggle, delay -2s listening toggle, repeat 3x listening toggle) and bottom controls (volume mute & slider, current time, interactive mouse & touch seek bar, total duration, fullscreen toggle).

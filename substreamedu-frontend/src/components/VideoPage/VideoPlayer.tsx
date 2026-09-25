@@ -11,6 +11,7 @@ import { VideoGrammarIndexModal } from './components/VideoGrammarIndexModal';
 import { LessonStudioModal } from './components/LessonStudioModal';
 import { VideoTranslationPopover } from './components/VideoTranslationPopover';
 import { VideoControlsOverlay } from './components/VideoControlsOverlay';
+import { SubtitleOverlay } from './components/SubtitleOverlay';
 import {
     detectGrammarInText,
     scanSubtitlesForGrammar,
@@ -28,7 +29,6 @@ import { useIntl, FormattedMessage } from "react-intl";
 import Zap from 'lucide-react/dist/esm/icons/zap';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
-import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
@@ -249,23 +249,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
             return true;
         }
     });
-    const [isTouchRevealed, setIsTouchRevealed] = useState<boolean>(false);
-    const touchRevealTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    useEffect(() => {
-        setIsTouchRevealed(false);
-        if (touchRevealTimeoutRef.current) {
-            clearTimeout(touchRevealTimeoutRef.current);
-        }
-    }, [currentSubtitle]);
-
-    useEffect(() => {
-        return () => {
-            if (touchRevealTimeoutRef.current) {
-                clearTimeout(touchRevealTimeoutRef.current);
-            }
-        };
-    }, []);
     // isFullscreen now comes from useVideoPlayer hook
     const [showMobileHint, setShowMobileHint] = useState(true);
 
@@ -2748,211 +2731,30 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                 />
                             </div>
                             {
-                                (selectedSubtitle || videoId) && isFullscreen && (
-                                    <div
-                                        className={`${styles.innerSubtitlesContainer} ${styles.fullscreenSubtitles} ${!showSubtitles ? styles.hiddenSubtitles : ''}`}
-                                    >
-                                        <div
-                                            className={`${styles.currentSubtitleContainer} ${(isYoutubeSubsLoading || isSearchingSubtitles) ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent}`}
-                                            ref={videoWrapperRef}
-                                            onMouseUp={(e) => {
-                                                e.stopPropagation();
-                                                handleTextSelection();
-                                            }}
-                                            onTouchStart={() => {
-                                                if (blurSubtitles) {
-                                                    setIsTouchRevealed(true);
-                                                }
-                                            }}
-                                            onTouchEnd={(e) => {
-                                                e.stopPropagation();
-                                                handleTextSelection();
-                                                if (blurSubtitles) {
-                                                    const selection = window.getSelection();
-                                                    if (!selection || selection.toString().trim().length < 2) {
-                                                        setIsTouchRevealed(true);
-                                                        if (touchRevealTimeoutRef.current) clearTimeout(touchRevealTimeoutRef.current);
-                                                        touchRevealTimeoutRef.current = setTimeout(() => {
-                                                            setIsTouchRevealed(false);
-                                                        }, 3500);
-                                                    }
-                                                }
-                                            }}
-                                        >
-                                            {(isYoutubeSubsLoading || isSearchingSubtitles) ? (
-                                                <div className={styles.youtubeLoadingPremium}>
-                                                    <div className={styles.loadingPulse}></div>
-                                                    <span>Loading subtitles...</span>
-                                                </div>
-                                            ) : (videoId && (!subtitlesForVideo || subtitlesForVideo.length === 0)) ? (
-                                                <span className={styles.youtubeLoading}>No subtitles found for this video.</span>
-                                            ) : currentSubtitle && (
-                                            <>
-                                                {activeGrammarPoint && (
-                                                    <div className={styles.grammarBadgeContainer}>
-                                                        <button
-                                                            className={styles.grammarBadge}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                pauseVideo();
-                                                                setSelectedGrammarPoint(activeGrammarPoint);
-                                                                setSelectedGrammarSentence(currentSubtitle || '');
-                                                                setIsGrammarModalOpen(true);
-                                                            }}
-                                                            title={`Explore grammar: ${activeGrammarPoint.name} (${activeGrammarPoint.cefrLevel})`}
-                                                        >
-                                                            <span className={styles.grammarBadgeIconWrapper}>
-                                                                <Sparkles size={11} className={styles.grammarBadgeIcon} />
-                                                            </span>
-                                                            <span className={styles.grammarBadgeLabel}>
-                                                                {activeGrammarPoint.shortLabel || activeGrammarPoint.name}
-                                                            </span>
-                                                            <span className={styles.grammarBadgeCefr}>
-                                                                {activeGrammarPoint.cefrLevel}
-                                                            </span>
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                <p
-                                                    className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''}`}
-                                                    onContextMenu={(e) => {
-                                                        const isAndroid = /Android/i.test(navigator.userAgent);
-                                                        if (!isAndroid) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
-                                                    onMouseEnter={() => {
-                                                        pauseVideo();
-                                                    }}
-                                                    onMouseLeave={() => {
-                                                        
-                                                        const selection = window.getSelection();
-                                                        if (!isPopoverOpen && !isLoading && (!selection || selection.toString().trim().length === 0)) {
-                                                            playVideo();
-                                                        }
-                                                    }}
-                                                    onClick={() => {
-                                                        if (isMobile && blurSubtitles) {
-                                                            setIsTouchRevealed(true);
-                                                            if (touchRevealTimeoutRef.current) clearTimeout(touchRevealTimeoutRef.current);
-                                                            touchRevealTimeoutRef.current = setTimeout(() => {
-                                                                setIsTouchRevealed(false);
-                                                            }, 3500);
-                                                        }
-                                                    }}
-                                                >
-                                                    {renderHighlightedText(formatSubtitleForDisplay(currentSubtitle))}
-                                                </p>
-                                            </>
-                                            )}
-                                        </div>
-                                    </div>
-                                )
-                            }
-                            {
-                                (selectedSubtitle || videoId) && !isFullscreen && (
-                                    <div
-                                        className={`${styles.innerSubtitlesContainer} ${!showSubtitles ? styles.hiddenSubtitles : ''}`}
-                                        style={{
-                                            padding: '0 20px',
-                                            boxSizing: 'border-box',
-                                            overflow: 'visible'
+                                (selectedSubtitle || videoId) && (
+                                    <SubtitleOverlay
+                                        isFullscreen={isFullscreen}
+                                        showSubtitles={showSubtitles}
+                                        currentSubtitle={currentSubtitle}
+                                        isLoadingSubtitles={isYoutubeSubsLoading || isSearchingSubtitles}
+                                        hasNoSubtitlesForVideo={Boolean(videoId && (!subtitlesForVideo || subtitlesForVideo.length === 0))}
+                                        activeGrammarPoint={activeGrammarPoint}
+                                        blurSubtitles={blurSubtitles}
+                                        isMobile={isMobile}
+                                        isPopoverOpen={isPopoverOpen}
+                                        isLoadingTranslation={isLoading}
+                                        containerRef={videoWrapperRef}
+                                        onTextSelection={handleTextSelection}
+                                        onExploreGrammar={(point, sentence) => {
+                                            pauseVideo();
+                                            setSelectedGrammarPoint(point);
+                                            setSelectedGrammarSentence(sentence);
+                                            setIsGrammarModalOpen(true);
                                         }}
-                                    >
-                                        <div
-                                            className={`${styles.currentSubtitleContainer} ${(isYoutubeSubsLoading || isSearchingSubtitles) ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent}`}
-                                            ref={videoWrapperRef}
-                                            onMouseUp={(e) => {
-                                                e.stopPropagation();
-                                                handleTextSelection();
-                                            }}
-                                            onTouchStart={() => {
-                                                if (blurSubtitles) {
-                                                    setIsTouchRevealed(true);
-                                                }
-                                            }}
-                                            onTouchEnd={(e) => {
-                                                e.stopPropagation();
-                                                handleTextSelection();
-                                                if (blurSubtitles) {
-                                                    const selection = window.getSelection();
-                                                    if (!selection || selection.toString().trim().length < 2) {
-                                                        setIsTouchRevealed(true);
-                                                        if (touchRevealTimeoutRef.current) clearTimeout(touchRevealTimeoutRef.current);
-                                                        touchRevealTimeoutRef.current = setTimeout(() => {
-                                                            setIsTouchRevealed(false);
-                                                        }, 3500);
-                                                    }
-                                                }
-                                            }}
-                                        >
-                                            {(isYoutubeSubsLoading || isSearchingSubtitles) ? (
-                                                <div className={styles.youtubeLoadingPremium}>
-                                                    <div className={styles.loadingPulse}></div>
-                                                    <span>Loading subtitles...</span>
-                                                </div>
-                                            ) : (videoId && (!subtitlesForVideo || subtitlesForVideo.length === 0)) ? (
-                                                <span className={styles.youtubeLoading}>No subtitles found for this video.</span>
-                                            ) : currentSubtitle && (
-                                            <>
-                                                {activeGrammarPoint && (
-                                                    <div className={styles.grammarBadgeContainer}>
-                                                        <button
-                                                            className={styles.grammarBadge}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                pauseVideo();
-                                                                setSelectedGrammarPoint(activeGrammarPoint);
-                                                                setSelectedGrammarSentence(currentSubtitle || '');
-                                                                setIsGrammarModalOpen(true);
-                                                            }}
-                                                            title={`Explore grammar: ${activeGrammarPoint.name} (${activeGrammarPoint.cefrLevel})`}
-                                                        >
-                                                            <span className={styles.grammarBadgeIconWrapper}>
-                                                                <Sparkles size={11} className={styles.grammarBadgeIcon} />
-                                                            </span>
-                                                            <span className={styles.grammarBadgeLabel}>
-                                                                {activeGrammarPoint.shortLabel || activeGrammarPoint.name}
-                                                            </span>
-                                                            <span className={styles.grammarBadgeCefr}>
-                                                                {activeGrammarPoint.cefrLevel}
-                                                            </span>
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                <p
-                                                    className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''}`}
-                                                    onContextMenu={(e) => {
-                                                        const isAndroid = /Android/i.test(navigator.userAgent);
-                                                        if (!isAndroid) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
-                                                    onMouseEnter={() => {
-                                                        pauseVideo();
-                                                    }}
-                                                    onMouseLeave={() => {
-                                                        const selection = window.getSelection();
-                                                        if (!isPopoverOpen && !isLoading && (!selection || selection.toString().trim().length === 0)) {
-                                                            playVideo();
-                                                        }
-                                                    }}
-                                                    onClick={() => {
-                                                        if (isMobile && blurSubtitles) {
-                                                            setIsTouchRevealed(true);
-                                                            if (touchRevealTimeoutRef.current) clearTimeout(touchRevealTimeoutRef.current);
-                                                            touchRevealTimeoutRef.current = setTimeout(() => {
-                                                                setIsTouchRevealed(false);
-                                                            }, 3500);
-                                                        }
-                                                    }}
-                                                >
-                                                    {renderHighlightedText(formatSubtitleForDisplay(currentSubtitle))}
-                                                </p>
-                                            </>
-                                            )}
-                                        </div>
-                                    </div>
+                                        onPauseVideo={pauseVideo}
+                                        onPlayVideo={playVideo}
+                                        renderedSubtitle={renderHighlightedText(formatSubtitleForDisplay(currentSubtitle || ''))}
+                                    />
                                 )
                             }
                             {
