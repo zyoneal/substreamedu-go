@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: SubStreamEdu Dictionary & Learning Service API
+  version: 1.0.0
+  description: Spaced Repetition (FSRS), Vocabulary Catalog, AI Translations, Grammar Detection, and Interactive Lessons.
+
+servers:
+  - url: /api/dictionary
+    description: Public Gateway routed path
+  - url: http://dictionary-service:3003/dictionary-service
+    description: Internal direct service address
+
+paths:
+  /translation/prod:
+    post:
+      summary: Contextual Lexeme Translation & Definition
+      description: Returns enriched in-context translation, sense-coherent definitions, register badges, and collocations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, context]
+              properties:
+                text:
+                  type: string
+                  example: "sudden death"
+                context:
+                  type: string
+                  example: "The playoff ended in sudden death after 18 holes."
+                source_lang:
+                  type: string
+                  default: en
+                target_lang:
+                  type: string
+                  default: ru
+      responses:
+        '200':
+          description: Contextual translation payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationResponse'
+
+  /srs/today:
+    get:
+      summary: Get Today's Due Flashcards
+      description: Returns SRS review queue computed via FSRS in user's local timezone.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Timezone
+          in: header
+          required: false
+          schema:
+            type: string
+            example: Europe/Kyiv
+      responses:
+        '200':
+          description: List of flashcards due for review today
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Flashcard'
+
+  /srs/stats:
+    get:
+      summary: Get SRS Dashboard Statistics
+      description: Aggregated review statistics, retention rates, and streak counters (Redis cached).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Timezone
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SRS dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SRSStats'
+
+  /item/{id}/review2:
+    post:
+      summary: Submit Flashcard Review Rating
+      description: Updates card FSRS stability, difficulty, retrievability, and schedules next review.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  enum: [1, 2, 3, 4]
+                  description: "1: Again, 2: Hard, 3: Good, 4: Easy"
+      responses:
+        '200':
+          description: Card successfully reviewed and rescheduled
+
+  /translated:
+    post:
+      summary: Save Translated Word
+      description: Creates vocabulary entry and generates linked Recognition and Production SRS cards.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [word, translation, context]
+              properties:
+                word:
+                  type: string
+                translation:
+                  type: string
+                context:
+                  type: string
+                definition:
+                  type: string
+                resourceName:
+                  type: string
+      responses:
+        '201':
+          description: Word and flashcards created successfully
+
+  /grammar/analyze:
+    post:
+      summary: Analyze Subtitle Line for Advanced Grammar
+      description: Detects B1-C1 grammatical patterns (Conditionals, Inversion, Modal Perfects) with pedagogical explanations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                ruleId:
+                  type: string
+      responses:
+        '200':
+          description: Grammar analysis and mini-quiz payload
+
+  /lessons/share/{shareToken}:
+    get:
+      summary: Get Public Shared Lesson Worksheet
+      description: Unauthenticated endpoint for students to view lesson materials, quizzes, and exercises.
+      parameters:
+        - name: shareToken
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Complete interactive lesson plan
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TranslationResponse:
+      type: object
+      properties:
+        translation:
+          type: string
+        definition:
+          type: string
+        part_of_speech:
+          type: string
+        register:
+          type: string
+        typical_contexts:
+          type: array
+          items:
+            type: string
+        alternatives:
+          type: array
+          items:
+            type: object
+            properties:
+              translation:
+                type: string
+              context_label:
+                type: string
+
+    Flashcard:
+      type: object
+      properties:
+        id:
+          type: integer
+        word:
+          type: string
+        translation:
+          type: string
+        context:
+          type: string
+        card_type:
+          type: integer
+          description: "0: Recognition, 1: Production"
+        state:
+          type: string
+        due:
+          type: string
+          format: date-time
+
+    SRSStats:
+      type: object
+      properties:
+        totalCards:
+          type: integer
+        cardsDueToday:
+          type: integer
+        reviewedToday:
+          type: boolean
+        streakDays:
+          type: integer
+        retentionRate:
+          type: number

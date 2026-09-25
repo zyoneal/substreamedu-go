@@ -9,13 +9,15 @@ Welcome to the **SubStreamEdu** repository. This codebase is managed under **Sen
 ---
 
 ## 1. Mandatory Pre-Flight Context Checklist
-Every AI agent starting a new turn or task MUST read the following 6 context files in `/context/`:
+Every AI agent starting a new turn or task MUST read the following context files in `/context/`:
 1. [`/context/project_overview.md`](file:///Users/test/Desktop/substreamedu-go/context/project_overview.md) — Product scope, core user flows, and success criteria.
 2. [`/context/architecture.md`](file:///Users/test/Desktop/substreamedu-go/context/architecture.md) — System layers, communication patterns, storage strategies, and non-negotiable system invariants.
-3. [`/context/code_standards.md`](file:///Users/test/Desktop/substreamedu-go/context/code_standards.md) — Go backend standards, TypeScript/React guidelines, error formats, and database rules.
-4. [`/context/ai_workflow_rules.md`](file:///Users/test/Desktop/substreamedu-go/context/ai_workflow_rules.md) — Single-spec atomicity, cross-boundary protection, and verification rules.
-5. [`/context/ui_context.md`](file:///Users/test/Desktop/substreamedu-go/context/ui_context.md) — Design tokens, typography, bento grid layout rules, and UI anti-patterns.
-6. [`/context/progress_tracker.md`](file:///Users/test/Desktop/substreamedu-go/context/progress_tracker.md) — Active phase, currently assigned task, and architectural decision log.
+3. [`/context/expected_load.md`](file:///Users/test/Desktop/substreamedu-go/context/expected_load.md) — System capacity, concurrency benchmarks, latency SLAs, and resource bounds.
+4. [`/context/code_standards.md`](file:///Users/test/Desktop/substreamedu-go/context/code_standards.md) — Go backend standards, TypeScript/React guidelines, error formats, and database rules.
+5. [`/context/ai_workflow_rules.md`](file:///Users/test/Desktop/substreamedu-go/context/ai_workflow_rules.md) — Single-spec atomicity, cross-boundary protection, refactoring checklist, and verification rules.
+6. [`/context/ui_context.md`](file:///Users/test/Desktop/substreamedu-go/context/ui_context.md) — Design tokens, typography, bento grid layout rules, and UI anti-patterns.
+7. [`/context/progress_tracker.md`](file:///Users/test/Desktop/substreamedu-go/context/progress_tracker.md) — Active phase, currently assigned task, and architectural decision log.
+8. [`/context/api_specs/`](file:///Users/test/Desktop/substreamedu-go/context/api_specs/) — Formal OpenAPI 3.0 service contracts and gateway route mappings (consult before modifying any endpoint).
 
 ---
 
