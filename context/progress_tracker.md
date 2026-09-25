@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Spec 12: VideoPlayer Modular Decomposition (Part 4 — Modals & Subtitle Selection Bar) (ADR-068)
   - Spec 11: VideoPlayer Modular Decomposition (Part 3 — Subtitle Overlay) (ADR-067)
   - Spec 10: VideoPlayer Modular Decomposition (Part 2 — Controls Overlay) (ADR-066)
   - Spec 09: VideoPlayer Modular Decomposition (Part 1 — Translation Popover & Options Grid) (ADR-065)
@@ -46,6 +47,7 @@
 
 | ADR ID | Date | Decision | Rationale | Impact |
 | :--- | :--- | :--- | :--- | :--- |
+| **ADR-068** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 4 — Modals & Subtitle Selection Bar) | `VideoPlayer.tsx` still embedded 6 modal declarations (`SubtitleSearchModal`, `FilmSelectionModal`, `ReelGeneratorModal`, `GrammarSpotlightModal`, `VideoGrammarIndexModal`, `LessonStudioModal`) and inline subtitle selection markup, cluttering the render tree and maintaining obsolete imports. | Extracted `SubtitleSelectionBar.tsx` (68 lines) and `VideoPlayerModals.tsx` (148 lines), both well within the Rule 13 cap ($\le 250$ lines). Reduced `VideoPlayer.tsx` below 3,000 lines (2,994 lines, down from original 3,639). Pruned 7 imports (6 modals + `SearchableSelect`). Added unit test suites `SubtitleSelectionBar.test.tsx` and `VideoPlayerModals.test.tsx`. All 31 test suites (163 tests) and Go services pass; build verified code 0. |
 | **ADR-067** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 3 — Subtitle Overlay) | `VideoPlayer.tsx` duplicated subtitle rendering markup between inline mode and fullscreen mode across 208 lines of JSX, duplicating touch-reveal timer state, blur logic, grammar CEFR badges, and tokenized text selection. | Extracted `SubtitleOverlay.tsx` (164 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 200 lines off `VideoPlayer.tsx` (now down to 3,055 lines from original 3,639). Encapsulated touch reveal timers and eliminated duplicated DOM structures between fullscreen and inline modes. Created unit test suite `SubtitleOverlay.test.tsx` (7 tests). All 29 frontend test suites (152 tests) and Go microservices pass. Production build verified code 0. |
 | **ADR-066** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 2 — Controls Overlay) | `VideoPlayer.tsx` still contained the complete inline controls overlay spanning ~135 lines of top and bottom controls JSX, volume slider, progress scrubber, and practice pills. | Extracted `VideoControlsOverlay.tsx` (204 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 106 lines off `VideoPlayer.tsx` and pruned 9 unused icon imports (`Eye`, `EyeOff`, `Maximize`, `Minimize`, `RotateCcw`, `Volume1`, `Volume2`, `VolumeX`, `GraduationCap`). Created unit test suite `VideoControlsOverlay.test.tsx` (5 tests). All 28 frontend test suites (145 tests) pass cleanly. Production build verified code 0. |
 | **ADR-065** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 1 — Translation Popover & Options Grid) | `VideoPlayer.tsx` exceeded 3,600 lines, violating Rule 13 (250-line cap). The translation popover contained complex nested JSX spanning ~330 lines including options grid, synonym pills, collocation tags, examples, audio hints, and dictionary/reel actions. | Extracted `TranslationOptionsGrid.tsx` (151 lines) and `VideoTranslationPopover.tsx` (240 lines), strictly respecting the 250-line rule. Shaved 330 lines off `VideoPlayer.tsx`. Created unit test suites `TranslationOptionsGrid.test.tsx` and `VideoTranslationPopover.test.tsx` (140 tests passing across 27 suites). Production build clean. |
@@ -117,6 +119,14 @@
 ---
 
 ## Session Notes
+- **Spec 12: VideoPlayer Modular Decomposition — Part 4: Modals & Subtitle Selection Bar (Completed 2026-09-26)**:
+  - Extracted 6 modal declarations and inline subtitle selection markup from `VideoPlayer.tsx` into dedicated, self-contained subcomponents:
+    - `substreamedu-frontend/src/components/VideoPage/components/SubtitleSelectionBar.tsx` (68 lines): manages subtitle selection dropdown (`SearchableSelect`), custom `.srt`/`.vtt` file upload, and SubDL subtitle search trigger button.
+    - `substreamedu-frontend/src/components/VideoPage/components/VideoPlayerModals.tsx` (148 lines): groups and manages the 6 player modals (`SubtitleSearchModal`, `FilmSelectionModal`, `ReelGeneratorModal`, `GrammarSpotlightModal`, `VideoGrammarIndexModal`, `LessonStudioModal`).
+  - Both components strictly adhere to Rule 13 (68 lines and 148 lines $\le 250$-line limit).
+  - Reduced `VideoPlayer.tsx` below 3,000 lines (now at 2,994 lines, down from original 3,639). Pruned 7 imports (6 modal components + `SearchableSelect`).
+  - Created unit test suites `SubtitleSelectionBar.test.tsx` (5 tests) and `VideoPlayerModals.test.tsx` (5 tests).
+  - All 31 frontend test suites (163 tests) and all 5 backend Go microservices pass cleanly; production build verified code 0.
 - **Spec 11: VideoPlayer Modular Decomposition — Part 3: Subtitle Overlay (Completed 2026-09-26)**:
   - Extracted dual fullscreen and inline subtitle rendering from `VideoPlayer.tsx` into unified component:
     - `substreamedu-frontend/src/components/VideoPage/components/SubtitleOverlay.tsx` (164 lines): manages conditional container styling (`isFullscreen` vs inline), touch-reveal timeout listeners (`isTouchRevealed` state encapsulated inside), subtitle loading spinner and empty states, grammar spotlight CEFR indicator badge with `Sparkles`, and highlighted text selection.

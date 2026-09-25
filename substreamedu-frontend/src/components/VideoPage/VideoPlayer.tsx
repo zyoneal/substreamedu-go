@@ -3,12 +3,8 @@ import YouTube, { YouTubePlayer } from 'react-youtube';
 import { SubtitleService, SubDLSubtitle, SubDLSearchResult, SubtitleWithScore, calculateSyncScore } from '../../services/SubtitleService';
 import { DictionaryService } from '../../services/DictionaryService';
 import { AuthService } from '../../services/AuthService';
-import { SubtitleSearchModal } from './components/SubtitleSearchModal';
-import { FilmSelectionModal } from './components/FilmSelectionModal';
-import { ReelGeneratorModal } from './components/ReelGeneratorModal';
-import { GrammarSpotlightModal } from './components/GrammarSpotlightModal';
-import { VideoGrammarIndexModal } from './components/VideoGrammarIndexModal';
-import { LessonStudioModal } from './components/LessonStudioModal';
+import { VideoPlayerModals } from './components/VideoPlayerModals';
+import { SubtitleSelectionBar } from './components/SubtitleSelectionBar';
 import { VideoTranslationPopover } from './components/VideoTranslationPopover';
 import { VideoControlsOverlay } from './components/VideoControlsOverlay';
 import { SubtitleOverlay } from './components/SubtitleOverlay';
@@ -36,7 +32,6 @@ import MobileHint from '../shared/MobileHint';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
 import { useSaveWord, SaveWordData, SaveWordContext, useUserDictionaryItemsLight } from '../../hooks/useDictionary';
 import { useQueryClient } from '@tanstack/react-query';
-import { SearchableSelect } from '../shared/SearchableSelect';
 import { OnboardingGuideBar, OnboardingStep } from './components/OnboardingGuideBar';
 
 import { AxiosError } from 'axios';
@@ -2771,47 +2766,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                             }
                             {
                                 !selectedSubtitle && !videoId && !isExtractingSubtitles && (
-                                    <div className={styles.subtitleContainer}>
-                                        <div className={styles.innerSubtitlesContainer}>
-                                            <div className={styles.subtitleSelectionRow}>
-                                                {subtitles && subtitles.length > 0 && (
-                                                    <div style={{ flexShrink: 0, minWidth: '250px', maxWidth: '350px', width: '100%' }}>
-                                                        <SearchableSelect
-                                                            options={subtitles}
-                                                            value={fileName || ''}
-                                                            onChange={(value) => handleSubtitleClick(value)}
-                                                            placeholder={intl.formatMessage({ id: 'videoPlayer.selectSubtitles' })}
-                                                            noOptionsMessage={intl.formatMessage({ id: 'noSubtitlesFound', defaultMessage: 'No subtitles found' })}
-                                                        />
-                                                    </div>
-                                                )}
-                                                <p className={styles.subtitleSectionDescription}>
-                                                    {subtitles && subtitles.length > 0
-                                                        ? "If you haven't selected subtitles for this video yet, you can search for suitable ones or upload your own."
-                                                        : "Automatic subtitle search available! Click 'Search Subtitles' or upload your own .srt file."
-                                                    }
-                                                </p>
-                                                <button
-                                                    onClick={() => searchSubtitlesForVideo()}
-                                                    className={styles.minimalistButton}
-                                                    disabled={isSearchingSubtitles}
-                                                >
-                                                    {isSearchingSubtitles ? 'Searching...' : 'Search Subtitles'}
-                                                </button>
-                                                <label htmlFor="subtitle-upload-player" className={styles.minimalistButton}>
-                                                    Upload Subtitles
-                                                </label>
-                                                <input
-                                                    id="subtitle-upload-player"
-                                                    ref={subtitleInputRef}
-                                                    type="file"
-                                                    accept=".srt,.vtt"
-                                                    onChange={handleSubtitleUploadEvent}
-                                                    className="sr-only"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <SubtitleSelectionBar
+                                        subtitles={subtitles}
+                                        fileName={fileName || ''}
+                                        isSearchingSubtitles={isSearchingSubtitles}
+                                        subtitleInputRef={subtitleInputRef}
+                                        onSelectSubtitle={handleSubtitleClick}
+                                        onSearchSubtitles={() => searchSubtitlesForVideo()}
+                                        onUploadSubtitles={handleSubtitleUploadEvent}
+                                    />
                                 )
                             }
                         </div>
@@ -2957,61 +2920,41 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     )
                 }
 
-                <SubtitleSearchModal
-                    isOpen={showSubtitleSearchModal}
-                    onClose={() => setShowSubtitleSearchModal(false)}
-                    subtitles={availableSubtitles}
-                    onSelectSubtitle={handleSelectSubtitleFromSearch}
+                <VideoPlayerModals
+                    showSubtitleSearchModal={showSubtitleSearchModal}
+                    availableSubtitles={availableSubtitles}
+                    isSearchingSubtitles={isSearchingSubtitles}
+                    onCloseSubtitleSearch={() => setShowSubtitleSearchModal(false)}
+                    onSelectSubtitleFromSearch={handleSelectSubtitleFromSearch}
                     onQuickTest={handleQuickTest}
-                    isLoading={isSearchingSubtitles}
                     onSearchDifferentTitle={() => {
                         setShowSubtitleSearchModal(false);
                         setShowFilmSelection(true);
                     }}
-                />
-
-                <FilmSelectionModal
-                    isOpen={showFilmSelection}
-                    onClose={() => setShowFilmSelection(false)}
-                    films={availableFilms}
+                    showFilmSelection={showFilmSelection}
+                    availableFilms={availableFilms}
+                    searchQueryForFilms={searchQueryForFilms}
+                    onCloseFilmSelection={() => setShowFilmSelection(false)}
                     onSelectFilm={handleSelectFilmForSubtitles}
-                    isLoading={isSearchingSubtitles}
-                    searchQuery={searchQueryForFilms}
                     onSearchAgain={searchSubtitlesForVideo}
-                />
-
-                {isReelModalOpen && reelModalData && (
-                    <ReelGeneratorModal
-                        isOpen={isReelModalOpen}
-                        onClose={() => setIsReelModalOpen(false)}
-                        word={reelModalData.word}
-                        translation={reelModalData.translation}
-                        transcription={reelModalData.transcription}
-                        sentence={reelModalData.sentence}
-                        startSec={reelModalData.startSec}
-                        endSec={reelModalData.endSec}
-                        videoSource={videoId ? null : (videoRef.current?.src || (videoUrl && !videoUrl.includes('youtube') && !videoUrl.includes('youtu.be') ? videoUrl : null))}
-                        youtubeVideoId={videoId || (videoUrl?.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null)}
-                        movieTitle={getResourceName().replace(/^yt:/, '')}
-                    />
-                )}
-
-                <GrammarSpotlightModal
-                    isOpen={isGrammarModalOpen}
-                    onClose={() => {
+                    isReelModalOpen={isReelModalOpen}
+                    reelModalData={reelModalData}
+                    videoSource={videoId ? null : (videoRef.current?.src || (videoUrl && !videoUrl.includes('youtube') && !videoUrl.includes('youtu.be') ? videoUrl : null))}
+                    youtubeVideoId={videoId || (videoUrl?.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null)}
+                    movieTitle={getResourceName().replace(/^yt:/, '')}
+                    onCloseReelModal={() => setIsReelModalOpen(false)}
+                    isGrammarModalOpen={isGrammarModalOpen}
+                    selectedGrammarPoint={selectedGrammarPoint}
+                    selectedGrammarSentence={selectedGrammarSentence || currentSubtitle || ''}
+                    learningLanguage={learningLanguage}
+                    fluentLanguage={fluentLanguage || undefined}
+                    onCloseGrammarModal={() => {
                         setIsGrammarModalOpen(false);
                         setSelectedGrammarSentence('');
                     }}
-                    grammarPoint={selectedGrammarPoint}
-                    fullSentence={selectedGrammarSentence || currentSubtitle || ''}
-                    learningLanguage={learningLanguage}
-                    fluentLanguage={fluentLanguage || undefined}
-                />
-
-                <VideoGrammarIndexModal
-                    isOpen={isGrammarIndexOpen}
-                    onClose={() => setIsGrammarIndexOpen(false)}
-                    grammarMatches={videoGrammarMatches}
+                    isGrammarIndexOpen={isGrammarIndexOpen}
+                    videoGrammarMatches={videoGrammarMatches}
+                    onCloseGrammarIndex={() => setIsGrammarIndexOpen(false)}
                     onSelectGrammarCue={(match) => {
                         if (videoRef.current) {
                             videoRef.current.currentTime = Math.max(0, match.timestampSeconds);
@@ -3023,31 +2966,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                         setSelectedGrammarSentence(match.text);
                         setIsGrammarModalOpen(true);
                     }}
+                    isLessonStudioOpen={isLessonStudioOpen}
+                    isMobile={isMobile}
+                    videoTitle={selectedSubtitle || videoId || "English Video Lesson"}
+                    mediaSource={videoId ? "youtube" : "upload"}
+                    youtubeId={videoId || ""}
+                    lessonSubtitles={Array.isArray(subtitlesForVideo) ? subtitlesForVideo.map(s => ({
+                        start: s.startTimeMs / 1000,
+                        end: s.endTimeMs / 1000,
+                        text: s.text,
+                    })) : []}
+                    onCloseLessonStudio={() => setIsLessonStudioOpen(false)}
+                    onSeekToTime={(timeSec) => {
+                        if (videoRef.current) {
+                            videoRef.current.currentTime = Math.max(0, timeSec);
+                        }
+                        if (youtubePlayerRef.current) {
+                            youtubePlayerRef.current.seekTo(Math.max(0, timeSec), true);
+                        }
+                    }}
                 />
-
-                {!isMobile && (
-                    <LessonStudioModal
-                        isOpen={isLessonStudioOpen}
-                        onClose={() => setIsLessonStudioOpen(false)}
-                        videoTitle={selectedSubtitle || videoId || "English Video Lesson"}
-                        mediaSource={videoId ? "youtube" : "upload"}
-                        youtubeId={videoId || ""}
-                        subtitles={Array.isArray(subtitlesForVideo) ? subtitlesForVideo.map(s => ({
-                            start: s.startTimeMs / 1000,
-                            end: s.endTimeMs / 1000,
-                            text: s.text,
-                        })) : []}
-                        learningLanguage={learningLanguage}
-                        onSeekToTime={(timeSec) => {
-                            if (videoRef.current) {
-                                videoRef.current.currentTime = Math.max(0, timeSec);
-                            }
-                            if (youtubePlayerRef.current) {
-                                youtubePlayerRef.current.seekTo(Math.max(0, timeSec), true);
-                            }
-                        }}
-                    />
-                )}
             </div>
         </>
     );
