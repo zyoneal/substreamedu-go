@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Spec 14: VideoPlayer Modular Decomposition (Part 6 — useVideoKeyboardShortcuts Hook) (ADR-070)
   - Spec 13: VideoPlayer Modular Decomposition (Part 5 — useSubtitleSearch Hook) (ADR-069)
   - Spec 12: VideoPlayer Modular Decomposition (Part 4 — Modals & Subtitle Selection Bar) (ADR-068)
   - Spec 11: VideoPlayer Modular Decomposition (Part 3 — Subtitle Overlay) (ADR-067)
@@ -48,6 +49,7 @@
 
 | ADR ID | Date | Decision | Rationale | Impact |
 | :--- | :--- | :--- | :--- | :--- |
+| **ADR-070** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 6 — `useVideoKeyboardShortcuts` Hook) | `VideoPlayer.tsx` still managed global keyboard event listeners, input focus suppression, phrase-level seeking ($\pm 4$s across YouTube and HTML5), spacebar play/pause toggling, theater mode shortcut (`KeyT`), and complex 3-step subtitle loop repeat timing. | Extracted custom hook `useVideoKeyboardShortcuts.ts` (219 lines) adhering to Rule 13 ($\le 250$ lines). Shaved **129 lines** off `VideoPlayer.tsx`, reducing it to **2,343 lines** (total reduction of ~1,300 lines from original 3,639). Encapsulated timer cleanup to eliminate race conditions and memory leaks on unmount. Implemented unit test suite `useVideoKeyboardShortcuts.test.ts` (8 tests). All 34 frontend test suites (185 tests) and all 5 Go microservices pass; production build verified exit code 0. |
 | **ADR-069** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 5 — `useSubtitleSearch` Hook & Search Utils) | `VideoPlayer.tsx` still embedded 540 lines of SubDL subtitle querying, year/season/episode matching, film candidate disambiguation, sync score calculation, quick preview testing, temporary discard, and upload workflows, retaining tight coupling to SubDL domain logic and multiple duplicate state declarations. | Extracted pure utilities `subtitleSearchUtils.ts` (193 lines) and custom hook `useSubtitleSearch.ts` (329 lines). Shaved **523 lines** off `VideoPlayer.tsx`, bringing it down to **2,471 lines** (a total reduction of nearly 1,170 lines from original 3,639). Pruned obsolete imports and eliminated duplicate state blocks. Created comprehensive unit test suites `subtitleSearchUtils.test.ts` (4 tests) and `useSubtitleSearch.test.ts` (5 tests). All 33 frontend test suites (177 tests) and all 5 Go microservices pass cleanly; production build verified exit code 0. |
 | **ADR-068** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 4 — Modals & Subtitle Selection Bar) | `VideoPlayer.tsx` still embedded 6 modal declarations (`SubtitleSearchModal`, `FilmSelectionModal`, `ReelGeneratorModal`, `GrammarSpotlightModal`, `VideoGrammarIndexModal`, `LessonStudioModal`) and inline subtitle selection markup, cluttering the render tree and maintaining obsolete imports. | Extracted `SubtitleSelectionBar.tsx` (68 lines) and `VideoPlayerModals.tsx` (148 lines), both well within the Rule 13 cap ($\le 250$ lines). Reduced `VideoPlayer.tsx` below 3,000 lines (2,994 lines, down from original 3,639). Pruned 7 imports (6 modals + `SearchableSelect`). Added unit test suites `SubtitleSelectionBar.test.tsx` and `VideoPlayerModals.test.tsx`. All 31 test suites (163 tests) and Go services pass; build verified code 0. |
 | **ADR-067** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 3 — Subtitle Overlay) | `VideoPlayer.tsx` duplicated subtitle rendering markup between inline mode and fullscreen mode across 208 lines of JSX, duplicating touch-reveal timer state, blur logic, grammar CEFR badges, and tokenized text selection. | Extracted `SubtitleOverlay.tsx` (164 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 200 lines off `VideoPlayer.tsx` (now down to 3,055 lines from original 3,639). Encapsulated touch reveal timers and eliminated duplicated DOM structures between fullscreen and inline modes. Created unit test suite `SubtitleOverlay.test.tsx` (7 tests). All 29 frontend test suites (152 tests) and Go microservices pass. Production build verified code 0. |
@@ -351,6 +353,12 @@
 ---
 
 ## Session Notes
+- **Spec 14: VideoPlayer Modular Decomposition (Part 6 — `useVideoKeyboardShortcuts` Hook) (Completed 2026-09-26)**:
+  - Extracted custom hook `useVideoKeyboardShortcuts.ts` (219 lines) encapsulating global keydown listeners, input/textarea focus suppression, dual-engine seek ($\pm 4$s on ArrowLeft/ArrowRight), spacebar play/pause toggling, theater mode (`KeyT`), popover reset (`Escape`), and multi-step subtitle loop repeat (`handleRepeatCurrentSubtitle`).
+  - Shaved **129 lines** off `VideoPlayer.tsx`, shrinking it to **2,343 lines** (a total reduction of ~1,300 lines from original 3,639).
+  - Encapsulated interval timer and event listener cleanup on unmount, preventing audio/video loop race conditions.
+  - Implemented unit test suite `useVideoKeyboardShortcuts.test.ts` (8 tests).
+  - Verified 100% test pass rate across all 34 frontend test suites (185 tests), all 5 Go microservices (`gateway`, `iam`, `dictionary`, `media`, `notification`), and production build (`npm run build`, exit code 0).
 - **Spec 13: VideoPlayer Modular Decomposition (Part 5 — `useSubtitleSearch` Hook & Search Utils) (Completed 2026-09-26)**:
   - Extracted pure subtitle search utilities `subtitleSearchUtils.ts` (193 lines) and custom hook `useSubtitleSearch.ts` (329 lines) from `VideoPlayer.tsx`.
   - Shaved **523 lines** from `VideoPlayer.tsx`, shrinking it to **2,471 lines** (a total reduction of nearly 1,170 lines across Parts 1–5).

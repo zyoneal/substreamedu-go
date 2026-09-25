@@ -9,6 +9,7 @@ import { VideoTranslationPopover } from './components/VideoTranslationPopover';
 import { VideoControlsOverlay } from './components/VideoControlsOverlay';
 import { SubtitleOverlay } from './components/SubtitleOverlay';
 import { useSubtitleSearch } from './hooks/useSubtitleSearch';
+import { useVideoKeyboardShortcuts } from './hooks/useVideoKeyboardShortcuts';
 import { extractVideoNameFromUrl, formatSrtTimestamp } from './utils/subtitleSearchUtils';
 import {
     detectGrammarInText,
@@ -1686,147 +1687,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         }
     }, [fileName, videoId, fetchDictionaryItemsForCards]);
 
-    const handleKeyDown = useCallback((event: KeyboardEvent) => {
-        const activeElement = document.activeElement as HTMLElement;
-
-        if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
-            return;
-        }
-
-        if (event.code === 'Escape') {
-            resetPopoverState();
-        }
-
-        if (event.code === 'ArrowRight') {
-            if (videoId && youtubePlayerRef.current) {
-                const currentTime = youtubePlayerRef.current.getCurrentTime();
-                youtubePlayerRef.current.seekTo(currentTime + 4, true);
-            } else if (videoRef.current) {
-                videoRef.current.currentTime += 4;
-            }
-        }
-
-        if (event.code === 'ArrowLeft') {
-            if (videoId && youtubePlayerRef.current) {
-                const currentTime = youtubePlayerRef.current.getCurrentTime();
-                youtubePlayerRef.current.seekTo(currentTime - 4, true);
-            } else if (videoRef.current) {
-                videoRef.current.currentTime -= 4;
-            }
-        }
-
-        if (event.code === 'KeyT') {
-            event.preventDefault();
-            toggleMaxFit();
-        }
-
-        if (event.code === 'Space') {
-            event.preventDefault();
-            if (videoId && youtubePlayerRef.current) {
-                const state = youtubePlayerRef.current.getPlayerState();
-                if (state === 1) {
-                    youtubePlayerRef.current.pauseVideo();
-                } else {
-                    youtubePlayerRef.current.playVideo();
-                }
-            }
-            else if (videoRef.current) {
-                if (videoRef.current.paused) {
-                    playVideo();
-                } else {
-                    pauseVideo();
-                }
-            }
-        }
-    }, [videoId, youtubePlayerRef, videoRef, playVideo, pauseVideo, resetPopoverState, toggleMaxFit]);
-
-    useEffect(() => {
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [handleKeyDown]);
-
-    const repeatSubtitle = (subtitle: { startTimeMs: number, endTimeMs: number }) => {
-        if (videoId && youtubePlayerRef.current) {
-            const { startTimeMs, endTimeMs } = subtitle;
-            const repeatCount = 3;
-            let currentRepeat = 0;
-
-            const repeatLoop = () => {
-                if (youtubePlayerRef.current && currentRepeat < repeatCount) {
-                    youtubePlayerRef.current.seekTo(startTimeMs / 1000, true);
-                    youtubePlayerRef.current.playVideo();
-
-                    const checkTime = setInterval(async () => {
-                        if (youtubePlayerRef.current) {
-                            const currentTime = await youtubePlayerRef.current.getCurrentTime();
-                            if (currentTime >= endTimeMs / 1000) {
-                                currentRepeat++;
-                                if (currentRepeat < repeatCount) {
-                                    youtubePlayerRef.current.seekTo(startTimeMs / 1000);
-                                } else {
-                                    clearInterval(checkTime);
-                                }
-                            }
-                        }
-                    }, 100);
-                }
-            };
-            repeatLoop();
-
-        } else if (videoRef.current) {
-            const { startTimeMs, endTimeMs } = subtitle;
-            const repeatCount = 3;
-            let currentRepeat = 0;
-
-            const repeatLoop = () => {
-                if (videoRef.current && currentRepeat < repeatCount) {
-                    videoRef.current.currentTime = startTimeMs / 1000;
-                    safePlay();
-
-                    videoRef.current.ontimeupdate = () => {
-                        if (videoRef.current && videoRef.current?.currentTime >= endTimeMs / 1000) {
-                            currentRepeat++;
-                            if (currentRepeat < repeatCount) {
-                                videoRef.current.currentTime = startTimeMs / 1000;
-                            } else {
-                                videoRef.current.ontimeupdate = null;
-                            }
-                        }
-                    };
-                }
-            };
-
-            repeatLoop();
-        }
-    };
-
-    const handleRepeatCurrentSubtitle = async () => {
-        if (!subtitlesForVideo || subtitlesForVideo.length === 0) return;
-        let subtitle = subtitlesForVideo.find(
-            (sub) => sub.text === currentSubtitle
-        );
-        if (!subtitle) {
-            let curSec = 0;
-            if (youtubePlayerRef.current) {
-                try {
-                    curSec = await youtubePlayerRef.current.getCurrentTime();
-                } catch {}
-            } else if (videoRef.current) {
-                curSec = videoRef.current.currentTime;
-            }
-            const curTimeMs = curSec * 1000;
-            if (curTimeMs > 0) {
-                subtitle = subtitlesForVideo.find(
-                    (sub) => curTimeMs >= sub.startTimeMs && curTimeMs <= (sub.endTimeMs + 1500)
-                );
-            }
-        }
-        if (subtitle) {
-            repeatSubtitle(subtitle);
-        }
-    };
+    const { handleRepeatCurrentSubtitle } = useVideoKeyboardShortcuts({
+        videoId,
+        youtubePlayerRef,
+        videoRef,
+        playVideo,
+        pauseVideo,
+        safePlay,
+        resetPopoverState,
+        toggleMaxFit,
+        subtitlesForVideo,
+        currentSubtitle,
+    });
 
     const handleFullscreenChange = useCallback(() => {
         
