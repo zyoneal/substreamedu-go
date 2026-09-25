@@ -257,17 +257,16 @@ const Header = () => {
                                         </Link>
                                     )}
                                     {isLoggedIn && (
-                                        <div
+                                        <button
+                                            type="button"
                                             className={styles.logoutLink}
                                             onClick={() => {
                                                 setIsMobileMenuOpen(false);
                                                 handleLogout();
                                             }}
-                                            role="button"
-                                            tabIndex={0}
                                         >
                                             <FormattedMessage id="exit" defaultMessage="Exit" />
-                                        </div>
+                                        </button>
                                     )}
                                 </div>
                             </li>

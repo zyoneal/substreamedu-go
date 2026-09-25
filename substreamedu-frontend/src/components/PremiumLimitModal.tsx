@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Lock from 'lucide-react/dist/esm/icons/lock';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
@@ -11,6 +11,17 @@ interface PremiumLimitModalProps {
 
 const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) => {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!type) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [type, onClose]);
 
     if (!type) return null;
 
@@ -76,6 +87,9 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
             onClick={onClose}
         >
             <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="premium-limit-title"
                 style={{
                     background: '#141312',
                     padding: '40px',
@@ -89,6 +103,7 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
             >
                 <div style={{ fontSize: '40px', marginBottom: '20px', lineHeight: 1 }}>{msg.icon}</div>
                 <h2
+                    id="premium-limit-title"
                     style={{
                         color: '#ede8e0',
                         fontSize: '20px',

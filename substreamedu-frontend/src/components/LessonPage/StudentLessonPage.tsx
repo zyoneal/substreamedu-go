@@ -379,10 +379,12 @@ const StudentLessonPage: React.FC = () => {
                       }
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={optIdx}
                           className={optionClass}
                           onClick={() => handleSelectQuizAnswer(idx, optIdx)}
+                          disabled={isAnswered}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                             <span style={{ fontWeight: 600, width: "18px" }}>
@@ -397,7 +399,7 @@ const StudentLessonPage: React.FC = () => {
                           {isAnswered && optIdx === selectedIdx && optIdx !== q.correct_index && (
                             <XCircle size={18} color="var(--color-danger, #ef4444)" />
                           )}
-                        </div>
+                        </button>
                       );
                     })}
                   </div>

@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { motion } from 'framer-motion';
 import { StatusNotification } from '../VideoPage/components/StatusNotification';
 import axios, { AxiosError } from 'axios';
+import { SpotifyService } from '../../services/SpotifyService';
 import { SubtitleService } from '../../services/SubtitleService';
 import { LanguageContext } from "../LanguageContext";
 import { useIntl } from 'react-intl';
@@ -423,42 +424,23 @@ export default function SongSearchPlayer() {
         setTrack(null);
 
         try {
-            debugLog('Starting Spotify token search...');
-            const tokenResponse = await axios.post(
-                'https://accounts.spotify.com/api/token',
-                new URLSearchParams({ grant_type: 'client_credentials' }),
-                {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        Authorization:
-                            'Basic ' + btoa('8073fe0adc534a1290cefe1afe003d40' + ':' + '90bb0d2e329c4a5b8fd31ec9d39ccc4f'),
-                    },
-                }
-            );
+            debugLog('Searching track via SpotifyService...');
+            const item = await SpotifyService.searchTrack(queryToUse);
 
-            const token = tokenResponse.data.access_token;
-            debugLog('Token received, searching for track...');
-
-            const trackRes = await axios.get(
-                `https://api.spotify.com/v1/search?q=${encodeURIComponent(queryToUse)}&type=track&limit=1`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (!trackRes.data.tracks.items.length) {
+            if (!item) {
                 debugLog('Track not found');
                 setLoading(false);
                 setLyrics('Song not found');
                 return;
             }
 
-            const item = trackRes.data.tracks.items[0];
-            debugLog('Track found:', item.name, 'artist:', item.artists[0].name);
+            debugLog('Track found:', item.name, 'artist:', item.artists[0]?.name);
 
             const selectedTrack: Track = {
                 id: item.id,
                 name: item.name,
-                artist: item.artists[0].name,
-                spotifyUrl: item.external_urls.spotify,
+                artist: item.artists[0]?.name || 'Unknown Artist',
+                spotifyUrl: item.external_urls?.spotify || '',
                 embedUrl: `https://open.spotify.com/embed/track/${item.id}`,
             };
 
@@ -1506,9 +1488,10 @@ export default function SongSearchPlayer() {
                                         <button
                                             onClick={saveToDict}
                                             className={styles.saveButton}
-                                            title="Add to dictionary"
+                                            disabled={saveWordMutation.isPending}
+                                            title={saveWordMutation.isPending ? "Saving..." : "Add to dictionary"}
                                         >
-                                            <span>SAVE</span>
+                                            <span>{saveWordMutation.isPending ? "SAVING..." : "SAVE"}</span>
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                                                 <polyline points="17 21 17 13 7 13 7 21"></polyline>

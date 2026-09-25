@@ -334,6 +334,10 @@
     padding: 12px 24px;
     text-decoration: none;
     display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
     color: #f4f4f5;
     transition: all 0.2s ease;
     font-size: 14px;

@@ -77,6 +77,19 @@ export interface SubtitleWithScore extends SubDLSubtitle {
 
 const SubtitleService = {
 
+    async fetchSubtitleFileContent(url: string): Promise<string> {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to load subtitle file: ${response.status} ${response.statusText}`);
+            }
+            return await response.text();
+        } catch (error) {
+            debugError("Error fetching subtitle file content:", error);
+            throw error;
+        }
+    },
+
     async fetchSubtitles(fileId: string): Promise<any[]> {
         try {
             const response = await axiosService.get(`${baseURL}${urls.subtitles}/${fileId}`);
