@@ -9,8 +9,8 @@ jest.mock('lucide-react/dist/esm/icons/layers', () => () => <span data-testid="i
 
 describe('TranslationOptionsGrid Component', () => {
     const mockOptions: TranslationOption[] = [
-        { text: 'run', translation: 'бежать', source: 'primary' },
-        { text: 'operate', translation: 'управлять', source: 'alternative', register: 'formal', usageNote: 'machines' },
+        { text: 'run', definition: 'бежать', source: 'primary' },
+        { text: 'operate', definition: 'управлять', source: 'alternative', register: 'formal', usageNote: 'machines' },
     ];
 
     it('renders best matching AI hint when sentence matches recommendedSelections', () => {
