@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Spec 13: VideoPlayer Modular Decomposition (Part 5 — useSubtitleSearch Hook) (ADR-069)
   - Spec 12: VideoPlayer Modular Decomposition (Part 4 — Modals & Subtitle Selection Bar) (ADR-068)
   - Spec 11: VideoPlayer Modular Decomposition (Part 3 — Subtitle Overlay) (ADR-067)
   - Spec 10: VideoPlayer Modular Decomposition (Part 2 — Controls Overlay) (ADR-066)
@@ -47,6 +48,7 @@
 
 | ADR ID | Date | Decision | Rationale | Impact |
 | :--- | :--- | :--- | :--- | :--- |
+| **ADR-069** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 5 — `useSubtitleSearch` Hook & Search Utils) | `VideoPlayer.tsx` still embedded 540 lines of SubDL subtitle querying, year/season/episode matching, film candidate disambiguation, sync score calculation, quick preview testing, temporary discard, and upload workflows, retaining tight coupling to SubDL domain logic and multiple duplicate state declarations. | Extracted pure utilities `subtitleSearchUtils.ts` (193 lines) and custom hook `useSubtitleSearch.ts` (329 lines). Shaved **523 lines** off `VideoPlayer.tsx`, bringing it down to **2,471 lines** (a total reduction of nearly 1,170 lines from original 3,639). Pruned obsolete imports and eliminated duplicate state blocks. Created comprehensive unit test suites `subtitleSearchUtils.test.ts` (4 tests) and `useSubtitleSearch.test.ts` (5 tests). All 33 frontend test suites (177 tests) and all 5 Go microservices pass cleanly; production build verified exit code 0. |
 | **ADR-068** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 4 — Modals & Subtitle Selection Bar) | `VideoPlayer.tsx` still embedded 6 modal declarations (`SubtitleSearchModal`, `FilmSelectionModal`, `ReelGeneratorModal`, `GrammarSpotlightModal`, `VideoGrammarIndexModal`, `LessonStudioModal`) and inline subtitle selection markup, cluttering the render tree and maintaining obsolete imports. | Extracted `SubtitleSelectionBar.tsx` (68 lines) and `VideoPlayerModals.tsx` (148 lines), both well within the Rule 13 cap ($\le 250$ lines). Reduced `VideoPlayer.tsx` below 3,000 lines (2,994 lines, down from original 3,639). Pruned 7 imports (6 modals + `SearchableSelect`). Added unit test suites `SubtitleSelectionBar.test.tsx` and `VideoPlayerModals.test.tsx`. All 31 test suites (163 tests) and Go services pass; build verified code 0. |
 | **ADR-067** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 3 — Subtitle Overlay) | `VideoPlayer.tsx` duplicated subtitle rendering markup between inline mode and fullscreen mode across 208 lines of JSX, duplicating touch-reveal timer state, blur logic, grammar CEFR badges, and tokenized text selection. | Extracted `SubtitleOverlay.tsx` (164 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 200 lines off `VideoPlayer.tsx` (now down to 3,055 lines from original 3,639). Encapsulated touch reveal timers and eliminated duplicated DOM structures between fullscreen and inline modes. Created unit test suite `SubtitleOverlay.test.tsx` (7 tests). All 29 frontend test suites (152 tests) and Go microservices pass. Production build verified code 0. |
 | **ADR-066** | 2026-09-26 | Modular Decomposition of VideoPlayer Monolith (Part 2 — Controls Overlay) | `VideoPlayer.tsx` still contained the complete inline controls overlay spanning ~135 lines of top and bottom controls JSX, volume slider, progress scrubber, and practice pills. | Extracted `VideoControlsOverlay.tsx` (204 lines) adhering to Rule 13 (cap $\le 250$ lines). Shaved 106 lines off `VideoPlayer.tsx` and pruned 9 unused icon imports (`Eye`, `EyeOff`, `Maximize`, `Minimize`, `RotateCcw`, `Volume1`, `Volume2`, `VolumeX`, `GraduationCap`). Created unit test suite `VideoControlsOverlay.test.tsx` (5 tests). All 28 frontend test suites (145 tests) pass cleanly. Production build verified code 0. |
@@ -349,6 +351,12 @@
 ---
 
 ## Session Notes
+- **Spec 13: VideoPlayer Modular Decomposition (Part 5 — `useSubtitleSearch` Hook & Search Utils) (Completed 2026-09-26)**:
+  - Extracted pure subtitle search utilities `subtitleSearchUtils.ts` (193 lines) and custom hook `useSubtitleSearch.ts` (329 lines) from `VideoPlayer.tsx`.
+  - Shaved **523 lines** from `VideoPlayer.tsx`, shrinking it to **2,471 lines** (a total reduction of nearly 1,170 lines across Parts 1–5).
+  - Purged duplicate state blocks and obsolete imports (`calculateSyncScore`, `extractMovieYear`, SubDL types).
+  - Implemented unit test suites: `subtitleSearchUtils.test.ts` (4 tests) and `useSubtitleSearch.test.ts` (5 tests).
+  - Verified 100% test pass rate across all 33 frontend test suites (177 tests), all 5 Go microservices (`gateway`, `iam`, `dictionary`, `media`, `notification`), and production build (`npm run build`, exit code 0).
 - **Restore Native OS Pointer Precision & Ambient Cleanliness (Completed 2026-09-14)**:
   - Removed `<CinematicCursor />` and its import from `src/App.tsx`.
   - Deleted `src/components/HomePage/CinematicCursor.tsx` and `CinematicCursor.module.css`.

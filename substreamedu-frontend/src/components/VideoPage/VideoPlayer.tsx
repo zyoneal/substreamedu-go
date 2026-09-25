@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { SubtitleService, SubDLSubtitle, SubDLSearchResult, SubtitleWithScore, calculateSyncScore } from '../../services/SubtitleService';
+import { SubtitleService, SubDLSubtitle } from '../../services/SubtitleService';
 import { DictionaryService } from '../../services/DictionaryService';
 import { AuthService } from '../../services/AuthService';
 import { VideoPlayerModals } from './components/VideoPlayerModals';
@@ -8,13 +8,14 @@ import { SubtitleSelectionBar } from './components/SubtitleSelectionBar';
 import { VideoTranslationPopover } from './components/VideoTranslationPopover';
 import { VideoControlsOverlay } from './components/VideoControlsOverlay';
 import { SubtitleOverlay } from './components/SubtitleOverlay';
+import { useSubtitleSearch } from './hooks/useSubtitleSearch';
+import { extractVideoNameFromUrl, formatSrtTimestamp } from './utils/subtitleSearchUtils';
 import {
     detectGrammarInText,
     scanSubtitlesForGrammar,
     DetectedGrammarPoint
 } from '../../utils/grammarDetector';
 import { parseSRT } from '../../utils/srtParser';
-import { extractMovieYear } from '../../utils/videoNameUtils';
 import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleCleaner';
 import { stitchSubtitleSentences } from '../../utils/subtitleSentenceStitcher';
 import styles from "../../components/VideoPage/css/VideoPlayerPopover.module.css";
@@ -260,7 +261,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const [showSubscribeButton] = useState(false);
     const [showLanguageOverlay, setShowLanguageOverlay] = useState(false);
 
-    const [showSubtitleSearchModal, setShowSubtitleSearchModal] = useState(false);
     const [isReelModalOpen, setIsReelModalOpen] = useState(false);
     const [reelModalData, setReelModalData] = useState<{
         word: string;
@@ -270,11 +270,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         startSec: number;
         endSec: number;
     } | null>(null);
-    const [availableSubtitles, setAvailableSubtitles] = useState<SubtitleWithScore[]>([]);
-    const [isSearchingSubtitles, setIsSearchingSubtitles] = useState(false);
     const [isYoutubeSubsLoading, setIsYoutubeSubsLoading] = useState(false);
-    const [isTemporarySubtitles, setIsTemporarySubtitles] = useState(false);
-    const [temporarySubtitleInfo, setTemporarySubtitleInfo] = useState<SubtitleWithScore | null>(null);
 
     const [selectedGrammarPoint, setSelectedGrammarPoint] = useState<DetectedGrammarPoint | null>(null);
     const [selectedGrammarSentence, setSelectedGrammarSentence] = useState<string>('');
@@ -290,16 +286,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         return scanSubtitlesForGrammar(subtitlesForVideo);
     }, [subtitlesForVideo]);
 
-    // Film selection state for 2-step subtitle search
-    const [availableFilms, setAvailableFilms] = useState<SubDLSearchResult[]>([]);
-    const [showFilmSelection, setShowFilmSelection] = useState(false);
-    const [searchQueryForFilms, setSearchQueryForFilms] = useState('');
-    const [currentSearchParams, setCurrentSearchParams] = useState<{
-        languages: string;
-        type: 'movie' | 'tv';
-        seasonNumber?: number;
-        episodeNumber?: number;
-    } | null>(null);
+
 
     // Interactive Onboarding State (Step 1 -> Step 2 -> Completed)
     const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
@@ -669,546 +656,37 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         }
     };
 
-    const extractVideoNameFromUrl = (url: string): string => {
-        if (!url) return '';
-
-        debugLog('Extracting name from URL:', url);
-
-        // Handle blob URLs - try to get from sessionStorage first
-        if (url.startsWith('blob:')) {
-            const videoFileName = sessionStorage.getItem('videoFileName');
-            if (videoFileName) {
-                debugLog('Got filename from sessionStorage for blob URL:', videoFileName);
-                return videoFileName;
-            }
-            debugLog('Blob URL detected - cannot extract name from blob');
-            return '';
-        }
-
-        const parts = url.split('/');
-        const filename = parts[parts.length - 1];
-        debugLog('Filename from URL:', filename);
-
-        // Decode URI components
-        const decodedFilename = decodeURIComponent(filename);
-        debugLog('Decoded filename:', decodedFilename);
-
-        const nameWithoutExtension = decodedFilename.replace(/\.(mp4|mkv|avi|mov|wmv|flv|webm)$/i, '');
-        debugLog('Name without extension:', nameWithoutExtension);
-
-        const cleanName = nameWithoutExtension
-            .replace(/[._-]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-        debugLog('Clean name:', cleanName);
-        return cleanName;
-    };
-
-    const searchSubtitlesForVideo = async (customQuery?: string | React.MouseEvent) => {
-        if (videoId) {
-            debugLog('Skipping search - YouTube video detected');
-            return;
-        }
-
-        const queryStr = typeof customQuery === 'string' ? customQuery.trim() : undefined;
-        let videoName = queryStr || sessionStorage.getItem('videoFileName');
-        debugLog('Video file name for subtitle search:', videoName);
-
-        if (!videoName) {
-            videoName = extractVideoNameFromUrl(videoUrl);
-            debugLog('Extracted video name from URL:', videoName);
-        }
-
-        debugLog('Original video URL:', videoUrl);
-
-        // If videoName is unknown, empty, or generic "Google Drive Video" and user didn't supply a custom query
-        if ((!videoName || videoName.toLowerCase() === 'google drive video') && !queryStr) {
-            debugLog('Generic or missing video title, opening film search modal');
-            setSearchQueryForFilms('');
-            setAvailableFilms([]);
-            setShowFilmSelection(true);
-            showNotification('Please enter the movie or series title to find subtitles.');
-            return;
-        }
-
-        if (!videoName) {
-            debugLog('Could not extract video name');
-            showNotification('Please click "Select another video" and upload the video again to enable automatic subtitle search.');
-            return;
-        }
-
-        if (queryStr) {
-            sessionStorage.setItem('videoFileName', queryStr);
-        }
-
-        videoName = videoName
-            .replace(/\.(mp4|mkv|avi|mov|wmv|flv|webm)$/i, '')
-            .replace(/[._-]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-        // Remove quality/codec info after episode number for better search
-        // Match pattern: "Show Name S01E02 720p" -> "Show Name S01E02"
-        videoName = videoName.replace(/(\s+s\d{1,2}e\d{1,2})\s+.*$/i, '$1');
-
-        debugLog('Cleaned video name for search:', videoName);
-
-        setIsSearchingSubtitles(true);
-        try {
-            
-            const languageSet = new Set<string>(['EN']);
-
-            
-            if (learningLanguage && learningLanguage.toUpperCase() !== 'EN') {
-                languageSet.add(learningLanguage.toUpperCase());
-            }
-
-            
-
-            const languages = Array.from(languageSet).join(',');
-
-            // Extract 4-digit release year (e.g. 1900-2099)
-            const movieYearInfo = extractMovieYear(videoName);
-            const extractedYear = movieYearInfo.year;
-            const cleanTitleWithoutYear = movieYearInfo.hasYear ? movieYearInfo.cleanTitle : videoName;
-
-            let seasonNumber: number | undefined;
-            let episodeNumber: number | undefined;
-            let seriesName = cleanTitleWithoutYear;
-
-            const episodeMatch = videoName.match(/\bs(\d{1,2})e(\d{1,2})\b/i);
-            if (episodeMatch) {
-                seasonNumber = parseInt(episodeMatch[1]);
-                episodeNumber = parseInt(episodeMatch[2]);
-                seriesName = videoName.replace(/\s+s\d{1,2}e\d{1,2}.*$/i, '').trim();
-                debugLog('Detected TV series:', { seriesName, seasonNumber, episodeNumber });
-            }
-
-            const targetTitle = seriesName || cleanTitleWithoutYear || videoName;
-            debugLog('Searching with:', { videoName, targetTitle, extractedYear, seasonNumber, episodeNumber, languages });
-
-            setCurrentSearchParams({
-                languages,
-                type: episodeMatch ? 'tv' : 'movie',
-                seasonNumber,
-                episodeNumber
-            });
-            setSearchQueryForFilms(targetTitle);
-
-            let response = await SubtitleService.searchSubtitlesSubDL(
-                targetTitle,
-                languages,
-                episodeMatch ? 'tv' : 'movie',
-                seasonNumber,
-                episodeNumber,
-                undefined,
-                undefined,
-                undefined,
-                extractedYear
-            );
-
-            // If target year was provided, check if SubDL returned a matching year result
-            if (response.results && response.results.length > 0 && extractedYear) {
-                const yearMatchResult = response.results.find(r => r.year === extractedYear);
-                if (yearMatchResult) {
-                    debugLog(`Found exact year match (${extractedYear}) in SubDL:`, yearMatchResult);
-                    if (response.results[0]?.sdId !== yearMatchResult.sdId) {
-                        debugLog(`Re-fetching subtitles for matching year sdId=${yearMatchResult.sdId}`);
-                        const yearResponse = await SubtitleService.searchSubtitlesSubDL(
-                            yearMatchResult.name,
-                            languages,
-                            episodeMatch ? 'tv' : 'movie',
-                            seasonNumber,
-                            episodeNumber,
-                            yearMatchResult.imdbId || undefined,
-                            yearMatchResult.tmdbId ? String(yearMatchResult.tmdbId) : undefined,
-                            yearMatchResult.sdId,
-                            extractedYear
-                        );
-                        if (yearResponse.subtitles && yearResponse.subtitles.length > 0) {
-                            response.subtitles = yearResponse.subtitles;
-                        }
-                    }
-                    response.results = [
-                        yearMatchResult,
-                        ...response.results.filter(r => r.sdId !== yearMatchResult.sdId)
-                    ];
-                }
-            }
-
-            if (response.results && response.results.length > 1) {
-                const firstResult = response.results[0];
-                const searchLower = targetTitle.toLowerCase();
-                const firstNameLower = firstResult.name.toLowerCase();
-
-                // Exact match requires year to match if year was present in filename!
-                const isYearMatch = !extractedYear || firstResult.year === extractedYear;
-                const isNameMatch = firstNameLower === searchLower || firstNameLower === videoName.toLowerCase();
-                const isExactMatch = isYearMatch && isNameMatch;
-
-                if (!isExactMatch) {
-                    debugLog('Multiple films found, showing selection modal:', response.results);
-                    setAvailableFilms(response.results);
-                    setShowSubtitleSearchModal(false);
-                    setShowFilmSelection(true);
-                    setIsSearchingSubtitles(false);
-                    showNotification(`Found ${response.results.length} matching titles. Please select the correct one.`);
-                    return;
-                }
-            }
-
-            debugLog('SubDL API response:', response);
-            debugLog('Found subtitles count:', response.subtitles?.length || 0);
-
-            
-            if ((!response.subtitles || response.subtitles.length === 0) && episodeMatch) {
-                debugLog('No results found. Trying fallback search without episode filter');
-                showNotification(`No exact match. Searching all "${seriesName}" subtitles...`);
-
-                response = await SubtitleService.searchSubtitlesSubDL(seriesName, languages, 'tv');
-                debugLog('Fallback search results:', response.subtitles?.length || 0);
-            }
-
-            
-            if ((!response.subtitles || response.subtitles.length === 0) && !episodeMatch) {
-                
-                const nameWithoutYear = seriesName.replace(/\s+\d{4}\s*$/i, '').trim();
-                if (nameWithoutYear !== seriesName && nameWithoutYear.length > 0) {
-                    debugLog('No results found. Trying fallback search without year:', nameWithoutYear);
-                    showNotification(`Searching for "${nameWithoutYear}" (without year)...`);
-
-                    response = await SubtitleService.searchSubtitlesSubDL(nameWithoutYear, languages, 'movie');
-                    debugLog('Fallback search (no year) results:', response.subtitles?.length || 0);
-                }
-            }
-
-            if (Array.isArray(response.subtitles) && response.subtitles.length > 0) {
-                
-                let videoDuration = videoRef.current?.duration || duration || 0;
-                const videoFileName = sessionStorage.getItem('videoFileName') || videoName;
-
-                
-                let videoFps: number | undefined;
-                try {
-                    const videoElement = videoRef.current;
-                    if (videoElement && (videoElement as any).requestVideoFrameCallback) {
-                        
-                        videoFps = undefined; 
-                    }
-                } catch (e) {
-                    debugLog('Could not extract FPS:', e);
-                }
-
-                debugLog('Video info for sync check:', { videoDuration, videoFileName, videoFps });
-
-                
-                if (videoDuration === 0 && videoRef.current) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    videoDuration = videoRef.current?.duration || 0;
-                    debugLog('Video duration after wait:', videoDuration);
-                }
-
-                
-                
-                const allSubtitles = response.subtitles.map(sub => {
-                    const { score, reason } = calculateSyncScore(sub, videoDuration, videoFps, videoFileName);
-                    return {
-                        ...sub,
-                        syncScore: score,
-                        syncReason: reason
-                    } as SubtitleWithScore;
-                });
-
-                
-                allSubtitles.sort((a, b) => b.syncScore - a.syncScore);
-
-                const bestScore = allSubtitles[0]?.syncScore || 0;
-
-                debugLog('Subtitles found (sorted by ratings/votes/trusted):', allSubtitles.map(s => ({
-                    name: s.releaseName,
-                    score: s.syncScore,
-                    ratings: s.ratings,
-                    votes: s.votes,
-                    trusted: s.fromTrusted
-                })));
-
-                if (bestScore >= 40) {
-                    showNotification(`Found ${allSubtitles.length} subtitles. Use Quick Test to check sync.`);
-                } else {
-                    showNotification(`Found ${allSubtitles.length} subtitles. Sorted by ratings. Test manually.`);
-                }
-
-                setShowFilmSelection(false);
-                setAvailableSubtitles(allSubtitles);
-                setShowSubtitleSearchModal(true);
-            } else {
-                
-                const looksLikeSeries = /\b(season|series|episode|s\d{1,2}|e\d{1,2})\b/i.test(videoName);
-                const hasEpisodeInfo = /s\d{1,2}e\d{1,2}/i.test(videoName);
-
-                if (!hasEpisodeInfo && looksLikeSeries) {
-                    showNotification(`No subtitles found for "${videoName}". For TV series, rename file to include S01E01 format (e.g., "Show.Name.S01E01.720p.mkv")`);
-                } else {
-                    showNotification(`No subtitles found for "${videoName}". Try searching with another title.`);
-                }
-
-                // Open film selection modal so user can re-search with another query
-                setShowSubtitleSearchModal(false);
-                setSearchQueryForFilms(targetTitle);
-                setAvailableFilms(response.results || []);
-                setShowFilmSelection(true);
-            }
-        } catch (error) {
-            debugError('Error searching subtitles:', error);
-            showNotification('Failed to search for subtitles');
-        } finally {
-            setIsSearchingSubtitles(false);
-        }
-    };
-
-    const handleSelectFilmForSubtitles = async (film: SubDLSearchResult) => {
-        debugLog('=== handleSelectFilmForSubtitles ===');
-        debugLog('Full film object:', JSON.stringify(film, null, 2));
-        debugLog('film.imdbId:', film.imdbId, 'type:', typeof film.imdbId);
-        debugLog('film.tmdbId:', film.tmdbId, 'type:', typeof film.tmdbId);
-        debugLog('film.sdId:', film.sdId, 'type:', typeof film.sdId);
-
-        setShowFilmSelection(false);
-        setIsSearchingSubtitles(true);
-
-        try {
-            sessionStorage.setItem('videoFileName', film.name);
-            
-            debugLog('Calling SubtitleService.searchSubtitlesSubDL with:');
-            debugLog('  filmName:', film.name);
-            debugLog('  imdbId:', film.imdbId || undefined);
-            debugLog('  tmdbId:', film.tmdbId ? String(film.tmdbId) : undefined);
-            debugLog('  sdId:', film.sdId);
-
-            const response = await SubtitleService.searchSubtitlesSubDL(
-                film.name,
-                currentSearchParams?.languages || 'EN',
-                currentSearchParams?.type || 'movie',
-                currentSearchParams?.seasonNumber,
-                currentSearchParams?.episodeNumber,
-                film.imdbId || undefined,
-                film.tmdbId ? String(film.tmdbId) : undefined,
-                film.sdId,
-                film.year
-            );
-
-            if (response.subtitles && response.subtitles.length > 0) {
-                
-                let videoDuration = videoRef.current?.duration || duration || 0;
-                const videoFileName = sessionStorage.getItem('videoFileName') || film.name;
-
-                
-                let videoFps: number | undefined;
-                try {
-                    const videoElement = videoRef.current;
-                    if (videoElement && (videoElement as any).requestVideoFrameCallback) {
-                        videoFps = undefined;
-                    }
-                } catch (e) {
-                    debugLog('Could not extract FPS:', e);
-                }
-
-                
-                if (videoDuration === 0 && videoRef.current) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    videoDuration = videoRef.current?.duration || 0;
-                }
-
-                const allSubtitles = response.subtitles.map(sub => {
-                    const { score, reason } = calculateSyncScore(sub, videoDuration, videoFps, videoFileName);
-                    return {
-                        ...sub,
-                        syncScore: score,
-                        syncReason: reason
-                    } as SubtitleWithScore;
-                });
-
-                allSubtitles.sort((a, b) => b.syncScore - a.syncScore);
-
-                const bestScore = allSubtitles[0]?.syncScore || 0;
-
-                debugLog(`Found ${allSubtitles.length} subtitles for "${film.name}"`);
-
-                if (bestScore >= 40) {
-                    showNotification(`Found ${allSubtitles.length} subtitles for "${film.name}".`);
-                } else {
-                    showNotification(`Found ${allSubtitles.length} subtitles. Sorted by ratings.`);
-                }
-
-                setAvailableSubtitles(allSubtitles);
-                setShowSubtitleSearchModal(true);
-            } else {
-                showNotification(`No subtitles found for "${film.name}". Try uploading manually.`);
-                setAvailableSubtitles([]);
-            }
-        } catch (error) {
-            debugError('Error searching subtitles for selected film:', error);
-            showNotification('Failed to search for subtitles');
-            setAvailableSubtitles([]);
-        } finally {
-            setIsSearchingSubtitles(false);
-        }
-    };
-
-    const handleQuickTest = async (subtitle: SubtitleWithScore) => {
-        try {
-            debugLog('Quick testing subtitle:', subtitle);
-
-            
-            setShowSubtitleSearchModal(false);
-
-            showNotification('Downloading subtitle for test...');
-
-            const subtitleContent = await SubtitleService.downloadSubtitleFromSubDL(subtitle);
-
-            
-            const parsedSubtitles = parseSRT(subtitleContent, subtitle.name);
-            debugLog('Parsed subtitles:', parsedSubtitles.length, 'items');
-
-            
-            setSubtitlesForVideo(sanitizeSubtitles(parsedSubtitles));
-            setFileName(subtitle.releaseName || subtitle.name);
-
-            
-            setSelectedSubtitle('quick-test');
-
-            setIsTemporarySubtitles(true);
-            setTemporarySubtitleInfo(subtitle);
-
-            
-            setTimeout(() => {
-                showNotification('');
-            }, 1500);
-        } catch (error) {
-            debugError('Error quick testing subtitle:', error);
-            showNotification('Failed to test subtitles');
-            setIsTemporarySubtitles(false);
-            setTemporarySubtitleInfo(null);
-        }
-    };
-
-    const handleKeepTemporarySubtitles = async () => {
-        if (!temporarySubtitleInfo || !subtitlesForVideo) return;
-
-        try {
-            showNotification('Saving subtitles...');
-
-            
-            const srtContent = (Array.isArray(subtitlesForVideo) ? subtitlesForVideo : []).map((sub, index) => {
-                const startTime = formatSrtTimestamp(sub.startTimeMs);
-                const endTime = formatSrtTimestamp(sub.endTimeMs);
-                return `${index + 1}\n${startTime} --> ${endTime}\n${sub.text}\n`;
-            }).join('\n');
-
-            
-            let cleanFileName = sessionStorage.getItem('videoFileName') || temporarySubtitleInfo.name;
-
-            
-            cleanFileName = cleanFileName.replace(/\.(mp4|mkv|avi|mov|wmv|flv|webm)$/i, '');
-
-            // Clean special characters
-            cleanFileName = cleanFileName
-                .replace(/[^a-zA-Z0-9._-]/g, '_')
-                .replace(/_{2,}/g, '_')
-                .replace(/^_+|_+$/g, '');
-
-            const maxLength = 46;
-            if (cleanFileName.length > maxLength) {
-                cleanFileName = cleanFileName.substring(0, maxLength);
-            }
-            cleanFileName = cleanFileName + '.srt';
-
-            debugLog('Saving subtitle with video-based filename:', cleanFileName);
-
-            
-            const blob = new Blob([srtContent], { type: 'text/plain' });
-            const file = new File([blob], cleanFileName, { type: 'text/plain' });
-
-            await onSubtitleUpload(file);
-
-            setIsTemporarySubtitles(false);
-            setTemporarySubtitleInfo(null);
-
-            showNotification('Subtitles saved!');
-        } catch (error) {
-            debugError('Error keeping subtitles:', error);
-            showNotification('Failed to save subtitles');
-        }
-    };
-
-    const handleDiscardTemporarySubtitles = () => {
-        setSubtitlesForVideo(null);
-        setSelectedSubtitle(null);
-        setIsTemporarySubtitles(false);
-        setTemporarySubtitleInfo(null);
-        setFileName('');
-        showNotification('Subtitles discarded. Trying another...');
-
-        // Reopen modal to try another option
-        setTimeout(() => {
-            setShowSubtitleSearchModal(true);
-        }, 500);
-    };
-
-    const formatSrtTimestamp = (ms: number): string => {
-        const hours = Math.floor(ms / 3600000);
-        const minutes = Math.floor((ms % 3600000) / 60000);
-        const seconds = Math.floor((ms % 60000) / 1000);
-        const milliseconds = ms % 1000;
-
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')},${String(milliseconds).padStart(3, '0')}`;
-    };
-
-    const handleSelectSubtitleFromSearch = async (subtitle: SubDLSubtitle) => {
-        try {
-            debugLog('Selected subtitle:', subtitle);
-            debugLog('Subtitle URL:', subtitle.url);
-            debugLog('Subtitle full object:', JSON.stringify(subtitle, null, 2));
-
-            setShowSubtitleSearchModal(false);
-            showNotification('Downloading subtitles...');
-
-            const subtitleContent = await SubtitleService.downloadSubtitleFromSubDL(subtitle);
-
-            // Use VIDEO name as base, not subtitle name (prevents overwrites for series)
-            let cleanFileName = sessionStorage.getItem('videoFileName') || subtitle.name;
-
-            // Remove extension if present
-            cleanFileName = cleanFileName.replace(/\.(mp4|mkv|avi|mov|wmv|flv|webm)$/i, '');
-
-            // Clean filename: remove spaces and special characters
-            cleanFileName = cleanFileName
-                .replace(/[^a-zA-Z0-9._-]/g, '_')  // Replace invalid chars with underscore
-                .replace(/_{2,}/g, '_')             // Replace multiple underscores with single
-                .replace(/^_+|_+$/g, '');           // Remove leading/trailing underscores
-
-            // Limit filename to 46 chars (+ 4 for ".srt" = 50 total)
-            const maxLength = 46;
-            if (cleanFileName.length > maxLength) {
-                cleanFileName = cleanFileName.substring(0, maxLength);
-            }
-
-            cleanFileName = cleanFileName + '.srt';
-
-            debugLog('Saving subtitle with video-based filename:', cleanFileName, `(${cleanFileName.length} chars)`);
-
-            const blob = new Blob([subtitleContent], { type: 'text/plain' });
-            const file = new File([blob], cleanFileName, { type: 'text/plain' });
-
-            await onSubtitleUpload(file);
-
-            showNotification('Subtitles loaded successfully');
-        } catch (error) {
-            debugError('Error loading subtitle:', error);
-            showNotification('Failed to load subtitles');
-        }
-    };
+    const {
+        isSearchingSubtitles,
+        showSubtitleSearchModal,
+        setShowSubtitleSearchModal,
+        showFilmSelection,
+        setShowFilmSelection,
+        availableSubtitles,
+        availableFilms,
+        searchQueryForFilms,
+        isTemporarySubtitles,
+        temporarySubtitleInfo,
+        searchSubtitlesForVideo,
+        handleSelectFilmForSubtitles,
+        handleQuickTest,
+        handleKeepTemporarySubtitles,
+        handleDiscardTemporarySubtitles,
+        handleSelectSubtitleFromSearch,
+    } = useSubtitleSearch({
+        videoId,
+        videoUrl,
+        learningLanguage,
+        videoRef,
+        duration,
+        subtitlesForVideo,
+        setSubtitlesForVideo,
+        setFileName,
+        setSelectedSubtitle,
+        sanitizeSubtitles,
+        onSubtitleUpload,
+        showNotification,
+    });
 
     useEffect(() => {
         const fetchYoutubeSubtitles = async (id: string) => {
