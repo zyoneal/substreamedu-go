@@ -11,6 +11,7 @@ import { SubtitleOverlay } from './components/SubtitleOverlay';
 import { useSubtitleSearch } from './hooks/useSubtitleSearch';
 import { useVideoKeyboardShortcuts } from './hooks/useVideoKeyboardShortcuts';
 import { useSubtitleTranslation } from './hooks/useSubtitleTranslation';
+import { useVideoDimensions } from './hooks/useVideoDimensions';
 import {
     formatSubtitleForDisplay,
     renderHighlightedSubtitle,
@@ -300,74 +301,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     }), []);
 
     
-    // === DYNAMIC ZERO-SCROLL MAX FIT & THEATER MODE ===
-    const DEFAULT_COMPACT_WIDTH = 1050;
-    const [mediaAspectRatio, setMediaAspectRatio] = useState<number>(16 / 9);
-    const [isMaxFit, setIsMaxFit] = useState<boolean>(true); // Default to max fit no scroll!
-
-    const calculateMaxFitWidth = useCallback((ratio?: number): number => {
-        const validRatio = (ratio && ratio > 0) ? ratio : (mediaAspectRatio > 0 ? mediaAspectRatio : 16 / 9);
-        // Overhead: top header/padding (76px) + replace button (~52px) + bottom padding (24px) = 152px
-        const verticalOverhead = 152;
-        const availableHeight = Math.max(240, window.innerHeight - verticalOverhead);
-        const maxWidthFromHeight = Math.floor(availableHeight * validRatio);
-        const maxWidthFromWidth = Math.max(320, Math.floor(window.innerWidth - 48));
-        const maxAllowed = Math.min(maxWidthFromHeight, maxWidthFromWidth);
-        return Math.max(320, maxAllowed);
-    }, [mediaAspectRatio]);
-
-    const [playerWidth, setPlayerWidth] = useState<number>(() => calculateMaxFitWidth(16 / 9));
-
-    // Recalculate max fit width whenever videoUrl or videoId changes (per video dynamic recalculation)
-    useEffect(() => {
-        setIsMaxFit(true);
-        if (videoId) {
-            setMediaAspectRatio(16 / 9);
-            setPlayerWidth(calculateMaxFitWidth(16 / 9));
-        } else if (videoRef.current && videoRef.current.videoWidth && videoRef.current.videoHeight) {
-            const ratio = videoRef.current.videoWidth / videoRef.current.videoHeight;
-            setMediaAspectRatio(ratio);
-            setPlayerWidth(calculateMaxFitWidth(ratio));
-        } else {
-            setPlayerWidth(calculateMaxFitWidth(16 / 9));
-        }
-    }, [videoUrl, videoId, calculateMaxFitWidth, videoRef]);
-
-    // Recalculate whenever HTML5 video metadata loads
-    const handleVideoMetadataWithAspect = useCallback(() => {
-        handleVideoMetadata();
-        if (videoRef.current && videoRef.current.videoWidth && videoRef.current.videoHeight) {
-            const ratio = videoRef.current.videoWidth / videoRef.current.videoHeight;
-            setMediaAspectRatio(ratio);
-            setIsMaxFit(true);
-            setPlayerWidth(calculateMaxFitWidth(ratio));
-        }
-    }, [handleVideoMetadata, videoRef, calculateMaxFitWidth]);
-
-    // Update on window resize
-    useEffect(() => {
-        const handleWindowResize = () => {
-            const maxW = calculateMaxFitWidth(mediaAspectRatio);
-            if (isMaxFit) {
-                setPlayerWidth(maxW);
-            } else {
-                setPlayerWidth((prev) => Math.min(prev, maxW));
-            }
-        };
-        window.addEventListener('resize', handleWindowResize);
-        return () => window.removeEventListener('resize', handleWindowResize);
-    }, [isMaxFit, mediaAspectRatio, calculateMaxFitWidth]);
-
-    const toggleMaxFit = useCallback(() => {
-        const maxW = calculateMaxFitWidth(mediaAspectRatio);
-        if (isMaxFit) {
-            setIsMaxFit(false);
-            setPlayerWidth(Math.min(DEFAULT_COMPACT_WIDTH, maxW));
-        } else {
-            setIsMaxFit(true);
-            setPlayerWidth(maxW);
-        }
-    }, [isMaxFit, mediaAspectRatio, calculateMaxFitWidth]);
+    const {
+        playerWidth,
+        toggleMaxFit,
+        handleVideoMetadataWithAspect,
+    } = useVideoDimensions({
+        videoUrl,
+        videoId,
+        videoRef,
+        handleVideoMetadata,
+    });
 
     useEffect(() => {
         return () => {
