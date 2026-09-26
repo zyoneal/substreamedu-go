@@ -209,13 +209,8 @@ func TestFullLifecycle_NewToReviewToLapseToReReview(t *testing.T) {
 	state := &CardState{Status: "new", EaseFactor: 2.5}
 
 	r1 := engine.Review(state, Remember, 4000, nil)
-	assert.Equal(t, "learning", state.Status)
-	assert.True(t, r1.RepeatInSession)
-
-	clock.Advance(10 * time.Minute)
-	r2 := engine.Review(state, Remember, 4000, nil)
 	assert.Equal(t, "review", state.Status)
-	assert.False(t, r2.RepeatInSession)
+	assert.False(t, r1.RepeatInSession)
 	assert.Equal(t, 1, state.RepetitionLevel)
 	graduationStability := state.Stability
 
@@ -233,11 +228,6 @@ func TestFullLifecycle_NewToReviewToLapseToReReview(t *testing.T) {
 	assert.True(t, r3.RepeatInSession)
 	assert.Equal(t, 1, state.Lapses)
 	assert.True(t, state.Stability < prelapseStab)
-
-	clock.Advance(1 * time.Minute)
-	engine.Review(state, Remember, 4000, nil)
-	assert.Equal(t, "learning", state.Status)
-	assert.Equal(t, 1, state.LearningStep)
 
 	clock.Advance(10 * time.Minute)
 	r4 := engine.Review(state, Remember, 4000, nil)

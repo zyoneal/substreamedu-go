@@ -32,7 +32,7 @@ const (
 	MaxIntervalDays	= 365
 )
 
-var LearningStepsMinutes = []int{1, 10}
+var LearningStepsMinutes = []int{10}
 
 type UserRating string
 
@@ -135,7 +135,7 @@ func (e *Engine) learningRemember(state *CardState, responseTimeMs int, params *
 
 	nextStep := state.LearningStep + 1
 
-	if nextStep >= len(LearningStepsMinutes) {
+	if state.Status == "new" || nextStep >= len(LearningStepsMinutes) {
 		return e.graduateToReview(state, responseTimeMs, params, now)
 	}
 
@@ -161,41 +161,74 @@ func (e *Engine) graduateToReview(state *CardState, responseTimeMs int, params *
 
 	grade := e.inferGrade(responseTimeMs)
 
-	w0, w1, w2, w3 := W0, W1, W2, W3
-	if params != nil {
-		w0 = float64(params.W0)
-		w1 = float64(params.W1)
-		w2 = float64(params.W2)
-		w3 = float64(params.W3)
-	}
-
 	var initialStability float64
-	switch grade {
-	case AGAIN:
-		initialStability = w0
-	case HARD:
-		initialStability = w1
-	case GOOD:
-		initialStability = w2
-	case EASY:
-		initialStability = w3
-	}
+	var interval int
 
-	interval := e.stabilityToInterval(initialStability)
-	if interval < 1 {
-		interval = 1
-	}
-	if interval > MaxIntervalDays {
-		interval = MaxIntervalDays
+	if state.RepetitionLevel == 0 {
+		// Senior FAANG Invariant: First graduation of a newly learned card
+		// MUST be scheduled for tomorrow (1 day) for GOOD and HARD.
+		// Fast answer heuristic (< 3000ms, EASY) is capped at 2 days (never 16 days W3).
+		switch grade {
+		case AGAIN, HARD, GOOD:
+			initialStability = 1.0
+			interval = 1
+		case EASY:
+			initialStability = 2.0
+			interval = 2
+		}
+
+		if params != nil {
+			switch grade {
+			case AGAIN:
+				initialStability = float64(params.W0)
+			case HARD:
+				initialStability = float64(params.W1)
+			case GOOD:
+				initialStability = float64(params.W2)
+			case EASY:
+				initialStability = float64(params.W3)
+			}
+			if initialStability > 2.0 {
+				initialStability = 2.0
+			}
+			if initialStability < 1.0 {
+				initialStability = 1.0
+			}
+			interval = e.stabilityToInterval(initialStability)
+			if interval < 1 {
+				interval = 1
+			}
+			if interval > 2 {
+				interval = 2
+			}
+			if grade != EASY && interval > 1 {
+				interval = 1
+			}
+		}
+
+		state.Interval = float32(interval)
+		state.Stability = float32(initialStability)
+		state.RepetitionLevel = 1
+	} else {
+		// Lapsed card returning from relearning to review
+		initialStability = float64(state.Stability)
+		if initialStability < 1.0 {
+			initialStability = 1.0
+		}
+		interval = e.stabilityToInterval(initialStability)
+		if interval < 1 {
+			interval = 1
+		}
+		if interval > MaxIntervalDays {
+			interval = MaxIntervalDays
+		}
+		state.Interval = float32(initialStability)
 	}
 
 	today := e.startOfDayUTC(now)
 	nextRep := today.AddDate(0, 0, interval)
-	state.Interval = float32(initialStability)
-	state.Stability = float32(initialStability)
 	state.Retrievability = 1.0
 	state.NextRepetitionDate = &nextRep
-	state.RepetitionLevel++
 
 	d := e.initialDifficulty(grade, params)
 	state.EaseFactor = float32(math.Max(1.3, math.Min(2.5, (11-d)/4)))

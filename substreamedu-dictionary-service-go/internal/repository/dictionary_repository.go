@@ -572,6 +572,7 @@ func (r *DictionaryRepository) GetDictionaryStats(ctx context.Context, userID uu
 	}
 
 	const sessionLimit int64 = 50
+	const maxNewCards int64 = 30 // 15 words * 2 cards (recognition + production)
 	stats.SessionDueCards = stats.DueToday
 	if stats.SessionDueCards > sessionLimit {
 		stats.SessionDueCards = sessionLimit
@@ -580,6 +581,9 @@ func (r *DictionaryRepository) GetDictionaryStats(ctx context.Context, userID uu
 	targetNew := sessionLimit - stats.SessionDueCards
 	if targetNew < 0 {
 		targetNew = 0
+	}
+	if targetNew > maxNewCards {
+		targetNew = maxNewCards
 	}
 	if targetNew > totalNewCards {
 		targetNew = totalNewCards

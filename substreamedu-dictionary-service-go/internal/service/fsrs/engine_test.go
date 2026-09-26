@@ -15,27 +15,62 @@ func TestEngineLearningToReview(t *testing.T) {
 	e := NewEngine(clock)
 	state := &CardState{Status: "new"}
 
-	result := e.Review(state, Remember, 5000, nil)
-
-	assert.True(t, result.RepeatInSession, "learning card should repeat in session")
+	// 1. New card with Forgot enters learning and repeats in session
+	result := e.Review(state, Forgot, 5000, nil)
+	assert.True(t, result.RepeatInSession, "forgotten card should repeat in session")
 	assert.Equal(t, "learning", state.Status)
-	assert.Equal(t, 1, state.LearningStep)
-	assert.NotNil(t, state.LearningDue, "LearningDue should be set for next step")
+	assert.Equal(t, 0, state.LearningStep)
+	assert.NotNil(t, state.LearningDue, "LearningDue should be set for repeat")
 
+	// 2. Intra-session recall with Remember graduates the card to review for tomorrow
 	clock.Advance(10 * time.Minute)
 	result = e.Review(state, Remember, 5000, nil)
 
-	assert.False(t, result.RepeatInSession, "graduated card should not repeat")
+	assert.False(t, result.RepeatInSession, "graduated card should not repeat in session")
 	assert.Equal(t, "review", state.Status)
-	assert.True(t, result.NextIntervalDays >= 1, "interval should be >= 1 day")
+	assert.Equal(t, 1, result.NextIntervalDays, "initial graduation interval must be exactly 1 day")
 	assert.Nil(t, state.LearningDue, "LearningDue should be nil after graduation")
+}
+
+func TestNewCard_Remember_GraduatesToNextDay(t *testing.T) {
+	clock := NewStubClock(baseTime)
+	e := NewEngine(clock)
+	state := &CardState{Status: "new"}
+
+	result := e.Review(state, Remember, 5000, nil)
+
+	assert.False(t, result.RepeatInSession, "new card remembered on first try must not repeat in session")
+	assert.Equal(t, "review", state.Status)
+	assert.Equal(t, 1, result.NextIntervalDays, "initial interval must be 1 day (tomorrow)")
+	assert.Equal(t, float32(1.0), state.Interval)
+	assert.Equal(t, float32(1.0), state.Stability)
+	assert.Equal(t, 1, state.RepetitionLevel)
+	assert.Nil(t, state.LearningDue)
+
+	expectedNextRep := e.startOfDayUTC(baseTime).AddDate(0, 0, 1)
+	assert.NotNil(t, state.NextRepetitionDate)
+	assert.Equal(t, expectedNextRep, *state.NextRepetitionDate)
+}
+
+func TestNewCard_FastAnswer_DoesNotScheduleSixteenDays(t *testing.T) {
+	clock := NewStubClock(baseTime)
+	e := NewEngine(clock)
+	state := &CardState{Status: "new"}
+
+	// Speed < 3000ms triggers EASY grade
+	result := e.Review(state, Remember, 1200, nil)
+
+	assert.False(t, result.RepeatInSession)
+	assert.Equal(t, "review", state.Status)
+	assert.LessOrEqual(t, result.NextIntervalDays, 2, "fast initial answer must NOT schedule 16 days out; max 2 days")
+	assert.LessOrEqual(t, state.Interval, float32(2.0))
 }
 
 func TestEngineForgotResetsLearning(t *testing.T) {
 
 	clock := NewStubClock(baseTime)
 	e := NewEngine(clock)
-	state := &CardState{Status: "new", LearningStep: 1, ConsecutiveSuccess: 1}
+	state := &CardState{Status: "new", ConsecutiveSuccess: 1}
 
 	result := e.Review(state, Forgot, 5000, nil)
 

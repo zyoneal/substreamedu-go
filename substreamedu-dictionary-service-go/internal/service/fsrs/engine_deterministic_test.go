@@ -10,7 +10,7 @@ import (
 
 var t0 = time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC)
 
-func TestNewCard_FirstReview_EntersLearningStep0(t *testing.T) {
+func TestNewCard_FirstReview_Remember_GraduatesDirectly(t *testing.T) {
 
 	clock := NewStubClock(t0)
 	engine := NewEngine(clock)
@@ -18,16 +18,13 @@ func TestNewCard_FirstReview_EntersLearningStep0(t *testing.T) {
 
 	result := engine.Review(state, Remember, 5000, nil)
 
-	assert.Equal(t, "learning", state.Status)
-	assert.Equal(t, 1, state.LearningStep)
-	assert.True(t, result.RepeatInSession)
+	assert.Equal(t, "review", state.Status)
+	assert.Equal(t, 0, state.LearningStep)
+	assert.False(t, result.RepeatInSession)
 	assert.Equal(t, 1, state.TotalReviews)
 	assert.Equal(t, 1, state.CorrectReviews)
-
-	expectedDue := t0.Add(10 * time.Minute)
-	require.NotNil(t, state.LearningDue)
-	assert.Equal(t, expectedDue, *state.LearningDue,
-		"LearningDue should be exactly 10 minutes from review time")
+	assert.Equal(t, 1, result.NextIntervalDays)
+	assert.Nil(t, state.LearningDue)
 }
 
 func TestNewCard_TwoRemember_GraduatesToReview(t *testing.T) {
@@ -36,8 +33,6 @@ func TestNewCard_TwoRemember_GraduatesToReview(t *testing.T) {
 	engine := NewEngine(clock)
 	state := &CardState{Status: "new", EaseFactor: 2.5}
 
-	engine.Review(state, Remember, 5000, nil)
-	clock.Advance(10 * time.Minute)
 	result := engine.Review(state, Remember, 5000, nil)
 
 	assert.Equal(t, "review", state.Status)
@@ -47,7 +42,7 @@ func TestNewCard_TwoRemember_GraduatesToReview(t *testing.T) {
 	assert.Equal(t, 0, state.LearningStep, "LearningStep cleared on graduation")
 	assert.True(t, state.Stability > 0, "Stability should be set from FSRS initial stability")
 	assert.Equal(t, float32(1.0), state.Retrievability, "Just-graduated card has perfect recall")
-	assert.True(t, result.NextIntervalDays >= 1, "Must schedule at least 1 day ahead")
+	assert.Equal(t, 1, result.NextIntervalDays, "Must schedule 1 day ahead")
 	require.NotNil(t, state.NextRepetitionDate)
 }
 
@@ -65,7 +60,7 @@ func TestNewCard_ForgotOnFirstReview_StaysInLearning(t *testing.T) {
 	assert.Equal(t, 0, state.Lapses, "No lapse — card was never graduated")
 	assert.Equal(t, 1, state.HardCount)
 
-	expectedDue := t0.Add(1 * time.Minute)
+	expectedDue := t0.Add(10 * time.Minute)
 	require.NotNil(t, state.LearningDue)
 	assert.Equal(t, expectedDue, *state.LearningDue)
 }
@@ -90,7 +85,7 @@ func TestLearningCard_ForgotResetsToStep0(t *testing.T) {
 	assert.True(t, result.RepeatInSession)
 }
 
-func TestLearningCard_RememberAtStep0_AdvancesToStep1(t *testing.T) {
+func TestLearningCard_RememberAtStep0_GraduatesToReview(t *testing.T) {
 
 	clock := NewStubClock(t0)
 	engine := NewEngine(clock)
@@ -102,9 +97,10 @@ func TestLearningCard_RememberAtStep0_AdvancesToStep1(t *testing.T) {
 
 	result := engine.Review(state, Remember, 5000, nil)
 
-	assert.Equal(t, 1, state.LearningStep)
-	assert.True(t, result.RepeatInSession)
-	assert.Equal(t, "learning", state.Status)
+	assert.Equal(t, 0, state.LearningStep)
+	assert.False(t, result.RepeatInSession)
+	assert.Equal(t, "review", state.Status)
+	assert.Equal(t, 1, result.NextIntervalDays)
 }
 
 func TestReviewCard_RememberOnTime_IncreasesStability(t *testing.T) {

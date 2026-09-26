@@ -38,7 +38,24 @@ func NewLearningService(repo *repository.DictionaryRepository, outbox *OutboxSer
 	}
 }
 
-const SessionLimit = 50
+const (
+	SessionLimit       = 50
+	DefaultMaxNewWords = 15 // 15 words = 30 cards (Recognition + Production)
+)
+
+// ComputeTargetNewCards calculates how many new cards to include in a daily session
+// based on due review count, session ceiling, and maximum new words quota.
+func ComputeTargetNewCards(reviewCount, sessionLimit, maxNewWords int) int {
+	remainingSlots := sessionLimit - reviewCount
+	if remainingSlots < 0 {
+		remainingSlots = 0
+	}
+	maxNewAllowed := maxNewWords * 2
+	if remainingSlots > maxNewAllowed {
+		return maxNewAllowed
+	}
+	return remainingSlots
+}
 
 func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, loc *time.Location) (*dto.DailySessionDto, error) {
 	if loc == nil {
@@ -52,16 +69,19 @@ func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, l
 
 	reviewBatch, reviewErr := s.repo.FindDueWordsSorted(ctx, userID, todayStart, dueCutoff, SessionLimit)
 	if reviewErr != nil {
-		s.logger.Error("Failed to fetch due words", zap.Error(reviewErr))
-		reviewBatch = []model.Dictionary{}
+		return nil, fmt.Errorf("failed to fetch due words: %w", reviewErr)
 	}
 
-	targetNew := 0
-	if len(reviewBatch) < SessionLimit {
-		targetNew = SessionLimit - len(reviewBatch)
-	}
+	targetNew := ComputeTargetNewCards(len(reviewBatch), SessionLimit, DefaultMaxNewWords)
 
-	newWords, _ := s.repo.FindRandomNewWords(ctx, userID, targetNew)
+	var newWords []model.Dictionary
+	if targetNew > 0 {
+		var err error
+		newWords, err = s.repo.FindRandomNewWords(ctx, userID, targetNew)
+		if err != nil {
+			s.logger.Warn("Failed to fetch new words, proceeding with reviews only", zap.Error(err))
+		}
+	}
 
 	finalBatch := append(reviewBatch, newWords...)
 	finalBatch = interleaveCards(finalBatch)
