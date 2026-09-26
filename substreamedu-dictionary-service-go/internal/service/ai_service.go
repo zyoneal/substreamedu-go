@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	json "github.com/goccy/go-json"
 	"github.com/redis/go-redis/v9"
@@ -1405,6 +1407,62 @@ func (s *AIService) GeneratePracticeExercises(ctx context.Context, req dto.Pract
 	return fallbackResult, nil
 }
 
+func extractTargetWordGap(contextText, target string) (before, matchedToken, after string, found bool) {
+	ctxLower := strings.ToLower(contextText)
+	targetLower := strings.ToLower(target)
+	if ctxLower == "" || targetLower == "" {
+		return "", "", "", false
+	}
+
+	searchStart := 0
+	for searchStart < len(ctxLower) {
+		idx := strings.Index(ctxLower[searchStart:], targetLower)
+		if idx == -1 {
+			break
+		}
+		matchIdx := searchStart + idx
+
+		// Check word boundary at the start:
+		// Preceding character must NOT be a letter or digit (to avoid matching "in" in "beginning")
+		startIsBoundary := matchIdx == 0
+		if !startIsBoundary {
+			r, _ := utf8.DecodeLastRuneInString(contextText[:matchIdx])
+			startIsBoundary = !unicode.IsLetter(r) && !unicode.IsDigit(r)
+		}
+
+		if startIsBoundary {
+			tokenStart := matchIdx
+			tokenEnd := matchIdx + len(target)
+
+			// Scan forward while subsequent characters are letters to capture word suffixes/inflections
+			// (e.g. demolish -> demolished, blindside -> blindsided)
+			runesAfter := []rune(contextText[tokenEnd:])
+			extraLen := 0
+			for _, r := range runesAfter {
+				if unicode.IsLetter(r) {
+					extraLen += utf8.RuneLen(r)
+				} else {
+					break
+				}
+			}
+			tokenEnd += extraLen
+
+			matched := contextText[tokenStart:tokenEnd]
+			return contextText[:tokenStart], matched, contextText[tokenEnd:], true
+		}
+
+		searchStart = matchIdx + 1
+	}
+
+	// Fallback if no word-boundary match found: try simple substring
+	idx := strings.Index(ctxLower, targetLower)
+	if idx != -1 {
+		return contextText[:idx], target, contextText[idx+len(target):], true
+	}
+
+	return "", "", "", false
+}
+
 func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *dto.PracticeExercisesResponse {
 	var exercises []dto.PracticeExercise
 	for i, item := range items {
@@ -1415,57 +1473,106 @@ func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *d
 
 		ctxText := strings.TrimSpace(item.Context)
 		var prompt, before, after string
-		if ctxText != "" && strings.Contains(strings.ToLower(ctxText), strings.ToLower(target)) {
-			idx := strings.Index(strings.ToLower(ctxText), strings.ToLower(target))
-			before = ctxText[:idx]
-			after = ctxText[idx+len(target):]
+		var matchedToken string
+		if b, matched, a, ok := extractTargetWordGap(ctxText, target); ok {
+			before = b
+			matchedToken = matched
+			after = a
 			prompt = before + "______" + after
 		} else {
-			prompt = fmt.Sprintf("She tried to ______ but found it harder than expected.")
+			prompt = "She tried to ______ but found it harder than expected."
 			before = "She tried to "
 			after = " but found it harder than expected."
 		}
 
-		var options []string
-		options = append(options, target)
-
 		isMultiWord := strings.Contains(strings.TrimSpace(target), " ")
-		var sameCountOthers, diffCountOthers []string
+		var sameTypePool, otherTypePool []string
+		seenPoolWords := make(map[string]bool)
+		seenPoolWords[strings.ToLower(target)] = true
+		if matchedToken != "" {
+			seenPoolWords[strings.ToLower(matchedToken)] = true
+		}
+
 		for _, other := range items {
 			otherWord := strings.TrimSpace(other.Word)
-			if otherWord != "" && !strings.EqualFold(otherWord, target) {
-				if strings.Contains(otherWord, " ") == isMultiWord {
-					sameCountOthers = append(sameCountOthers, otherWord)
-				} else {
-					diffCountOthers = append(diffCountOthers, otherWord)
-				}
+			if otherWord == "" {
+				continue
+			}
+			lowerOther := strings.ToLower(otherWord)
+			if seenPoolWords[lowerOther] {
+				continue
+			}
+			seenPoolWords[lowerOther] = true
+
+			if strings.Contains(otherWord, " ") == isMultiWord {
+				sameTypePool = append(sameTypePool, otherWord)
+			} else {
+				otherTypePool = append(otherTypePool, otherWord)
 			}
 		}
 
-		for _, o := range append(sameCountOthers, diffCountOthers...) {
+		// Randomize distractor pools so every exercise has varied, unpredictable options
+		sameTypePool = shuffleStrings(sameTypePool)
+		otherTypePool = shuffleStrings(otherTypePool)
+
+		options := []string{target}
+		for _, o := range append(sameTypePool, otherTypePool...) {
 			if len(options) >= 4 {
 				break
 			}
 			options = append(options, o)
 		}
 
-		var fallbacks []string
-		if isMultiWord {
-			fallbacks = []string{"look into", "carry out", "give up", "bring up", "stand out", "figure out"}
-		} else {
-			fallbacks = []string{"consider", "resolve", "approach", "maintain", "indicate", "evaluate"}
-		}
-
-		for _, f := range fallbacks {
-			if len(options) >= 4 {
-				break
+		if len(options) < 4 {
+			var fallbacks []string
+			if isMultiWord {
+				fallbacks = []string{"look into", "carry out", "give up", "bring up", "stand out", "figure out"}
+			} else {
+				fallbacks = []string{"consider", "resolve", "approach", "maintain", "indicate", "evaluate"}
 			}
-			if !strings.EqualFold(f, target) {
-				options = append(options, f)
+			fallbacks = shuffleStrings(fallbacks)
+			for _, f := range fallbacks {
+				if len(options) >= 4 {
+					break
+				}
+				if !seenPoolWords[strings.ToLower(f)] {
+					seenPoolWords[strings.ToLower(f)] = true
+					options = append(options, f)
+				}
 			}
 		}
 
 		shuffledOptions := shuffleStrings(options)
+
+		// Build deduplicated accepted answers (target, lowercase target, matchedToken in context)
+		rawAnswers := []string{target}
+		if lower := strings.ToLower(target); lower != target {
+			rawAnswers = append(rawAnswers, lower)
+		}
+		if matchedToken != "" && !strings.EqualFold(matchedToken, target) {
+			rawAnswers = append(rawAnswers, matchedToken)
+			if lowerMatched := strings.ToLower(matchedToken); lowerMatched != matchedToken {
+				rawAnswers = append(rawAnswers, lowerMatched)
+			}
+		}
+
+		var acceptedAnswers []string
+		seenAnswers := make(map[string]bool)
+		for _, ans := range rawAnswers {
+			trimmed := strings.TrimSpace(ans)
+			if trimmed != "" && !seenAnswers[trimmed] {
+				seenAnswers[trimmed] = true
+				acceptedAnswers = append(acceptedAnswers, trimmed)
+			}
+		}
+
+		hint := strings.TrimSpace(item.Meaning)
+		var explanation string
+		if hint != "" {
+			explanation = fmt.Sprintf("Target word: '%s' (%s)", target, hint)
+		} else {
+			explanation = fmt.Sprintf("Target word: '%s'", target)
+		}
 
 		exercises = append(exercises, dto.PracticeExercise{
 			ID:              fmt.Sprintf("ex_%d", i+1),
@@ -1474,10 +1581,10 @@ func (s *AIService) generateAlgorithmicExercises(items []dto.WordWithMeaning) *d
 			Prompt:          prompt,
 			SentenceBefore:  before,
 			SentenceAfter:   after,
-			Hint:            item.Meaning,
+			Hint:            hint,
 			Options:         shuffledOptions,
-			AcceptedAnswers: []string{target, strings.ToLower(target)},
-			Explanation:     fmt.Sprintf("Target word: '%s' (%s)", target, item.Meaning),
+			AcceptedAnswers: acceptedAnswers,
+			Explanation:     explanation,
 		})
 	}
 
