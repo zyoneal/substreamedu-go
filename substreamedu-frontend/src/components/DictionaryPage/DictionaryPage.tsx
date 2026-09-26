@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useIntl } from 'react-intl';
-import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 
 import Download from 'lucide-react/dist/esm/icons/download';
@@ -28,6 +27,7 @@ import { AuthService } from '../../services/AuthService';
 import { debugError } from '../../utils/debug';
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
+import { Modal } from "../ui/modal";
 import styles from './DictionaryPage.module.css';
 
 interface DictionaryResource {
@@ -763,71 +763,61 @@ const DictionaryPage: React.FC = () => {
     const renderEditWordModal = () => {
         if (!editingWord) return null;
 
-        return createPortal(
-            <div className={styles.modalOverlay}>
-                <div className={styles.modalContent}>
-                    <div className={styles.modalHeader}>
-                        <h3 className={styles.modalTitle}>
-                            Edit: {editingWord.highlightedText}
-                        </h3>
-                        <button
-                            onClick={handleCancelEdit}
-                            className={styles.modalCloseBtn}
-                            aria-label="Close modal"
-                        >
-                            <X size={16} />
-                        </button>
+        return (
+            <Modal isOpen={!!editingWord} onClose={handleCancelEdit} size="md">
+                <Modal.Header
+                    title={`Edit: ${editingWord.highlightedText}`}
+                    icon={<Edit size={18} />}
+                    onClose={handleCancelEdit}
+                />
+                <Modal.Body>
+                    <div className={styles.modalFieldGroup}>
+                        <label className={styles.modalLabel}>Translation</label>
+                        <Input
+                            value={editingWord.translatedText || ''}
+                            onChange={(e) => setEditingWord({ ...editingWord, translatedText: e.target.value })}
+                            className={styles.modalInput}
+                            placeholder="Enter translation..."
+                        />
                     </div>
 
-                    <div className={styles.modalBody}>
-                        <div className={styles.modalFieldGroup}>
-                            <label className={styles.modalLabel}>Translation</label>
-                            <Input
-                                value={editingWord.translatedText || ''}
-                                onChange={(e) => setEditingWord({ ...editingWord, translatedText: e.target.value })}
-                                className={styles.modalInput}
-                                placeholder="Enter translation..."
-                            />
-                        </div>
-
-                        <div className={styles.modalFieldGroup}>
-                            <label className={styles.modalLabel}>Definition</label>
-                            <Input
-                                value={editingWord.definition || ''}
-                                onChange={(e) => setEditingWord({ ...editingWord, definition: e.target.value })}
-                                className={styles.modalInput}
-                                placeholder="Enter English definition..."
-                            />
-                        </div>
-
-                        <div className={styles.modalFieldGroup}>
-                            <label className={styles.modalLabel}>Context Sentence</label>
-                            <Input
-                                value={editingWord.context || ''}
-                                onChange={(e) => setEditingWord({ ...editingWord, context: e.target.value })}
-                                className={styles.modalInput}
-                                placeholder="Enter context sentence..."
-                            />
-                        </div>
+                    <div className={styles.modalFieldGroup}>
+                        <label className={styles.modalLabel}>Definition</label>
+                        <Input
+                            value={editingWord.definition || ''}
+                            onChange={(e) => setEditingWord({ ...editingWord, definition: e.target.value })}
+                            className={styles.modalInput}
+                            placeholder="Enter English definition..."
+                        />
                     </div>
 
-                    <div className={styles.modalFooter}>
-                        <button
-                            onClick={handleCancelEdit}
-                            className={styles.modalCancelBtn}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={() => handleSaveWord(editingWord)}
-                            className={styles.modalSaveBtn}
-                        >
-                            Save Changes
-                        </button>
+                    <div className={styles.modalFieldGroup}>
+                        <label className={styles.modalLabel}>Context Sentence</label>
+                        <Input
+                            value={editingWord.context || ''}
+                            onChange={(e) => setEditingWord({ ...editingWord, context: e.target.value })}
+                            className={styles.modalInput}
+                            placeholder="Enter context sentence..."
+                        />
                     </div>
-                </div>
-            </div>,
-            document.body
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className={styles.modalCancelBtn}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleSaveWord(editingWord)}
+                        className={styles.modalSaveBtn}
+                    >
+                        Save Changes
+                    </button>
+                </Modal.Footer>
+            </Modal>
         );
     };
 

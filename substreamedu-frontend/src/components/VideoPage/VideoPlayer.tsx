@@ -37,6 +37,7 @@ import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
 import MobileHint from '../shared/MobileHint';
+import { Modal } from '../ui/modal';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
 import { useUserDictionaryItemsLight } from '../../hooks/useDictionary';
 import { OnboardingGuideBar, OnboardingStep } from './components/OnboardingGuideBar';
@@ -1226,62 +1227,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     }}
                 />
 
-                {
-                    showLanguageOverlay && createPortal(
-                        <div
+                <Modal
+                    isOpen={showLanguageOverlay}
+                    onClose={() => setShowLanguageOverlay(false)}
+                    size="sm"
+                >
+                    <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
+                        <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                            {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
+                        </p>
+                        <button
+                            type="button"
                             onClick={() => setShowLanguageOverlay(false)}
                             style={{
-                                position: 'fixed',
-                                inset: 0,
-                                background: 'rgba(0,0,0,0.35)',
-                                backdropFilter: 'blur(8px)',
-                                WebkitBackdropFilter: 'blur(8px)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                zIndex: 3000,
-                                padding: '16px'
+                                marginTop: '4px',
+                                background: '#000000',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 24px',
+                                fontWeight: 700,
+                                cursor: 'pointer'
                             }}
                         >
-                            <div
-                                style={{
-                                    background: 'rgba(20,20,20,0.85)',
-                                    border: '1px solid rgba(0, 69, 230, 0.4)',
-                                    color: '#EAEAEA',
-                                    borderRadius: '12px',
-                                    padding: '18px 20px',
-                                    maxWidth: '520px',
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                                role="dialog"
-                                aria-live="assertive"
-                            >
-                                <div style={{ margin: '6px 0 14px' }}>
-                                    {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
-                                </div>
-                                <button
-                                    onClick={() => setShowLanguageOverlay(false)}
-                                    style={{
-                                        marginTop: '4px',
-                                        background: '#000000',
-                                        color: '#ffffff',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        padding: '8px 14px',
-                                        fontWeight: 700,
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    OK
-                                </button>
-                            </div>
-                        </div>,
-                        document.fullscreenElement || document.body
-                    )
-                }
+                            OK
+                        </button>
+                    </Modal.Body>
+                </Modal>
 
                 <MobileHint
                     isVisible={isMobile && showMobileHint}

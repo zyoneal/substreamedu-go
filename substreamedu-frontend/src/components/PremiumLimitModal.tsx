@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Lock from 'lucide-react/dist/esm/icons/lock';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import BookOpen from 'lucide-react/dist/esm/icons/book-open';
+import { Modal } from './ui/modal';
 
 interface PremiumLimitModalProps {
     type: 'translation' | 'save' | 'guest_limit' | 'guest_save' | null;
@@ -11,17 +12,6 @@ interface PremiumLimitModalProps {
 
 const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) => {
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!type) return;
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [type, onClose]);
 
     if (!type) return null;
 
@@ -71,45 +61,22 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
     const msg = messages[type] || messages.save;
 
     return (
-        <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 99999,
-            }}
-            onClick={onClose}
+        <Modal
+            isOpen={!!type}
+            onClose={onClose}
+            size="sm"
+            ariaLabel={msg.title}
         >
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="premium-limit-title"
-                style={{
-                    background: '#141312',
-                    padding: '40px',
-                    borderRadius: '16px',
-                    width: '380px',
-                    textAlign: 'center',
-                    border: '1px solid #282522',
-                    fontFamily: "'e-Ukraine', system-ui, -apple-system, sans-serif",
-                }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div style={{ fontSize: '40px', marginBottom: '20px', lineHeight: 1 }}>{msg.icon}</div>
+            <Modal.Body style={{ padding: '36px 32px 32px', textAlign: 'center' }}>
+                <div style={{ fontSize: '36px', marginBottom: '18px', lineHeight: 1 }}>{msg.icon}</div>
                 <h2
                     id="premium-limit-title"
                     style={{
-                        color: '#ede8e0',
+                        color: 'var(--color-ink, #ede8e0)',
                         fontSize: '20px',
                         fontWeight: 500,
                         margin: '0 0 12px 0',
-                        fontFamily: "'e-Ukraine', system-ui, -apple-system, sans-serif",
+                        fontFamily: "var(--font-display, 'e-Ukraine', sans-serif)",
                         letterSpacing: '-0.01em',
                         lineHeight: 1.3,
                     }}
@@ -118,26 +85,27 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
                 </h2>
                 <p
                     style={{
-                        color: '#9e988f',
+                        color: 'var(--color-body, #9e988f)',
                         fontSize: '14px',
                         lineHeight: '1.6',
-                        margin: '0 0 32px 0',
+                        margin: '0 0 28px 0',
                     }}
                 >
                     {msg.description}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button
+                        type="button"
                         onClick={msg.action}
                         style={{
-                            background: '#ede8e0',
-                            color: '#0d0c0b',
-                            border: '1px solid #ede8e0',
+                            background: 'var(--color-ink, #ede8e0)',
+                            color: 'var(--color-canvas, #0d0c0b)',
+                            border: '1px solid var(--color-ink, #ede8e0)',
                             padding: '0 28px',
                             height: '46px',
                             fontSize: '13.5px',
-                            fontWeight: 500,
-                            fontFamily: "'e-Ukraine', system-ui, -apple-system, sans-serif",
+                            fontWeight: 600,
+                            fontFamily: "var(--font-body, 'e-Ukraine', sans-serif)",
                             letterSpacing: '0.02em',
                             borderRadius: '100px',
                             cursor: 'pointer',
@@ -155,35 +123,36 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
                         {msg.buttonText}
                     </button>
                     <button
+                        type="button"
                         onClick={onClose}
                         style={{
                             background: 'transparent',
-                            color: '#ede8e0',
-                            border: '1px solid #282522',
+                            color: 'var(--color-ink, #ede8e0)',
+                            border: '1px solid var(--color-hairline, #282522)',
                             padding: '0 28px',
                             height: '46px',
                             fontSize: '13.5px',
                             fontWeight: 400,
-                            fontFamily: "'e-Ukraine', system-ui, -apple-system, sans-serif",
+                            fontFamily: "var(--font-body, 'e-Ukraine', sans-serif)",
                             letterSpacing: '0.02em',
                             borderRadius: '100px',
                             cursor: 'pointer',
                             transition: 'border-color 0.2s ease, background 0.2s ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#3d3934';
-                            e.currentTarget.style.background = '#1a1917';
+                            e.currentTarget.style.borderColor = 'var(--color-hairline-strong, #3d3934)';
+                            e.currentTarget.style.background = 'var(--color-surface-elevated, #1a1917)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#282522';
+                            e.currentTarget.style.borderColor = 'var(--color-hairline, #282522)';
                             e.currentTarget.style.background = 'transparent';
                         }}
                     >
                         Cancel
                     </button>
                 </div>
-            </div>
-        </div>
+            </Modal.Body>
+        </Modal>
     );
 };
 

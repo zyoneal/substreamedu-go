@@ -7,10 +7,10 @@ import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleC
 import styles from './css/SubtitleViewer.module.css';
 import { LanguageContext } from "../LanguageContext";
 
-import X from 'lucide-react/dist/esm/icons/x';
-import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
 import { createPortal } from 'react-dom';
 import { AxiosError } from 'axios';
+import { TranslationPopover } from '../shared/TranslationPopover';
+import { Modal } from '../ui/modal';
 
 import { useIntl } from 'react-intl';
 import { debugLog, debugError } from '../../utils/debug';
@@ -77,7 +77,6 @@ const SubtitleViewer: React.FC = () => {
         x: number;
         y: number;
     } | null>(null);
-    const [popoverTransform, setPopoverTransform] = useState<string>('translateX(-50%)');
     const [showLanguageOverlay, setShowLanguageOverlay] = useState(false);
 
     const fetchSubtitles = useCallback(async () => {
@@ -576,7 +575,6 @@ const SubtitleViewer: React.FC = () => {
             const position = getPopoverPosition(range);
             if (position) {
                 setSelectionPosition({ x: position.x + window.pageXOffset, y: position.y + window.pageYOffset, showBelow: position.showBelow });
-                setPopoverTransform(position.transform);
                 setIsPopoverOpen(true);
             }
         } catch (err) {
@@ -594,7 +592,6 @@ const SubtitleViewer: React.FC = () => {
                         y: position.y + window.pageYOffset,
                         showBelow: position.showBelow
                     });
-                    setPopoverTransform(position.transform);
                 }
             }
         };
@@ -928,275 +925,62 @@ const SubtitleViewer: React.FC = () => {
                 )}
             </div>
 
-            {selectionPosition && isPopoverOpen && (translation || isLoadingTranslation) && createPortal(
-                <div
-                    id="popover-id"
-                    className={`${styles.popover} ${styles.glass3d} ${selectionPosition?.showBelow ? styles.popoverBelow : ''}`}
-                    style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        transform: `translate(${selectionPosition.x}px, ${selectionPosition.y}px) ${popoverTransform}`,
-                        zIndex: 10000
-                    }}
-                    role="dialog"
-                    aria-label="Translation Popover"
-                >
-                    <div className={styles.popoverArrow}></div>
-                    <div className={styles.popoverContent}>
-                        <div className={styles.selectedTextRow}>
-                            <span className={styles.selectedText}>{selectedText}</span>
-                            {(() => {
-                                const currentTranscription = transcription;
-                                if (currentTranscription) {
-                                    return <span className={styles.transcription}>[/{currentTranscription}/]</span>;
-                                }
-                                return null;
-                            })()}
-                        </div>
-
-                        {isLoadingTranslation && (
-                            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-                                <div className={styles.loader}>
-                                    <p className={styles['loader-text']}>Loading</p>
-                                    <div className={styles.load}></div>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className={styles.popoverBody}>
-                            <div className={styles.popoverBodyText}>
-                                {definition ? (
-                                    <div className={styles.definitionRow}>
-                                        <span className={styles.translationText}>
-                                            {definition}
-                                            {translation?.trim() && (
-                                                <span style={{ opacity: 0.5, fontSize: '0.9em' }}>
-                                                    <br />
-                                                    ({translation})
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    translation?.trim() && (
-                                        <div className={styles.translationRow}>
-                                            <span
-                                                className={`${styles.translationText} ${
-                                                    translation?.includes('could not translate') ||
-                                                    translation?.includes('Error fetching translation')
-                                                        ? styles.errorText
-                                                        : ''
-                                                }`}
-                                            >
-                                                {translation}
-                                            </span>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                            {imageUrl && showImage && (
-                                <div className={styles.popoverBodyImage} style={{ position: 'relative' }}>
-                                    <img
-                                        src={imageUrl}
-                                        alt="Visual reference"
-                                        className={styles.translationImage}
-                                    />
-                                    <button
-                                        className={styles.imageCloseButton}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowImage(false);
-                                        }}
-                                        title="Remove image"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* AI metadata fields matching VideoPlayer & SongSearchPlayer */}
-                        {(() => {
-                            const matchingSelections = (recommendedSelections || []).filter(
-                                (rec: string) => selectedSentence?.toLowerCase().includes(rec.toLowerCase())
-                            );
-                            const bestMatch = matchingSelections.sort((a: string, b: string) => b.length - a.length)[0];
-
-                            return (
-                                <>
-                                    {bestMatch && (
-                                        <div className={styles.aiHintBox}>
-                                            <Lightbulb size={14} className="text-body shrink-0" />
-                                            <span className={styles.aiHintText}>{bestMatch}</span>
-                                        </div>
-                                    )}
-
-                                    {examples && examples.length > 0 && (
-                                        <div style={{ margin: '4px 0', fontSize: '11px', width: '100%' }}>
-                                            <div style={{ fontWeight: '600', marginBottom: '4px', color: 'rgba(255,255,255,0.4)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                Examples
-                                            </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                                {examples.slice(0, 2).map((example, idx) => (
-                                                    <div key={idx} style={{
-                                                        padding: '4px 8px',
-                                                        backgroundColor: 'rgba(255,255,255,0.03)',
-                                                        borderLeft: '2px solid rgba(255, 255, 255, 0.2)',
-                                                        borderRadius: '2px',
-                                                        fontSize: '11px',
-                                                        color: 'rgba(255,255,255,0.7)',
-                                                        lineHeight: '1.3',
-                                                        textAlign: 'left'
-                                                    }}>
-                                                        {example}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '4px 0', width: '100%' }}>
-                                        {synonyms && synonyms.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', textTransform: 'uppercase', marginRight: '2px' }}>Syn:</span>
-                                                {synonyms.slice(0, 3).map((syn, idx) => (
-                                                    <span key={idx} style={{ padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>{syn}</span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {otherMeanings && otherMeanings.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', textTransform: 'uppercase', marginRight: '2px' }}>Also:</span>
-                                                {otherMeanings.slice(0, 3).map((meaning, idx) => (
-                                                    <span key={idx} style={{ padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '10px', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }} onClick={() => setTranslation(meaning)}>{meaning}</span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {collocations && collocations.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', textTransform: 'uppercase', marginRight: '2px' }}>Use with:</span>
-                                                {collocations.slice(0, 3).map((collocation, idx) => (
-                                                    <span key={idx} style={{ padding: '2px 6px', backgroundColor: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '4px', fontSize: '10px', color: 'rgba(255, 255, 255, 0.7)' }}>{collocation}</span>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            );
-                        })()}
-
-                        <div className={styles.popoverActions}>
-                            <div className={styles.actionButtons}>
-                                {showSubmitButton &&
-                                    !(translation && translation.includes('You have reached your free limit of 100 translations. Please subscribe to continue.')) && (
-                                        <button
-                                            onClick={saveToDict}
-                                            className={styles.saveButton}
-                                            disabled={saveWordMutation.isPending}
-                                            title={saveWordMutation.isPending ? "Saving..." : "Add to dictionary"}
-                                        >
-                                            <span>{saveWordMutation.isPending ? "SAVING..." : "SAVE"}</span>
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                                                <polyline points="7 3 7 8 15 8"></polyline>
-                                            </svg>
-                                        </button>
-                                    )}
-                                {(translation && (translation.startsWith('You have reached') || translation.includes('Please subscribe to continue'))) && (
-                                    <button
-                                        className={styles.iconButtonPremium}
-                                        onClick={() => {
-                                            window.location.href = "/subscribe";
-                                        }}
-                                        title="Subscribe"
-                                        aria-label="Subscribe to premium for more translations"
-                                    >
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path
-                                                d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                                                fill="currentColor" stroke="currentColor" strokeWidth="2"
-                                                strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </button>
-                                )}
-                                <button
-                                    className={styles.closeButton}
-                                    onClick={() => {
-                                        setIsPopoverOpen(false);
-                                        resetPopoverState();
-                                    }}
-                                    aria-label="Close popover"
-                                >
-                                    <X size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>,
-                document.fullscreenElement || document.body
-            )}
+            <TranslationPopover
+                selectionPosition={selectionPosition}
+                isPopoverOpen={isPopoverOpen}
+                isLoading={isLoadingTranslation}
+                isMobile={isMobile}
+                selectedText={selectedText}
+                selectedSentence={selectedSentence}
+                translation={translation}
+                definition={definition}
+                transcription={transcription}
+                imageUrl={imageUrl}
+                showImage={showImage}
+                synonyms={synonyms}
+                otherMeanings={otherMeanings}
+                collocations={collocations}
+                examples={examples}
+                recommendedSelections={recommendedSelections}
+                isSaving={saveWordMutation.isPending}
+                showSubmitButton={showSubmitButton}
+                onSaveToDict={saveToDict}
+                onSelectMeaning={(m) => setTranslation(m)}
+                onClose={() => {
+                    setIsPopoverOpen(false);
+                    resetPopoverState();
+                }}
+                onRemoveImage={() => setShowImage(false)}
+            />
 
             {notification && <div className={styles.notification}>{notification}</div>}
 
-            {showLanguageOverlay && createPortal(
-                <div
-                    onClick={() => setShowLanguageOverlay(false)}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.35)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 2000,
-                        padding: '16px'
-                    }}
-                >
-                    <div
+            <Modal
+                isOpen={showLanguageOverlay}
+                onClose={() => setShowLanguageOverlay(false)}
+                size="sm"
+            >
+                <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
+                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                        {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setShowLanguageOverlay(false)}
                         style={{
-                            background: 'rgba(20,20,20,0.85)',
-                            border: '1px solid rgba(250,249,47,0.6)',
-                            color: '#EAEAEA',
-                            borderRadius: '12px',
-                            padding: '18px 20px',
-                            maxWidth: '520px',
-                            width: '100%',
-                            textAlign: 'center',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                            background: '#FAF92F',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '8px 24px',
+                            fontWeight: 700,
+                            cursor: 'pointer'
                         }}
-                        onClick={(e) => e.stopPropagation()}
-                        role="dialog"
-                        aria-live="assertive"
                     >
-                        <div style={{ margin: '6px 0 14px' }}>
-                            {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
-                        </div>
-                        <button
-                            onClick={() => setShowLanguageOverlay(false)}
-                            style={{
-                                marginTop: '4px',
-                                background: '#FAF92F',
-                                color: '#000',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '8px 14px',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                            }}
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>,
-                document.body
-            )}
+                        OK
+                    </button>
+                </Modal.Body>
+            </Modal>
         </div>
     );
 };

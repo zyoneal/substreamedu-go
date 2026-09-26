@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusNotification } from '../VideoPage/components/StatusNotification';
 import { SubtitleService } from '../../services/SubtitleService';
 
-import X from 'lucide-react/dist/esm/icons/x';
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import Clipboard from 'lucide-react/dist/esm/icons/clipboard';
-import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
 import styles from './TextPasteHighlighter.module.css';
 import { DictionaryService } from '../../services/DictionaryService';
 import { AuthService } from '../../services/AuthService';
@@ -16,6 +14,8 @@ import MobileHint from '../shared/MobileHint';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
 import { useSaveWord, SaveWordData, SaveWordContext } from '../../hooks/useDictionary';
 import { useQueryClient } from '@tanstack/react-query';
+import { Modal, ConfirmModal } from '../ui/modal';
+import { TranslationPopover } from '../shared/TranslationPopover';
 
 interface SelectionPosition {
     x: number;
@@ -61,7 +61,6 @@ const TextPasteHighlighter: React.FC = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [activeSelection, setActiveSelection] = useState<{ text: string; range: Range } | null>(null);
     const [showMobileHint, setShowMobileHint] = useState(false);
-    const [popoverTransform, setPopoverTransform] = useState<string>('translateX(-50%)');
     const [tooltipState, setTooltipState] = useState<{ text: string; x: number; y: number } | null>(null);
     const [showLanguageOverlay, setShowLanguageOverlay] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -239,7 +238,6 @@ const TextPasteHighlighter: React.FC = () => {
                     y: position.y + window.pageYOffset,
                     showBelow: position.showBelow
                 });
-                setPopoverTransform(position.transform);
                 setIsPopoverOpen(true);
             }
         } catch (err) {
@@ -257,7 +255,6 @@ const TextPasteHighlighter: React.FC = () => {
                         y: position.y + window.pageYOffset,
                         showBelow: position.showBelow
                     });
-                    setPopoverTransform(position.transform);
                 }
             }
         };
@@ -997,193 +994,34 @@ const TextPasteHighlighter: React.FC = () => {
         }
     };
 
-    const popover = selectionPosition && isPopoverOpen && (translation || isLoading || isMobile) && createPortal(
-        <div
-            id="popover-id"
-            className={`${styles.popover} ${styles.glass3d} ${selectionPosition?.showBelow ? styles.popoverBelow : ''}`}
-            style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                transform: `translate(${selectionPosition.x}px, ${selectionPosition.y}px) ${popoverTransform}`,
-                zIndex: 1001
+    const popover = (
+        <TranslationPopover
+            selectionPosition={selectionPosition}
+            isPopoverOpen={isPopoverOpen}
+            isLoading={isLoading}
+            isMobile={isMobile}
+            selectedText={selectedText}
+            selectedSentence={selectedSentence}
+            translation={translation}
+            definition={definition}
+            transcription={transcription}
+            imageUrl={imageUrl}
+            showImage={showImage}
+            synonyms={synonyms}
+            otherMeanings={otherMeanings}
+            collocations={collocations}
+            examples={examples}
+            recommendedSelections={recommendedSelections}
+            isSaving={saveWordMutation.isPending}
+            showSubmitButton={showSubmitButton}
+            onSaveToDict={saveToDict}
+            onSelectMeaning={(meaning) => setTranslation(meaning)}
+            onClose={() => {
+                setIsPopoverOpen(false);
+                resetPopoverState();
             }}
-        >
-            <div className={styles.popoverArrow}></div>
-            <div className={styles.popoverContent}>
-                <div className={styles.selectedTextRow}>
-                    <h3 className={styles.selectedText}>{selectedText}</h3>
-                    {(() => {
-                        const currentTranscription = transcription;
-                        if (currentTranscription) {
-                            return <span className={styles.transcription}>[/{currentTranscription}/]</span>;
-                        }
-                        return null;
-                    })()}
-                </div>
-
-                {isLoading && (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-                        <div className={styles.loader}>
-                            <p className={styles['loader-text']}>Loading</p>
-                            <div className={styles.load}></div>
-                        </div>
-                    </div>
-                )}
-                        <div className={styles.popoverBody}>
-                            <div className={styles.popoverBodyText}>
-                                {definition ? (
-                                    <div className={styles.definitionRow}>
-                                        <span className={styles.translationText}>
-                                            {definition}
-                                            {translation?.trim() && (
-                                                <span style={{ opacity: 0.6, fontSize: '0.9em' }}><br/>({translation})</span>
-                                            )}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    translation?.trim() && (
-                                        <div className={styles.translationRow}>
-                                            <span className={styles.translationText}>{translation}</span>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                            {imageUrl && showImage && (
-                                <div className={styles.popoverBodyImage} style={{ position: 'relative' }}>
-                                    <img
-                                        src={imageUrl}
-                                        alt="Visual reference"
-                                        className={styles.translationImage}
-                                    />
-                                    <button
-                                        className={styles.imageCloseButton}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowImage(false);
-                                        }}
-                                        title="Remove image"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {}
-                        {(() => {
-                            const matchingSelections = (recommendedSelections || []).filter(
-                                (rec: string) => selectedSentence?.toLowerCase().includes(rec.toLowerCase())
-                            );
-                            const bestMatch = matchingSelections.sort((a: string, b: string) => b.length - a.length)[0];
-
-                            return (
-                                <>
-                                    {bestMatch && (
-                                        <div className={styles.aiHintBox}>
-                                            <span className={styles.aiHintIcon}><Lightbulb size={16} className="text-primary" /></span>
-                                            <span className={styles.aiHintText}>{bestMatch}</span>
-                                        </div>
-                                    )}
-
-                                    {examples && examples.length > 0 && (
-                                        <div className={styles.exampleContainer}>
-                                            <div className={styles.exampleLabel}>Examples</div>
-                                            <div className={styles.exampleList}>
-                                                {examples.slice(0, 2).map((example, idx) => (
-                                                    <div key={idx} className={styles.exampleItem}>
-                                                        {example}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className={styles.tagGroup}>
-                                        {synonyms && synonyms.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                                                <span className={styles.tagLabel}>Syn:</span>
-                                                {synonyms.slice(0, 3).map((syn, idx) => (
-                                                    <span key={idx} className={styles.tagChip}>{syn}</span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {otherMeanings && otherMeanings.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                                                <span className={styles.tagLabel}>Also:</span>
-                                                {otherMeanings.slice(0, 3).map((meaning, idx) => (
-                                                    <span
-                                                        key={idx}
-                                                        className={`${styles.tagChip} ${styles.tagChipContrast} ${styles.tagChipInteractive}`}
-                                                        onClick={() => setTranslation(meaning)}
-                                                    >
-                                                        {meaning}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {collocations && collocations.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-                                                <span className={styles.tagLabel}>Use with:</span>
-                                                {collocations.slice(0, 3).map((collocation, idx) => (
-                                                    <span key={idx} className={`${styles.tagChip} ${styles.tagChipContrast}`}>{collocation}</span>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            );
-                        })()}
-
-                <div className={styles.popoverActions}>
-                    <div className={styles.actionButtons}>
-                        {showSubmitButton &&
-                            !(translation && translation.startsWith('You have reached')) && (
-                                <button
-                                    onClick={saveToDict}
-                                    className={styles.saveButton}
-                                    disabled={saveWordMutation.isPending}
-                                    title={saveWordMutation.isPending ? "Saving..." : "Add to dictionary"}
-                                >
-                                    <span>{saveWordMutation.isPending ? "SAVING..." : "SAVE"}</span>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                                        <polyline points="7 3 7 8 15 8"></polyline>
-                                    </svg>
-                                </button>
-                            )}
-                        {(translation && translation.startsWith('You have reached')) && (
-                            <button
-                                className={styles.iconButton}
-                                style={{ color: '#D4AF37', background: 'rgba(255, 215, 0, 0.1)' }}
-                                onClick={() => {
-                                    window.location.href = "/subscribe";
-                                }}
-                                title="Subscribe"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                                </svg>
-                            </button>
-                        )}
-                        <button
-                            className={styles.closeButton}
-                            onClick={() => {
-                                setIsPopoverOpen(false);
-                                resetPopoverState();
-                            }}
-                            aria-label="Close translation"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>,
-        document.body
+            onRemoveImage={() => setShowImage(false)}
+        />
     );
 
     const mobileHint = (
@@ -1397,95 +1235,69 @@ const TextPasteHighlighter: React.FC = () => {
             { }
             {popover}
 
-            {showLanguageOverlay && createPortal(
-                <div
-                    onClick={() => setShowLanguageOverlay(false)}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.35)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 2000,
-                        padding: '16px'
-                    }}
-                >
-                    <div
+            <Modal
+                isOpen={showLanguageOverlay}
+                onClose={() => setShowLanguageOverlay(false)}
+                size="sm"
+            >
+                <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
+                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                        {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setShowLanguageOverlay(false)}
                         style={{
-                            background: 'rgba(20,20,20,0.85)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            color: '#EAEAEA',
-                            borderRadius: '12px',
-                            padding: '18px 20px',
-                            maxWidth: '520px',
-                            width: '100%',
-                            textAlign: 'center',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                            background: 'var(--color-ink, #ede8e0)',
+                            color: 'var(--color-canvas, #0d0c0b)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '8px 24px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            fontFamily: "var(--font-body, 'e-Ukraine', sans-serif)"
                         }}
-                        onClick={(e) => e.stopPropagation()}
-                        role="dialog"
-                        aria-live="assertive"
                     >
-                        <div style={{ margin: '6px 0 14px' }}>
-                            {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
-                        </div>
-                        <button
-                            onClick={() => setShowLanguageOverlay(false)}
-                                style={{
-                                    marginTop: '4px',
-                                    background: '#ffffff',
-                                    color: '#000000',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '8px 14px',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                            }}
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>,
-                document.body
-            )}
+                        OK
+                    </button>
+                </Modal.Body>
+            </Modal>
 
-            { }
-            {showConfirmModal && createPortal(
-                <div className={styles.modalOverlay} onClick={handleConfirmCancel}>
-                    <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalTitle}>
-                            {intl.formatMessage({ id: 'textPasteHighlighter.modal.title' })}
-                        </div>
-                        <div className={styles.modalMessage}>
-                            {intl.formatMessage({ id: 'textPasteHighlighter.modal.message' })}
-                        </div>
-                        <div className={styles.modalButtons}>
-                            <button
-                                className={`${styles.modalButton} ${styles.modalButtonCancel}`}
-                                onClick={handleConfirmCancel}
-                            >
-                                {intl.formatMessage({ id: 'textPasteHighlighter.modal.cancel' })}
-                            </button>
-                            <button
-                                className={`${styles.modalButton} ${styles.modalButtonSecondary}`}
-                                onClick={handleConfirmAppend}
-                            >
-                                {intl.formatMessage({ id: 'textPasteHighlighter.modal.append' })}
-                            </button>
-                            <button
-                                className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
-                                onClick={handleConfirmReplace}
-                            >
-                                {intl.formatMessage({ id: 'textPasteHighlighter.modal.replace' })}
-                            </button>
-                        </div>
-                    </div>
-                </div>, document.body)}
+            <Modal isOpen={showConfirmModal} onClose={handleConfirmCancel} size="sm">
+                <Modal.Header
+                    title={intl.formatMessage({ id: 'textPasteHighlighter.modal.title' })}
+                    onClose={handleConfirmCancel}
+                />
+                <Modal.Body>
+                    <p style={{ color: 'var(--color-body, #9e988f)', margin: 0, lineHeight: 1.6 }}>
+                        {intl.formatMessage({ id: 'textPasteHighlighter.modal.message' })}
+                    </p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        type="button"
+                        className={`${styles.modalButton} ${styles.modalButtonCancel}`}
+                        onClick={handleConfirmCancel}
+                    >
+                        {intl.formatMessage({ id: 'textPasteHighlighter.modal.cancel' })}
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.modalButton} ${styles.modalButtonSecondary}`}
+                        onClick={handleConfirmAppend}
+                    >
+                        {intl.formatMessage({ id: 'textPasteHighlighter.modal.append' })}
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
+                        onClick={handleConfirmReplace}
+                    >
+                        {intl.formatMessage({ id: 'textPasteHighlighter.modal.replace' })}
+                    </button>
+                </Modal.Footer>
+            </Modal>
 
-            { }
             {isGenerating && createPortal(
                 <div className={styles.generatingOverlay}>
                     <div className={styles.generatingSpinner}>
@@ -1494,32 +1306,15 @@ const TextPasteHighlighter: React.FC = () => {
                     </div>
                 </div>, document.body)}
 
-            { }
-            {showLevelConfirmModal && createPortal(
-                <div className={styles.modalOverlay} onClick={handleLevelConfirmCancel}>
-                    <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalTitle}>
-                            {intl.formatMessage({ id: 'textPasteHighlighter.levelModal.title', defaultMessage: 'Replace text?' })}
-                        </div>
-                        <div className={styles.modalMessage}>
-                            {intl.formatMessage({ id: 'textPasteHighlighter.levelModal.message', defaultMessage: `Generating new text will replace your current text. Continue?` })}
-                        </div>
-                        <div className={styles.modalButtons}>
-                            <button
-                                className={`${styles.modalButton} ${styles.modalButtonCancel}`}
-                                onClick={handleLevelConfirmCancel}
-                            >
-                                {intl.formatMessage({ id: 'textPasteHighlighter.modal.cancel' })}
-                            </button>
-                            <button
-                                className={`${styles.modalButton} ${styles.modalButtonPrimary}`}
-                                onClick={handleLevelConfirmGenerate}
-                            >
-                                {intl.formatMessage({ id: 'textPasteHighlighter.levelModal.generate', defaultMessage: 'Generate' })}
-                            </button>
-                        </div>
-                    </div>
-                </div>, document.body)}
+            <ConfirmModal
+                isOpen={showLevelConfirmModal}
+                onClose={handleLevelConfirmCancel}
+                onConfirm={handleLevelConfirmGenerate}
+                title={intl.formatMessage({ id: 'textPasteHighlighter.levelModal.title', defaultMessage: 'Replace text?' })}
+                message={intl.formatMessage({ id: 'textPasteHighlighter.levelModal.message', defaultMessage: `Generating new text will replace your current text. Continue?` })}
+                confirmText={intl.formatMessage({ id: 'textPasteHighlighter.levelModal.generate', defaultMessage: 'Generate' })}
+                cancelText={intl.formatMessage({ id: 'textPasteHighlighter.modal.cancel' })}
+            />
             </div>
         </div>
     );
