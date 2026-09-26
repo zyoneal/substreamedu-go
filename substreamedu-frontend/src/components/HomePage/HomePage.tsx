@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { SEO } from '../SEO/SEO';
 import ScrollingTextWall from './ScrollingTextWall';
+import { Modal } from '../ui/modal';
 import styles from './HomePage.module.css';
 
 interface HeroWordItem {
@@ -417,27 +418,12 @@ const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isDemoModalOpen) {
-      document.body.style.overflow = 'hidden';
-      if (demoVideoRef.current) {
-        demoVideoRef.current.play().catch(() => {});
+    if (isDemoModalOpen && demoVideoRef.current) {
+      const playPromise = demoVideoRef.current.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
       }
-    } else {
-      document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isDemoModalOpen]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isDemoModalOpen) {
-        handleCloseModal();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isDemoModalOpen]);
 
   // Framer Motion helpers
@@ -909,60 +895,54 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <AnimatePresence>
-        {isDemoModalOpen && (
-          <div
-            className={styles.modalBackdrop}
-            onClick={handleCloseModal}
-          >
-            <motion.div
-              className={styles.modalWindow}
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.modalHeader}>
-                <button
-                  type="button"
-                  className={styles.modalCloseBtn}
-                  onClick={handleCloseModal}
-                  aria-label="Close modal"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div className={styles.modalVideoWrapper}>
-                <video
-                  ref={demoVideoRef}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className={styles.modalVideo}
-                >
-                  <source src="/movies_example.mp4" type="video/mp4" />
-                </video>
-              </div>
-
-              <div className={styles.modalFooter}>
-                <div className={styles.modalFooterNote}>
-                  <Headphones size={15} strokeWidth={1.75} className={styles.modalNoteIcon} />
-                  <span>
-                    Subtitles blur by default. Hover to reveal, drag to translate.
-                  </span>
-                </div>
-                <Link to="/login" className={styles.modalCtaBtn} onClick={handleCloseModal}>
-                  Start free
-                  <ArrowRight size={12} />
-                </Link>
-              </div>
-            </motion.div>
+      <Modal
+        isOpen={isDemoModalOpen}
+        onClose={handleCloseModal}
+        size="2xl"
+        className={styles.demoModal}
+        ariaLabel="Video Walkthrough Demo"
+      >
+        <div className={styles.demoModalHeader}>
+          <div className={styles.demoModalHeaderTitle}>
+            <Film size={15} className={styles.demoModalHeaderIcon} />
+            <span>Interactive Subtitle Demo</span>
           </div>
-        )}
-      </AnimatePresence>
+          <button
+            type="button"
+            className={styles.modalCloseBtn}
+            onClick={handleCloseModal}
+            aria-label="Close modal"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className={styles.modalVideoWrapper}>
+          <video
+            ref={demoVideoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={styles.modalVideo}
+          >
+            <source src="/movies_example.mp4" type="video/mp4" />
+          </video>
+        </div>
+
+        <div className={styles.modalFooter}>
+          <div className={styles.modalFooterNote}>
+            <Headphones size={15} strokeWidth={1.75} className={styles.modalNoteIcon} />
+            <span>
+              Subtitles blur by default. Hover to reveal, drag to translate.
+            </span>
+          </div>
+          <Link to="/login" className={styles.modalCtaBtn} onClick={handleCloseModal}>
+            Start free
+            <ArrowRight size={12} />
+          </Link>
+        </div>
+      </Modal>
     </div>
   );
 };
