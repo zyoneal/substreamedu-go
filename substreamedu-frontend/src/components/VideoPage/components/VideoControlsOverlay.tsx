@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import GraduationCap from 'lucide-react/dist/esm/icons/graduation-cap';
 import Eye from 'lucide-react/dist/esm/icons/eye';
@@ -9,10 +9,13 @@ import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
 import VolumeX from 'lucide-react/dist/esm/icons/volume-x';
 import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
+import Play from 'lucide-react/dist/esm/icons/play';
+import Pause from 'lucide-react/dist/esm/icons/pause';
 import styles from '../css/VideoPlayerPopover.module.css';
 
 export interface VideoControlsOverlayProps {
     showControls: boolean;
+    isPlaying: boolean;
     currentTime: number;
     duration: number;
     progress: number;
@@ -25,6 +28,7 @@ export interface VideoControlsOverlayProps {
     delay: number;
     formatTime?: (seconds: number) => string;
     onVideoClick: () => void;
+    onTogglePlayPause: () => void;
     onOpenGrammarIndex: () => void;
     onOpenLessonStudio: () => void;
     onToggleSubtitles: () => void;
@@ -47,6 +51,7 @@ const defaultFormatTime = (timeInSeconds: number): string => {
 
 export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     showControls,
+    isPlaying,
     currentTime,
     duration,
     progress,
@@ -59,6 +64,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     delay,
     formatTime = defaultFormatTime,
     onVideoClick,
+    onTogglePlayPause,
     onOpenGrammarIndex,
     onOpenLessonStudio,
     onToggleSubtitles,
@@ -71,6 +77,28 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     onTouchSeek,
     onToggleFullscreen,
 }) => {
+    const [isVolumeOpen, setIsVolumeOpen] = useState(false);
+    const volumeControlRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isVolumeOpen) return;
+        const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+            if (volumeControlRef.current && !volumeControlRef.current.contains(e.target as Node)) {
+                setIsVolumeOpen(false);
+            }
+        };
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsVolumeOpen(false);
+            }
+        };
+        document.addEventListener('pointerdown', handleClickOutside);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('pointerdown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isVolumeOpen]);
     return (
         <div
             className={`${styles.controlsOverlay} ${showControls ? styles.visible : ''}`}
@@ -149,27 +177,69 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
 
             {/* 3. BOTTOM CONTROLS */}
             <div className={styles.bottomControls} onClick={(e) => e.stopPropagation()}>
+                {/* Play / Pause Toggle Button */}
+                <button
+                    type="button"
+                    className={styles.controlButton}
+                    onClick={onTogglePlayPause}
+                    aria-label={isPlaying ? "Pause" : "Play"}
+                    title={isPlaying ? "Pause (Space)" : "Play (Space)"}
+                >
+                    {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+                </button>
+
                 {!isMobile && (
-                    <div className={`${styles.volumeControl} ${styles.desktopOnlyControl}`}>
+                    <div
+                        className={`${styles.volumeControl} ${styles.desktopOnlyControl}`}
+                        ref={volumeControlRef}
+                    >
                         <button
                             type="button"
-                            className={styles.controlButton}
-                            onClick={onToggleMute}
-                            aria-label={isMuted ? "Unmute" : "Mute"}
-                            title={isMuted ? "Unmute" : "Mute"}
+                            className={`${styles.controlButton} ${isVolumeOpen ? styles.activeControlButton : ''}`}
+                            onClick={() => setIsVolumeOpen((prev) => !prev)}
+                            aria-label={isMuted ? "Unmute" : "Volume"}
+                            title={isMuted ? "Unmute" : "Volume"}
                         >
-                            {isMuted ? <VolumeX size={18} /> : volume > 0.5 ? <Volume2 size={18} /> : <Volume1 size={18} />}
+                            {isMuted || volume === 0 ? (
+                                <VolumeX size={18} />
+                            ) : volume > 0.5 ? (
+                                <Volume2 size={18} />
+                            ) : (
+                                <Volume1 size={18} />
+                            )}
                         </button>
-                        <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.05"
-                            value={isMuted ? 0 : volume}
-                            onChange={onVolumeChange}
-                            className={styles.volumeSlider}
-                            aria-label="Volume slider"
-                        />
+
+                        {isVolumeOpen && (
+                            <div
+                                className={styles.verticalVolumePopup}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <span className={styles.volumePercentageText}>
+                                    {isMuted || volume === 0 ? '0%' : `${Math.round(volume * 100)}%`}
+                                </span>
+                                <div className={styles.verticalVolumeTrackWrapper}>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.05"
+                                        value={isMuted ? 0 : volume}
+                                        onChange={onVolumeChange}
+                                        className={styles.verticalVolumeSlider}
+                                        aria-label="Volume slider"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.volumeMuteMiniButton}
+                                    onClick={onToggleMute}
+                                    aria-label={isMuted ? "Unmute" : "Mute"}
+                                    title={isMuted ? "Unmute" : "Mute"}
+                                >
+                                    {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
                 <div className={styles.timeCurrent}>

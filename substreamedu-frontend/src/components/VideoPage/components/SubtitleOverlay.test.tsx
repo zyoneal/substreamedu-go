@@ -33,7 +33,7 @@ describe('SubtitleOverlay Component', () => {
         isLoadingSubtitles: false,
         hasNoSubtitlesForVideo: false,
         activeGrammarPoint: null,
-        blurSubtitles: false,
+        blurSubtitles: true,
         isMobile: false,
         isPopoverOpen: false,
         isLoadingTranslation: false,
@@ -90,10 +90,13 @@ describe('SubtitleOverlay Component', () => {
         expect(onTextSelection).toHaveBeenCalled();
     });
 
-    it('applies isBlurred class when blurSubtitles is true', () => {
-        render(<SubtitleOverlay {...defaultProps} blurSubtitles={true} />);
+    it('applies isBlurred class by default and removes it when blurSubtitles is false', () => {
+        const { rerender } = render(<SubtitleOverlay {...defaultProps} blurSubtitles={true} />);
         const paragraph = screen.getByText('I went to the store yesterday.').closest('p');
         expect(paragraph).toHaveClass('isBlurred');
+
+        rerender(<SubtitleOverlay {...defaultProps} blurSubtitles={false} />);
+        expect(paragraph).not.toHaveClass('isBlurred');
     });
 
     it('applies fullscreenSubtitles class when isFullscreen is true', () => {

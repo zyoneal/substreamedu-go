@@ -12,10 +12,13 @@ jest.mock('lucide-react/dist/esm/icons/volume-2', () => () => <span data-testid=
 jest.mock('lucide-react/dist/esm/icons/volume-x', () => () => <span data-testid="icon-volume-x" />);
 jest.mock('lucide-react/dist/esm/icons/maximize', () => () => <span data-testid="icon-maximize" />);
 jest.mock('lucide-react/dist/esm/icons/minimize', () => () => <span data-testid="icon-minimize" />);
+jest.mock('lucide-react/dist/esm/icons/play', () => () => <span data-testid="icon-play" />);
+jest.mock('lucide-react/dist/esm/icons/pause', () => () => <span data-testid="icon-pause" />);
 
 describe('VideoControlsOverlay Component', () => {
     const defaultProps: VideoControlsOverlayProps = {
         showControls: true,
+        isPlaying: false,
         currentTime: 75, // 1:15
         duration: 300, // 5:00
         progress: 25,
@@ -24,9 +27,10 @@ describe('VideoControlsOverlay Component', () => {
         isFullscreen: false,
         isMobile: false,
         showSubtitles: true,
-        blurSubtitles: false,
+        blurSubtitles: true,
         delay: 0,
         onVideoClick: jest.fn(),
+        onTogglePlayPause: jest.fn(),
         onOpenGrammarIndex: jest.fn(),
         onOpenLessonStudio: jest.fn(),
         onToggleSubtitles: jest.fn(),
@@ -50,6 +54,7 @@ describe('VideoControlsOverlay Component', () => {
         expect(screen.getByTestId('icon-eye-off')).toBeInTheDocument();
         expect(screen.getByTestId('icon-volume-2')).toBeInTheDocument();
         expect(screen.getByTestId('icon-maximize')).toBeInTheDocument();
+        expect(screen.getByTestId('icon-play')).toBeInTheDocument();
     });
 
     it('triggers action callbacks when clicking buttons', () => {
@@ -60,6 +65,7 @@ describe('VideoControlsOverlay Component', () => {
         const onRepeatCurrentSubtitle = jest.fn();
         const onToggleMute = jest.fn();
         const onToggleFullscreen = jest.fn();
+        const onTogglePlayPause = jest.fn();
 
         render(
             <VideoControlsOverlay
@@ -71,8 +77,12 @@ describe('VideoControlsOverlay Component', () => {
                 onRepeatCurrentSubtitle={onRepeatCurrentSubtitle}
                 onToggleMute={onToggleMute}
                 onToggleFullscreen={onToggleFullscreen}
+                onTogglePlayPause={onTogglePlayPause}
             />
         );
+
+        fireEvent.click(screen.getByRole('button', { name: /play/i }));
+        expect(onTogglePlayPause).toHaveBeenCalledTimes(1);
 
         fireEvent.click(screen.getByRole('button', { name: /grammar in this video/i }));
         expect(onOpenGrammarIndex).toHaveBeenCalledTimes(1);
@@ -89,11 +99,18 @@ describe('VideoControlsOverlay Component', () => {
         fireEvent.click(screen.getByRole('button', { name: /repeat subtitle 3 times/i }));
         expect(onRepeatCurrentSubtitle).toHaveBeenCalledTimes(1);
 
-        fireEvent.click(screen.getByRole('button', { name: /mute/i }));
-        expect(onToggleMute).toHaveBeenCalledTimes(1);
-
         fireEvent.click(screen.getByRole('button', { name: /enter fullscreen/i }));
         expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders Pause icon when isPlaying is true and Play icon when false', () => {
+        const { rerender } = render(<VideoControlsOverlay {...defaultProps} isPlaying={false} />);
+        expect(screen.getByTestId('icon-play')).toBeInTheDocument();
+        expect(screen.queryByTestId('icon-pause')).not.toBeInTheDocument();
+
+        rerender(<VideoControlsOverlay {...defaultProps} isPlaying={true} />);
+        expect(screen.getByTestId('icon-pause')).toBeInTheDocument();
+        expect(screen.queryByTestId('icon-play')).not.toBeInTheDocument();
     });
 
     it('triggers delay toggle correctly between 0s and -2s', () => {
@@ -122,7 +139,7 @@ describe('VideoControlsOverlay Component', () => {
         expect(screen.queryByLabelText(/volume slider/i)).not.toBeInTheDocument();
     });
 
-    it('handles seek and volume events', () => {
+    it('handles seek and volume events when opening upward volume popup', () => {
         const onSeek = jest.fn();
         const onVolumeChange = jest.fn();
 
@@ -134,7 +151,15 @@ describe('VideoControlsOverlay Component', () => {
             />
         );
 
+        // Volume slider is hidden by default inside the upward popup
+        expect(screen.queryByLabelText(/volume slider/i)).not.toBeInTheDocument();
+
+        // Click sound icon to open upward volume popup
+        const volumeBtn = screen.getByRole('button', { name: /volume/i });
+        fireEvent.click(volumeBtn);
+
         const volumeSlider = screen.getByLabelText(/volume slider/i);
+        expect(volumeSlider).toBeInTheDocument();
         fireEvent.change(volumeSlider, { target: { value: '0.4' } });
         expect(onVolumeChange).toHaveBeenCalled();
 
@@ -142,5 +167,39 @@ describe('VideoControlsOverlay Component', () => {
         expect(seekBar).toBeInTheDocument();
         fireEvent.click(seekBar!);
         expect(onSeek).toHaveBeenCalledTimes(1);
+    });
+
+    it('toggles vertical volume popup on sound icon click, closes on Escape, and allows muting', () => {
+        const onToggleMute = jest.fn();
+        render(<VideoControlsOverlay {...defaultProps} onToggleMute={onToggleMute} />);
+
+        const volumeBtn = screen.getByRole('button', { name: /volume/i });
+        // Initially closed
+        expect(screen.queryByLabelText(/volume slider/i)).not.toBeInTheDocument();
+
+        // Click to open
+        fireEvent.click(volumeBtn);
+        expect(screen.getByLabelText(/volume slider/i)).toBeInTheDocument();
+        expect(screen.getByText('80%')).toBeInTheDocument();
+
+        // Click mute button inside popup
+        const miniMuteBtn = screen.getByRole('button', { name: /mute/i });
+        fireEvent.click(miniMuteBtn);
+        expect(onToggleMute).toHaveBeenCalled();
+
+        // Close on Escape
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByLabelText(/volume slider/i)).not.toBeInTheDocument();
+    });
+
+    it('renders Blur quick pill button with activePill when blurSubtitles is true and without it when false', () => {
+        const { rerender } = render(<VideoControlsOverlay {...defaultProps} blurSubtitles={true} />);
+        const blurBtn = screen.getByRole('button', { name: /toggle blur subtitles/i });
+        expect(blurBtn).toHaveClass('quickPillButton');
+        expect(blurBtn).toHaveClass('activePill');
+
+        rerender(<VideoControlsOverlay {...defaultProps} blurSubtitles={false} />);
+        expect(blurBtn).toHaveClass('quickPillButton');
+        expect(blurBtn).not.toHaveClass('activePill');
     });
 });

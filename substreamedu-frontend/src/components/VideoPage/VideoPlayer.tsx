@@ -109,14 +109,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const [showSubtitles, setShowSubtitles] = useState(true);
-    const [blurSubtitles, setBlurSubtitles] = useState<boolean>(() => {
-        try {
-            const saved = localStorage.getItem('substreamedu_subtitle_blur');
-            return saved !== null ? saved === 'true' : true;
-        } catch {
-            return true;
-        }
-    });
+    // Subtitles are blurred by default for listening practice
+    const [blurSubtitles, setBlurSubtitles] = useState<boolean>(true);
     // isFullscreen now comes from useVideoPlayer hook
     const [showMobileHint, setShowMobileHint] = useState(true);
 
@@ -314,12 +308,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     });
 
     useEffect(() => {
+        try {
+            localStorage.removeItem('substreamedu_subtitle_blur');
+        } catch {}
         return () => {
             isMountedRef.current = false;
         };
     }, []);
 
     useEffect(() => {
+        setBlurSubtitles(true);
         if (Array.isArray(subtitles) && subtitles.length > 0) {
             sessionStorage.setItem('videoUrl', videoUrl);
         }
@@ -1074,6 +1072,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
                                 <VideoControlsOverlay
                                     showControls={showControls}
+                                    isPlaying={isPlaying}
                                     currentTime={currentTime}
                                     duration={duration}
                                     progress={progress}
@@ -1086,6 +1085,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                     delay={delay}
                                     formatTime={formatTime}
                                     onVideoClick={handleVideoClick}
+                                    onTogglePlayPause={togglePlayPause}
                                     onOpenGrammarIndex={() => {
                                         pauseVideo();
                                         setIsGrammarIndexOpen(true);
@@ -1095,13 +1095,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         setIsLessonStudioOpen(true);
                                     }}
                                     onToggleSubtitles={() => setShowSubtitles(!showSubtitles)}
-                                    onToggleBlur={() => {
-                                        const next = !blurSubtitles;
-                                        setBlurSubtitles(next);
-                                        try {
-                                            localStorage.setItem('substreamedu_subtitle_blur', String(next));
-                                        } catch {}
-                                    }}
+                                    onToggleBlur={() => setBlurSubtitles(prev => !prev)}
                                     onDelayChange={handleDelayChange}
                                     onRepeatCurrentSubtitle={handleRepeatCurrentSubtitle}
                                     onToggleMute={toggleMute}

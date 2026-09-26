@@ -46,7 +46,7 @@ func main() {
 	}
 
 	poolConfig.MaxConns = 100
-	poolConfig.MinConns = 10
+	poolConfig.MinConns = 2
 
 	dbPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
