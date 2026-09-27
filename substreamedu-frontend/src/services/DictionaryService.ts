@@ -73,9 +73,16 @@ const DictionaryService = {
 
       const url = `${baseURL}${urls.dictionaryCategories}/${encodeURIComponent(category)}/items${params.toString() ? '?' + params.toString() : ''}`;
       const response = await axiosService.get(url);
+      const rawItems = response.data?.items || response.data?.data?.items || [];
+      const items = (Array.isArray(rawItems) ? rawItems : []).map((item: any) => ({
+        ...item,
+        highlightedText: item.highlightedText || item.word || 'Untitled Word',
+        translatedText: item.translatedText || item.translation || null,
+        resourceName: item.resourceName || item.source || 'vault',
+      }));
       return {
-        items: response.data?.items || [],
-        hasMore: response.data?.hasMore || false,
+        items,
+        hasMore: response.data?.hasMore || response.data?.data?.hasMore || false,
       };
     } catch (error) {
       console.error("Error fetching dictionary items by category:", error);

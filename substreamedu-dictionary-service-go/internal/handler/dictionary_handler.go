@@ -1088,13 +1088,25 @@ func (h *DictionaryHandler) GetVocabularyCategories(c *gin.Context) {
 // GetLexemesByCategory returns paginated items filtered by category
 func (h *DictionaryHandler) GetLexemesByCategory(c *gin.Context) {
 	if h.categorizationService == nil {
-		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.Dictionary{}})
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: gin.H{
+				"items":   []dto.DictionaryItemDto{},
+				"hasMore": false,
+			},
+		})
 		return
 	}
 
 	userID := h.getOptionalUserId(c)
 	if userID == nil {
-		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.Dictionary{}})
+		c.JSON(http.StatusOK, dto.ApiResponse{
+			Status: "success",
+			Data: gin.H{
+				"items":   []dto.DictionaryItemDto{},
+				"hasMore": false,
+			},
+		})
 		return
 	}
 
@@ -1110,14 +1122,32 @@ func (h *DictionaryHandler) GetLexemesByCategory(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
 	}
-	if lexemes == nil {
-		lexemes = []model.Dictionary{}
+
+	items := make([]dto.DictionaryItemDto, 0, len(lexemes))
+	for _, m := range lexemes {
+		items = append(items, dto.DictionaryItemDto{
+			ID:              m.ID,
+			UserID:          m.UserID,
+			HighlightedText: m.Word,
+			TranslatedText:  m.Translation,
+			Transcription:   m.Transcription,
+			Context:         m.Context,
+			ResourceName:    m.Source,
+			Status:          m.Status,
+			DifficultyScore: m.DifficultyScore,
+			Definition:      m.Definition,
+			ImageUrl:        m.ImageUrl,
+			Stability:       m.Stability,
+			Retrievability:  m.Retrievability,
+			CardType:        m.CardType,
+			Category:        m.Category,
+		})
 	}
 
 	c.JSON(http.StatusOK, dto.ApiResponse{
 		Status: "success",
 		Data: gin.H{
-			"items":   lexemes,
+			"items":   items,
 			"hasMore": hasMore,
 		},
 	})

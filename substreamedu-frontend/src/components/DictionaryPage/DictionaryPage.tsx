@@ -268,7 +268,24 @@ const DictionaryPage: React.FC = () => {
         setIsLoadingCategoryWords(true);
         try {
             const resp = await DictionaryService.fetchDictionaryItemsByCategory(catName, 0, 100);
-            setCategoryWords(resp.items || []);
+            const normalizedItems: DictionaryItem[] = (resp.items || []).map((item: any) => ({
+                id: item.id,
+                resourceName: item.resourceName || item.source || 'vault',
+                highlightedText: item.highlightedText || item.word || 'Untitled Word',
+                translatedText: item.translatedText || item.translation || null,
+                context: item.context || null,
+                note: item.note || null,
+                definition: item.definition || null,
+                imageUrl: item.imageUrl || null,
+                transcription: item.transcription || null,
+                tags: item.tags || [],
+                difficulty: item.difficulty,
+                lastReviewed: item.lastReviewed,
+                reviewCount: item.reviewCount || item.repetitionLevel || 0,
+                nextReview: item.nextReview || item.nextRepetitionDate,
+                mastered: item.mastered || item.status === 'mastered',
+            }));
+            setCategoryWords(normalizedItems);
         } catch (err) {
             debugError('Failed to fetch category items', err);
             setCategoryWords([]);
@@ -776,6 +793,10 @@ const DictionaryPage: React.FC = () => {
 
         const definition = word.definition?.trim();
         const translation = word.translatedText?.trim();
+        const rawTranscription = word.transcription?.trim();
+        const cleanTranscription = rawTranscription
+            ? rawTranscription.replace(/^[/\[\s]+|[/\]\s]+$/g, '').trim()
+            : '';
 
         return (
             <div
@@ -793,9 +814,9 @@ const DictionaryPage: React.FC = () => {
                             <span>{word.highlightedText || 'Untitled Word'}</span>
                             <Volume2 className={styles.soundWaveIcon} />
                         </button>
-                        {word.transcription && (
+                        {cleanTranscription && (
                             <span className={styles.wordTranscription}>
-                                [{word.transcription}]
+                                [{cleanTranscription}]
                             </span>
                         )}
                     </div>
