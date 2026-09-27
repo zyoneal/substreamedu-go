@@ -85,8 +85,9 @@ func main() {
 
 	outboxProcessor := service.NewOutboxProcessor(outboxRepo, kafkaWriter, logger)
 	lessonRepo := repository.NewLessonRepository(dbPool)
+	categorizationService := service.NewCategorizationService(dictRepo, aiService, logger)
 
-	dictHandler := handler.NewDictionaryHandler(vocabularyService, learningService, aiService, nounProjectService, iamClient, lessonRepo)
+	dictHandler := handler.NewDictionaryHandler(vocabularyService, learningService, aiService, nounProjectService, iamClient, lessonRepo, categorizationService)
 
 	adminHandler := handler.NewAdminHandler(vocabularyService)
 

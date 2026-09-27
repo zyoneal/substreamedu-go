@@ -28,22 +28,24 @@ const (
 )
 
 type DictionaryHandler struct {
-	vocabularyService  *service.VocabularyService
-	learningService    *service.LearningService
-	aiService          *service.AIService
-	nounProjectService *service.NounProjectService
-	iamClient          *client.IAMClient
-	lessonRepo         *repository.LessonRepository
+	vocabularyService     *service.VocabularyService
+	learningService       *service.LearningService
+	aiService             *service.AIService
+	nounProjectService    *service.NounProjectService
+	iamClient             *client.IAMClient
+	lessonRepo            *repository.LessonRepository
+	categorizationService *service.CategorizationService
 }
 
-func NewDictionaryHandler(vs *service.VocabularyService, ls *service.LearningService, as *service.AIService, nps *service.NounProjectService, ic *client.IAMClient, lr *repository.LessonRepository) *DictionaryHandler {
+func NewDictionaryHandler(vs *service.VocabularyService, ls *service.LearningService, as *service.AIService, nps *service.NounProjectService, ic *client.IAMClient, lr *repository.LessonRepository, cs *service.CategorizationService) *DictionaryHandler {
 	return &DictionaryHandler{
-		vocabularyService:  vs,
-		learningService:    ls,
-		aiService:          as,
-		nounProjectService: nps,
-		iamClient:          ic,
-		lessonRepo:         lr,
+		vocabularyService:     vs,
+		learningService:       ls,
+		aiService:             as,
+		nounProjectService:    nps,
+		iamClient:             ic,
+		lessonRepo:            lr,
+		categorizationService: cs,
 	}
 }
 
@@ -1028,3 +1030,96 @@ func (h *DictionaryHandler) DeleteLessonPlan(c *gin.Context) {
 		Message: "Lesson deleted successfully",
 	})
 }
+
+// CategorizeWordsBatch handles high-throughput categorization of user vocabulary in micro-batches
+func (h *DictionaryHandler) CategorizeWordsBatch(c *gin.Context) {
+	if h.categorizationService == nil {
+		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: "Categorization service not initialized"})
+		return
+	}
+
+	userID, ok := h.getUserId(c)
+	if !ok {
+		return
+	}
+
+	var req dto.CategorizeBatchRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		req.Limit = 100
+	}
+	if req.Limit <= 0 {
+		req.Limit = 100
+	}
+
+	resp, err := h.categorizationService.CategorizeUserVocabularyBatch(c.Request.Context(), userID, req.Limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: resp})
+}
+
+// GetVocabularyCategories returns category groups with counts for the user
+func (h *DictionaryHandler) GetVocabularyCategories(c *gin.Context) {
+	if h.categorizationService == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.CategoryGroup{}})
+		return
+	}
+
+	userID := h.getOptionalUserId(c)
+	if userID == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.CategoryGroup{}})
+		return
+	}
+
+	categories, err := h.categorizationService.GetVocabularyCategories(c.Request.Context(), *userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+	if categories == nil {
+		categories = []model.CategoryGroup{}
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: categories})
+}
+
+// GetLexemesByCategory returns paginated items filtered by category
+func (h *DictionaryHandler) GetLexemesByCategory(c *gin.Context) {
+	if h.categorizationService == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.Dictionary{}})
+		return
+	}
+
+	userID := h.getOptionalUserId(c)
+	if userID == nil {
+		c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: []model.Dictionary{}})
+		return
+	}
+
+	category := c.Param("category")
+	cursorStr := c.DefaultQuery("cursor", "0")
+	limitStr := c.DefaultQuery("limit", "50")
+
+	cursor, _ := strconv.ParseInt(cursorStr, 10, 64)
+	limit, _ := strconv.Atoi(limitStr)
+
+	lexemes, hasMore, err := h.categorizationService.GetLexemesByCategory(c.Request.Context(), *userID, category, cursor, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+	if lexemes == nil {
+		lexemes = []model.Dictionary{}
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Status: "success",
+		Data: gin.H{
+			"items":   lexemes,
+			"hasMore": hasMore,
+		},
+	})
+}
+

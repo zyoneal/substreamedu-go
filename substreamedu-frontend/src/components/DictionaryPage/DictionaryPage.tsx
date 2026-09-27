@@ -21,6 +21,9 @@ import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
 import Layers from 'lucide-react/dist/esm/icons/layers';
 import X from 'lucide-react/dist/esm/icons/x';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
+import Tag from 'lucide-react/dist/esm/icons/tag';
 
 import { DictionaryService } from '../../services/DictionaryService';
 import { AuthService } from '../../services/AuthService';
@@ -147,7 +150,7 @@ const DictionaryPage: React.FC = () => {
         debouncedQuery: ''
     });
     const [view, setView] = useState<{
-        mode: 'groups' | 'words';
+        mode: 'groups' | 'categories' | 'words';
         layout: 'grid' | 'list';
         currentPage: number;
     }>({
@@ -160,6 +163,15 @@ const DictionaryPage: React.FC = () => {
     const [isLoadingWords, setIsLoadingWords] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [editingWord, setEditingWord] = useState<DictionaryItem | null>(null);
+
+    // AI Semantic Categorization state
+    const [categories, setCategories] = useState<{ categoryName: string; numberOfWords: number }[]>([]);
+    const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
+    const [categoryWords, setCategoryWords] = useState<DictionaryItem[]>([]);
+    const [isLoadingCategoryWords, setIsLoadingCategoryWords] = useState(false);
+    const [isCategorizing, setIsCategorizing] = useState(false);
+    const [categorizeProgress, setCategorizeProgress] = useState<{ processed: number; total: number; remaining: number } | null>(null);
+    const [categorizeMessage, setCategorizeMessage] = useState<string | null>(null);
 
     const searchTimeoutRef = useRef<NodeJS.Timeout>();
     const intl = useIntl();
@@ -185,6 +197,7 @@ const DictionaryPage: React.FC = () => {
         const fetchData = async () => {
             if (!AuthService.getUserEmail()) {
                 setResources([]);
+                setCategories([]);
                 setAllWords([]);
                 setStatus('success');
                 setIsLoadingWords(false);
@@ -195,6 +208,9 @@ const DictionaryPage: React.FC = () => {
                 if (view.mode === 'groups') {
                     const data = await DictionaryService.fetchDictionaryResources();
                     setResources(Array.isArray(data) ? data : []);
+                } else if (view.mode === 'categories') {
+                    const data = await DictionaryService.fetchDictionaryCategories();
+                    setCategories(Array.isArray(data) ? data : []);
                 } else if (view.mode === 'words') {
                     setIsLoadingWords(true);
                     const words = await DictionaryService.fetchDictionaryItemsByUser();
@@ -204,6 +220,7 @@ const DictionaryPage: React.FC = () => {
             } catch (error) {
                 debugError('Failed to fetch data', error);
                 setResources([]);
+                setCategories([]);
                 setAllWords([]);
                 setStatus('error');
             } finally {
@@ -226,6 +243,7 @@ const DictionaryPage: React.FC = () => {
         try {
             await DictionaryService.deleteDictionaryItem(resourceName, itemId);
             setAllWords(prev => prev.filter(word => word.id !== itemId));
+            setCategoryWords(prev => prev.filter(word => word.id !== itemId));
         } catch (error) {
             debugError('Failed to delete word', error);
         }
@@ -236,11 +254,62 @@ const DictionaryPage: React.FC = () => {
             setAllWords(prev => prev.map(word =>
                 word.id === updatedWord.id ? updatedWord : word
             ));
+            setCategoryWords(prev => prev.map(word =>
+                word.id === updatedWord.id ? updatedWord : word
+            ));
             setEditingWord(null);
         } catch (error) {
             debugError('Failed to update word', error);
         }
     }, []);
+
+    const handleSelectCategory = useCallback(async (catName: string) => {
+        setSelectedCategoryName(catName);
+        setIsLoadingCategoryWords(true);
+        try {
+            const resp = await DictionaryService.fetchDictionaryItemsByCategory(catName, 0, 100);
+            setCategoryWords(resp.items || []);
+        } catch (err) {
+            debugError('Failed to fetch category items', err);
+            setCategoryWords([]);
+        } finally {
+            setIsLoadingCategoryWords(false);
+        }
+    }, []);
+
+    const handleRunCategorize = useCallback(async () => {
+        if (isCategorizing) return;
+        setIsCategorizing(true);
+        setCategorizeMessage('Categorizing vocabulary into semantic themes...');
+        try {
+            let remaining = 1;
+            let totalProcessed = 0;
+            while (remaining > 0) {
+                const res = await DictionaryService.categorizeUserVocabulary(100);
+                totalProcessed += res.categorized;
+                remaining = res.remaining;
+                setCategorizeProgress({
+                    processed: totalProcessed,
+                    total: res.total,
+                    remaining: res.remaining,
+                });
+                if (res.categorized === 0 && res.remaining === 0) {
+                    break;
+                }
+                if (res.remaining > 0) {
+                    await new Promise(r => setTimeout(r, 200));
+                }
+            }
+            setCategorizeMessage(`Successfully categorized ${totalProcessed} words!`);
+            const updatedCats = await DictionaryService.fetchDictionaryCategories();
+            setCategories(Array.isArray(updatedCats) ? updatedCats : []);
+        } catch (err) {
+            debugError('Failed to categorize dictionary', err);
+            setCategorizeMessage('Categorization failed. Please try again.');
+        } finally {
+            setIsCategorizing(false);
+        }
+    }, [isCategorizing]);
 
     const handleCancelEdit = useCallback(() => {
         setEditingWord(null);
@@ -400,14 +469,35 @@ const DictionaryPage: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, []);
 
+    const filteredCategoryList = useMemo(() => {
+        if (!Array.isArray(categories)) return [];
+        if (!search.debouncedQuery.trim()) return categories;
+        const q = search.debouncedQuery.toLowerCase();
+        return categories.filter(c => c.categoryName.toLowerCase().includes(q));
+    }, [categories, search.debouncedQuery]);
+
+    const filteredCategoryWords = useMemo(() => {
+        if (!Array.isArray(categoryWords)) return [];
+        if (!search.debouncedQuery.trim()) return categoryWords;
+        const q = search.debouncedQuery.toLowerCase();
+        return categoryWords.filter(word =>
+            (word.highlightedText?.toLowerCase() || '').includes(q) ||
+            (word.translatedText?.toLowerCase() || '').includes(q) ||
+            (word.definition?.toLowerCase() || '').includes(q)
+        );
+    }, [categoryWords, search.debouncedQuery]);
+
     // Summary Statistics for Hero Bar
     const totalWordsCount = useMemo(() => {
         if (Array.isArray(allWords) && allWords.length > 0) return allWords.length;
         if (Array.isArray(resources) && resources.length > 0) {
             return resources.reduce((acc, r) => acc + (r?.numberOfWords || 0), 0);
         }
+        if (Array.isArray(categories) && categories.length > 0) {
+            return categories.reduce((acc, c) => acc + (c?.numberOfWords || 0), 0);
+        }
         return 0;
-    }, [allWords, resources]);
+    }, [allWords, resources, categories]);
 
     const masteredCount = useMemo(() => {
         if (!Array.isArray(allWords)) return 0;
@@ -439,9 +529,12 @@ const DictionaryPage: React.FC = () => {
             <Search className={styles.searchIcon} />
             <Input
                 type="text"
-                placeholder={view.mode === 'groups'
-                    ? intl.formatMessage({ id: 'searchGroupsPlaceholder', defaultMessage: 'Search collections...' })
-                    : intl.formatMessage({ id: 'searchWordsPlaceholder', defaultMessage: 'Search words or context...' })
+                placeholder={
+                    view.mode === 'groups'
+                        ? intl.formatMessage({ id: 'searchGroupsPlaceholder', defaultMessage: 'Search collections...' })
+                        : view.mode === 'categories'
+                        ? 'Search themes or words...'
+                        : intl.formatMessage({ id: 'searchWordsPlaceholder', defaultMessage: 'Search words or context...' })
                 }
                 value={search.query}
                 onChange={(e) => setSearch(prev => ({ ...prev, query: e.target.value }))}
@@ -468,6 +561,7 @@ const DictionaryPage: React.FC = () => {
                     setView(prev => ({ ...prev, mode: 'groups', currentPage: 1 }));
                     setSearch(prev => ({ ...prev, query: '' }));
                     setSelectedCategory(null);
+                    setSelectedCategoryName(null);
                 }}
                 className={`${styles.segmentedButton} ${view.mode === 'groups' ? styles.segmentedButtonActive : ''}`}
                 role="tab"
@@ -478,9 +572,24 @@ const DictionaryPage: React.FC = () => {
             </button>
             <button
                 onClick={() => {
+                    setView(prev => ({ ...prev, mode: 'categories', currentPage: 1 }));
+                    setSearch(prev => ({ ...prev, query: '' }));
+                    setSelectedCategory(null);
+                    setSelectedCategoryName(null);
+                }}
+                className={`${styles.segmentedButton} ${view.mode === 'categories' ? styles.segmentedButtonActive : ''}`}
+                role="tab"
+                aria-selected={view.mode === 'categories'}
+            >
+                <Sparkles size={15} />
+                <span>{intl.formatMessage({ id: 'categories', defaultMessage: 'Themes' })}</span>
+            </button>
+            <button
+                onClick={() => {
                     setView(prev => ({ ...prev, mode: 'words', currentPage: 1 }));
                     setSearch(prev => ({ ...prev, query: '' }));
                     setSelectedCategory(null);
+                    setSelectedCategoryName(null);
                 }}
                 className={`${styles.segmentedButton} ${view.mode === 'words' ? styles.segmentedButtonActive : ''}`}
                 role="tab"
@@ -966,7 +1075,7 @@ const DictionaryPage: React.FC = () => {
                     </div>
 
                     <div className={styles.bottomControlsRow}>
-                        {renderCategoryFilters()}
+                        {view.mode !== 'categories' && renderCategoryFilters()}
 
                         <div className={styles.rightActionsGroup}>
                             {view.mode === 'groups' && (
@@ -1059,6 +1168,135 @@ const DictionaryPage: React.FC = () => {
                                         </Link>
                                     )}
                                 </div>
+                            </div>
+                        )
+                    ) : view.mode === 'categories' ? (
+                        selectedCategoryName !== null ? (
+                            <div className={styles.wordsListContainer}>
+                                <button
+                                    onClick={() => {
+                                        setSelectedCategoryName(null);
+                                        setSearch(prev => ({ ...prev, query: '' }));
+                                    }}
+                                    className={styles.backToCategoriesBtn}
+                                >
+                                    <ArrowLeft size={14} />
+                                    <span>Back to Themes</span>
+                                </button>
+                                <div className={styles.categoryHeading}>
+                                    <span>{selectedCategoryName}</span>
+                                    <span className={styles.categoryCountBadge}>
+                                        {filteredCategoryWords.length} {filteredCategoryWords.length === 1 ? 'word' : 'words'}
+                                    </span>
+                                </div>
+                                {isLoadingCategoryWords ? (
+                                    <div className={styles.groupsGrid}>
+                                        {[...Array(4)].map((_, i) => (
+                                            <Card key={i} className="bg-white/[0.02] border border-white/[0.07] h-32 animate-pulse rounded-2xl">
+                                                <CardContent className="p-0" />
+                                            </Card>
+                                        ))}
+                                    </div>
+                                ) : filteredCategoryWords.length > 0 ? (
+                                    filteredCategoryWords.map((word, i) => renderWordCard(word, i))
+                                ) : (
+                                    <div className={styles.emptyState}>
+                                        <div className={styles.emptyStateIcon}>
+                                            <BookOpen size={28} />
+                                        </div>
+                                        <h3 className={styles.emptyStateTitle}>
+                                            {search.debouncedQuery
+                                                ? `No words found for "${search.debouncedQuery}" in ${selectedCategoryName}`
+                                                : 'No words in this theme'}
+                                        </h3>
+                                        <p className={styles.emptyStateText}>
+                                            Words categorized under this theme will appear here.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div>
+                                <div className={styles.categorizeBanner}>
+                                    <div className={styles.categorizeBannerText}>
+                                        <h3 className={styles.categorizeBannerTitle}>AI Semantic Categorization</h3>
+                                        <p className={styles.categorizeBannerSubtitle}>
+                                            Automatically clusters your phrasal verbs, idioms, and vocabulary into 12 semantic themes using high-throughput micro-batching.
+                                        </p>
+                                        {categorizeProgress && (
+                                            <div>
+                                                <div className={styles.categorizeProgressBar}>
+                                                    <div
+                                                        className={styles.categorizeProgressFill}
+                                                        style={{
+                                                            width: `${Math.min(100, Math.round((categorizeProgress.processed / Math.max(1, categorizeProgress.total)) * 100))}%`
+                                                        }}
+                                                    />
+                                                </div>
+                                                <span className="text-xs text-zinc-400 mt-1 inline-block">
+                                                    Processed {categorizeProgress.processed} / {categorizeProgress.total} words ({categorizeProgress.remaining} remaining)
+                                                </span>
+                                            </div>
+                                        )}
+                                        {categorizeMessage && !categorizeProgress && (
+                                            <span className="text-xs text-yellow-300 mt-1 inline-block">
+                                                {categorizeMessage}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={handleRunCategorize}
+                                        disabled={isCategorizing}
+                                        className={styles.categorizeBtn}
+                                    >
+                                        <RefreshCw size={14} className={isCategorizing ? 'animate-spin' : ''} />
+                                        <span>{isCategorizing ? 'Categorizing...' : 'Categorize Vocabulary'}</span>
+                                    </button>
+                                </div>
+
+                                {filteredCategoryList.length > 0 ? (
+                                    <div className={styles.groupsGrid}>
+                                        {filteredCategoryList.map((cat, i) => (
+                                            <div
+                                                key={cat.categoryName || `cat-${i}`}
+                                                className={styles.groupCard}
+                                                onClick={() => handleSelectCategory(cat.categoryName)}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <div className={styles.groupCardHeader}>
+                                                    <div className={styles.categoryIconCircle}>
+                                                        <Tag size={16} />
+                                                    </div>
+                                                    <span className={styles.groupWordCountPill}>
+                                                        {cat.numberOfWords} {cat.numberOfWords === 1 ? 'word' : 'words'}
+                                                    </span>
+                                                </div>
+                                                <h3 className={styles.groupTitle} style={{ marginTop: '14px' }}>
+                                                    {cat.categoryName}
+                                                </h3>
+                                                <p className="text-xs text-zinc-400 mt-2">
+                                                    Click to view vocabulary in this theme →
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className={styles.emptyState}>
+                                        <div className={styles.emptyStateIcon}>
+                                            <Sparkles size={28} />
+                                        </div>
+                                        <h3 className={styles.emptyStateTitle}>
+                                            {search.debouncedQuery
+                                                ? `No themes found for "${search.debouncedQuery}"`
+                                                : 'No Themes Categorized Yet'}
+                                        </h3>
+                                        <p className={styles.emptyStateText}>
+                                            {search.debouncedQuery
+                                                ? 'Try adjusting your search terms.'
+                                                : 'Run AI Semantic Categorization above to automatically cluster your words and phrases into 12 themes.'}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         )
                     ) : (

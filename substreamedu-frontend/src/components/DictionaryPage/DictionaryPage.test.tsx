@@ -26,10 +26,16 @@ jest.mock('lucide-react/dist/esm/icons/volume-2', () => () => <span data-testid=
 jest.mock('lucide-react/dist/esm/icons/layers', () => () => <span data-testid="icon-layers" />);
 jest.mock('lucide-react/dist/esm/icons/network', () => () => <span data-testid="icon-network" />);
 jest.mock('lucide-react/dist/esm/icons/x', () => () => <span data-testid="icon-x" />);
+jest.mock('lucide-react/dist/esm/icons/arrow-left', () => () => <span data-testid="icon-arrow-left" />);
+jest.mock('lucide-react/dist/esm/icons/refresh-cw', () => () => <span data-testid="icon-refresh-cw" />);
+jest.mock('lucide-react/dist/esm/icons/tag', () => () => <span data-testid="icon-tag" />);
 
 jest.mock('../../services/DictionaryService', () => ({
   DictionaryService: {
     fetchDictionaryResources: jest.fn(),
+    fetchDictionaryCategories: jest.fn(),
+    fetchDictionaryItemsByCategory: jest.fn(),
+    categorizeUserVocabulary: jest.fn(),
     fetchDictionaryItemsByUser: jest.fn(),
     deleteDictionaryResource: jest.fn(),
     deleteDictionaryItem: jest.fn(),

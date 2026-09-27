@@ -37,6 +37,7 @@ type DictionaryItemDto struct {
 	Retrievability		float32		`json:"retrievability"`
 	RollingRetention	float32		`json:"rollingRetention"`
 	CardType		int		`json:"cardType"`
+	Category		string		`json:"category"`
 }
 
 type LexemeLightDto struct {
@@ -117,6 +118,7 @@ type AddWordRequestDto struct {
 	Transcription	string	`json:"transcription"`
 	Definition	string	`json:"definition,omitempty"`
 	ImageUrl	string	`json:"imageUrl,omitempty"`
+	Category	string	`json:"category,omitempty"`
 }
 
 type DictionaryRequest struct {
@@ -288,3 +290,21 @@ type AnalyzeGrammarResponse struct {
 	HighlightedSegment string           `json:"highlightedSegment"`
 	Exercise           PracticeExercise `json:"exercise"`
 }
+
+type PhraseItem struct {
+	ID   int64  `json:"id"`
+	Text string `json:"text"`
+}
+
+type CategorizeBatchRequest struct {
+	Limit int `json:"limit"`
+}
+
+type CategorizeBatchResponse struct {
+	Processed   int  `json:"processed"`
+	Remaining   int  `json:"remaining"`
+	Total       int  `json:"total"`
+	Categorized int  `json:"categorized"`
+	IsComplete  bool `json:"isComplete"`
+}
+

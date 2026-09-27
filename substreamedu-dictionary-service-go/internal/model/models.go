@@ -37,6 +37,7 @@ type Dictionary struct {
 	ImageUrl		string		`json:"imageUrl" db:"image_url"`
 	IsLeech			bool		`json:"isLeech" db:"is_leech"`
 	CardType		int		`json:"cardType" db:"card_type"`
+	Category		string		`json:"category" db:"category"`
 }
 
 type OutboxStatus string
@@ -80,6 +81,11 @@ type UserSRSParameters struct {
 
 type DictionaryGroup struct {
 	Name	string	`json:"groupName"`
+	Count	int	`json:"numberOfWords"`
+}
+
+type CategoryGroup struct {
+	Name	string	`json:"categoryName"`
 	Count	int	`json:"numberOfWords"`
 }
 

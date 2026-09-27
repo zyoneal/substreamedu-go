@@ -51,6 +51,49 @@ const DictionaryService = {
     }
   },
 
+  async fetchDictionaryCategories(): Promise<{ categoryName: string; numberOfWords: number }[]> {
+    try {
+      const response = await axiosService.get(`${baseURL}${urls.dictionaryCategories}`);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error("Error fetching dictionary categories:", error);
+      return [];
+    }
+  },
+
+  async fetchDictionaryItemsByCategory(
+    category: string,
+    cursor: number = 0,
+    limit: number = 50
+  ): Promise<{ items: any[]; hasMore: boolean }> {
+    try {
+      const params = new URLSearchParams();
+      if (cursor > 0) params.append('cursor', cursor.toString());
+      if (limit !== 50) params.append('limit', limit.toString());
+
+      const url = `${baseURL}${urls.dictionaryCategories}/${encodeURIComponent(category)}/items${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await axiosService.get(url);
+      return {
+        items: response.data?.items || [],
+        hasMore: response.data?.hasMore || false,
+      };
+    } catch (error) {
+      console.error("Error fetching dictionary items by category:", error);
+      return { items: [], hasMore: false };
+    }
+  },
+
+  async categorizeUserVocabulary(limit: number = 100): Promise<{
+    processed: number;
+    remaining: number;
+    total: number;
+    categorized: number;
+    isComplete: boolean;
+  }> {
+    const response = await axiosService.post(`${baseURL}${urls.categorizeDictionary}`, { limit });
+    return response.data;
+  },
+
   async fetchDictionaryItemsByResourceName(name: string): Promise<any[]> {
     try {
       const response = await axiosService.get(`${baseURL}${urls.dictionaryResources}/${name}/items`);

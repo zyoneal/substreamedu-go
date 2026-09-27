@@ -31,6 +31,8 @@ const urls = {
   cabinet: cabinet,
   dictionary: dictionary,
   dictionaryResources: dictionaryResources,
+  dictionaryCategories: `${dictionary}/categories`,
+  categorizeDictionary: `${dictionary}/categorize`,
   subtitles: subtitles,
   uploadSubtitles: uploadSubtitles,
   youtube: youtube,

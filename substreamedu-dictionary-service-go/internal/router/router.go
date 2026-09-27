@@ -38,6 +38,8 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 			api.GET("/resources/items", dh.GetAllLexemes)
 			api.GET("/resources/items/light", dh.GetAllLexemesLight)
 			api.GET("/resources/:name/items", dh.GetByResource)
+			api.GET("/categories", dh.GetVocabularyCategories)
+			api.GET("/categories/:category/items", dh.GetLexemesByCategory)
 			api.GET("/export/csv", dh.ExportCsv)
 			api.GET("/export/anki", dh.ExportAnki)
 			api.GET("/resources/:name/export/csv", dh.ExportResourceCsv)
@@ -66,6 +68,7 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 			mutations.Use(middleware.AuthMiddleware(jwtSecret, internalServiceKey))
 			{
 				mutations.POST("/translated", dh.AddWord)
+				mutations.POST("/categorize", dh.CategorizeWordsBatch)
 				mutations.DELETE("/resources/:name/items/:id", dh.DeleteWord)
 				mutations.DELETE("/resources/:name", dh.DeleteResource)
 				mutations.POST("/srs/today/refresh", dh.RefreshSRS)

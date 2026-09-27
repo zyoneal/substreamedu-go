@@ -69,6 +69,7 @@ func (s *VocabularyService) AddWord(ctx context.Context, userID uuid.UUID, req d
 		Definition:	req.Definition,
 		ImageUrl:	req.ImageUrl,
 		CardType:	0,
+		Category:	req.Category,
 	}
 
 	cardProduction := &model.Dictionary{
@@ -86,6 +87,16 @@ func (s *VocabularyService) AddWord(ctx context.Context, userID uuid.UUID, req d
 		Definition:	req.Definition,
 		ImageUrl:	req.ImageUrl,
 		CardType:	1,
+		Category:	req.Category,
+	}
+
+	if cardRecognition.Category == "" {
+		if cached, err := s.repo.FindGlobalPhraseCategories(ctx, []string{req.HighlightedText}); err == nil {
+			if c, ok := cached[strings.ToLower(strings.TrimSpace(req.HighlightedText))]; ok && c != "" {
+				cardRecognition.Category = c
+				cardProduction.Category = c
+			}
+		}
 	}
 
 	if s.redis != nil {
@@ -584,6 +595,7 @@ func (s *VocabularyService) mapModelToDto(m *model.Dictionary) *dto.DictionaryIt
 		Retrievability:		m.Retrievability,
 		RollingRetention:	m.RollingRetention,
 		CardType:		m.CardType,
+		Category:		m.Category,
 	}
 }
 
