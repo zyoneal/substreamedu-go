@@ -93,6 +93,9 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
     const activeTranslation = translationData?.translation ?? translation ?? null;
     const activeDefinition = translationData?.definition ?? definition ?? null;
     const activeTranscription = translationData?.transcription ?? transcription ?? null;
+    const cleanTranscription = activeTranscription
+        ? activeTranscription.replace(/^[/\[\s]+|[/\]\s]+$/g, '').trim()
+        : null;
     const activeImageUrl = translationData?.imageUrl ?? imageUrl ?? null;
     const activeShowImage = translationData ? translationData.showImage : showImage;
     const activePartOfSpeech = translationData?.partOfSpeech ?? partOfSpeech ?? null;
@@ -155,10 +158,21 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
             <div className={styles.popoverArrow}></div>
             <div className={styles.popoverContent}>
                 <div className={styles.selectedTextRow}>
-                    <h3 className={styles.selectedText}>{selectedText}</h3>
-                    {activeTranscription && (
-                        <span className={styles.transcription}>[/{activeTranscription}/]</span>
-                    )}
+                    <div className={styles.selectedTextInfo}>
+                        <h3 className={styles.selectedText}>{selectedText}</h3>
+                        {cleanTranscription && (
+                            <span className={styles.transcription}>[{cleanTranscription}]</span>
+                        )}
+                    </div>
+                    <button
+                        type="button"
+                        className={styles.topCloseButton}
+                        onClick={onClose}
+                        aria-label="Close translation"
+                        title="Close"
+                    >
+                        <X size={15} />
+                    </button>
                 </div>
 
                 {isLoading && (

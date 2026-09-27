@@ -1520,10 +1520,23 @@
    DEMO MODAL
    ================================================ */
 .demoModal {
+  --black: #0d0c0b;
+  --cream: #ede8e0;
+  --cream-dim: #9e988f;
+  --gray-600: #8a857d;
+  --gray-400: #666360;
+  --gray-200: #282522;
+  --gray-100: #1a1917;
+  --gray-50: #141312;
+  --white: #ffffff;
+  --accent: #faf92f;
+  --accent-hover: #e6e52b;
+  --font-sans: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+
   max-width: 960px !important;
-  max-height: calc(100vh - 40px) !important;
+  max-height: min(calc(100vh - 48px), 820px) !important;
   background: #141312;
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--gray-200, #282522);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 32px 96px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -1536,8 +1549,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: var(--gray-50);
-  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50, #141312);
+  border-bottom: 1px solid var(--gray-200, #282522);
   gap: 12px;
   flex-shrink: 0;
   position: sticky;
@@ -1549,15 +1562,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans, 'e-Ukraine', sans-serif);
   font-size: 13px;
   font-weight: 600;
-  color: var(--cream);
+  color: var(--cream, #ede8e0);
   letter-spacing: 0.01em;
 }
 
 .demoModalHeaderIcon {
-  color: var(--accent);
+  color: var(--accent, #faf92f);
   flex-shrink: 0;
 }
 
@@ -1568,18 +1581,18 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  color: var(--cream-dim);
+  background: var(--gray-100, #1a1917);
+  border: 1px solid var(--gray-200, #282522);
+  color: var(--cream-dim, #9e988f);
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modalCloseBtn:hover {
-  background: var(--gray-200);
+  background: var(--gray-200, #282522);
   color: #fff;
-  border-color: var(--cream-dim);
+  border-color: var(--cream-dim, #9e988f);
   transform: scale(1.05);
 }
 
@@ -1589,7 +1602,8 @@
 
 .modalVideoWrapper {
   width: 100%;
-  max-height: calc(85vh - 120px);
+  min-height: 0;
+  max-height: calc(82vh - 120px);
   background: #000;
   position: relative;
   display: flex;
@@ -1601,7 +1615,7 @@
 
 .modalVideo {
   max-width: 100%;
-  max-height: calc(85vh - 120px);
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -1613,24 +1627,25 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: var(--gray-50);
-  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50, #141312);
+  border-top: 1px solid var(--gray-200, #282522);
   gap: 16px;
   flex-shrink: 0;
+  z-index: 5;
 }
 
 .modalFooterNote {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans, 'e-Ukraine', sans-serif);
   font-size: 12px;
-  color: var(--cream-dim);
+  color: var(--cream-dim, #9e988f);
   line-height: 1.4;
 }
 
 .modalNoteIcon {
-  color: var(--accent);
+  color: var(--accent, #faf92f);
   flex-shrink: 0;
 }
 
@@ -1639,21 +1654,24 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: var(--accent);
-  color: var(--black);
+  background: #faf92f;
+  color: #0d0c0b !important;
   border-radius: 100px;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans, 'e-Ukraine', sans-serif);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
   text-decoration: none;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.2s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(250, 249, 47, 0.2);
+  transition: background 0.2s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }
 
 .modalCtaBtn:hover {
-  background: var(--accent-hover);
+  background: #e6e52b;
+  box-shadow: 0 4px 14px rgba(250, 249, 47, 0.35);
+  transform: translateY(-1px);
 }
 
 .modalCtaBtn:active {

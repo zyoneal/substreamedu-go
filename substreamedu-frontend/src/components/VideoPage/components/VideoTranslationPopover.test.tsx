@@ -89,7 +89,7 @@ describe('VideoTranslationPopover Component', () => {
 
         expect(screen.getByText('hello')).toBeInTheDocument();
         expect(screen.getByText('привет')).toBeInTheDocument();
-        expect(screen.getByText('[/həˈloʊ/]')).toBeInTheDocument();
+        expect(screen.getByText('[həˈloʊ]')).toBeInTheDocument();
         expect(screen.getByText('used as a greeting')).toBeInTheDocument();
     });
 
@@ -107,9 +107,9 @@ describe('VideoTranslationPopover Component', () => {
         const onClose = jest.fn();
         renderPopover({ onClose });
 
-        const closeButton = screen.getByTestId('icon-x').closest('button');
-        expect(closeButton).toBeInTheDocument();
-        fireEvent.click(closeButton!);
+        const closeButtons = screen.getAllByRole('button', { name: /close translation/i });
+        expect(closeButtons.length).toBeGreaterThanOrEqual(1);
+        fireEvent.click(closeButtons[0]);
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 

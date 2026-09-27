@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { SubtitleSearchModal } from './SubtitleSearchModal';
 import { FilmSelectionModal } from './FilmSelectionModal';
 import { ReelGeneratorModal } from './ReelGeneratorModal';
@@ -112,7 +113,7 @@ export const VideoPlayerModals: React.FC<VideoPlayerModalsProps> = ({
     onCloseLessonStudio,
     onSeekToTime,
 }) => {
-    return (
+    const modalContent = (
         <>
             <SubtitleSearchModal
                 isOpen={showSubtitleSearchModal}
@@ -180,4 +181,11 @@ export const VideoPlayerModals: React.FC<VideoPlayerModalsProps> = ({
             )}
         </>
     );
+
+    if (typeof document === 'undefined') {
+        return modalContent;
+    }
+
+    const portalTarget = (document.fullscreenElement || document.body) as HTMLElement;
+    return createPortal(modalContent, portalTarget);
 };

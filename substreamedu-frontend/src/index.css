@@ -98,6 +98,10 @@
   --color-body: #9e988f;
   --color-mute: #666360;
 
+  /* Brand Accents */
+  --accent: #faf92f;
+  --accent-hover: #e6e52b;
+
   /* Borders */
   --color-hairline: #282522;
   --color-hairline-strong: #3d3934;

@@ -68,6 +68,12 @@ describe('HomePage Demo Modal', () => {
     const source = video?.querySelector('source');
     expect(source?.getAttribute('src')).toBe('/movies_example.mp4');
 
+    // Start free CTA link should be present in modal footer
+    const modalCtaLinks = screen.getAllByRole('link', { name: /start free/i });
+    expect(modalCtaLinks.length).toBeGreaterThanOrEqual(1);
+    const modalCta = modalCtaLinks[modalCtaLinks.length - 1];
+    expect(modalCta).toHaveAttribute('href', '/login');
+
     // Click close button
     act(() => {
       fireEvent.click(closeBtn);

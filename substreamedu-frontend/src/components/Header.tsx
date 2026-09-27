@@ -96,7 +96,7 @@ const Header = () => {
     const isDashboard = location.pathname === '/dashboard' || (isHomepage && isLoggedIn);
 
     return (
-        <header className={`${styles.header_container} backdrop-blur-md bg-canvas/80 border-b border-hairline z-50`}>
+        <header className={`${styles.header_container} ${!isLoggedIn && isHomepage ? styles.unauthenticatedLanding : ''} backdrop-blur-md bg-canvas/80 border-b border-hairline z-50`}>
             <Link to="/" className={styles.logo_container}>
                 {isMobileScreen ? (
                     <img src="/logo192.png" alt="S" className={styles.logoImage} />

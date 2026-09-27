@@ -92,7 +92,7 @@ describe('TranslationPopover Component', () => {
 
         expect(screen.getByText('world')).toBeInTheDocument();
         expect(screen.getByText('мир')).toBeInTheDocument();
-        expect(screen.getByText('[/wɜːrld/]')).toBeInTheDocument();
+        expect(screen.getByText('[wɜːrld]')).toBeInTheDocument();
         expect(screen.getByText('the earth or globe')).toBeInTheDocument();
     });
 
@@ -101,8 +101,22 @@ describe('TranslationPopover Component', () => {
 
         expect(screen.getByText('hello')).toBeInTheDocument();
         expect(screen.getByText('привет')).toBeInTheDocument();
-        expect(screen.getByText('[/həˈloʊ/]')).toBeInTheDocument();
+        expect(screen.getByText('[həˈloʊ]')).toBeInTheDocument();
         expect(screen.getByText('used as a greeting')).toBeInTheDocument();
+    });
+
+    it('strips redundant outer slashes and brackets from AI transcription', () => {
+        renderPopover({
+            selectedText: 'prattle',
+            translationData: {
+                ...defaultTranslationData,
+                transcription: "//'prætl//",
+                translation: 'болтать',
+            },
+        });
+
+        expect(screen.getByText("['prætl]")).toBeInTheDocument();
+        expect(screen.queryByText("[//'prætl//]")).not.toBeInTheDocument();
     });
 
     it('calls onSaveToDict when SAVE button is clicked', () => {
@@ -119,9 +133,9 @@ describe('TranslationPopover Component', () => {
         const onClose = jest.fn();
         renderPopover({ onClose });
 
-        const closeButton = screen.getByTestId('icon-x').closest('button');
-        expect(closeButton).toBeInTheDocument();
-        fireEvent.click(closeButton!);
+        const closeButtons = screen.getAllByRole('button', { name: /close translation/i });
+        expect(closeButtons.length).toBeGreaterThanOrEqual(1);
+        fireEvent.click(closeButtons[0]);
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 

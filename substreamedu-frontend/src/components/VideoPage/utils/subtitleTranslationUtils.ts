@@ -134,13 +134,16 @@ export const calculatePopoverPosition = (
         if (x < minX) x = minX;
         if (x > maxX) x = maxX;
 
+        const HEADER_CLEARANCE = 64; // SubStreamEdu fixed header (56px) + safe margin
         let y: number;
         if (spaceAbove >= estimatedPopoverHeight) {
             y = topBoundary - parentRect.top - GAP;
             showBelow = false;
+            maxHeight = Math.max(spaceAbove - HEADER_CLEARANCE - GAP, minPopoverHeight);
         } else if (spaceBelow >= estimatedPopoverHeight) {
             showBelow = true;
             y = bottomBoundary - parentRect.top + GAP;
+            maxHeight = Math.max(spaceBelow - 20, minPopoverHeight);
         } else if (spaceBelow > spaceAbove) {
             showBelow = true;
             isConstrained = true;
@@ -150,7 +153,7 @@ export const calculatePopoverPosition = (
             showBelow = false;
             isConstrained = true;
             y = topBoundary - parentRect.top - GAP;
-            maxHeight = Math.max(spaceAbove - 20, minPopoverHeight);
+            maxHeight = Math.max(spaceAbove - HEADER_CLEARANCE - GAP, minPopoverHeight);
         }
 
         return {

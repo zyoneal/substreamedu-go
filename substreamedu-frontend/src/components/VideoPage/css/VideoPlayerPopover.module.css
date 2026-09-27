@@ -1814,6 +1814,8 @@
     pointer-events: auto;
     font-family: var(--font-body, 'e-Ukraine'), system-ui, -apple-system, sans-serif;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Popover positioned below the selection (for small screens) */
@@ -1874,11 +1876,13 @@
     line-height: 1.4;
     font-family: var(--font-body, 'e-Ukraine'), system-ui, -apple-system, sans-serif;
     padding: 14px 16px 8px 16px;
-    max-height: 380px;
+    max-height: inherit;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .popoverContent::-webkit-scrollbar {
@@ -1910,13 +1914,47 @@
 
 .selectedTextRow {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
     line-height: 1;
     margin-top: 0;
     margin-bottom: 4px;
     flex-shrink: 0;
+}
+
+.selectedTextInfo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.topCloseButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #a0a0a0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.topCloseButton:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+.topCloseButton:active {
+    transform: scale(0.92);
 }
 
 .selectedTextLabel {
@@ -2156,14 +2194,15 @@
 
     .popover {
         padding: 0;
-        max-width: 280px;
+        max-width: min(calc(100vw - 24px), 360px);
+        width: min(calc(100vw - 24px), 360px);
         border-radius: 16px;
     }
 
     .popoverContent {
         gap: 2px;
         font-size: 12px;
-        padding: 16px 16px 6px 16px;
+        padding: 12px 14px 6px 14px;
     }
 
     .selectedTextRow {
