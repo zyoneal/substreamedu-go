@@ -133,9 +133,9 @@ describe('TranslationPopover Component', () => {
         const onClose = jest.fn();
         renderPopover({ onClose });
 
-        const closeButtons = screen.getAllByRole('button', { name: /close translation/i });
-        expect(closeButtons.length).toBeGreaterThanOrEqual(1);
-        fireEvent.click(closeButtons[0]);
+        const closeButton = screen.getByRole('button', { name: /close translation/i });
+        expect(closeButton).toBeInTheDocument();
+        fireEvent.click(closeButton);
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 

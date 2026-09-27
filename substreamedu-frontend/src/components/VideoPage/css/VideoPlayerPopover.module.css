@@ -1914,47 +1914,13 @@
 
 .selectedTextRow {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: baseline;
     gap: 8px;
     line-height: 1;
     margin-top: 0;
     margin-bottom: 4px;
     flex-shrink: 0;
-}
-
-.selectedTextInfo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px;
-    flex: 1;
-    min-width: 0;
-}
-
-.topCloseButton {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    border: none;
-    color: #a0a0a0;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.15s ease;
-    padding: 0;
-}
-
-.topCloseButton:hover {
-    background: rgba(255, 255, 255, 0.16);
-    color: #ffffff;
-}
-
-.topCloseButton:active {
-    transform: scale(0.92);
 }
 
 .selectedTextLabel {

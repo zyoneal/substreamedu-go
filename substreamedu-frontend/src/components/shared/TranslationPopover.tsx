@@ -158,21 +158,10 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
             <div className={styles.popoverArrow}></div>
             <div className={styles.popoverContent}>
                 <div className={styles.selectedTextRow}>
-                    <div className={styles.selectedTextInfo}>
-                        <h3 className={styles.selectedText}>{selectedText}</h3>
-                        {cleanTranscription && (
-                            <span className={styles.transcription}>[{cleanTranscription}]</span>
-                        )}
-                    </div>
-                    <button
-                        type="button"
-                        className={styles.topCloseButton}
-                        onClick={onClose}
-                        aria-label="Close translation"
-                        title="Close"
-                    >
-                        <X size={15} />
-                    </button>
+                    <h3 className={styles.selectedText}>{selectedText}</h3>
+                    {cleanTranscription && (
+                        <span className={styles.transcription}>[{cleanTranscription}]</span>
+                    )}
                 </div>
 
                 {isLoading && (
