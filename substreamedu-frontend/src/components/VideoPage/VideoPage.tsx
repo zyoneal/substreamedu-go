@@ -23,6 +23,7 @@ import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import Play from 'lucide-react/dist/esm/icons/play';
 
 import { useRecentVideos, RecentVideo } from '../../hooks/useRecentVideos';
+import { ONBOARDING_PRESETS, DEFAULT_ONBOARDING_PRESET } from '../../constants/onboardingPresets';
 
 type VideoSource = 'youtube' | 'upload' | 'googledrive';
 
@@ -54,16 +55,36 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
   const [videoState, videoActions] = useVideoUpload(addRecentVideo);
   const [activeTab, setActiveTab] = useState<VideoSource>('youtube');
 
+  const [isOnboarding, setIsOnboarding] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('substreamedu_onboarding_completed') !== 'true';
+  });
+
+  useEffect(() => {
+    const handleCompleted = () => setIsOnboarding(false);
+    window.addEventListener('substreamedu:onboarding_completed', handleCompleted);
+    return () => window.removeEventListener('substreamedu:onboarding_completed', handleCompleted);
+  }, []);
+
   useEffect(() => {
     const queryVideo = searchParams.get('v') || searchParams.get('videoUrl');
     const queryTime = searchParams.get('t');
+    const isOnboardingParam = searchParams.get('onboarding') === 'true';
+
     if (queryTime) {
       sessionStorage.setItem('videoCurrentTime', queryTime);
     }
     if (queryVideo && queryVideo !== videoState.videoUrl) {
       videoActions.handleYoutubeUrlLoad(queryVideo);
+    } else if (!videoState.videoUrl && !sessionStorage.getItem('videoUrl') && (isOnboardingParam || isOnboarding)) {
+      sessionStorage.setItem('videoCurrentTime', DEFAULT_ONBOARDING_PRESET.startTime.toString());
+      videoActions.handleYoutubeUrlLoad(
+        DEFAULT_ONBOARDING_PRESET.url,
+        DEFAULT_ONBOARDING_PRESET.title,
+        DEFAULT_ONBOARDING_PRESET.thumbnailUrl
+      );
     }
-  }, [searchParams, videoActions, videoState.videoUrl]);
+  }, [searchParams, videoActions, videoState.videoUrl, isOnboarding]);
 
   const [subtitles, setSubtitles] = useState<SubtitleDto[]>([]);
   const [subtitleUploadStatus, setSubtitleUploadStatus] = useState<string | null>(null);
@@ -459,6 +480,29 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                 />
               </ErrorBoundary>
             </div>
+            {isOnboarding && (
+              <div className={styles.onboardingPresetBar}>
+                <span className={styles.presetBarTitle}>Recommended Scenes:</span>
+                <div className={styles.presetButtons}>
+                  {ONBOARDING_PRESETS.map((preset) => {
+                    const isCurrent = videoState.videoUrl === preset.url;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => {
+                          sessionStorage.setItem('videoCurrentTime', preset.startTime.toString());
+                          videoActions.handleYoutubeUrlLoad(preset.url, preset.title, preset.thumbnailUrl);
+                        }}
+                        className={`${styles.presetBtn} ${isCurrent ? styles.presetBtnActive : ''}`}
+                      >
+                        {preset.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </div>

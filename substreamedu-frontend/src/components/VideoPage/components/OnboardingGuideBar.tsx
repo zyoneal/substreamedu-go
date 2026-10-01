@@ -11,11 +11,13 @@ export type OnboardingStep = 1 | 2 | 'completed';
 interface OnboardingGuideBarProps {
     step: OnboardingStep;
     onDismiss: () => void;
+    recommendedWords?: string[];
 }
 
 export const OnboardingGuideBar: React.FC<OnboardingGuideBarProps> = ({
     step,
-    onDismiss
+    onDismiss,
+    recommendedWords = []
 }) => {
     const intl = useIntl();
 
@@ -105,7 +107,7 @@ export const OnboardingGuideBar: React.FC<OnboardingGuideBarProps> = ({
                     </div>
                 </div>
 
-                <p className={styles.hintText}>
+                <div className={styles.hintText}>
                     {step === 1 && (
                         <>
                             {intl.formatMessage({
@@ -122,6 +124,16 @@ export const OnboardingGuideBar: React.FC<OnboardingGuideBarProps> = ({
                                 id: 'onboarding.step1Desc3',
                                 defaultMessage: ' in the subtitles to see its instant translation.'
                             })}
+                            {recommendedWords && recommendedWords.length > 0 && (
+                                <div className={styles.recommendedWordsWrapper}>
+                                    <span className={styles.recommendedWordsLabel}>Key phrases:</span>
+                                    {recommendedWords.map((word) => (
+                                        <span key={word} className={styles.recommendedWordChip}>
+                                            {word}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </>
                     )}
                     {step === 2 && (
@@ -160,7 +172,7 @@ export const OnboardingGuideBar: React.FC<OnboardingGuideBarProps> = ({
                             })}
                         </>
                     )}
-                </p>
+                </div>
             </div>
         </aside>
     );

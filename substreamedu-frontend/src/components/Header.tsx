@@ -92,6 +92,17 @@ const Header = () => {
             path === '/subtitles-demo';
     };
 
+    const [isOnboarding, setIsOnboarding] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem('substreamedu_onboarding_completed') !== 'true';
+    });
+
+    useEffect(() => {
+        const handleCompleted = () => setIsOnboarding(false);
+        window.addEventListener('substreamedu:onboarding_completed', handleCompleted);
+        return () => window.removeEventListener('substreamedu:onboarding_completed', handleCompleted);
+    }, []);
+
     const isHomepage = location.pathname === '/';
     const isDashboard = location.pathname === '/dashboard' || (isHomepage && isLoggedIn);
 
@@ -105,7 +116,7 @@ const Header = () => {
                 )}
             </Link>
 
-            {isLoggedIn && !isDashboard && (
+            {isLoggedIn && !isDashboard && !isOnboarding && (
                 <nav className={styles.navigation}>
                     <ul className="flex items-center gap-1 md:gap-2 m-0 p-0 list-none">
                         {!isMobileNav ? (

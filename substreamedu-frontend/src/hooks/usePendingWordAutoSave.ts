@@ -60,6 +60,12 @@ export const usePendingWordAutoSave = (isLoggedIn: boolean) => {
                 const successMsg = `Saved "${pending.highlightedText}" to your dictionary!`;
                 setSavedNotification(successMsg);
                 GuestLimitService.clearPendingSaveWord();
+                try {
+                    localStorage.setItem('substreamedu_onboarding_completed', 'true');
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('substreamedu:onboarding_completed'));
+                    }
+                } catch {}
 
                 // Automatically clear notification after 5s
                 setTimeout(() => {

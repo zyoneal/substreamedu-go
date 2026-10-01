@@ -59,6 +59,12 @@ describe('SubtitleOverlay Component', () => {
         expect(screen.getByText(/no subtitles found for this video/i)).toBeInTheDocument();
     });
 
+    it('renders onboarding pulsating pointer when showOnboardingPointer is true', () => {
+        render(<SubtitleOverlay {...defaultProps} showOnboardingPointer={true} />);
+        expect(screen.getByTestId('onboarding-subtitle-tooltip')).toBeInTheDocument();
+        expect(screen.getByText(/highlight any word or phrase/i)).toBeInTheDocument();
+    });
+
     it('renders grammar badge and triggers onExploreGrammar', () => {
         const onExploreGrammar = jest.fn();
         const onPauseVideo = jest.fn();

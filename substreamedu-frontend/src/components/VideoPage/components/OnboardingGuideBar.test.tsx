@@ -48,4 +48,20 @@ describe('OnboardingGuideBar Component', () => {
         fireEvent.click(closeBtn);
         expect(onDismiss).toHaveBeenCalledTimes(1);
     });
+
+    it('renders recommended key phrases chips when provided', () => {
+        render(
+            <IntlProvider locale="en" messages={enMessages}>
+                <OnboardingGuideBar
+                    step={1}
+                    onDismiss={jest.fn()}
+                    recommendedWords={['comprehensible', 'nature']}
+                />
+            </IntlProvider>
+        );
+        expect(screen.getByText('Key phrases:')).toBeInTheDocument();
+        expect(screen.getByText('comprehensible')).toBeInTheDocument();
+        expect(screen.getByText('nature')).toBeInTheDocument();
+    });
 });
+

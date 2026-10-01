@@ -249,6 +249,9 @@ export const useSubtitleTranslation = ({
             setOnboardingStep?.('completed');
             try {
                 localStorage.setItem('substreamedu_onboarding_completed', 'true');
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('substreamedu:onboarding_completed'));
+                }
             } catch {}
 
             const previousItems = dictionaryItems;

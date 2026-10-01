@@ -41,6 +41,7 @@ import { Modal } from '../ui/modal';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
 import { useUserDictionaryItemsLight } from '../../hooks/useDictionary';
 import { OnboardingGuideBar, OnboardingStep } from './components/OnboardingGuideBar';
+import { ONBOARDING_PRESETS } from '../../constants/onboardingPresets';
 
 import { debugLog, debugError } from '../../utils/debug';
 
@@ -167,6 +168,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         setOnboardingDismissed(true);
         try {
             localStorage.setItem('substreamedu_onboarding_completed', 'true');
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('substreamedu:onboarding_completed'));
+            }
         } catch {}
     }, []);
 
@@ -1129,6 +1133,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         onPauseVideo={pauseVideo}
                                         onPlayVideo={playVideo}
                                         renderedSubtitle={renderHighlightedSubtitle(formatSubtitleForDisplay(currentSubtitle || ''), highlightedWords)}
+                                        showOnboardingPointer={!onboardingDismissed && onboardingStep === 1 && !isPopoverOpen}
                                     />
                                 )
                             }
@@ -1164,6 +1169,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                 <OnboardingGuideBar
                                     step={onboardingStep}
                                     onDismiss={handleDismissOnboarding}
+                                    recommendedWords={
+                                        ONBOARDING_PRESETS.find(p => p.url === videoUrl || (videoId && p.url.includes(videoId)))?.recommendedWords ||
+                                        ONBOARDING_PRESETS[0].recommendedWords
+                                    }
                                 />
                             </div>
                         )}

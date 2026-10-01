@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { motion } from 'framer-motion';
 import Share2 from 'lucide-react/dist/esm/icons/share-2';
@@ -73,6 +73,14 @@ const DashboardPage: React.FC = () => {
     const newWordsCount = stats ? (stats.sessionNewWords ?? Math.floor(newCardsCount / 2)) : 0;
     const isNewUser = !statsLoading && (stats?.totalWords ?? 0) === 0;
     const isAllCaughtUp = !isNewUser && reviewedToday && dueCount === 0;
+
+    const isOnboardingCompleted = typeof window !== 'undefined'
+        ? (localStorage.getItem('substreamedu_onboarding_completed') === 'true')
+        : false;
+
+    if (!statsLoading && isNewUser && !isOnboardingCompleted) {
+        return <Navigate to="/videos?onboarding=true" replace />;
+    }
 
     const containerVariants = {
         hidden: { opacity: 0 },

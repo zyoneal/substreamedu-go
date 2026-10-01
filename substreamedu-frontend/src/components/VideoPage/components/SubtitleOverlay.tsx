@@ -20,6 +20,7 @@ export interface SubtitleOverlayProps {
     onPauseVideo: () => void;
     onPlayVideo: () => void;
     renderedSubtitle: React.ReactNode;
+    showOnboardingPointer?: boolean;
 }
 
 export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -39,6 +40,7 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     onPauseVideo,
     onPlayVideo,
     renderedSubtitle,
+    showOnboardingPointer = false,
 }) => {
     const [isTouchRevealed, setIsTouchRevealed] = useState<boolean>(false);
     const touchRevealTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -147,6 +149,15 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                                         {activeGrammarPoint.cefrLevel}
                                     </span>
                                 </button>
+                            </div>
+                        )}
+                        {showOnboardingPointer && (
+                            <div className={styles.onboardingSubtitleTooltip} data-testid="onboarding-subtitle-tooltip">
+                                <span className={styles.onboardingTooltipPulse} />
+                                <span className={styles.onboardingTooltipIcon}>👆</span>
+                                <span className={styles.onboardingTooltipText}>
+                                    Highlight any word or phrase
+                                </span>
                             </div>
                         )}
                         <p
