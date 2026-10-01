@@ -131,7 +131,7 @@ export const AnalyticsService = {
 
   identify: (userId: string, traits: Record<string, any> = {}): void => {
     if (!userId) return;
-    sendBackendEvent('identify', traits);
+    debugLog('[Analytics] User identified:', userId, traits);
   },
 
   reset: (): void => {

@@ -102,6 +102,17 @@ func (r *analyticsRepository) GetAnalyticsSummary(ctx context.Context) (*model.A
 		summary.Funnel.ActivationRate = (float64(summary.Funnel.WordSelected) / float64(summary.Funnel.TotalVisitors)) * 100.0
 	}
 
+	// Calculate registered activation rate: WordSelected / Signups
+	if summary.Funnel.Signups == 0 {
+		var totalRegistered int64
+		if err := r.pool.QueryRow(ctx, "SELECT COUNT(*) FROM users").Scan(&totalRegistered); err == nil && totalRegistered > 0 {
+			summary.Funnel.Signups = totalRegistered
+		}
+	}
+	if summary.Funnel.Signups > 0 {
+		summary.Funnel.RegisteredActivationRate = (float64(summary.Funnel.WordSelected) / float64(summary.Funnel.Signups)) * 100.0
+	}
+
 	// 2. Fetch last 50 recent events
 	const recentQuery = `
 		SELECT id, event_name, user_id, anonymous_id, properties, created_at

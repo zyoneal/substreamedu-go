@@ -30,9 +30,32 @@ type RecordEventRequest struct {
 	UserID      string                 `json:"userId"`
 }
 
+var AllowedEvents = map[string]bool{
+	"open_player": true,
+	"select_word": true,
+	"save_word":   true,
+	"signup":      true,
+	"return_d2":   true,
+}
+
 func (h *AnalyticsHandler) RecordEvent(c *gin.Context) {
+	if c.Request.ContentLength > 4096 {
+		c.AbortWithStatusJSON(http.StatusRequestEntityTooLarge, gin.H{
+			"success": false,
+			"message": "Request body too large: maximum 4KB allowed",
+		})
+		return
+	}
+
 	var req RecordEventRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "too large") {
+			c.AbortWithStatusJSON(http.StatusRequestEntityTooLarge, gin.H{
+				"success": false,
+				"message": "Request body too large: maximum 4KB allowed",
+			})
+			return
+		}
 		respondError(c, apperror.BadRequest("Invalid event payload: event name is required"))
 		return
 	}
@@ -40,6 +63,14 @@ func (h *AnalyticsHandler) RecordEvent(c *gin.Context) {
 	eventName := strings.TrimSpace(req.Event)
 	if eventName == "" {
 		respondError(c, apperror.BadRequest("Event name cannot be empty"))
+		return
+	}
+
+	if !AllowedEvents[eventName] {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid event: must be one of [open_player, select_word, save_word, signup, return_d2]",
+		})
 		return
 	}
 

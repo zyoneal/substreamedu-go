@@ -232,9 +232,20 @@ const AdminDashboard: React.FC = () => {
                         <Activity size={22} className="text-primary" />
                         <span>Activation Funnel (Self-Hosted Telemetry)</span>
                         {analytics?.funnel && (
-                            <span className={styles.activationBadge} title="Visitors who selected ≥1 word">
-                                ⚡ Activation Rate: {analytics.funnel.activationRate.toFixed(1)}%
-                            </span>
+                            <>
+                                <span className={styles.activationBadge} title="Share of all visitors who selected ≥1 word (select_word / totalVisitors)">
+                                    ⚡ Visitor Activation: {analytics.funnel.activationRate.toFixed(1)}%
+                                </span>
+                                <span className={styles.registeredActivationBadge} title="Share of registered users who selected ≥1 word (select_word / signup)">
+                                    👥 Registered Activation: {
+                                        analytics.funnel.registeredActivationRate !== undefined
+                                            ? analytics.funnel.registeredActivationRate.toFixed(1)
+                                            : (analytics.funnel.signups > 0
+                                                ? ((analytics.funnel.wordSelected / analytics.funnel.signups) * 100).toFixed(1)
+                                                : '0.0')
+                                    }%
+                                </span>
+                            </>
                         )}
                     </div>
                     <button

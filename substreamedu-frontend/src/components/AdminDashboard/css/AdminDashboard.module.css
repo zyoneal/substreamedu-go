@@ -362,6 +362,19 @@
     font-weight: 700;
 }
 
+.registeredActivationBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #c084fc;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
 .funnelCardsRow {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));

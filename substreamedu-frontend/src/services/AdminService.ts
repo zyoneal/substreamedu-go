@@ -34,6 +34,7 @@ export interface FunnelStats {
     signups: number;
     returnD2: number;
     activationRate: number;
+    registeredActivationRate?: number;
 }
 
 export interface AnalyticsEventItem {

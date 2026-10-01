@@ -14,14 +14,15 @@ type AnalyticsEvent struct {
 }
 
 type FunnelStats struct {
-	TotalVisitors       int64   `json:"totalVisitors"`
-	PlayerOpened        int64   `json:"playerOpened"`
-	WordSelected        int64   `json:"wordSelected"`
-	WordSaved           int64   `json:"wordSaved"`
-	GuestSavesAttempted int64   `json:"guestSavesAttempted"`
-	Signups             int64   `json:"signups"`
-	ReturnD2            int64   `json:"returnD2"`
-	ActivationRate      float64 `json:"activationRate"`
+	TotalVisitors            int64   `json:"totalVisitors"`
+	PlayerOpened             int64   `json:"playerOpened"`
+	WordSelected             int64   `json:"wordSelected"`
+	WordSaved                int64   `json:"wordSaved"`
+	GuestSavesAttempted      int64   `json:"guestSavesAttempted"`
+	Signups                  int64   `json:"signups"`
+	ReturnD2                 int64   `json:"returnD2"`
+	ActivationRate           float64 `json:"activationRate"`
+	RegisteredActivationRate float64 `json:"registeredActivationRate"`
 }
 
 type AnalyticsSummary struct {

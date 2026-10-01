@@ -104,7 +104,7 @@ describe('AnalyticsService (Self-Hosted Telemetry)', () => {
     );
   });
 
-  it('identifies user with traits and UTMs', async () => {
+  it('identifies user without dispatching unwhitelisted events', async () => {
     localStorage.setItem(
       'substreamedu_utm_params',
       JSON.stringify({ utm_source: 'google_ads' })
@@ -112,17 +112,8 @@ describe('AnalyticsService (Self-Hosted Telemetry)', () => {
 
     AnalyticsService.identify('user-uuid-123', { email: 'user@test.com', role: 'USER' });
 
-    expect(axiosService.post).toHaveBeenCalledWith(
-      urls.auth.events,
-      expect.objectContaining({
-        event: 'identify',
-        properties: expect.objectContaining({
-          email: 'user@test.com',
-          role: 'USER',
-          utm_source: 'google_ads',
-        }),
-      })
-    );
+    // identify should not send unwhitelisted HTTP event to backend
+    expect(axiosService.post).not.toHaveBeenCalled();
   });
 
   it('correctly tracks return_d2 on Day 2 and prevents duplicate events', async () => {

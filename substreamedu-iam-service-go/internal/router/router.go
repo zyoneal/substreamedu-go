@@ -23,6 +23,7 @@ type Router struct {
 	analyticsHandler	*handler.AnalyticsHandler
 	jwtService		*service.JWTService
 	authLimiter		*middleware.RateLimiter
+	eventsLimiter		*middleware.RateLimiter
 	internalServiceKey	string
 	logger			*zap.Logger
 }
@@ -49,6 +50,7 @@ func New(
 		analyticsHandler:	analyticsHandler,
 		jwtService:		jwtService,
 		authLimiter:		middleware.NewRateLimiter(10, time.Minute),
+		eventsLimiter:		middleware.NewRateLimiter(60, time.Minute),
 		internalServiceKey:	internalServiceKey,
 		logger:			logger,
 	}
@@ -78,15 +80,18 @@ func (r *Router) Setup() *gin.Engine {
 	{
 
 		auth := api.Group("/auth")
-		auth.Use(middleware.RateLimit(r.authLimiter))
 		{
-			auth.POST("/login", r.authHandler.Login)
-			auth.POST("/verify", r.authHandler.Verify)
-			auth.POST("/google", r.authHandler.GoogleAuth)
+			auth.POST("/login", middleware.RateLimit(r.authLimiter), r.authHandler.Login)
+			auth.POST("/verify", middleware.RateLimit(r.authLimiter), r.authHandler.Verify)
+			auth.POST("/google", middleware.RateLimit(r.authLimiter), r.authHandler.GoogleAuth)
 			auth.GET("/internal/user/by-telegram-token/:token", r.authHandler.GetUserByTelegramToken)
 
 			auth.POST("/promo", middleware.AuthMiddleware(r.jwtService), r.promoHandler.ApplyPromo)
-			auth.POST("/events", r.analyticsHandler.RecordEvent)
+			auth.POST("/events",
+				middleware.RateLimit(r.eventsLimiter),
+				middleware.MaxBodySize(4096),
+				r.analyticsHandler.RecordEvent,
+			)
 		}
 
 		users := api.Group("/users")
