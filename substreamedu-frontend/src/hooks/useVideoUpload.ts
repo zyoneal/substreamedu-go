@@ -64,7 +64,7 @@ export const useVideoUpload = (
     }
   }, [validateYoutubeInput]);
 
-  const handleYoutubeUrlLoad = useCallback(async (url: string, initialTitle?: string, initialThumb?: string) => {
+  const handleYoutubeUrlLoad = useCallback(async (url: string, initialTitle?: string, initialThumb?: string, startTime?: number) => {
     const trimmedUrl = url.trim();
 
     if (!trimmedUrl) {
@@ -89,7 +89,11 @@ export const useVideoUpload = (
     // 1. INSTANT TRANSITION: Mount player immediately with zero waiting
     setVideoUrl(trimmedUrl);
     sessionStorage.setItem('videoUrl', trimmedUrl);
-    sessionStorage.removeItem('videoCurrentTime');
+    if (startTime !== undefined) {
+      sessionStorage.setItem('videoCurrentTime', startTime.toString());
+    } else if (!sessionStorage.getItem('videoCurrentTime')) {
+      sessionStorage.removeItem('videoCurrentTime');
+    }
     sessionStorage.removeItem('videoMimeType');
     setShowInfoBlock(false);
     setYoutubeUrlInput('');

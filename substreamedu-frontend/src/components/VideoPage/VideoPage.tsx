@@ -70,18 +70,20 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     const queryVideo = searchParams.get('v') || searchParams.get('videoUrl');
     const queryTime = searchParams.get('t');
     const isOnboardingParam = searchParams.get('onboarding') === 'true';
+    const isDemoRoute = typeof window !== 'undefined' && ['/youtube-demo', '/demo', '/movies'].includes(window.location.pathname);
 
     if (queryTime) {
       sessionStorage.setItem('videoCurrentTime', queryTime);
     }
     if (queryVideo && queryVideo !== videoState.videoUrl) {
-      videoActions.handleYoutubeUrlLoad(queryVideo);
-    } else if (!videoState.videoUrl && !sessionStorage.getItem('videoUrl') && (isOnboardingParam || isOnboarding)) {
-      sessionStorage.setItem('videoCurrentTime', DEFAULT_ONBOARDING_PRESET.startTime.toString());
+      const parsedTime = queryTime ? parseFloat(queryTime) : undefined;
+      videoActions.handleYoutubeUrlLoad(queryVideo, undefined, undefined, parsedTime);
+    } else if (!videoState.videoUrl && !sessionStorage.getItem('videoUrl') && (isOnboardingParam || isOnboarding || isDemoRoute)) {
       videoActions.handleYoutubeUrlLoad(
         DEFAULT_ONBOARDING_PRESET.url,
         DEFAULT_ONBOARDING_PRESET.title,
-        DEFAULT_ONBOARDING_PRESET.thumbnailUrl
+        DEFAULT_ONBOARDING_PRESET.thumbnailUrl,
+        DEFAULT_ONBOARDING_PRESET.startTime
       );
     }
   }, [searchParams, videoActions, videoState.videoUrl, isOnboarding]);
@@ -491,8 +493,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                         key={preset.id}
                         type="button"
                         onClick={() => {
-                          sessionStorage.setItem('videoCurrentTime', preset.startTime.toString());
-                          videoActions.handleYoutubeUrlLoad(preset.url, preset.title, preset.thumbnailUrl);
+                          videoActions.handleYoutubeUrlLoad(preset.url, preset.title, preset.thumbnailUrl, preset.startTime);
                         }}
                         className={`${styles.presetBtn} ${isCurrent ? styles.presetBtnActive : ''}`}
                       >

@@ -26,6 +26,8 @@ import {
 import { SEO } from '../SEO/SEO';
 import ScrollingTextWall from './ScrollingTextWall';
 import { Modal } from '../ui/modal';
+import { AuthService } from '../../services/AuthService';
+import { GuestLimitService } from '../../services/GuestLimitService';
 import styles from './HomePage.module.css';
 
 interface HeroWordItem {
@@ -628,7 +630,22 @@ const HomePage: React.FC = () => {
                 <button
                   className={`${styles.addToDictBtn} ${isDemoWordAdded ? styles.addToDictBtnSaved : ''}`}
                   type="button"
-                  onClick={() => setIsDemoWordAdded((prev) => !prev)}
+                  onClick={() => {
+                    if (!AuthService.getUserEmail()) {
+                      GuestLimitService.setPendingSaveWord({
+                        resourceName: 'Active Listening Demo',
+                        highlightedText: 'no problem',
+                        context: "Hey relax, it's no problem, I'll take care of it.",
+                        translation: "no problem / you're welcome",
+                        definition: "used to say that something is easy to do or that one is happy to do it",
+                        returnUrl: "/youtube-demo",
+                      });
+                      GuestLimitService.triggerGuestSavePrompt();
+                      setIsDemoWordAdded(true);
+                    } else {
+                      setIsDemoWordAdded((prev) => !prev);
+                    }
+                  }}
                 >
                   {isDemoWordAdded ? (
                     <>
@@ -673,6 +690,13 @@ const HomePage: React.FC = () => {
                     </span>
                   </span>
                 </div>
+              </div>
+
+              <div className={styles.demoCtaRow}>
+                <Link to="/youtube-demo" className={styles.demoCtaButton}>
+                  <span>Try interactive player with movie scene &amp; subtitles</span>
+                  <ArrowRight size={14} className={styles.demoCtaArrow} />
+                </Link>
               </div>
             </motion.div>
           </div>
