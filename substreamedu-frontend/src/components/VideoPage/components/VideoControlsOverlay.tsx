@@ -40,6 +40,7 @@ export interface VideoControlsOverlayProps {
     onSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
     onTouchSeek: (e: React.TouchEvent<HTMLDivElement>) => void;
     onToggleFullscreen: () => void;
+    hideTopControls?: boolean;
 }
 
 const defaultFormatTime = (timeInSeconds: number): string => {
@@ -76,6 +77,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     onSeek,
     onTouchSeek,
     onToggleFullscreen,
+    hideTopControls = false,
 }) => {
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
     const volumeControlRef = useRef<HTMLDivElement>(null);
@@ -105,75 +107,77 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
             onClick={onVideoClick}
         >
             {/* 1. TOP CONTROLS */}
-            <div className={styles.topControls} onClick={(e) => e.stopPropagation()}>
-                <div className={styles.topControlsLeft}>
-                    {/* Space for title or replace button */}
-                </div>
-                <div className={styles.topControlsRight}>
-                    <button
-                        type="button"
-                        className={styles.controlButton}
-                        onClick={onOpenGrammarIndex}
-                        title="Grammar in this Video"
-                        aria-label="Grammar in this Video"
-                    >
-                        <Sparkles size={20} />
-                    </button>
-                    {!isMobile && (
+            {!hideTopControls && (
+                <div className={styles.topControls} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles.topControlsLeft}>
+                        {/* Space for title or replace button */}
+                    </div>
+                    <div className={styles.topControlsRight}>
                         <button
                             type="button"
-                            className={`${styles.controlButton} ${styles.desktopOnlyControl}`}
-                            onClick={onOpenLessonStudio}
-                            title="Teacher Studio / Lesson Builder"
-                            aria-label="Teacher Studio / Lesson Builder"
+                            className={styles.controlButton}
+                            onClick={onOpenGrammarIndex}
+                            title="Grammar in this Video"
+                            aria-label="Grammar in this Video"
                         >
-                            <GraduationCap size={20} />
+                            <Sparkles size={20} />
                         </button>
-                    )}
-                    <button
-                        type="button"
-                        className={styles.controlButton}
-                        onClick={onToggleSubtitles}
-                        aria-label={showSubtitles ? "Hide subtitles" : "Show subtitles"}
-                        title={showSubtitles ? "Hide subtitles" : "Show subtitles"}
-                    >
-                        {showSubtitles ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
-                    {/* 1. Subtitle Blur Toggle */}
-                    <button
-                        type="button"
-                        className={`${styles.quickPillButton} ${blurSubtitles ? styles.activePill : ''}`}
-                        onClick={onToggleBlur}
-                        title={blurSubtitles ? "Subtitles blurred (Listening practice active) — click to show plain" : "Blur subtitles (Listening practice)"}
-                        aria-label="Toggle blur subtitles"
-                    >
-                        Blur
-                    </button>
+                        {!isMobile && (
+                            <button
+                                type="button"
+                                className={`${styles.controlButton} ${styles.desktopOnlyControl}`}
+                                onClick={onOpenLessonStudio}
+                                title="Teacher Studio / Lesson Builder"
+                                aria-label="Teacher Studio / Lesson Builder"
+                            >
+                                <GraduationCap size={20} />
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            className={styles.controlButton}
+                            onClick={onToggleSubtitles}
+                            aria-label={showSubtitles ? "Hide subtitles" : "Show subtitles"}
+                            title={showSubtitles ? "Hide subtitles" : "Show subtitles"}
+                        >
+                            {showSubtitles ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                        {/* 1. Subtitle Blur Toggle */}
+                        <button
+                            type="button"
+                            className={`${styles.quickPillButton} ${blurSubtitles ? styles.activePill : ''}`}
+                            onClick={onToggleBlur}
+                            title={blurSubtitles ? "Subtitles blurred (Listening practice active) — click to show plain" : "Blur subtitles (Listening practice)"}
+                            aria-label="Toggle blur subtitles"
+                        >
+                            Blur
+                        </button>
 
-                    {/* 2. Subtitle Delay Toggle */}
-                    <button
-                        type="button"
-                        className={`${styles.quickPillButton} ${delay === -2 ? styles.activePill : ''}`}
-                        onClick={() => onDelayChange(delay === -2 ? 0 : -2)}
-                        title={delay === -2 ? "Subtitle delay: -2s active — click for 0s" : "Delay subtitles by 2s (Listening practice)"}
-                        aria-label="Toggle subtitle delay -2s"
-                    >
-                        {delay === -2 ? "-2s" : "Delay"}
-                    </button>
+                        {/* 2. Subtitle Delay Toggle */}
+                        <button
+                            type="button"
+                            className={`${styles.quickPillButton} ${delay === -2 ? styles.activePill : ''}`}
+                            onClick={() => onDelayChange(delay === -2 ? 0 : -2)}
+                            title={delay === -2 ? "Subtitle delay: -2s active — click for 0s" : "Delay subtitles by 2s (Listening practice)"}
+                            aria-label="Toggle subtitle delay -2s"
+                        >
+                            {delay === -2 ? "-2s" : "Delay"}
+                        </button>
 
-                    {/* 3. Repeat Subtitle 3x */}
-                    <button
-                        type="button"
-                        className={styles.quickPillButton}
-                        onClick={onRepeatCurrentSubtitle}
-                        title="Repeat current subtitle 3 times"
-                        aria-label="Repeat subtitle 3 times"
-                    >
-                        <RotateCcw size={12} />
-                        <span>3x</span>
-                    </button>
+                        {/* 3. Repeat Subtitle 3x */}
+                        <button
+                            type="button"
+                            className={styles.quickPillButton}
+                            onClick={onRepeatCurrentSubtitle}
+                            title="Repeat current subtitle 3 times"
+                            aria-label="Repeat subtitle 3 times"
+                        >
+                            <RotateCcw size={12} />
+                            <span>3x</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* 3. BOTTOM CONTROLS */}
             <div className={styles.bottomControls} onClick={(e) => e.stopPropagation()}>

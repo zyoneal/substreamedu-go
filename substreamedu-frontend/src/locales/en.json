@@ -101,6 +101,7 @@
   "upload.video": "Open video",
   "upload.subtitle": "Open subtitles",
   "videoPage.selectAnotherVideo": "Replace",
+  "videoPage.tryAnotherVideo": "Try another video:",
   "videoPage.youtubeTitle": "YouTube video",
   "videoPage.youtubeDescription": "Paste the URL of any YouTube video, and we will automatically download the subtitles.",
   "videoPage.loadingSubtitles": "Loading subtitles...",

@@ -162,6 +162,14 @@ export const AnalyticsService = {
     sendBackendEvent('return_d2', props);
   },
 
+  trackOnboardingHintShown: (props: Record<string, any> = {}): void => {
+    sendBackendEvent('onboarding_hint_shown', props);
+  },
+
+  trackOnboardingHintDismissed: (reason: string = 'selection'): void => {
+    sendBackendEvent('onboarding_hint_dismissed', { reason });
+  },
+
   checkAndTrackReturnD2: (userId: string, createdAtInput?: string | Date | null): void => {
     if (!userId || typeof window === 'undefined') return;
 

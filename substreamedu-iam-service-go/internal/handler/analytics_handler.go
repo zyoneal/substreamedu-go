@@ -31,11 +31,13 @@ type RecordEventRequest struct {
 }
 
 var AllowedEvents = map[string]bool{
-	"open_player": true,
-	"select_word": true,
-	"save_word":   true,
-	"signup":      true,
-	"return_d2":   true,
+	"open_player":               true,
+	"select_word":               true,
+	"save_word":                 true,
+	"signup":                    true,
+	"return_d2":                 true,
+	"onboarding_hint_shown":     true,
+	"onboarding_hint_dismissed": true,
 }
 
 func (h *AnalyticsHandler) RecordEvent(c *gin.Context) {

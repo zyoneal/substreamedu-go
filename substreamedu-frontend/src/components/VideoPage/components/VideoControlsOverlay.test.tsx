@@ -202,4 +202,14 @@ describe('VideoControlsOverlay Component', () => {
         expect(blurBtn).toHaveClass('quickPillButton');
         expect(blurBtn).not.toHaveClass('activePill');
     });
+
+    it('hides all top controls during onboarding when hideTopControls is true', () => {
+        render(<VideoControlsOverlay {...defaultProps} hideTopControls={true} />);
+        expect(screen.queryByTestId('icon-sparkles')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('icon-graduation-cap')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /toggle blur subtitles/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /repeat subtitle 3 times/i })).not.toBeInTheDocument();
+        // Bottom controls like play button should still be present
+        expect(screen.getByTestId('icon-play')).toBeInTheDocument();
+    });
 });

@@ -490,6 +490,18 @@
     border: 1px solid rgba(244, 63, 94, 0.3);
 }
 
+.badgeHintShown {
+    background: rgba(14, 165, 233, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.badgeHintDismissed {
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
 .badgeDefault {
     background: rgba(255, 255, 255, 0.1);
     color: #d4d4d4;

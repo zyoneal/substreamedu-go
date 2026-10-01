@@ -170,7 +170,8 @@ export function isRangeOverlapping(
 export const renderHighlightedSubtitle = (
     text: string,
     highlightedWords: DictionaryItem[],
-    customWordClass?: string
+    customWordClass?: string,
+    onboardingUnderlineWords?: string[]
 ): React.ReactNode => {
     if (!text) return null;
 
@@ -240,7 +241,38 @@ export const renderHighlightedSubtitle = (
         }
     }
 
-    allMatches.sort((a, b) => b.start - a.start);
+    const underlineMatches: Array<{
+        start: number;
+        end: number;
+        originalText: string;
+    }> = [];
+
+    if (onboardingUnderlineWords && onboardingUnderlineWords.length > 0) {
+        let count = 0;
+        for (const term of onboardingUnderlineWords) {
+            if (count >= 2) break;
+            const searchTerm = term.trim().toLowerCase();
+            if (!searchTerm) continue;
+            const isPhrase = searchTerm.includes(' ');
+            const matchResult = isPhrase
+                ? findPhraseMatch(text, searchTerm, 0)
+                : findWordMatch(text, searchTerm, 0);
+
+            if (
+                matchResult.found &&
+                matchResult.isValid &&
+                !isRangeOverlapping(matchResult.start!, matchResult.end!, allMatches) &&
+                !isRangeOverlapping(matchResult.start!, matchResult.end!, underlineMatches)
+            ) {
+                underlineMatches.push({
+                    start: matchResult.start!,
+                    end: matchResult.end!,
+                    originalText: text.slice(matchResult.start!, matchResult.end!)
+                });
+                count++;
+            }
+        }
+    }
 
     const escapeHtmlAttribute = (str: string) => {
         if (!str) return '';
@@ -252,7 +284,12 @@ export const renderHighlightedSubtitle = (
             .replace(/>/g, '&gt;');
     };
 
-    let result = text;
+    const combinedMatches: Array<{
+        start: number;
+        end: number;
+        html: string;
+    }> = [];
+
     for (const match of allMatches) {
         const escapedTranslation = escapeHtmlAttribute(match.translation);
         const escapedDefinition = escapeHtmlAttribute(match.definition);
@@ -263,7 +300,31 @@ export const renderHighlightedSubtitle = (
 
         const spanClass = customWordClass || styles.dictionaryWord;
         const spanHtml = `<span class="${spanClass}" data-translation="${escapedTranslation}" data-definition="${escapedDefinition}">${escapedOriginalText}</span>`;
-        result = result.slice(0, match.start) + spanHtml + result.slice(match.end);
+        combinedMatches.push({
+            start: match.start,
+            end: match.end,
+            html: spanHtml,
+        });
+    }
+
+    for (const match of underlineMatches) {
+        const escapedOriginalText = match.originalText
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        const spanHtml = `<span class="${styles.onboardingUnderline}">${escapedOriginalText}</span>`;
+        combinedMatches.push({
+            start: match.start,
+            end: match.end,
+            html: spanHtml,
+        });
+    }
+
+    combinedMatches.sort((a, b) => b.start - a.start);
+
+    let result = text;
+    for (const match of combinedMatches) {
+        result = result.slice(0, match.start) + match.html + result.slice(match.end);
     }
 
     result = result.replace(/\n/g, '<br>');

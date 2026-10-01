@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import { DetectedGrammarPoint } from '../../../utils/grammarDetector';
+import { AnalyticsService } from '../../../services/AnalyticsService';
 import styles from '../css/VideoPlayerPopover.module.css';
 
 export interface SubtitleOverlayProps {
@@ -21,6 +22,8 @@ export interface SubtitleOverlayProps {
     onPlayVideo: () => void;
     renderedSubtitle: React.ReactNode;
     showOnboardingPointer?: boolean;
+    isOnboardingMode?: boolean;
+    hasSelectedText?: boolean;
 }
 
 export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -41,9 +44,49 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     onPlayVideo,
     renderedSubtitle,
     showOnboardingPointer = false,
+    isOnboardingMode = false,
+    hasSelectedText = false,
 }) => {
     const [isTouchRevealed, setIsTouchRevealed] = useState<boolean>(false);
     const touchRevealTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [showDemoAnimation, setShowDemoAnimation] = useState<boolean>(true);
+    const hintReportedRef = useRef<boolean>(false);
+
+    const showHint = (showOnboardingPointer || isOnboardingMode) && !isPopoverOpen && !hasSelectedText && Boolean(currentSubtitle);
+
+    useEffect(() => {
+        if (showHint && !hintReportedRef.current) {
+            hintReportedRef.current = true;
+            AnalyticsService.trackOnboardingHintShown({ source: 'video_player' });
+        }
+    }, [showHint]);
+
+    useEffect(() => {
+        if (!isOnboardingMode && !showOnboardingPointer) {
+            setShowDemoAnimation(false);
+            return;
+        }
+
+        const handleInteraction = () => {
+            setShowDemoAnimation(false);
+        };
+
+        window.addEventListener('mousemove', handleInteraction, { passive: true });
+        window.addEventListener('mousedown', handleInteraction, { passive: true });
+        window.addEventListener('touchstart', handleInteraction, { passive: true });
+
+        // Max 2 cycles of 3.2s animation = 6.4s
+        const timer = setTimeout(() => {
+            setShowDemoAnimation(false);
+        }, 6500);
+
+        return () => {
+            window.removeEventListener('mousemove', handleInteraction);
+            window.removeEventListener('mousedown', handleInteraction);
+            window.removeEventListener('touchstart', handleInteraction);
+            clearTimeout(timer);
+        };
+    }, [isOnboardingMode, showOnboardingPointer]);
 
     useEffect(() => {
         setIsTouchRevealed(false);
@@ -107,8 +150,42 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                 overflow: 'visible',
             } : undefined}
         >
+            {showHint && (
+                <div
+                    className={styles.onboardingSelectionHint}
+                    data-testid="onboarding-selection-hint"
+                >
+                    <div className={styles.onboardingHintIconWrapper}>
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M6 4h12" />
+                            <path d="M12 4v16" />
+                            <path d="M6 20h12" />
+                        </svg>
+                    </div>
+                    <div className={styles.onboardingHintContent}>
+                        <span className={styles.onboardingHintTitle}>
+                            Select text in the subtitles — just like when you copy it
+                        </span>
+                        <span className={styles.onboardingHintSubtext}>
+                            {isMobile
+                                ? 'Tap and hold a word, then drag'
+                                : 'Press, drag across a word or phrase, release'}
+                        </span>
+                    </div>
+                </div>
+            )}
+
             <div
-                className={`${styles.currentSubtitleContainer} ${isLoadingSubtitles ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent}`}
+                className={`${styles.currentSubtitleContainer} ${isLoadingSubtitles ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent} ${isOnboardingMode ? styles.onboardingSubtitleMode : ''}`}
                 ref={containerRef}
                 onMouseUp={(e) => {
                     e.stopPropagation();
@@ -117,6 +194,22 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
             >
+                {showDemoAnimation && (isOnboardingMode || showOnboardingPointer) && currentSubtitle && !isPopoverOpen && !hasSelectedText && (
+                    <div className={styles.selectionDemoOverlay} aria-hidden="true" data-testid="selection-demo-overlay">
+                        <div className={styles.demoSelectionHighlight} />
+                        <div className={styles.demoSelectionCursor}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"
+                                    fill="#ffffff"
+                                    stroke="#000000"
+                                    strokeWidth="1.5"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+                )}
+
                 {isLoadingSubtitles ? (
                     <div className={styles.youtubeLoadingPremium}>
                         <div className={styles.loadingPulse}></div>
@@ -151,17 +244,8 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                                 </button>
                             </div>
                         )}
-                        {showOnboardingPointer && (
-                            <div className={styles.onboardingSubtitleTooltip} data-testid="onboarding-subtitle-tooltip">
-                                <span className={styles.onboardingTooltipPulse} />
-                                <span className={styles.onboardingTooltipIcon}>👆</span>
-                                <span className={styles.onboardingTooltipText}>
-                                    Highlight any word or phrase
-                                </span>
-                            </div>
-                        )}
                         <p
-                            className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''}`}
+                            className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''} ${isOnboardingMode ? styles.onboardingSubtitleText : ''}`}
                             onContextMenu={(e) => {
                                 const isAndroid = /Android/i.test(navigator.userAgent);
                                 if (!isAndroid) {

@@ -7,6 +7,7 @@
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
+  - Video Onboarding UX Redesign: Copy-Selection Hint, Simulated Drag Demo & Activation Focus (ADR-086)
   - Self-Hosted Telemetry & Admin Activation Funnel Dashboard (PostHog Purge) (ADR-085)
   - User Activation Engine: PostHog Analytics, Guest Word Delay, Interactive Onboarding & Promo Validation (ADR-084)
   - Spec 26: High-Throughput 3-Tier Batch Vocabulary Categorization Engine (ADR-083)

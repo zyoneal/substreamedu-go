@@ -104,6 +104,34 @@ describe('AnalyticsService (Self-Hosted Telemetry)', () => {
     );
   });
 
+  it('tracks onboarding_hint_shown correctly', async () => {
+    AnalyticsService.trackOnboardingHintShown({ source: 'video_player' });
+
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
+      expect.objectContaining({
+        event: 'onboarding_hint_shown',
+        properties: expect.objectContaining({
+          source: 'video_player',
+        }),
+      })
+    );
+  });
+
+  it('tracks onboarding_hint_dismissed correctly', async () => {
+    AnalyticsService.trackOnboardingHintDismissed('selection');
+
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
+      expect.objectContaining({
+        event: 'onboarding_hint_dismissed',
+        properties: expect.objectContaining({
+          reason: 'selection',
+        }),
+      })
+    );
+  });
+
   it('identifies user without dispatching unwhitelisted events', async () => {
     localStorage.setItem(
       'substreamedu_utm_params',

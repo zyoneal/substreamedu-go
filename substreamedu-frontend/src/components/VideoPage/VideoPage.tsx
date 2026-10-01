@@ -57,6 +57,10 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
 
   const [isOnboarding, setIsOnboarding] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('onboarding') === 'true' || window.location.pathname === '/youtube-demo') {
+      return true;
+    }
     return localStorage.getItem('substreamedu_onboarding_completed') !== 'true';
   });
 
@@ -408,7 +412,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                   )}
 
                   {/* 5. Channel Avatars & 6. Spacing/Hierarchy */}
-                  <RecommendedChannels />
+                  {!isOnboarding && <RecommendedChannels />}
                 </div>
               )}
 
@@ -463,7 +467,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
 
         {videoState.videoUrl && (
           <motion.div 
-            className={styles.videoSection}
+            className={`${styles.videoSection} ${isOnboarding ? styles.videoSectionOnboarding : ''}`}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -479,12 +483,15 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                   onSubtitleUpload={handleSubtitleUpload}
                   isExtractingSubtitles={videoState.isExtractingSubtitles}
                   onSelectAnotherVideo={videoActions.handleSelectAnotherVideo}
+                  isOnboarding={isOnboarding}
                 />
               </ErrorBoundary>
             </div>
             {isOnboarding && (
               <div className={styles.onboardingPresetBar}>
-                <span className={styles.presetBarTitle}>Recommended Scenes:</span>
+                <span className={styles.presetBarTitle}>
+                  <FormattedMessage id="videoPage.tryAnotherVideo" defaultMessage="Try another video:" />
+                </span>
                 <div className={styles.presetButtons}>
                   {ONBOARDING_PRESETS.map((preset) => {
                     const isCurrent = videoState.videoUrl === preset.url;

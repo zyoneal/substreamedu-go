@@ -33,6 +33,7 @@ import { useIntl, FormattedMessage } from "react-intl";
 import Zap from 'lucide-react/dist/esm/icons/zap';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import Play from 'lucide-react/dist/esm/icons/play';
 
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
@@ -40,7 +41,7 @@ import MobileHint from '../shared/MobileHint';
 import { Modal } from '../ui/modal';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
 import { useUserDictionaryItemsLight } from '../../hooks/useDictionary';
-import { OnboardingGuideBar, OnboardingStep } from './components/OnboardingGuideBar';
+import { OnboardingStep } from './components/OnboardingGuideBar';
 import { ONBOARDING_PRESETS } from '../../constants/onboardingPresets';
 
 import { debugLog, debugError } from '../../utils/debug';
@@ -62,6 +63,7 @@ interface VideoPlayerProps {
     onSubtitleUpload: (file: File) => void;
     isExtractingSubtitles?: boolean;
     onSelectAnotherVideo?: () => void;
+    isOnboarding?: boolean;
 }
 
 
@@ -75,7 +77,15 @@ declare global {
 }
 
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtitleSelect, onSubtitleUpload, isExtractingSubtitles = false, onSelectAnotherVideo }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
+    videoUrl,
+    subtitles,
+    onSubtitleSelect,
+    onSubtitleUpload,
+    isExtractingSubtitles = false,
+    onSelectAnotherVideo,
+    isOnboarding = false,
+}) => {
     const { learningLanguage: contextLearningLanguage } = useContext(LanguageContext);
     const learningLanguage = contextLearningLanguage || 'en';
     const { fluentLanguage } = useContext(LanguageContext);
@@ -110,7 +120,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const [showSubtitles, setShowSubtitles] = useState(true);
-    // Subtitles are blurred by default for listening practice
+    // Subtitles are blurred by default for listening practice, but clear in onboarding
     const [blurSubtitles, setBlurSubtitles] = useState<boolean>(true);
     // isFullscreen now comes from useVideoPlayer hook
     const [showMobileHint, setShowMobileHint] = useState(true);
@@ -154,14 +164,43 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
 
 
 
-    // Interactive Onboarding State (Step 1 -> Step 2 -> Completed)
+    const hasSavedWords = Boolean(
+        userDictionaryItems && (
+            Array.isArray(userDictionaryItems)
+                ? userDictionaryItems.length > 0
+                : ((userDictionaryItems as any).items?.length ?? 0) > 0
+        )
+    );
+
+    // Interactive Onboarding State
     const [onboardingDismissed, setOnboardingDismissed] = useState<boolean>(() => {
         try {
+            if (typeof window !== 'undefined') {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('onboarding') === 'true') {
+                    return false;
+                }
+            }
             return localStorage.getItem('substreamedu_onboarding_completed') === 'true';
         } catch {
             return false;
         }
     });
+
+    const isUrlOnboarding = typeof window !== 'undefined' && (
+        new URLSearchParams(window.location.search).get('onboarding') === 'true' ||
+        window.location.pathname === '/youtube-demo'
+    );
+
+    const isOnboardingMode = Boolean(
+        !hasSavedWords &&
+        !onboardingDismissed &&
+        (isOnboarding || isUrlOnboarding)
+    );
+
+    const effectiveBlur = isOnboardingMode ? false : blurSubtitles;
+    const effectiveDelay = isOnboardingMode ? 0 : delay;
+
     const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(1);
 
     const handleDismissOnboarding = useCallback(() => {
@@ -175,6 +214,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     }, []);
 
     useEffect(() => {
+        const handleOnboardingCompleted = () => {
+            setOnboardingDismissed(true);
+        };
+        window.addEventListener('substreamedu:onboarding_completed', handleOnboardingCompleted);
+        return () => window.removeEventListener('substreamedu:onboarding_completed', handleOnboardingCompleted);
+    }, []);
+
+    useEffect(() => {
         if (isPopoverOpen && onboardingStep === 1) {
             setOnboardingStep(2);
         }
@@ -183,6 +230,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
     useEffect(() => {
         const handleGuestSave = () => {
             setOnboardingStep('completed');
+            setOnboardingDismissed(true);
             try {
                 localStorage.setItem('substreamedu_onboarding_completed', 'true');
             } catch {}
@@ -233,6 +281,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         setIsFullscreen,
         setShowControls,
     } = videoPlayer;
+
+    const activePreset = useMemo(() => {
+        return ONBOARDING_PRESETS.find(p => p.url === videoUrl || (videoId && p.url.includes(videoId))) || ONBOARDING_PRESETS[0];
+    }, [videoUrl, videoId]);
+
+    const onboardingUnderlineWords = useMemo(() => {
+        return isOnboardingMode ? (activePreset?.recommendedWords || []) : [];
+    }, [isOnboardingMode, activePreset]);
 
     // Auto-hide controls after 3.5 seconds of inactivity when video is playing
     useEffect(() => {
@@ -652,13 +708,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
         }
 
         if (Array.isArray(subtitlesForVideo) && subtitlesForVideo.length > 0) {
-            const delayedTime = (currentTime + delay) * 1000;
+            const delayedTime = (currentTime + effectiveDelay) * 1000;
             const subtitle = subtitlesForVideo.find(
                 (sub) => delayedTime >= sub.startTimeMs && delayedTime <= sub.endTimeMs
             );
             setCurrentSubtitle(subtitle ? subtitle.text : null);
         }
-    }, [videoId, youtubePlayerRef, videoRef, subtitlesForVideo, delay]);
+    }, [videoId, youtubePlayerRef, videoRef, subtitlesForVideo, effectiveDelay]);
 
     const handleDelayChange = (newDelay: number) => {
         setDelay(newDelay);
@@ -1074,6 +1130,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                     </div>
                                 )}
 
+                                {!isPlaying && (
+                                    <button
+                                        type="button"
+                                        className={styles.centerBigPlayButton}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            playVideo();
+                                        }}
+                                        aria-label="Play video"
+                                        data-testid="center-big-play-button"
+                                    >
+                                        <Play size={40} fill="currentColor" />
+                                    </button>
+                                )}
+
                                 <VideoControlsOverlay
                                     showControls={showControls}
                                     isPlaying={isPlaying}
@@ -1085,8 +1156,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                     isFullscreen={isFullscreen}
                                     isMobile={isMobile}
                                     showSubtitles={showSubtitles}
-                                    blurSubtitles={blurSubtitles}
-                                    delay={delay}
+                                    blurSubtitles={effectiveBlur}
+                                    delay={effectiveDelay}
+                                    hideTopControls={isOnboardingMode}
                                     formatTime={formatTime}
                                     onVideoClick={handleVideoClick}
                                     onTogglePlayPause={togglePlayPause}
@@ -1118,7 +1190,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         isLoadingSubtitles={isYoutubeSubsLoading || isSearchingSubtitles}
                                         hasNoSubtitlesForVideo={Boolean(videoId && (!subtitlesForVideo || subtitlesForVideo.length === 0))}
                                         activeGrammarPoint={activeGrammarPoint}
-                                        blurSubtitles={blurSubtitles}
+                                        blurSubtitles={effectiveBlur}
                                         isMobile={isMobile}
                                         isPopoverOpen={isPopoverOpen}
                                         isLoadingTranslation={isLoading}
@@ -1132,8 +1204,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                         }}
                                         onPauseVideo={pauseVideo}
                                         onPlayVideo={playVideo}
-                                        renderedSubtitle={renderHighlightedSubtitle(formatSubtitleForDisplay(currentSubtitle || ''), highlightedWords)}
-                                        showOnboardingPointer={!onboardingDismissed && onboardingStep === 1 && !isPopoverOpen}
+                                        renderedSubtitle={renderHighlightedSubtitle(
+                                            formatSubtitleForDisplay(currentSubtitle || ''),
+                                            highlightedWords,
+                                            undefined,
+                                            onboardingUnderlineWords
+                                        )}
+                                        showOnboardingPointer={false}
+                                        isOnboardingMode={isOnboardingMode}
+                                        hasSelectedText={isPopoverOpen}
                                     />
                                 )
                             }
@@ -1163,19 +1242,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                                 )
                             }
                         </div>
-                        {/* Onboarding Guide Bar - sits cleanly below the video player */}
-                        {!onboardingDismissed && !isFullscreen && (selectedSubtitle || videoId) && (
-                            <div className={styles.onboardingGuideWrapper}>
-                                <OnboardingGuideBar
-                                    step={onboardingStep}
-                                    onDismiss={handleDismissOnboarding}
-                                    recommendedWords={
-                                        ONBOARDING_PRESETS.find(p => p.url === videoUrl || (videoId && p.url.includes(videoId)))?.recommendedWords ||
-                                        ONBOARDING_PRESETS[0].recommendedWords
-                                    }
-                                />
-                            </div>
-                        )}
                     </div>
                     {notification && <div className={styles.notification}>{notification}</div>}
                 </div>
@@ -1185,6 +1251,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, subtitles, onSubtit
                     isPopoverOpen={isPopoverOpen}
                     isLoading={isLoading}
                     isMobile={isMobile}
+                    isOnboarding={isOnboardingMode}
                     selectedText={selectedText}
                     selectedSentence={selectedSentence}
                     translationData={translationData}

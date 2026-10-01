@@ -4730,71 +4730,226 @@ video[playsinline] {
     line-height: 1.3;
 }
 
-.onboardingSubtitleTooltip {
+/* Onboarding Selection Hint - Clean badge positioned above subtitle container, never overlaps */
+.onboardingSelectionHint {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 6px 16px;
-    margin-bottom: 10px;
-    background: rgba(20, 20, 22, 0.95);
-    border: 1.5px solid #faf92f;
-    border-radius: 9999px;
-    box-shadow: 0 0 25px rgba(250, 249, 47, 0.4), 0 8px 30px rgba(0, 0, 0, 0.6);
-    color: #ffffff;
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    gap: 12px;
+    padding: 8px 18px;
+    margin: 0 auto 12px auto;
+    background: rgba(14, 14, 18, 0.94);
+    border: 1px solid rgba(250, 249, 47, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(250, 249, 47, 0.08);
     pointer-events: none;
-    z-index: 50;
-    animation: onboardingFloat 2s ease-in-out infinite alternate;
+    z-index: 40;
+    max-width: 90%;
+    animation: hintFadeIn 0.3s ease-out;
 }
 
-.onboardingTooltipPulse {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #faf92f;
-    box-shadow: 0 0 10px #faf92f;
-    animation: onboardingPulse 1.2s ease-in-out infinite;
-}
-
-.onboardingTooltipIcon {
-    font-size: 15px;
-    display: inline-block;
-    animation: onboardingWiggle 1.5s ease-in-out infinite;
-}
-
-.onboardingTooltipText {
+.onboardingHintIconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(250, 249, 47, 0.12);
+    border-radius: 8px;
+    flex-shrink: 0;
     color: #faf92f;
-    text-shadow: 0 0 10px rgba(250, 249, 47, 0.5);
 }
 
-@keyframes onboardingFloat {
-    0% {
+.onboardingHintContent {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 2px;
+}
+
+.onboardingHintTitle {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+.onboardingHintSubtext {
+    font-size: 11.5px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.3;
+}
+
+@keyframes hintFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
         transform: translateY(0);
     }
-    100% {
-        transform: translateY(-5px);
+}
+
+/* Simulated text drag demo animation across 2-3 words */
+.selectionDemoOverlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    max-width: 480px;
+    height: 38px;
+    pointer-events: none;
+    z-index: 5;
+    overflow: visible;
+}
+
+.demoSelectionHighlight {
+    position: absolute;
+    top: 4px;
+    left: 20%;
+    height: 28px;
+    background: rgba(59, 130, 246, 0.45);
+    border-radius: 4px;
+    border: 1px solid rgba(96, 165, 250, 0.5);
+    animation: demoHighlight 3.2s cubic-bezier(0.25, 1, 0.5, 1) 2;
+}
+
+.demoSelectionCursor {
+    position: absolute;
+    top: 6px;
+    left: 20%;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+    animation: demoCursor 3.2s cubic-bezier(0.25, 1, 0.5, 1) 2;
+}
+
+@keyframes demoHighlight {
+    0%, 15% {
+        width: 0;
+        opacity: 0;
+    }
+    20% {
+        width: 0;
+        opacity: 1;
+    }
+    60%, 85% {
+        width: 45%;
+        opacity: 1;
+    }
+    95%, 100% {
+        width: 45%;
+        opacity: 0;
     }
 }
 
-@keyframes onboardingPulse {
-    0%, 100% {
+@keyframes demoCursor {
+    0% {
+        left: 12%;
+        transform: translateY(10px) scale(1);
+        opacity: 0;
+    }
+    15% {
+        left: 20%;
+        transform: translateY(0) scale(1);
         opacity: 1;
+    }
+    20% {
+        left: 20%;
+        transform: translateY(0) scale(0.9);
+        opacity: 1;
+    }
+    60% {
+        left: 65%;
+        transform: translateY(0) scale(0.9);
+        opacity: 1;
+    }
+    70%, 85% {
+        left: 65%;
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    95%, 100% {
+        left: 65%;
+        transform: translateY(5px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Onboarding Subtitle Clarity Mode */
+.onboardingSubtitleMode {
+    background: rgba(0, 0, 0, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55) !important;
+    padding: 16px 36px !important;
+}
+
+.onboardingSubtitleText {
+    color: #ffffff !important;
+    font-size: clamp(1.3rem, 2.6vw, 2rem) !important;
+    font-weight: 600 !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95) !important;
+    line-height: 1.45 !important;
+}
+
+/* Soft dashed underline on recommended words in subtitles (not buttons) */
+.onboardingUnderline {
+    border-bottom: 2px dashed rgba(250, 249, 47, 0.85);
+    padding-bottom: 1px;
+    user-select: text;
+    cursor: text;
+}
+
+/* Center Big Play Button when video is paused */
+.centerBigPlayButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: rgba(18, 18, 22, 0.85);
+    border: 2px solid rgba(250, 249, 47, 0.85);
+    color: #faf92f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 35;
+    box-shadow: 0 0 25px rgba(250, 249, 47, 0.35), 0 8px 32px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.centerBigPlayButton:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+    background: rgba(250, 249, 47, 0.95);
+    color: #000000;
+    box-shadow: 0 0 35px rgba(250, 249, 47, 0.6);
+}
+
+.centerBigPlayButton svg {
+    margin-left: 4px;
+}
+
+/* Pulsing Save button during onboarding */
+.saveButtonOnboarding {
+    animation: savePulse 1.6s ease-in-out infinite !important;
+    background: #faf92f !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 15px rgba(250, 249, 47, 0.6) !important;
+}
+
+@keyframes savePulse {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(250, 249, 47, 0.4), 0 0 0 0 rgba(250, 249, 47, 0.5);
         transform: scale(1);
     }
     50% {
-        opacity: 0.4;
-        transform: scale(1.3);
-    }
-}
-
-@keyframes onboardingWiggle {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(250, 249, 47, 0.8), 0 0 0 8px rgba(250, 249, 47, 0);
+        transform: scale(1.03);
     }
 }

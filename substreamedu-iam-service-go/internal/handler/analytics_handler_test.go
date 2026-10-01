@@ -71,7 +71,7 @@ func setupTestJWTService() *service.JWTService {
 
 func TestRecordEvent_WhitelistedEvents(t *testing.T) {
 	handler, repo := setupTestAnalyticsHandler()
-	events := []string{"open_player", "select_word", "save_word", "signup", "return_d2"}
+	events := []string{"open_player", "select_word", "save_word", "signup", "return_d2", "onboarding_hint_shown", "onboarding_hint_dismissed"}
 
 	for _, evt := range events {
 		w := httptest.NewRecorder()

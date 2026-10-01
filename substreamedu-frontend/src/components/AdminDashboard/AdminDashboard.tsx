@@ -363,6 +363,8 @@ const AdminDashboard: React.FC = () => {
                                     <option value="save_word">save_word</option>
                                     <option value="signup">signup</option>
                                     <option value="return_d2">return_d2</option>
+                                    <option value="onboarding_hint_shown">onboarding_hint_shown</option>
+                                    <option value="onboarding_hint_dismissed">onboarding_hint_dismissed</option>
                                 </select>
                             </div>
                         )}
@@ -391,6 +393,8 @@ const AdminDashboard: React.FC = () => {
                                         else if (evt.eventName === 'save_word') badgeClass = styles.badgeSaveWord;
                                         else if (evt.eventName === 'signup') badgeClass = styles.badgeSignup;
                                         else if (evt.eventName === 'return_d2') badgeClass = styles.badgeReturnD2;
+                                        else if (evt.eventName === 'onboarding_hint_shown') badgeClass = styles.badgeHintShown;
+                                        else if (evt.eventName === 'onboarding_hint_dismissed') badgeClass = styles.badgeHintDismissed;
 
                                         return (
                                             <tr key={evt.id}>

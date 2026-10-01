@@ -17,6 +17,7 @@ export interface VideoTranslationPopoverProps {
     isAdmin?: boolean;
     showSubmitButton?: boolean;
     showSubscribeButton?: boolean;
+    isOnboarding?: boolean;
     onSelectOption: (option: TranslationOption) => void;
     onChunkClick: (chunk: string) => void;
     onSaveToDict: () => void;

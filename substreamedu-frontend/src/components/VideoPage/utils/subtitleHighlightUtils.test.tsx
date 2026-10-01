@@ -59,6 +59,20 @@ describe('subtitleHighlightUtils', () => {
             expect(span?.textContent).toBe('apple');
         });
 
+        it('softly underlines onboarding recommended words without breaking text', () => {
+            const node = renderHighlightedSubtitle(
+                'This is comprehensible input for learning.',
+                [],
+                undefined,
+                ['comprehensible', 'input']
+            );
+            const { container } = render(<>{node}</>);
+            const underlines = container.querySelectorAll('span');
+            expect(underlines.length).toBeGreaterThan(0);
+            expect(container.textContent).toContain('comprehensible');
+            expect(container.textContent).toContain('input');
+        });
+
         it('returns null if text is empty', () => {
             expect(renderHighlightedSubtitle('', mockItems)).toBeNull();
         });

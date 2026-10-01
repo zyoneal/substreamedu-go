@@ -45,6 +45,7 @@ export interface TranslationPopoverProps {
     isAdmin?: boolean;
     showSubmitButton?: boolean;
     showSubscribeButton?: boolean;
+    isOnboarding?: boolean;
     onSaveToDict?: () => void;
     onOpenReelModal?: () => void;
     onClose: () => void;
@@ -57,6 +58,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
     isPopoverOpen,
     isLoading,
     isMobile = false,
+    isOnboarding = false,
     selectedText,
     selectedSentence,
     translationData,
@@ -247,11 +249,11 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                             <button
                                 type="button"
                                 onClick={onSaveToDict}
-                                className={styles.saveButton}
+                                className={`${styles.saveButton} ${isOnboarding ? styles.saveButtonOnboarding : ''}`}
                                 disabled={isSaving}
-                                title={isSaving ? "Saving..." : "Add to dictionary"}
+                                title={isSaving ? "Saving..." : (isOnboarding ? "Save to your dictionary" : "Add to dictionary")}
                             >
-                                <span>{isSaving ? "SAVING..." : "SAVE"}</span>
+                                <span>{isSaving ? "SAVING..." : (isOnboarding ? "Save to your dictionary" : "SAVE")}</span>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                                     <polyline points="17 21 17 13 7 13 7 21"></polyline>
