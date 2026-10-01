@@ -208,7 +208,7 @@ func initDependencies(cfg *config.Config, pool *pgxpool.Pool, rdb *redis.Client,
 	userHandler := handler.NewUserHandler(userService, logger)
 	adminHandler := handler.NewAdminHandler(userService, logger)
 	healthHandler := handler.NewHealthHandler(pool)
-	promoHandler := handler.NewPromoHandler(userService, logger)
+	promoHandler := handler.NewPromoHandler(userService, jwtService, logger)
 	usageHandler := handler.NewUsageHandler(userService, logger)
 
 	return &dependencies{

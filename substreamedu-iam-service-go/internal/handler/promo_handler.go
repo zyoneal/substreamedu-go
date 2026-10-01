@@ -19,12 +19,14 @@ var validPromoCodes = map[string]bool{
 
 type PromoHandler struct {
 	userService	*service.UserService
+	jwtService	*service.JWTService
 	logger		*zap.Logger
 }
 
-func NewPromoHandler(userService *service.UserService, logger *zap.Logger) *PromoHandler {
+func NewPromoHandler(userService *service.UserService, jwtService *service.JWTService, logger *zap.Logger) *PromoHandler {
 	return &PromoHandler{
 		userService:	userService,
+		jwtService:	jwtService,
 		logger:		logger,
 	}
 }
@@ -93,8 +95,16 @@ func (h *PromoHandler) ApplyPromo(c *gin.Context) {
 		zap.String("email", user.Email),
 	)
 
-	c.JSON(http.StatusOK, dto.Success(map[string]interface{}{
+	respData := map[string]interface{}{
 		"message":	"Premium activated successfully!",
 		"isPremium":	true,
-	}))
+	}
+
+	if h.jwtService != nil {
+		if token, err := h.jwtService.GenerateToken(user); err == nil {
+			respData["token"] = token
+		}
+	}
+
+	c.JSON(http.StatusOK, dto.Success(respData))
 }

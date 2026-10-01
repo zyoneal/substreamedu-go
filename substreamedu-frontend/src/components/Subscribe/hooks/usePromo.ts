@@ -25,6 +25,10 @@ export const usePromo = () => {
             setMessage(response.data.data?.message || "Premium activated.");
             setPromoCode("");
 
+            if (response.data.data?.token) {
+                localStorage.setItem("jwt", response.data.data.token);
+            }
+
             // Reload for state sync
             setTimeout(() => window.location.reload(), 1500);
         } catch (error: any) {
