@@ -3,6 +3,7 @@ import { DictionaryService } from '../services/DictionaryService';
 import { SubtitleService } from '../services/SubtitleService';
 import { AuthService } from '../services/AuthService';
 import { GuestLimitService } from '../services/GuestLimitService';
+import { AnalyticsService } from '../services/AnalyticsService';
 
 export const useDictionaryResources = () => {
     return useQuery({
@@ -74,6 +75,12 @@ export const useSaveWord = (
         mutationFn: (data: SaveWordData) => {
             if (!AuthService.getUserEmail()) {
                 GuestLimitService.triggerGuestSavePrompt();
+                AnalyticsService.trackSaveWord({
+                    text: data.highlightedText,
+                    translation: data.translation || undefined,
+                    resourceName: data.resourceName,
+                    status: 'guest_blocked',
+                });
                 throw new Error('GUEST_SAVE_REQUIRES_LOGIN');
             }
             return SubtitleService.processHighlightedTextAfterTranslation(data);
@@ -89,6 +96,14 @@ export const useSaveWord = (
             const message = ((err as any)?.message || (err as any)?.response?.data?.message || '').toLowerCase();
             if (status === 403 || message.includes('save limit') || message.includes('word save')) {
                 window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
+            }
+            if ((err as any)?.message !== 'GUEST_SAVE_REQUIRES_LOGIN') {
+                AnalyticsService.trackSaveWord({
+                    text: variables.highlightedText,
+                    translation: variables.translation || undefined,
+                    resourceName: variables.resourceName,
+                    status: 'failed',
+                });
             }
             (options as any)?.onError?.(err, variables, context);
             console.error("Mutation failed", err);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { SubtitleService } from '../../services/SubtitleService';
 import { AuthService } from '../../services/AuthService';
+import { AnalyticsService } from '../../services/AnalyticsService';
 import VideoPlayer from './VideoPlayer';
 import { useIntl, FormattedMessage } from 'react-intl';
 import { useVideoUpload } from '../../hooks/useVideoUpload';
@@ -105,6 +106,16 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
       }, 300);
     }
   }, [videoState.videoUrl]);
+
+  useEffect(() => {
+    if (videoState.videoUrl) {
+      AnalyticsService.trackOpenPlayer({
+        source: activeTab,
+        videoUrl: videoState.videoUrl,
+        hasSubtitles: subtitles.length > 0,
+      });
+    }
+  }, [videoState.videoUrl, activeTab, subtitles.length]);
 
   const fetchSubtitles = async () => {
     if (!AuthService.getUserEmail()) {

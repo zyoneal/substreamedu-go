@@ -18,6 +18,7 @@ import ScrollToTop from './components/ScrollToTop';
 import { SUPPORTED_LANGUAGES } from './constants/languageConfig';
 
 import enMessages from './locales/en.json';
+import { AnalyticsService } from './services/AnalyticsService';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -77,6 +78,10 @@ const App: React.FC = () => {
     );
 
     const [premiumLimitType, setPremiumLimitType] = useState<'translation' | 'save' | 'guest_limit' | 'guest_save' | null>(null);
+
+    useEffect(() => {
+        AnalyticsService.init();
+    }, []);
 
     useEffect(() => {
         const handleGuestLimit = () => setPremiumLimitType('guest_limit');

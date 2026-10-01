@@ -9,6 +9,7 @@ import X from "lucide-react/dist/esm/icons/x";
 import Edit2 from "lucide-react/dist/esm/icons/edit-2";
 import { ReactComponent as GoogleIcon } from "../../icons/google.svg";
 import { AuthService } from "../../services/AuthService";
+import { AnalyticsService } from "../../services/AnalyticsService";
 import { AuthContext } from "../../store/AuthContext";
 import Login from "./Login/Login";
 import { useIntl } from "react-intl";
@@ -40,7 +41,7 @@ const CustomGoogleButton: React.FC = () => {
 
             debugLog("Backend Response:", backendResponse.data);
 
-            const { userId, token, email, role } = backendResponse.data;
+            const { userId, token, email, role, isNewUser, createdAt } = backendResponse.data;
 
             localStorage.setItem("jwt", token);
             if (email) {
@@ -49,6 +50,18 @@ const CustomGoogleButton: React.FC = () => {
             }
             if (role) {
                 AuthService.setAuthoritiesList([role]);
+            }
+
+            AnalyticsService.identify(userId, { email, role, createdAt });
+            const wasRegistered = localStorage.getItem(`substreamedu_registered_${userId}`) === 'true';
+            if (isNewUser || !wasRegistered) {
+                AnalyticsService.trackSignup('google', email);
+                localStorage.setItem(`substreamedu_registered_${userId}`, 'true');
+                if (createdAt) {
+                    localStorage.setItem(`substreamedu_signup_date_${userId}`, createdAt);
+                }
+            } else {
+                AnalyticsService.checkAndTrackReturnD2(userId, createdAt);
             }
 
             setIsLoggedIn(true);
@@ -179,6 +192,16 @@ const LoginPage: React.FC = () => {
         try {
             const verifyResult = await AuthService.verify(email, otp);
             if (verifyResult) {
+                const userId = AuthService.getUserId() || '';
+                AnalyticsService.identify(userId, { email });
+                const wasRegistered = localStorage.getItem(`substreamedu_registered_${userId}`) === 'true';
+                if (!wasRegistered) {
+                    AnalyticsService.trackSignup('otp', email);
+                    localStorage.setItem(`substreamedu_registered_${userId}`, 'true');
+                    localStorage.setItem(`substreamedu_signup_date_${userId}`, new Date().toISOString());
+                } else {
+                    AnalyticsService.checkAndTrackReturnD2(userId);
+                }
 
                 const button = verifyButtonRef.current;
                 if (button) {

@@ -4,6 +4,7 @@ import { useIntl } from 'react-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { SubtitleService } from '../../../services/SubtitleService';
 import { useSaveWord, SaveWordData, SaveWordContext } from '../../../hooks/useDictionary';
+import { AnalyticsService } from '../../../services/AnalyticsService';
 import { debugLog, debugError } from '../../../utils/debug';
 import {
     TranslationData,
@@ -264,6 +265,13 @@ export const useSubtitleTranslation = ({
             setDictionaryItems?.(prev => [...prev, optimisticItem]);
             setHighlightedWords?.(prev => [...prev, optimisticItem]);
 
+            AnalyticsService.trackSaveWord({
+                text: newData.highlightedText,
+                translation: newData.translation || undefined,
+                resourceName: newData.resourceName,
+                status: 'success',
+            });
+
             showNotification('The word has been added to the dictionary');
             setShowSubmitButton(false);
             setIsPopoverOpen(false);
@@ -445,6 +453,13 @@ export const useSubtitleTranslation = ({
 
             pauseVideo();
             showSelectionTooltip(range);
+
+            AnalyticsService.trackSelectWord({
+                text,
+                isSingleWord,
+                sentence: currentSubtitle || undefined,
+                source: getResourceName(),
+            });
 
             const sentence = findSentenceForSubtitle(text, currentSubtitle, subtitlesForVideo);
             if (sentence) {

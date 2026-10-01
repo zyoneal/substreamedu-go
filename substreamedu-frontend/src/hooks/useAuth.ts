@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 
 import { AuthService } from '../services/AuthService';
+import { AnalyticsService } from '../services/AnalyticsService';
 import { constants } from '../constants/constants';
 import { setupInterceptors } from "../services/AxiosService";
 import { BackgroundState, ConnectionInfo, BackgroundLoadOptions } from '../types/background';
@@ -25,6 +26,11 @@ const useAuth = (navigate: NavigateFunction) => {
                 if (roles) {
                     setAuthorities(roles);
                 }
+                const userId = AuthService.getUserId();
+                if (userId) {
+                    AnalyticsService.identify(userId, { email: accessUser, roles });
+                    AnalyticsService.checkAndTrackReturnD2(userId);
+                }
             }
         };
         checkLoginStatus();
@@ -34,6 +40,7 @@ const useAuth = (navigate: NavigateFunction) => {
         localStorage.setItem(constants.isLoggedIn, JSON.stringify(isLoggedIn));
         if (!isLoggedIn) {
             setAuthorities([]);
+            AnalyticsService.reset();
         }
     }, [isLoggedIn]);
 

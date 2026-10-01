@@ -3,7 +3,7 @@
 ## Status Board
 
 - **Current Phase**: Phase 2: Product Feature Expansion
-- **In Progress**: None
+- **In Progress**: Step 1: Activation Analytics (PostHog Integration & Funnel Tracking)
 - **Backlog (Phase 2 — Teacher Feedback Features)**:
   - Spec 05F: Writing Practice (P3)
 - **Completed (Phase 2)**:
