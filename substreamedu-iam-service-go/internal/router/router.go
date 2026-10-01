@@ -20,6 +20,7 @@ type Router struct {
 	healthHandler		*handler.HealthHandler
 	promoHandler		*handler.PromoHandler
 	usageHandler		*handler.UsageHandler
+	analyticsHandler	*handler.AnalyticsHandler
 	jwtService		*service.JWTService
 	authLimiter		*middleware.RateLimiter
 	internalServiceKey	string
@@ -33,6 +34,7 @@ func New(
 	healthHandler *handler.HealthHandler,
 	promoHandler *handler.PromoHandler,
 	usageHandler *handler.UsageHandler,
+	analyticsHandler *handler.AnalyticsHandler,
 	jwtService *service.JWTService,
 	internalServiceKey string,
 	logger *zap.Logger,
@@ -44,6 +46,7 @@ func New(
 		healthHandler:		healthHandler,
 		promoHandler:		promoHandler,
 		usageHandler:		usageHandler,
+		analyticsHandler:	analyticsHandler,
 		jwtService:		jwtService,
 		authLimiter:		middleware.NewRateLimiter(10, time.Minute),
 		internalServiceKey:	internalServiceKey,
@@ -83,6 +86,7 @@ func (r *Router) Setup() *gin.Engine {
 			auth.GET("/internal/user/by-telegram-token/:token", r.authHandler.GetUserByTelegramToken)
 
 			auth.POST("/promo", middleware.AuthMiddleware(r.jwtService), r.promoHandler.ApplyPromo)
+			auth.POST("/events", r.analyticsHandler.RecordEvent)
 		}
 
 		users := api.Group("/users")
@@ -97,6 +101,7 @@ func (r *Router) Setup() *gin.Engine {
 		{
 			admin.GET("/users", r.adminHandler.ListUsers)
 			admin.PATCH("/users/:userId", r.adminHandler.UpdateUser)
+			admin.GET("/analytics", r.analyticsHandler.GetAnalytics)
 		}
 
 		// SECURITY: Internal inter-service endpoints protected by shared secret.

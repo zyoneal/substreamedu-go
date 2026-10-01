@@ -25,6 +25,31 @@ export interface PaginatedUsers {
     total: number;
 }
 
+export interface FunnelStats {
+    totalVisitors: number;
+    playerOpened: number;
+    wordSelected: number;
+    wordSaved: number;
+    guestSavesAttempted: number;
+    signups: number;
+    returnD2: number;
+    activationRate: number;
+}
+
+export interface AnalyticsEventItem {
+    id: number;
+    eventName: string;
+    userId?: string;
+    anonymousId?: string;
+    properties: Record<string, any>;
+    createdAt: string;
+}
+
+export interface AnalyticsSummary {
+    funnel: FunnelStats;
+    recentEvents: AnalyticsEventItem[];
+}
+
 const AdminService = {
     async getUsers(
         limit: number = 20,
@@ -68,6 +93,11 @@ const AdminService = {
     async getUserById(userId: string): Promise<User> {
         const response = await axiosService.get(`api/users/${userId}`);
         return response.data as User;
+    },
+
+    async getAnalytics(): Promise<AnalyticsSummary> {
+        const response = await axiosService.get(urls.admin.analytics);
+        return response.data.data;
     }
 };
 

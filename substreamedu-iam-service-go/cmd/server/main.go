@@ -65,7 +65,7 @@ func main() {
 
 	deps := initDependencies(cfg, pool, rdb, logger)
 
-	r := router.New(deps.authHandler, deps.userHandler, deps.adminHandler, deps.healthHandler, deps.promoHandler, deps.usageHandler, deps.jwtService, cfg.InternalServiceKey, logger)
+	r := router.New(deps.authHandler, deps.userHandler, deps.adminHandler, deps.healthHandler, deps.promoHandler, deps.usageHandler, deps.analyticsHandler, deps.jwtService, cfg.InternalServiceKey, logger)
 	engine := r.Setup()
 
 	server := &http.Server{
@@ -184,18 +184,20 @@ func initDatabase(ctx context.Context, cfg *config.Config, logger *zap.Logger) (
 }
 
 type dependencies struct {
-	authHandler	*handler.AuthHandler
-	userHandler	*handler.UserHandler
-	adminHandler	*handler.AdminHandler
-	healthHandler	*handler.HealthHandler
-	promoHandler	*handler.PromoHandler
-	usageHandler	*handler.UsageHandler
-	jwtService	*service.JWTService
+	authHandler		*handler.AuthHandler
+	userHandler		*handler.UserHandler
+	adminHandler		*handler.AdminHandler
+	healthHandler		*handler.HealthHandler
+	promoHandler		*handler.PromoHandler
+	usageHandler		*handler.UsageHandler
+	analyticsHandler	*handler.AnalyticsHandler
+	jwtService		*service.JWTService
 }
 
 func initDependencies(cfg *config.Config, pool *pgxpool.Pool, rdb *redis.Client, logger *zap.Logger) *dependencies {
 
 	userRepo := repository.NewUserRepository(pool)
+	analyticsRepo := repository.NewAnalyticsRepository(pool)
 
 	jwtService := service.NewJWTService(&cfg.JWT)
 	mailService := service.NewMailService(&cfg.Mail, logger)
@@ -210,14 +212,16 @@ func initDependencies(cfg *config.Config, pool *pgxpool.Pool, rdb *redis.Client,
 	healthHandler := handler.NewHealthHandler(pool)
 	promoHandler := handler.NewPromoHandler(userService, jwtService, logger)
 	usageHandler := handler.NewUsageHandler(userService, logger)
+	analyticsHandler := handler.NewAnalyticsHandler(analyticsRepo, logger)
 
 	return &dependencies{
-		authHandler:	authHandler,
-		userHandler:	userHandler,
-		adminHandler:	adminHandler,
-		healthHandler:	healthHandler,
-		promoHandler:	promoHandler,
-		usageHandler:	usageHandler,
-		jwtService:	jwtService,
+		authHandler:		authHandler,
+		userHandler:		userHandler,
+		adminHandler:		adminHandler,
+		healthHandler:		healthHandler,
+		promoHandler:		promoHandler,
+		usageHandler:		usageHandler,
+		analyticsHandler:	analyticsHandler,
+		jwtService:		jwtService,
 	}
 }

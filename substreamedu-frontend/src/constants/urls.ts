@@ -26,6 +26,7 @@ const urls = {
     verify: authVerify,
     google: authGoogle,
     promo: 'api/auth/promo',
+    events: 'api/auth/events',
   },
   login: login,
   cabinet: cabinet,
@@ -41,6 +42,7 @@ const urls = {
   lyrics: lyrics,
   admin: {
     users: 'api/admin/users',
+    analytics: 'api/admin/analytics',
     userOverview: (userId: string) => `api/dictionary/admin/users/${userId}/overview`,
     userMediaStats: (userId: string) => `api/subtitles/admin/users/${userId}/media-stats`,
   },

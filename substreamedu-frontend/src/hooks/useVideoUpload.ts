@@ -22,7 +22,7 @@ export interface VideoUploadState {
 
 export interface VideoUploadActions {
   setYoutubeUrlInput: (url: string) => void;
-  handleYoutubeUrlLoad: (url: string, initialTitle?: string, initialThumb?: string) => void;
+  handleYoutubeUrlLoad: (url: string, initialTitle?: string, initialThumb?: string, startTime?: number) => void;
   handleVideoUpload: (file: File) => void;
   handleGoogleDriveLoad: (fileId: string, fileName: string) => void;
   handleSelectAnotherVideo: () => void;

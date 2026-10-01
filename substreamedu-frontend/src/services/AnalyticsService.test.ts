@@ -1,52 +1,45 @@
-import posthog from 'posthog-js';
+import { axiosService } from './AxiosService';
 import { AnalyticsService } from './AnalyticsService';
+import { urls } from '../constants/urls';
 
-jest.mock('posthog-js', () => ({
-  init: jest.fn(),
-  identify: jest.fn(),
-  reset: jest.fn(),
-  capture: jest.fn(),
-  register: jest.fn(),
+jest.mock('./AxiosService', () => ({
+  axiosService: {
+    post: jest.fn().mockResolvedValue({ data: { success: true } }),
+    get: jest.fn().mockResolvedValue({ data: {} }),
+  },
 }));
 
-describe('AnalyticsService', () => {
-  const originalEnv = process.env;
-
+describe('AnalyticsService (Self-Hosted Telemetry)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    process.env = { ...originalEnv, REACT_APP_POSTHOG_KEY: 'test_key' };
-    AnalyticsService.__resetForTesting();
-    AnalyticsService.init('test_key');
+    AnalyticsService.init();
   });
 
-  afterAll(() => {
-    process.env = originalEnv;
-  });
-
-  it('tracks signup correctly with UTM parameters', () => {
+  it('tracks signup correctly with UTM parameters and anonymous ID', async () => {
     localStorage.setItem(
       'substreamedu_utm_params',
       JSON.stringify({ utm_source: 'telegram', utm_campaign: 'promo10' })
     );
-    process.env.REACT_APP_POSTHOG_KEY = 'test_key';
 
     AnalyticsService.trackSignup('google', 'test@example.com');
 
-    expect(posthog.capture).toHaveBeenCalledWith(
-      'signup',
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
       expect.objectContaining({
-        method: 'google',
-        email: 'test@example.com',
-        utm_source: 'telegram',
-        utm_campaign: 'promo10',
+        event: 'signup',
+        anonymousId: expect.any(String),
+        properties: expect.objectContaining({
+          method: 'google',
+          email: 'test@example.com',
+          utm_source: 'telegram',
+          utm_campaign: 'promo10',
+        }),
       })
     );
   });
 
-  it('tracks open_player with video attributes', () => {
-    process.env.REACT_APP_POSTHOG_KEY = 'test_key';
-
+  it('tracks open_player with video attributes', async () => {
     AnalyticsService.trackOpenPlayer({
       source: 'youtube',
       videoUrl: 'https://youtube.com/watch?v=123',
@@ -54,20 +47,21 @@ describe('AnalyticsService', () => {
       hasSubtitles: true,
     });
 
-    expect(posthog.capture).toHaveBeenCalledWith(
-      'open_player',
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
       expect.objectContaining({
-        source: 'youtube',
-        videoUrl: 'https://youtube.com/watch?v=123',
-        videoTitle: 'Test Video',
-        hasSubtitles: true,
+        event: 'open_player',
+        properties: expect.objectContaining({
+          source: 'youtube',
+          videoUrl: 'https://youtube.com/watch?v=123',
+          videoTitle: 'Test Video',
+          hasSubtitles: true,
+        }),
       })
     );
   });
 
-  it('tracks select_word correctly', () => {
-    process.env.REACT_APP_POSTHOG_KEY = 'test_key';
-
+  it('tracks select_word correctly', async () => {
     AnalyticsService.trackSelectWord({
       text: 'call it a day',
       isSingleWord: false,
@@ -75,20 +69,21 @@ describe('AnalyticsService', () => {
       source: 'youtube_123',
     });
 
-    expect(posthog.capture).toHaveBeenCalledWith(
-      'select_word',
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
       expect.objectContaining({
-        text: 'call it a day',
-        isSingleWord: false,
-        sentence: "Let's call it a day.",
-        source: 'youtube_123',
+        event: 'select_word',
+        properties: expect.objectContaining({
+          text: 'call it a day',
+          isSingleWord: false,
+          sentence: "Let's call it a day.",
+          source: 'youtube_123',
+        }),
       })
     );
   });
 
-  it('tracks save_word with status', () => {
-    process.env.REACT_APP_POSTHOG_KEY = 'test_key';
-
+  it('tracks save_word with status', async () => {
     AnalyticsService.trackSaveWord({
       text: 'flabbergasted',
       translation: 'ошеломлённый',
@@ -96,54 +91,61 @@ describe('AnalyticsService', () => {
       status: 'success',
     });
 
-    expect(posthog.capture).toHaveBeenCalledWith(
-      'save_word',
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
       expect.objectContaining({
-        text: 'flabbergasted',
-        translation: 'ошеломлённый',
-        status: 'success',
+        event: 'save_word',
+        properties: expect.objectContaining({
+          text: 'flabbergasted',
+          translation: 'ошеломлённый',
+          status: 'success',
+        }),
       })
     );
   });
 
-  it('identifies user with traits and UTMs', () => {
+  it('identifies user with traits and UTMs', async () => {
     localStorage.setItem(
       'substreamedu_utm_params',
       JSON.stringify({ utm_source: 'google_ads' })
     );
-    process.env.REACT_APP_POSTHOG_KEY = 'test_key';
 
     AnalyticsService.identify('user-uuid-123', { email: 'user@test.com', role: 'USER' });
 
-    expect(posthog.identify).toHaveBeenCalledWith(
-      'user-uuid-123',
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
       expect.objectContaining({
-        email: 'user@test.com',
-        role: 'USER',
-        utm_source: 'google_ads',
+        event: 'identify',
+        properties: expect.objectContaining({
+          email: 'user@test.com',
+          role: 'USER',
+          utm_source: 'google_ads',
+        }),
       })
     );
   });
 
-  it('correctly tracks return_d2 on Day 2 and prevents duplicate events', () => {
-    process.env.REACT_APP_POSTHOG_KEY = 'test_key';
+  it('correctly tracks return_d2 on Day 2 and prevents duplicate events', async () => {
     const userId = 'u-d2-test';
 
-    // Set signup date to exactly 24 hours ago
+    // Set signup date to 26 hours ago
     const yesterday = new Date(Date.now() - 26 * 60 * 60 * 1000);
 
     AnalyticsService.checkAndTrackReturnD2(userId, yesterday.toISOString());
 
-    expect(posthog.capture).toHaveBeenCalledWith(
-      'return_d2',
+    expect(axiosService.post).toHaveBeenCalledWith(
+      urls.auth.events,
       expect.objectContaining({
-        userId,
+        event: 'return_d2',
+        properties: expect.objectContaining({
+          userId,
+        }),
       })
     );
 
     // Second check should not duplicate
     jest.clearAllMocks();
     AnalyticsService.checkAndTrackReturnD2(userId, yesterday.toISOString());
-    expect(posthog.capture).not.toHaveBeenCalled();
+    expect(axiosService.post).not.toHaveBeenCalled();
   });
 });

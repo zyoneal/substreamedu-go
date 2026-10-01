@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Trophy from 'lucide-react/dist/esm/icons/trophy';
+import Activity from 'lucide-react/dist/esm/icons/activity';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Play from 'lucide-react/dist/esm/icons/play';
+import MousePointer from 'lucide-react/dist/esm/icons/mouse-pointer';
+import Bookmark from 'lucide-react/dist/esm/icons/bookmark';
+import UserPlus from 'lucide-react/dist/esm/icons/user-plus';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down';
+import ChevronUp from 'lucide-react/dist/esm/icons/chevron-up';
 import styles from './css/AdminDashboard.module.css';
-import AdminService, { User } from '../../services/AdminService';
+import AdminService, { User, AnalyticsSummary } from '../../services/AdminService';
 import UserTable from './UserTable';
 
 const AdminDashboard: React.FC = () => {
@@ -16,11 +26,31 @@ const AdminDashboard: React.FC = () => {
     const [topUsers, setTopUsers] = useState<{user: User, wordCount: number}[] | null>(null);
     const [showTopUsers, setShowTopUsers] = useState(false);
     const [isLoadingTop, setIsLoadingTop] = useState(false);
+    const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+    const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+    const [showEventsLog, setShowEventsLog] = useState(false);
+    const [eventFilter, setEventFilter] = useState('all');
     const limit = 20;
 
     useEffect(() => {
         fetchUsers();
     }, [page, searchQuery, isPremiumFilter, sortBy, sortOrder]);
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, []);
+
+    const fetchAnalytics = async () => {
+        setIsLoadingAnalytics(true);
+        try {
+            const data = await AdminService.getAnalytics();
+            setAnalytics(data);
+        } catch (error) {
+            console.error('Failed to fetch analytics:', error);
+        } finally {
+            setIsLoadingAnalytics(false);
+        }
+    };
 
     const fetchUsers = async () => {
         setIsLoading(true);
@@ -193,6 +223,198 @@ const AdminDashboard: React.FC = () => {
                         {users.filter(u => u.isPremium).length} <span style={{ fontSize: '1rem', color: 'var(--text-secondary, #4A4A4A)' }}>(this page)</span>
                     </div>
                 </div>
+            </div>
+
+            {/* Activation Funnel & Telemetry */}
+            <div className={styles.funnelSection}>
+                <div className={styles.funnelHeader}>
+                    <div className={styles.funnelTitle}>
+                        <Activity size={22} className="text-primary" />
+                        <span>Activation Funnel (Self-Hosted Telemetry)</span>
+                        {analytics?.funnel && (
+                            <span className={styles.activationBadge} title="Visitors who selected ≥1 word">
+                                ⚡ Activation Rate: {analytics.funnel.activationRate.toFixed(1)}%
+                            </span>
+                        )}
+                    </div>
+                    <button
+                        className={styles.eventsToggleBtn}
+                        onClick={fetchAnalytics}
+                        disabled={isLoadingAnalytics}
+                        title="Refresh analytics data"
+                    >
+                        <RefreshCw size={15} className={isLoadingAnalytics ? 'animate-spin' : ''} />
+                        <span>{isLoadingAnalytics ? 'Updating...' : 'Refresh Telemetry'}</span>
+                    </button>
+                </div>
+
+                {analytics?.funnel ? (
+                    <div className={styles.funnelCardsRow}>
+                        <div className={styles.funnelCard}>
+                            <div className={styles.funnelCardHeader}>
+                                <span>1. Visitors</span>
+                                <Users size={16} />
+                            </div>
+                            <div className={styles.funnelCardValue}>{analytics.funnel.totalVisitors}</div>
+                            <div className={styles.funnelCardRate}>All unique sessions</div>
+                        </div>
+
+                        <div className={styles.funnelCard}>
+                            <div className={styles.funnelCardHeader}>
+                                <span>2. Opened Player</span>
+                                <Play size={16} />
+                            </div>
+                            <div className={styles.funnelCardValue}>{analytics.funnel.playerOpened}</div>
+                            <div className={styles.funnelCardRate}>
+                                {analytics.funnel.totalVisitors > 0
+                                    ? `${((analytics.funnel.playerOpened / analytics.funnel.totalVisitors) * 100).toFixed(1)}% of visitors`
+                                    : '0%'}
+                            </div>
+                        </div>
+
+                        <div className={styles.funnelCard}>
+                            <div className={styles.funnelCardHeader}>
+                                <span>3. Selected Word</span>
+                                <MousePointer size={16} />
+                            </div>
+                            <div className={styles.funnelCardValue}>{analytics.funnel.wordSelected}</div>
+                            <div className={styles.funnelCardRate}>
+                                {analytics.funnel.playerOpened > 0
+                                    ? `${((analytics.funnel.wordSelected / analytics.funnel.playerOpened) * 100).toFixed(1)}% of players`
+                                    : '0%'}
+                            </div>
+                        </div>
+
+                        <div className={styles.funnelCard}>
+                            <div className={styles.funnelCardHeader}>
+                                <span>4. Saved Word</span>
+                                <Bookmark size={16} />
+                            </div>
+                            <div className={styles.funnelCardValue}>{analytics.funnel.wordSaved}</div>
+                            <div className={styles.funnelCardRate}>
+                                {analytics.funnel.wordSelected > 0
+                                    ? `${((analytics.funnel.wordSaved / analytics.funnel.wordSelected) * 100).toFixed(1)}% of selects`
+                                    : '0%'}
+                            </div>
+                        </div>
+
+                        <div className={styles.funnelCard}>
+                            <div className={styles.funnelCardHeader}>
+                                <span>Signups</span>
+                                <UserPlus size={16} />
+                            </div>
+                            <div className={styles.funnelCardValue}>{analytics.funnel.signups}</div>
+                            <div className={styles.funnelCardRate}>
+                                Guest saves: {analytics.funnel.guestSavesAttempted}
+                            </div>
+                        </div>
+
+                        <div className={styles.funnelCard}>
+                            <div className={styles.funnelCardHeader}>
+                                <span>Return D2</span>
+                                <Calendar size={16} />
+                            </div>
+                            <div className={styles.funnelCardValue}>{analytics.funnel.returnD2}</div>
+                            <div className={styles.funnelCardRate}>
+                                {analytics.funnel.signups > 0
+                                    ? `${((analytics.funnel.returnD2 / analytics.funnel.signups) * 100).toFixed(1)}% retention`
+                                    : '0%'}
+                            </div>
+                        </div>
+                    </div>
+                ) : isLoadingAnalytics ? (
+                    <div className={styles.loadingStats}>Loading telemetry data...</div>
+                ) : (
+                    <div className={styles.loadingStats}>No analytics data available yet. Events will appear as users interact.</div>
+                )}
+
+                {analytics && (
+                    <div className={styles.funnelActionsRow}>
+                        <button
+                            className={styles.eventsToggleBtn}
+                            onClick={() => setShowEventsLog(!showEventsLog)}
+                        >
+                            {showEventsLog ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            <span>{showEventsLog ? 'Hide Live Event Stream' : `Show Live Event Stream (${analytics.recentEvents?.length || 0})`}</span>
+                        </button>
+
+                        {showEventsLog && (
+                            <div className="flex items-center gap-2">
+                                <select
+                                    className={styles.filterSelect}
+                                    value={eventFilter}
+                                    onChange={(e) => setEventFilter(e.target.value)}
+                                    style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}
+                                >
+                                    <option value="all">All Events ({analytics.recentEvents?.length || 0})</option>
+                                    <option value="open_player">open_player</option>
+                                    <option value="select_word">select_word</option>
+                                    <option value="save_word">save_word</option>
+                                    <option value="signup">signup</option>
+                                    <option value="return_d2">return_d2</option>
+                                </select>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {showEventsLog && analytics?.recentEvents && (
+                    <div className={styles.eventsTableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '80px' }}>ID</th>
+                                    <th style={{ width: '150px' }}>Event</th>
+                                    <th>User / Anon ID</th>
+                                    <th>Details</th>
+                                    <th style={{ width: '180px' }}>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {analytics.recentEvents
+                                    .filter(e => eventFilter === 'all' || e.eventName === eventFilter)
+                                    .map((evt) => {
+                                        let badgeClass = styles.badgeDefault;
+                                        if (evt.eventName === 'open_player') badgeClass = styles.badgeOpenPlayer;
+                                        else if (evt.eventName === 'select_word') badgeClass = styles.badgeSelectWord;
+                                        else if (evt.eventName === 'save_word') badgeClass = styles.badgeSaveWord;
+                                        else if (evt.eventName === 'signup') badgeClass = styles.badgeSignup;
+                                        else if (evt.eventName === 'return_d2') badgeClass = styles.badgeReturnD2;
+
+                                        return (
+                                            <tr key={evt.id}>
+                                                <td style={{ color: '#777', fontSize: '0.8rem' }}>#{evt.id}</td>
+                                                <td>
+                                                    <span className={`${styles.eventBadge} ${badgeClass}`}>
+                                                        {evt.eventName}
+                                                    </span>
+                                                </td>
+                                                <td style={{ fontSize: '0.82rem', fontFamily: 'monospace' }}>
+                                                    {evt.userId ? (
+                                                        <span style={{ color: '#60a5fa' }}>User: {evt.userId.slice(0, 8)}...</span>
+                                                    ) : evt.anonymousId ? (
+                                                        <span style={{ color: '#a0a0a0' }}>Anon: {evt.anonymousId.slice(0, 10)}...</span>
+                                                    ) : (
+                                                        <span style={{ color: '#666' }}>anonymous</span>
+                                                    )}
+                                                </td>
+                                                <td style={{ fontSize: '0.82rem', color: '#ccc' }}>
+                                                    {evt.properties && Object.keys(evt.properties).length > 0 ? (
+                                                        <code>{JSON.stringify(evt.properties)}</code>
+                                                    ) : (
+                                                        <span style={{ color: '#555' }}>—</span>
+                                                    )}
+                                                </td>
+                                                <td style={{ fontSize: '0.82rem', color: '#888' }}>
+                                                    {new Date(evt.createdAt).toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             <div className={styles.tableContainer}>

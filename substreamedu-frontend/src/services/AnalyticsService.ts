@@ -1,4 +1,6 @@
-import posthog from 'posthog-js';
+import { axiosService } from './AxiosService';
+import { urls } from '../constants/urls';
+import { AuthService } from './AuthService';
 import { debugLog } from '../utils/debug';
 
 export interface UTMParams {
@@ -39,7 +41,7 @@ export interface ReturnD2Props {
 }
 
 const UTM_STORAGE_KEY = 'substreamedu_utm_params';
-let isInitialized = false;
+const ANON_ID_STORAGE_KEY = 'substreamedu_anonymous_id';
 
 const getStoredUTMs = (): UTMParams => {
   if (typeof window === 'undefined') return {};
@@ -79,142 +81,85 @@ const captureAndPersistUTMs = (): UTMParams => {
   return getStoredUTMs();
 };
 
+const getOrCreateAnonymousId = (): string => {
+  if (typeof window === 'undefined') return 'server_side';
+  try {
+    let anonId = localStorage.getItem(ANON_ID_STORAGE_KEY);
+    if (!anonId) {
+      anonId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem(ANON_ID_STORAGE_KEY, anonId);
+    }
+    return anonId;
+  } catch {
+    return 'fallback_anon';
+  }
+};
+
+const sendBackendEvent = async (eventName: string, properties: Record<string, any> = {}): Promise<void> => {
+  const anonymousId = getOrCreateAnonymousId();
+  const userId = AuthService.getUserId() || undefined;
+  const utms = getStoredUTMs();
+
+  const payload = {
+    event: eventName,
+    properties: {
+      ...utms,
+      ...properties,
+      timestamp: new Date().toISOString(),
+      url: typeof window !== 'undefined' ? window.location.href : '',
+      pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+    },
+    anonymousId,
+    userId,
+  };
+
+  debugLog(`[Analytics] ${eventName}:`, payload);
+
+  try {
+    await axiosService.post(urls.auth.events, payload);
+  } catch (err) {
+    debugLog(`[Analytics] Non-fatal delivery failed for ${eventName}:`, err);
+  }
+};
+
 export const AnalyticsService = {
-  __resetForTesting: (): void => {
-    isInitialized = false;
-  },
-
-  init: (forceKey?: string): void => {
-    const apiKey = forceKey || process.env.REACT_APP_POSTHOG_KEY;
-    const apiHost = process.env.REACT_APP_POSTHOG_HOST || 'https://us.i.posthog.com';
-
-    if (isInitialized || typeof window === 'undefined') return;
-
-    if (!apiKey) {
-      debugLog('PostHog: REACT_APP_POSTHOG_KEY not set. Operating in debug mode.');
-      captureAndPersistUTMs();
-      isInitialized = true;
-      return;
-    }
-
-    try {
-      posthog.init(apiKey, {
-        api_host: apiHost,
-        person_profiles: 'identified_only',
-        capture_pageview: true,
-        capture_pageleave: true,
-        autocapture: true,
-        session_recording: {
-          maskAllInputs: true,
-          maskInputOptions: {
-            password: true,
-          },
-        },
-        loaded: (ph) => {
-          const utms = captureAndPersistUTMs();
-          if (Object.keys(utms).length > 0) {
-            ph.register(utms);
-          }
-        },
-      });
-      isInitialized = true;
-      debugLog('PostHog initialized successfully');
-    } catch (err) {
-      console.warn('PostHog failed to initialize:', err);
-    }
+  init: (): void => {
+    captureAndPersistUTMs();
+    getOrCreateAnonymousId();
+    debugLog('[Analytics] Native analytics service initialized');
   },
 
   identify: (userId: string, traits: Record<string, any> = {}): void => {
     if (!userId) return;
-    const utms = getStoredUTMs();
-    const enrichedTraits = {
-      ...utms,
-      ...traits,
-      last_identified_at: new Date().toISOString(),
-    };
-
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.identify(userId, enrichedTraits);
-    } else {
-      debugLog('Analytics (identify):', userId, enrichedTraits);
-    }
+    sendBackendEvent('identify', traits);
   },
 
   reset: (): void => {
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.reset();
-    } else {
-      debugLog('Analytics (reset)');
-    }
+    debugLog('[Analytics] Reset session');
   },
 
   trackSignup: (method: 'google' | 'otp', email?: string, extra: Record<string, any> = {}): void => {
-    const utms = getStoredUTMs();
-    const payload = {
+    sendBackendEvent('signup', {
       method,
       email,
-      ...utms,
       ...extra,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.capture('signup', payload);
-    } else {
-      debugLog('Analytics (signup):', payload);
-    }
+    });
   },
 
   trackOpenPlayer: (props: OpenPlayerProps): void => {
-    const payload = {
-      ...props,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.capture('open_player', payload);
-    } else {
-      debugLog('Analytics (open_player):', payload);
-    }
+    sendBackendEvent('open_player', props);
   },
 
   trackSelectWord: (props: SelectWordProps): void => {
-    const payload = {
-      ...props,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.capture('select_word', payload);
-    } else {
-      debugLog('Analytics (select_word):', payload);
-    }
+    sendBackendEvent('select_word', props);
   },
 
   trackSaveWord: (props: SaveWordProps): void => {
-    const payload = {
-      ...props,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.capture('save_word', payload);
-    } else {
-      debugLog('Analytics (save_word):', payload);
-    }
+    sendBackendEvent('save_word', props);
   },
 
   trackReturnD2: (props: ReturnD2Props): void => {
-    const payload = {
-      ...props,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (process.env.REACT_APP_POSTHOG_KEY && isInitialized) {
-      posthog.capture('return_d2', payload);
-    } else {
-      debugLog('Analytics (return_d2):', payload);
-    }
+    sendBackendEvent('return_d2', props);
   },
 
   checkAndTrackReturnD2: (userId: string, createdAtInput?: string | Date | null): void => {
@@ -265,6 +210,7 @@ export const AnalyticsService = {
     const day2 = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()).getTime();
     const calendarDayDiff = Math.round((day2 - day1) / (1000 * 60 * 60 * 24));
 
+    // Calendar day 1 or window between 20h and 54h
     if (calendarDayDiff === 1 || (diffHours >= 20 && diffHours <= 54)) {
       AnalyticsService.trackReturnD2({
         userId,
