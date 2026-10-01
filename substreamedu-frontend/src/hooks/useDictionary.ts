@@ -74,6 +74,26 @@ export const useSaveWord = (
     return useMutation({
         mutationFn: (data: SaveWordData) => {
             if (!AuthService.getUserEmail()) {
+                const videoUrl = typeof window !== 'undefined' ? (sessionStorage.getItem('videoUrl') || undefined) : undefined;
+                const storedTime = typeof window !== 'undefined' ? sessionStorage.getItem('videoCurrentTime') : null;
+                const timecode = storedTime ? parseFloat(storedTime) : undefined;
+                const returnUrl = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : undefined;
+
+                GuestLimitService.setPendingSaveWord({
+                    resourceName: data.resourceName,
+                    highlightedText: data.highlightedText,
+                    context: data.context,
+                    extendedContext: data.extendedContext,
+                    translation: data.translation || '',
+                    note: data.note,
+                    transcription: data.transcription || undefined,
+                    definition: data.definition || undefined,
+                    imageUrl: data.imageUrl || undefined,
+                    videoUrl,
+                    timecode,
+                    returnUrl,
+                });
+
                 GuestLimitService.triggerGuestSavePrompt();
                 AnalyticsService.trackSaveWord({
                     text: data.highlightedText,

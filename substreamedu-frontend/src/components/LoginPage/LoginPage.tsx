@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 import { axiosService } from "../../services/AxiosService";
@@ -10,6 +10,7 @@ import Edit2 from "lucide-react/dist/esm/icons/edit-2";
 import { ReactComponent as GoogleIcon } from "../../icons/google.svg";
 import { AuthService } from "../../services/AuthService";
 import { AnalyticsService } from "../../services/AnalyticsService";
+import { GuestLimitService } from "../../services/GuestLimitService";
 import { AuthContext } from "../../store/AuthContext";
 import Login from "./Login/Login";
 import { useIntl } from "react-intl";
@@ -17,9 +18,32 @@ import { motion, AnimatePresence } from "framer-motion";
 import styles from "./css/LoginPage.module.css";
 import { constants } from "../../constants/constants";
 
+const getPostLoginDestination = (locationState?: any): string => {
+    const pendingWord = GuestLimitService.getPendingSaveWord();
+    if (pendingWord) {
+        if (pendingWord.videoUrl) {
+            sessionStorage.setItem('videoUrl', pendingWord.videoUrl);
+        }
+        if (pendingWord.timecode !== undefined) {
+            sessionStorage.setItem('videoCurrentTime', pendingWord.timecode.toString());
+        }
+        if (pendingWord.returnUrl) {
+            return pendingWord.returnUrl;
+        }
+        if (pendingWord.videoUrl) {
+            return "/videos";
+        }
+    }
+    if (locationState?.returnUrl) {
+        return locationState.returnUrl;
+    }
+    return "/";
+};
+
 const CustomGoogleButton: React.FC = () => {
     const [loginError, setLoginError] = useState<string>("");
     const navigate = useNavigate();
+    const location = useLocation();
     const { setIsLoggedIn } = useContext(AuthContext);
     const intl = useIntl();
     const googleButtonRef = useRef<HTMLDivElement>(null);
@@ -65,7 +89,8 @@ const CustomGoogleButton: React.FC = () => {
             }
 
             setIsLoggedIn(true);
-            navigate("/");
+            const destination = getPostLoginDestination(location.state);
+            navigate(destination, { replace: true });
         } catch (error) {
             debugError("Google login failed:", error);
             setLoginError("Google login failed. Please try again.");
@@ -139,6 +164,7 @@ const LoginPage: React.FC = () => {
 
     const verifyButtonRef = useRef<HTMLButtonElement>(null);
     const navigate = useNavigate();
+    const location = useLocation();
     const { setIsLoggedIn } = useContext(AuthContext);
     const intl = useIntl();
 
@@ -210,7 +236,8 @@ const LoginPage: React.FC = () => {
                         localStorage.removeItem('emailForOtp');
                         localStorage.removeItem('waitingForOtp');
                         setIsLoggedIn(true);
-                        navigate("/");
+                        const destination = getPostLoginDestination(location.state);
+                        navigate(destination, { replace: true });
                     }, 800);
                 }
             } else {

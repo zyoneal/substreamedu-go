@@ -38,6 +38,10 @@ const Flashcard: React.FC<FlashcardProps> = ({
 
 
   
+  const cleanTranscription = transcription
+    ? transcription.replace(/^[/\[\s]+|[/\]\s]+$/g, '').trim()
+    : null;
+
   const wordToGaps = (text: string): string => {
     return text.replace(/[^\s]/g, '_');
   };
@@ -117,7 +121,7 @@ const Flashcard: React.FC<FlashcardProps> = ({
       <>
         <div className={styles.wordSection}>
           <h1 className={styles.word} onClick={onWordClick}>{word}</h1>
-          {transcription && <p className={styles.transcription}>[{transcription}]</p>}
+          {cleanTranscription && <p className={styles.transcription}>[{cleanTranscription}]</p>}
           {word.trim() && (
             <button
               onClick={onPlayPronunciation}
@@ -146,7 +150,7 @@ const Flashcard: React.FC<FlashcardProps> = ({
         {isProduction && (
           <div className={styles.wordSection}>
             <h1 className={styles.word} onClick={onWordClick}>{word}</h1>
-            {transcription && <p className={styles.transcription}>[{transcription}]</p>}
+            {cleanTranscription && <p className={styles.transcription}>[{cleanTranscription}]</p>}
             {word.trim() && (
               <button
                 onClick={onPlayPronunciation}

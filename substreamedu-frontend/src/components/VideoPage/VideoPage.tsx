@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
 import { AuthService } from '../../services/AuthService';
 import { AnalyticsService } from '../../services/AnalyticsService';
@@ -47,10 +48,22 @@ interface VideoPageProps {
 
 const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
   const intl = useIntl();
+  const [searchParams] = useSearchParams();
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [recentVideos, addRecentVideo, deleteRecentVideo] = useRecentVideos();
   const [videoState, videoActions] = useVideoUpload(addRecentVideo);
   const [activeTab, setActiveTab] = useState<VideoSource>('youtube');
+
+  useEffect(() => {
+    const queryVideo = searchParams.get('v') || searchParams.get('videoUrl');
+    const queryTime = searchParams.get('t');
+    if (queryTime) {
+      sessionStorage.setItem('videoCurrentTime', queryTime);
+    }
+    if (queryVideo && queryVideo !== videoState.videoUrl) {
+      videoActions.handleYoutubeUrlLoad(queryVideo);
+    }
+  }, [searchParams, videoActions, videoState.videoUrl]);
 
   const [subtitles, setSubtitles] = useState<SubtitleDto[]>([]);
   const [subtitleUploadStatus, setSubtitleUploadStatus] = useState<string | null>(null);

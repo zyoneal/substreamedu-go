@@ -23,6 +23,9 @@ interface DictionaryItem {
     transcription: string;
 }
 
+const cleanTranscription = (t: string | null | undefined): string =>
+    t ? t.replace(/^[/\[\s]+|[/\]\s]+$/g, '').trim() : '';
+
 const DictionaryItemsPage: React.FC = () => {
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -369,8 +372,8 @@ const DictionaryItemsPage: React.FC = () => {
                                             >
                                                 {dictionaryItems[currentIndex].highlightedText}
                                             </h2>
-                                            {dictionaryItems[currentIndex].transcription &&
-                                                <span className={styles.transcription}>[{dictionaryItems[currentIndex].transcription}]</span>
+                                            {cleanTranscription(dictionaryItems[currentIndex].transcription) &&
+                                                <span className={styles.transcription}>[{cleanTranscription(dictionaryItems[currentIndex].transcription)}]</span>
                                             }
                                             {dictionaryItems[currentIndex].context && (
                                                 <p
@@ -499,8 +502,8 @@ const DictionaryItemsPage: React.FC = () => {
                                             >
                                                 {item.highlightedText}
                                             </span>
-                                            {item.transcription && (
-                                                <div className={styles.transcriptionList}>[{item.transcription}]</div>
+                                            {cleanTranscription(item.transcription) && (
+                                                <div className={styles.transcriptionList}>[{cleanTranscription(item.transcription)}]</div>
                                             )}
                                         </div>
                                         <div className={styles.termActions}>

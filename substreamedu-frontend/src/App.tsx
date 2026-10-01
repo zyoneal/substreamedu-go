@@ -19,6 +19,49 @@ import { SUPPORTED_LANGUAGES } from './constants/languageConfig';
 
 import enMessages from './locales/en.json';
 import { AnalyticsService } from './services/AnalyticsService';
+import { usePendingWordAutoSave } from './hooks/usePendingWordAutoSave';
+
+const PendingSaveHandler: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) => {
+    const { savedNotification, setSavedNotification } = usePendingWordAutoSave(isLoggedIn);
+
+    if (!savedNotification) return null;
+
+    return (
+        <div style={{
+            position: 'fixed',
+            top: '80px',
+            right: '24px',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            backgroundColor: '#059669',
+            color: '#ffffff',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+            fontWeight: 600,
+            fontSize: '14px',
+        }}>
+            <span style={{ fontSize: '18px' }}>🎉</span>
+            <span>{savedNotification}</span>
+            <button
+                onClick={() => setSavedNotification(null)}
+                style={{
+                    marginLeft: '8px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    padding: '2px 6px',
+                }}
+            >
+                ✕
+            </button>
+        </div>
+    );
+};
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -137,6 +180,7 @@ const App: React.FC = () => {
                 <AuthContext.Provider value={authContextValue}>
                     <LanguageContext.Provider value={languageContextValue}>
                         <IntlProvider locale="en" messages={enMessages}>
+                            <PendingSaveHandler isLoggedIn={isLoggedIn} />
                             <div className="flex flex-col min-h-screen bg-canvas">
                                 <ScrollToTop />
                                 {!isTiktokPage && !isLoginPage && <Header />}

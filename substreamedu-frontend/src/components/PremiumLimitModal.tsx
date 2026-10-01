@@ -4,6 +4,7 @@ import Lock from 'lucide-react/dist/esm/icons/lock';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import BookOpen from 'lucide-react/dist/esm/icons/book-open';
 import { Modal } from './ui/modal';
+import { getGuestTranslationLimit } from '../constants/limits';
 
 interface PremiumLimitModalProps {
     type: 'translation' | 'save' | 'guest_limit' | 'guest_save' | null;
@@ -14,6 +15,9 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
     const navigate = useNavigate();
 
     if (!type) return null;
+
+    const guestLimit = getGuestTranslationLimit();
+    const currentReturnUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
 
     const messages: Record<string, { title: string; description: string; icon: React.ReactNode; buttonText: string; action: () => void }> = {
         translation: {
@@ -38,12 +42,12 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
         },
         guest_limit: {
             icon: <Sparkles size={36} className="text-primary mx-auto" />,
-            title: 'Guest limit reached (5/5)',
-            description: 'You’ve used all 5 free guest highlights! Create a free account in 10 seconds to unlock 100 translations, save words, and repeat them with our Telegram bot.',
+            title: `Guest limit reached (${guestLimit}/${guestLimit})`,
+            description: `You’ve used all ${guestLimit} free guest highlights! Create a free account in 10 seconds to unlock 100 translations, save words, and repeat them with our Telegram bot.`,
             buttonText: 'Sign up for free',
             action: () => {
                 onClose();
-                navigate('/login');
+                navigate('/login', { state: { returnUrl: currentReturnUrl } });
             },
         },
         guest_save: {
@@ -53,7 +57,7 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
             buttonText: 'Sign up / Login',
             action: () => {
                 onClose();
-                navigate('/login');
+                navigate('/login', { state: { returnUrl: currentReturnUrl } });
             },
         },
     };
