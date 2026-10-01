@@ -558,6 +558,7 @@
     width: 100%;
     box-sizing: border-box;
     margin: 0;
+    margin-top: auto;
     border: none;
     border-radius: 0;
     box-shadow: none;
@@ -4730,20 +4731,21 @@ video[playsinline] {
     line-height: 1.3;
 }
 
-/* Onboarding Selection Hint - Clean badge positioned above subtitle container, never overlaps */
+/* Onboarding Selection Hint - Standalone block below the player */
 .onboardingSelectionHint {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 18px;
-    margin: 0 auto 12px auto;
+    padding: 10px 20px;
+    margin: 0;
     background: rgba(14, 14, 18, 0.94);
     border: 1px solid rgba(250, 249, 47, 0.35);
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(250, 249, 47, 0.08);
     pointer-events: none;
     z-index: 40;
-    max-width: 90%;
+    width: 100%;
+    box-sizing: border-box;
     animation: hintFadeIn 0.3s ease-out;
 }
 
@@ -4887,7 +4889,7 @@ video[playsinline] {
 
 .onboardingSubtitleText {
     color: #ffffff !important;
-    font-size: clamp(1.3rem, 2.6vw, 2rem) !important;
+    font-size: clamp(1rem, 1.6vw, 1.5rem) !important;
     font-weight: 600 !important;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95) !important;
     line-height: 1.45 !important;

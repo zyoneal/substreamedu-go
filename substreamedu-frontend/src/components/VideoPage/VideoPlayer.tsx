@@ -1246,6 +1246,41 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     {notification && <div className={styles.notification}>{notification}</div>}
                 </div>
 
+                {/* Onboarding hint — standalone block below the player */}
+                {isOnboardingMode && !isPopoverOpen && currentSubtitle && (
+                    <div
+                        className={styles.onboardingSelectionHint}
+                        data-testid="onboarding-selection-hint"
+                        style={{ marginTop: '12px' }}
+                    >
+                        <div className={styles.onboardingHintIconWrapper}>
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M6 4h12" />
+                                <path d="M12 4v16" />
+                                <path d="M6 20h12" />
+                            </svg>
+                        </div>
+                        <div className={styles.onboardingHintContent}>
+                            <span className={styles.onboardingHintTitle}>
+                                Select text in the subtitles — just like when you copy it
+                            </span>
+                            <span className={styles.onboardingHintSubtext}>
+                                {isMobile
+                                    ? 'Tap and hold a word, then drag'
+                                    : 'Press, drag across a word or phrase, release'}
+                            </span>
+                        </div>
+                    </div>
+                )}
                 <VideoTranslationPopover
                     selectionPosition={selectionPosition}
                     isPopoverOpen={isPopoverOpen}
