@@ -37,7 +37,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'Beast Reacts',
             url: 'https://www.youtube.com/@BeastReacts',
-            avatarUrl: 'https://yt3.googleusercontent.com/yU4b_T0T1Wp3d8vA=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#dc2626',
             fallbackIcon: (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -49,7 +48,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'Dude Perfect',
             url: 'https://www.youtube.com/@dudeperfect',
-            avatarUrl: 'https://yt3.googleusercontent.com/vHq49G5aE=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#0d9488',
             fallbackIcon: (
                 <span style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.05em' }}>dp</span>
@@ -58,7 +56,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'Yes Theory',
             url: 'https://www.youtube.com/@YesTheory',
-            avatarUrl: 'https://yt3.googleusercontent.com/bA_3t=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#ea580c',
             fallbackIcon: (
                 <span style={{ fontSize: '11px', fontWeight: 800, color: '#ffffff' }}>YES</span>
@@ -67,7 +64,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'The Try Guys',
             url: 'https://www.youtube.com/@tryguys',
-            avatarUrl: 'https://yt3.googleusercontent.com/tryguys=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#4f46e5',
             fallbackIcon: (
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#ffffff' }}>TG</span>
@@ -76,7 +72,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'Mark Rober',
             url: 'https://www.youtube.com/@MarkRober',
-            avatarUrl: 'https://yt3.googleusercontent.com/markrober=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#27272a',
             fallbackIcon: (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
@@ -88,7 +83,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'Vogue',
             url: 'https://www.youtube.com/@Vogue',
-            avatarUrl: 'https://yt3.googleusercontent.com/vogue=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#141312',
             fallbackIcon: (
                 <span style={{ fontSize: '8px', fontWeight: 800, color: '#ffffff', fontFamily: 'serif', letterSpacing: '0.05em' }}>VOGUE</span>
@@ -97,7 +91,6 @@ export const RecommendedChannels: React.FC = () => {
         {
             name: 'NickDiGiovanni',
             url: 'https://www.youtube.com/@NickDiGiovanni',
-            avatarUrl: 'https://yt3.googleusercontent.com/nickdigiovanni=s176-c-k-c0x00ffffff-no-rj',
             fallbackColor: '#e11d48',
             fallbackIcon: (
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#ffffff' }}>ND</span>
