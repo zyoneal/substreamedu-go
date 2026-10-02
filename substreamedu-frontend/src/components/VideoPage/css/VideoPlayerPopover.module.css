@@ -250,6 +250,23 @@
     }
 }
 
+.registeredPlayerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 14px;
+    margin-top: 4px;
+    position: relative;
+    z-index: 20;
+}
+
+.playerLangSelectorContainer {
+    display: inline-flex;
+    align-items: center;
+}
+
 .expandedVideoWrapper {
     width: 100%;
     max-width: 100%;

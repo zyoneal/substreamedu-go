@@ -79,12 +79,13 @@ describe('VideoPlayer Header & Replace Button', () => {
         );
     };
 
-    it('renders the Replace button with text "Replace" for registered users', () => {
+    it('renders the Replace button with text "Replace" and LanguageSelector for registered users', () => {
         renderPlayer({ isLoggedIn: true, route: '/videos' });
 
         const replaceButton = screen.getByRole('button', { name: /replace/i });
         expect(replaceButton).toBeInTheDocument();
         expect(replaceButton).toHaveTextContent('Replace');
+        expect(screen.getByRole('button', { name: /select language/i })).toBeInTheDocument();
 
         fireEvent.click(replaceButton);
         expect(defaultProps.onSelectAnotherVideo).toHaveBeenCalled();
@@ -96,15 +97,17 @@ describe('VideoPlayer Header & Replace Button', () => {
         const replaceButton = screen.getByRole('button', { name: /replace/i });
         expect(replaceButton).toBeInTheDocument();
         expect(replaceButton).toHaveTextContent('Replace');
+        expect(screen.getByRole('button', { name: /select language/i })).toBeInTheDocument();
         expect(screen.queryByTestId('demo-player-header')).not.toBeInTheDocument();
     });
 
-    it('renders demo navigation ("Back to Home" and "Start Free") for unregistered guests on demo routes', () => {
+    it('renders demo navigation ("Back to Home", LanguageSelector, and "Start Free") for unregistered guests on demo routes', () => {
         renderPlayer({ isLoggedIn: false, route: '/youtube-demo' });
 
         expect(screen.getByTestId('demo-player-header')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /back to home/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /start free/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /select language/i })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /replace/i })).not.toBeInTheDocument();
     });
 });

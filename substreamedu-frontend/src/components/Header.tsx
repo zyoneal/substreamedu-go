@@ -1,6 +1,4 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import LanguageSelector from './LanguageSelector/LanguageSelector';
-import { LanguageContext } from './LanguageContext';
 import { AuthContext } from '../store/AuthContext';
 import { AuthService } from '../services/AuthService';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -11,15 +9,10 @@ import LogOut from 'lucide-react/dist/esm/icons/log-out';
 import MenuIcon from 'lucide-react/dist/esm/icons/menu';
 import X from 'lucide-react/dist/esm/icons/x';
 
-import { RegionService } from '../services/RegionService';
-import { SUPPORTED_LANGUAGES } from '../constants/languageConfig';
-
 const Header = () => {
     const { isLoggedIn, setIsLoggedIn, authorities } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
-    const { fluentLanguage, setFluentLanguage } = useContext(LanguageContext);
-    const [detectedRegion, setDetectedRegion] = useState<string>('US');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLLIElement>(null);
 
@@ -54,42 +47,10 @@ const Header = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMobileMenuOpen]);
 
-    useEffect(() => {
-        RegionService.getRegion().then(setDetectedRegion);
-    }, []);
-
     const handleLogout = () => {
         AuthService.logout();
         setIsLoggedIn(false);
         navigate('/login');
-    };
-
-    const handleFluentLangSelect = (code: string) => {
-        if (!code || code === 'en' || !SUPPORTED_LANGUAGES.some(l => l.code === code)) {
-            setFluentLanguage('');
-            try {
-                localStorage.removeItem('fluentLanguage');
-            } catch {}
-            return;
-        }
-        setFluentLanguage(code);
-        try {
-            localStorage.setItem('fluentLanguage', code);
-        } catch {}
-    };
-
-    const shouldShowLanguageSelector = () => {
-        const path = location.pathname;
-        return path === '/videos' ||
-            path === '/songs' ||
-            path === '/text-paste' ||
-            path === '/subtitles' ||
-            path.startsWith('/subtitles/') ||
-            path === '/youtube-demo' ||
-            path === '/movies' ||
-            path === '/songs-demo' ||
-            path === '/texts-demo' ||
-            path === '/subtitles-demo';
     };
 
     const [isOnboarding, setIsOnboarding] = useState<boolean>(() => {
@@ -286,15 +247,6 @@ const Header = () => {
                 </nav>
             )}
 
-            {shouldShowLanguageSelector() && (
-                <div className={`${styles.languageSelectCompact} ${styles.centerLang}`}>
-                    <LanguageSelector
-                        currentLanguage={fluentLanguage}
-                        onLanguageSelect={handleFluentLangSelect}
-                        detectedRegion={detectedRegion}
-                    />
-                </div>
-            )}
 
             {!isLoggedIn && location.pathname !== '/login' && !['/youtube-demo', '/demo', '/movies'].includes(location.pathname) && (
                 <div className={styles.languageSelectCompact}>

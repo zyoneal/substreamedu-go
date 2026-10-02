@@ -33,9 +33,15 @@ export interface VideoUploadActions {
 export const useVideoUpload = (
   onVideoLoad: (video: RecentVideo) => void
 ): [VideoUploadState, VideoUploadActions] => {
-  const [videoUrl, setVideoUrl] = useState<string | null>(
-    sessionStorage.getItem('videoUrl') || null
-  );
+  const [videoUrl, setVideoUrl] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryVideo = urlParams.get('v') || urlParams.get('videoUrl');
+    if (queryVideo) return queryVideo;
+    const isDemoRoute = ['/youtube-demo', '/demo', '/movies'].includes(window.location.pathname);
+    if (isDemoRoute) return sessionStorage.getItem('videoUrl') || null;
+    return null;
+  });
   const [youtubeUrlInput, setYoutubeUrlInput] = useState<string>('');
   const [isYoutubeLoading, setIsYoutubeLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');

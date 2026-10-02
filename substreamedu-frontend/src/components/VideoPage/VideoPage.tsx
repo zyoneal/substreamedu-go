@@ -83,10 +83,18 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     if (queryTime) {
       sessionStorage.setItem('videoCurrentTime', queryTime);
     }
-    if (queryVideo && queryVideo !== videoState.videoUrl) {
+    if (!queryVideo && typeof window !== 'undefined' && window.location.pathname === '/videos') {
+      sessionStorage.removeItem('videoUrl');
+      sessionStorage.removeItem('videoFileName');
+      sessionStorage.removeItem('videoMimeType');
+      sessionStorage.removeItem('videoCurrentTime');
+      if (videoState.videoUrl) {
+        videoActions.handleSelectAnotherVideo();
+      }
+    } else if (queryVideo && queryVideo !== videoState.videoUrl) {
       const parsedTime = queryTime ? parseFloat(queryTime) : undefined;
       videoActions.handleYoutubeUrlLoad(queryVideo, undefined, undefined, parsedTime);
-    } else if (!isLoggedIn && !videoState.videoUrl && !sessionStorage.getItem('videoUrl') && (isOnboardingParam || isDemoRoute)) {
+    } else if (!isLoggedIn && !videoState.videoUrl && (isOnboardingParam || isDemoRoute)) {
       videoActions.handleYoutubeUrlLoad(
         DEFAULT_ONBOARDING_PRESET.url,
         DEFAULT_ONBOARDING_PRESET.title,

@@ -204,12 +204,6 @@
     height: auto;
 }
 
-.centerLang {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
 
 .languageSelect {
     display: flex;
@@ -550,11 +544,6 @@
         display: none !important;
     }
 
-    .centerLang {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
 
     .dropdownContent {
         left: auto;
