@@ -81,4 +81,22 @@ describe('HomePage Demo Modal', () => {
 
     expect(screen.queryByRole('dialog', { name: /video walkthrough/i })).not.toBeInTheDocument();
   });
+
+  it('renders interactive demo dock with all 3 instant sandbox options without requiring signup', () => {
+    renderHomePage();
+    const demoDock = screen.getByTestId('hero-demo-dock');
+    expect(demoDock).toBeInTheDocument();
+
+    const movieDemoLink = screen.getByRole('link', { name: /movie player/i });
+    expect(movieDemoLink).toBeInTheDocument();
+    expect(movieDemoLink).toHaveAttribute('href', '/youtube-demo');
+
+    const songDemoLink = screen.getByRole('link', { name: /synced lyrics/i });
+    expect(songDemoLink).toBeInTheDocument();
+    expect(songDemoLink).toHaveAttribute('href', '/songs-demo');
+
+    const textDemoLink = screen.getByRole('link', { name: /ai stories/i });
+    expect(textDemoLink).toBeInTheDocument();
+    expect(textDemoLink).toHaveAttribute('href', '/texts-demo');
+  });
 });

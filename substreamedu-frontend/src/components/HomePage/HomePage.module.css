@@ -444,6 +444,157 @@
 }
 
 /* ================================================
+   HERO INTERACTIVE DEMO DOCK — high-contrast sandbox showcase
+   ================================================ */
+.heroDemoDock {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: rgba(20, 19, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  max-width: 620px;
+}
+
+.heroDemoDockHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.heroDemoDockTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.heroDemoPulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+  flex-shrink: 0;
+  animation: heroPulseAnim 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes heroPulseAnim {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+.heroDemoDockTitle {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink, #ede8e0);
+}
+
+.heroDemoDockSubtitle {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-body, #9e988f);
+  margin-left: 16px;
+}
+
+.heroDemoDockCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.heroDemoCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--color-ink, #ede8e0);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroDemoCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(250, 249, 47, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.heroDemoCardIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ede8e0;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.heroDemoCard:hover .heroDemoCardIconWrap {
+  background: rgba(250, 249, 47, 0.15);
+  color: #faf92f;
+}
+
+.heroDemoCardText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.heroDemoCardTitle {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: #ede8e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heroDemoCardTag {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 400;
+  color: #9e988f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heroDemoCardArrow {
+  color: #666360;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.heroDemoCard:hover .heroDemoCardArrow {
+  color: #faf92f;
+  transform: translateX(3px);
+}
+
+/* ================================================
    FEATURE GRID (BENTO) — unified capabilities
    ================================================ */
 .featureSection {
@@ -1835,6 +1986,36 @@
 
   .heroQuickDockDivider {
     display: none;
+  }
+
+  .heroDemoDock {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 14px;
+    margin-top: 24px;
+  }
+
+  .heroDemoDockSubtitle {
+    margin-left: 0;
+    margin-top: 2px;
+  }
+
+  .heroDemoDockCards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .heroDemoCard {
+    padding: 12px 14px;
+    min-height: 48px;
+  }
+
+  .heroDemoCardTitle {
+    font-size: 13px;
+  }
+
+  .heroDemoCardTag {
+    font-size: 11px;
   }
 
   .heroWallContainer {

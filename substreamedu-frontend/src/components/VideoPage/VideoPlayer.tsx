@@ -32,8 +32,10 @@ import { useIntl, FormattedMessage } from "react-intl";
 
 import Zap from 'lucide-react/dist/esm/icons/zap';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
+import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 import Play from 'lucide-react/dist/esm/icons/play';
+import { Link } from 'react-router-dom';
 
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
@@ -190,6 +192,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const isUrlOnboarding = typeof window !== 'undefined' && (
         new URLSearchParams(window.location.search).get('onboarding') === 'true' ||
         window.location.pathname === '/youtube-demo'
+    );
+
+    const isDemoRoute = typeof window !== 'undefined' && (
+        window.location.pathname === '/youtube-demo' ||
+        window.location.pathname === '/demo' ||
+        window.location.pathname === '/movies'
     );
 
     const isOnboardingMode = Boolean(
@@ -1010,17 +1018,42 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             ['--player-custom-width' as any]: `${playerWidth}px`
                         }}
                     >
-                        {!isFullscreen && onSelectAnotherVideo && (
-                            <button
-                                onClick={onSelectAnotherVideo}
-                                className={styles.backButton}
-                                aria-label={intl.formatMessage({ id: 'videoPage.selectAnotherVideo', defaultMessage: 'Select another video' })}
-                            >
-                                <ArrowLeft size={18} strokeWidth={2.5} />
-                                <span>
-                                    <FormattedMessage id="videoPage.selectAnotherVideo" defaultMessage="Select another video" />
-                                </span>
-                            </button>
+                        {!isFullscreen && (
+                            isDemoRoute ? (
+                                <div className={styles.demoPlayerHeader} data-testid="demo-player-header">
+                                    <Link
+                                        to="/"
+                                        className={styles.demoBackHomeButton}
+                                        aria-label={intl.formatMessage({ id: 'videoPage.backToHome', defaultMessage: 'Back to Home' })}
+                                    >
+                                        <ArrowLeft size={16} strokeWidth={2.5} />
+                                        <span>
+                                            <FormattedMessage id="videoPage.backToHome" defaultMessage="Back to Home" />
+                                        </span>
+                                    </Link>
+
+                                    <Link
+                                        to="/login"
+                                        className={styles.demoCtaButton}
+                                    >
+                                        <span>
+                                            <FormattedMessage id="videoPage.startFreeCta" defaultMessage="Start Free" />
+                                        </span>
+                                        <ArrowRight size={13} strokeWidth={2.5} />
+                                    </Link>
+                                </div>
+                            ) : onSelectAnotherVideo && (
+                                <button
+                                    onClick={onSelectAnotherVideo}
+                                    className={styles.backButton}
+                                    aria-label={intl.formatMessage({ id: 'videoPage.selectAnotherVideo', defaultMessage: 'Choose another video' })}
+                                >
+                                    <ArrowLeft size={18} strokeWidth={2.5} />
+                                    <span>
+                                        <FormattedMessage id="videoPage.selectAnotherVideo" defaultMessage="Choose another video" />
+                                    </span>
+                                </button>
+                            )
                         )}
 
                         <div

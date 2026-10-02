@@ -516,22 +516,102 @@ const HomePage: React.FC = () => {
               </span>
             </div>
 
-            <div className={styles.heroQuickDock}>
-              <span className={styles.heroQuickDockLabel}>Try without signup:</span>
-              <div className={styles.heroQuickDockLinks}>
-                <Link to="/youtube-demo" className={styles.heroQuickDockItem}>
-                  <Film size={12} strokeWidth={1.75} />
-                  <span>Movie Player</span>
+            <div className={styles.heroDemoDock} data-testid="hero-demo-dock">
+              <div className={styles.heroDemoDockHeader}>
+                <div className={styles.heroDemoDockTitleGroup}>
+                  <span className={styles.heroDemoPulseDot} />
+                  <span className={styles.heroDemoDockTitle}>
+                    <FormattedMessage
+                      id="homePage.hero.interactiveDemosTitle"
+                      defaultMessage="Try interactive demos without signup:"
+                    />
+                  </span>
+                </div>
+                <span className={styles.heroDemoDockSubtitle}>
+                  <FormattedMessage
+                    id="homePage.hero.interactiveDemosSubtitle"
+                    defaultMessage="Instant live sandbox · No registration or card needed"
+                  />
+                </span>
+              </div>
+
+              <div className={styles.heroDemoDockCards}>
+                <Link
+                  to="/youtube-demo"
+                  className={styles.heroDemoCard}
+                  data-cursor="action"
+                  data-cursor-text="Movie Demo"
+                >
+                  <div className={styles.heroDemoCardIconWrap}>
+                    <Film size={15} strokeWidth={2} />
+                  </div>
+                  <div className={styles.heroDemoCardText}>
+                    <span className={styles.heroDemoCardTitle}>
+                      <FormattedMessage
+                        id="homePage.hero.demoMovieTitle"
+                        defaultMessage="Movie Player"
+                      />
+                    </span>
+                    <span className={styles.heroDemoCardTag}>
+                      <FormattedMessage
+                        id="homePage.hero.demoMovieSubtitle"
+                        defaultMessage="Interactive subtitles & translation"
+                      />
+                    </span>
+                  </div>
+                  <ArrowRight size={13} className={styles.heroDemoCardArrow} />
                 </Link>
-                <span className={styles.heroQuickDockDivider} />
-                <Link to="/songs-demo" className={styles.heroQuickDockItem}>
-                  <Music size={12} strokeWidth={1.75} />
-                  <span>Synced Lyrics</span>
+
+                <Link
+                  to="/songs-demo"
+                  className={styles.heroDemoCard}
+                  data-cursor="action"
+                  data-cursor-text="Music Demo"
+                >
+                  <div className={styles.heroDemoCardIconWrap}>
+                    <Music size={15} strokeWidth={2} />
+                  </div>
+                  <div className={styles.heroDemoCardText}>
+                    <span className={styles.heroDemoCardTitle}>
+                      <FormattedMessage
+                        id="homePage.hero.demoMusicTitle"
+                        defaultMessage="Synced Lyrics"
+                      />
+                    </span>
+                    <span className={styles.heroDemoCardTag}>
+                      <FormattedMessage
+                        id="homePage.hero.demoMusicSubtitle"
+                        defaultMessage="Karaoke timing & word lookup"
+                      />
+                    </span>
+                  </div>
+                  <ArrowRight size={13} className={styles.heroDemoCardArrow} />
                 </Link>
-                <span className={styles.heroQuickDockDivider} />
-                <Link to="/texts-demo" className={styles.heroQuickDockItem}>
-                  <Sparkles size={12} strokeWidth={1.75} />
-                  <span>AI Stories</span>
+
+                <Link
+                  to="/texts-demo"
+                  className={styles.heroDemoCard}
+                  data-cursor="action"
+                  data-cursor-text="AI Reader Demo"
+                >
+                  <div className={styles.heroDemoCardIconWrap}>
+                    <Sparkles size={15} strokeWidth={2} />
+                  </div>
+                  <div className={styles.heroDemoCardText}>
+                    <span className={styles.heroDemoCardTitle}>
+                      <FormattedMessage
+                        id="homePage.hero.demoStoriesTitle"
+                        defaultMessage="AI Stories"
+                      />
+                    </span>
+                    <span className={styles.heroDemoCardTag}>
+                      <FormattedMessage
+                        id="homePage.hero.demoStoriesSubtitle"
+                        defaultMessage="Graded reader & instant vocab"
+                      />
+                    </span>
+                  </div>
+                  <ArrowRight size={13} className={styles.heroDemoCardArrow} />
                 </Link>
               </div>
             </div>

@@ -181,6 +181,75 @@
     box-shadow: 0 0 12px rgba(250, 249, 47, 0.1);
 }
 
+.demoPlayerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 14px;
+    margin-top: 4px;
+    position: relative;
+    z-index: 20;
+}
+
+.demoBackHomeButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #ede8e0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 7px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.demoBackHomeButton:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(250, 249, 47, 0.5);
+    box-shadow: 0 0 14px rgba(250, 249, 47, 0.12);
+    transform: translateY(-1px);
+}
+
+.demoCtaButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: #faf92f;
+    color: #0d0c0b;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.demoCtaButton:hover {
+    background: #ffffff;
+    box-shadow: 0 0 16px rgba(250, 249, 47, 0.3);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+    .demoPlayerHeader {
+        gap: 8px;
+    }
+    .demoBackHomeButton,
+    .demoCtaButton {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
+
 .expandedVideoWrapper {
     width: 100%;
     max-width: 100%;

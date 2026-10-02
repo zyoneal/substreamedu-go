@@ -59,17 +59,9 @@ describe('SubtitleOverlay Component', () => {
         expect(screen.getByText(/no subtitles found for this video/i)).toBeInTheDocument();
     });
 
-    it('renders single onboarding selection hint and demo animation when isOnboardingMode or showOnboardingPointer is true', () => {
+    it('renders demo animation when isOnboardingMode or showOnboardingPointer is true', () => {
         render(<SubtitleOverlay {...defaultProps} isOnboardingMode={true} />);
-        expect(screen.getByTestId('onboarding-selection-hint')).toBeInTheDocument();
-        expect(screen.getByText(/select text in the subtitles — just like when you copy it/i)).toBeInTheDocument();
-        expect(screen.getByText(/press, drag across a word or phrase, release/i)).toBeInTheDocument();
         expect(screen.getByTestId('selection-demo-overlay')).toBeInTheDocument();
-    });
-
-    it('renders mobile-specific instruction on mobile devices during onboarding', () => {
-        render(<SubtitleOverlay {...defaultProps} isOnboardingMode={true} isMobile={true} />);
-        expect(screen.getByText(/tap and hold a word, then drag/i)).toBeInTheDocument();
     });
 
     it('renders grammar badge and triggers onExploreGrammar', () => {

@@ -296,7 +296,7 @@ const Header = () => {
                 </div>
             )}
 
-            {!isLoggedIn && location.pathname !== '/login' && (
+            {!isLoggedIn && location.pathname !== '/login' && !['/youtube-demo', '/demo', '/movies'].includes(location.pathname) && (
                 <div className={styles.languageSelectCompact}>
                     <Link to="/login" className={styles.signUpButton}>
                         <FormattedMessage id="signIn" defaultMessage="Login" />
