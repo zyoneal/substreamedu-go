@@ -91,7 +91,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const { learningLanguage: contextLearningLanguage } = useContext(LanguageContext);
     const learningLanguage = contextLearningLanguage || 'en';
     const { fluentLanguage } = useContext(LanguageContext);
-    const { authorities } = useContext(AuthContext);
+    const { authorities, isLoggedIn } = useContext(AuthContext);
     const isAdmin = authorities.includes('SYSTEM_ADMIN') || authorities.includes('ADMIN');
 
     const { data: userDictionaryItems } = useUserDictionaryItemsLight();
@@ -199,8 +199,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         window.location.pathname === '/demo' ||
         window.location.pathname === '/movies'
     );
+    const isGuestDemoMode = !isLoggedIn && isDemoRoute;
 
     const isOnboardingMode = Boolean(
+        !isLoggedIn &&
         !hasSavedWords &&
         !onboardingDismissed &&
         (isOnboarding || isUrlOnboarding)
@@ -1019,7 +1021,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                         }}
                     >
                         {!isFullscreen && (
-                            isDemoRoute ? (
+                            isGuestDemoMode ? (
                                 <div className={styles.demoPlayerHeader} data-testid="demo-player-header">
                                     <Link
                                         to="/"
@@ -1046,11 +1048,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 <button
                                     onClick={onSelectAnotherVideo}
                                     className={styles.backButton}
-                                    aria-label={intl.formatMessage({ id: 'videoPage.selectAnotherVideo', defaultMessage: 'Choose another video' })}
+                                    aria-label={intl.formatMessage({ id: 'videoPage.selectAnotherVideo', defaultMessage: 'Replace' })}
                                 >
                                     <ArrowLeft size={18} strokeWidth={2.5} />
                                     <span>
-                                        <FormattedMessage id="videoPage.selectAnotherVideo" defaultMessage="Choose another video" />
+                                        <FormattedMessage id="videoPage.selectAnotherVideo" defaultMessage="Replace" />
                                     </span>
                                 </button>
                             )

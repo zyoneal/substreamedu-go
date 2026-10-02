@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
 import { AuthService } from '../../services/AuthService';
+import { AuthContext } from '../../store/AuthContext';
 import { AnalyticsService } from '../../services/AnalyticsService';
 import VideoPlayer from './VideoPlayer';
 import { useIntl, FormattedMessage } from 'react-intl';
@@ -50,6 +51,7 @@ interface VideoPageProps {
 const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
   const intl = useIntl();
   const [searchParams] = useSearchParams();
+  const { isLoggedIn } = useContext(AuthContext);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [recentVideos, addRecentVideo, deleteRecentVideo] = useRecentVideos();
   const [videoState, videoActions] = useVideoUpload(addRecentVideo);
@@ -58,10 +60,12 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
   const [isOnboarding, setIsOnboarding] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('onboarding') === 'true' || window.location.pathname === '/youtube-demo') {
+    const isDemoRoute = ['/youtube-demo', '/demo', '/movies'].includes(window.location.pathname);
+    // Onboarding demo mode is strictly for unauthenticated demo routes
+    if (!isLoggedIn && (urlParams.get('onboarding') === 'true' || isDemoRoute)) {
       return true;
     }
-    return localStorage.getItem('substreamedu_onboarding_completed') !== 'true';
+    return false;
   });
 
   useEffect(() => {
@@ -82,7 +86,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     if (queryVideo && queryVideo !== videoState.videoUrl) {
       const parsedTime = queryTime ? parseFloat(queryTime) : undefined;
       videoActions.handleYoutubeUrlLoad(queryVideo, undefined, undefined, parsedTime);
-    } else if (!videoState.videoUrl && !sessionStorage.getItem('videoUrl') && (isOnboardingParam || isOnboarding || isDemoRoute)) {
+    } else if (!isLoggedIn && !videoState.videoUrl && !sessionStorage.getItem('videoUrl') && (isOnboardingParam || isDemoRoute)) {
       videoActions.handleYoutubeUrlLoad(
         DEFAULT_ONBOARDING_PRESET.url,
         DEFAULT_ONBOARDING_PRESET.title,
@@ -90,7 +94,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
         DEFAULT_ONBOARDING_PRESET.startTime
       );
     }
-  }, [searchParams, videoActions, videoState.videoUrl, isOnboarding]);
+  }, [searchParams, videoActions, videoState.videoUrl, isLoggedIn]);
 
   const [subtitles, setSubtitles] = useState<SubtitleDto[]>([]);
   const [subtitleUploadStatus, setSubtitleUploadStatus] = useState<string | null>(null);
@@ -483,11 +487,11 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                   onSubtitleUpload={handleSubtitleUpload}
                   isExtractingSubtitles={videoState.isExtractingSubtitles}
                   onSelectAnotherVideo={videoActions.handleSelectAnotherVideo}
-                  isOnboarding={isOnboarding}
+                  isOnboarding={!isLoggedIn && isOnboarding}
                 />
               </ErrorBoundary>
             </div>
-            {isOnboarding && (
+            {!isLoggedIn && isOnboarding && (
               <div className={styles.onboardingPresetBar}>
                 <span className={styles.presetBarTitle}>
                   <FormattedMessage id="videoPage.tryAnotherVideo" defaultMessage="Try another video:" />
