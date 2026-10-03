@@ -527,19 +527,64 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.restore();
 
         // 5.5 Branding / Watermark (SubStreamEdu)
-        drawTextWithBox(
-            ctx,
-            'SubStreamEdu • Highlight • Save • Repeat',
-            W / 2,
-            fixedWatermarkY,
-            '600 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-            'rgba(255, 255, 255, 0.85)',
-            'rgba(0, 0, 0, 0.4)',
-            16,
-            7,
-            12,
-            'rgba(255, 255, 255, 0.15)'
-        );
+        ctx.save();
+        
+        const brandText = "SubStreamEdu";
+        const sloganText = "Highlight • Save • Learn";
+        
+        const brandFont = '700 13px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+        const sloganFont = '500 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+        
+        // Measure sizes
+        ctx.font = brandFont;
+        const brandW = ctx.measureText(brandText).width;
+        
+        ctx.font = sloganFont;
+        const sloganW = ctx.measureText(sloganText).width;
+        
+        const gap = 12; // Gap between elements
+        const dividerW = 1;
+        
+        const contentW = brandW + gap * 2 + dividerW + sloganW;
+        const padX = 16;
+        const boxH = 32; 
+        const boxW = contentW + padX * 2;
+        
+        const boxX = (W - boxW) / 2;
+        const boxY = fixedWatermarkY - boxH / 2;
+        
+        // Draw Pill Background
+        drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 10);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.stroke();
+        
+        // Setup Text Rendering
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        let curX = boxX + padX;
+        
+        // Draw Brand
+        ctx.font = brandFont;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'; // Bright white
+        ctx.fillText(brandText, curX, fixedWatermarkY);
+        
+        curX += brandW + gap;
+        
+        // Draw Subtle Divider
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fillRect(curX, boxY + 10, dividerW, boxH - 20);
+        
+        curX += dividerW + gap;
+        
+        // Draw Slogan
+        ctx.font = sloganFont;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // Softer opacity
+        ctx.fillText(sloganText, curX, fixedWatermarkY);
+        
+        ctx.restore();
 
         // 6. Optional Safe Zone Overlay Guides (Disabled by default, toggleable via Eye icon)
         if (includeGuides) {
