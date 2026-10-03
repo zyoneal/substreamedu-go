@@ -152,7 +152,7 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
         >
 
             <div
-                className={`${styles.currentSubtitleContainer} ${isLoadingSubtitles ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent} ${isOnboardingMode ? styles.onboardingSubtitleMode : ''}`}
+                className={`${styles.currentSubtitleContainer} ${isLoadingSubtitles ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent}`}
                 ref={containerRef}
                 onMouseUp={(e) => {
                     e.stopPropagation();
@@ -212,7 +212,7 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                             </div>
                         )}
                         <p
-                            className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''} ${isOnboardingMode ? styles.onboardingSubtitleText : ''}`}
+                            className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''}`}
                             onContextMenu={(e) => {
                                 const isAndroid = /Android/i.test(navigator.userAgent);
                                 if (!isAndroid) {
