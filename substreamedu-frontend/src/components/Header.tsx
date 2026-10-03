@@ -271,7 +271,7 @@ const Header = () => {
                 </nav>
             )}
 
-            {(isPlayerActive || location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
+            {isPlayerActive && (
                 <div className={styles.headerPlayerLangContainer}>
                     <LanguageSelector
                         currentLanguage={fluentLanguage}
@@ -282,6 +282,15 @@ const Header = () => {
             )}
 
             <div className={styles.rightControlsContainer}>
+                {(location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
+                    <div className={styles.headerPlayerLangContainerInline}>
+                        <LanguageSelector
+                            currentLanguage={fluentLanguage}
+                            onLanguageSelect={handleFluentLangSelect}
+                            detectedRegion={detectedRegion}
+                        />
+                    </div>
+                )}
                 {!isLoggedIn && location.pathname !== '/login' && !['/youtube-demo', '/demo', '/movies'].includes(location.pathname) && (
                     <div className={styles.languageSelectCompact}>
                         <Link to="/login" className={styles.signUpButton}>

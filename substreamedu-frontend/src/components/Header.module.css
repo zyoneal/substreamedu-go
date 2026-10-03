@@ -760,7 +760,14 @@
     z-index: 10;
 }
 
-.headerPlayerLangContainer [class*="currentLang"] {
+.headerPlayerLangContainerInline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.headerPlayerLangContainer [class*="currentLang"],
+.headerPlayerLangContainerInline [class*="currentLang"] {
     color: #ede8e0;
     font-size: 14px;
     font-weight: 500;
@@ -769,17 +776,22 @@
 }
 
 .headerPlayerLangContainer button:hover [class*="currentLang"],
-.headerPlayerLangContainer button:focus [class*="currentLang"] {
+.headerPlayerLangContainer button:focus [class*="currentLang"],
+.headerPlayerLangContainerInline button:hover [class*="currentLang"],
+.headerPlayerLangContainerInline button:focus [class*="currentLang"] {
     color: #ffffff;
 }
 
-.headerPlayerLangContainer [class*="chevronIcon"] {
+.headerPlayerLangContainer [class*="chevronIcon"],
+.headerPlayerLangContainerInline [class*="chevronIcon"] {
     color: #a1a1aa;
     transition: color 0.15s ease;
 }
 
 .headerPlayerLangContainer button:hover [class*="chevronIcon"],
-.headerPlayerLangContainer button:focus [class*="chevronIcon"] {
+.headerPlayerLangContainer button:focus [class*="chevronIcon"],
+.headerPlayerLangContainerInline button:hover [class*="chevronIcon"],
+.headerPlayerLangContainerInline button:focus [class*="chevronIcon"] {
     color: #ffffff;
 }
 
@@ -792,7 +804,8 @@
         margin-right: 8px;
     }
 
-    .headerPlayerLangContainer [class*="currentLang"] {
+    .headerPlayerLangContainer [class*="currentLang"],
+    .headerPlayerLangContainerInline [class*="currentLang"] {
         font-size: 13px;
     }
 }
