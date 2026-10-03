@@ -493,17 +493,17 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.restore();
 
         // 5.5 Branding / Watermark (SubStreamEdu)
-        const watermarkY = 1130;
+        const watermarkY = startY + lines.length * lineSpacing + 45;
         drawTextWithBox(
             ctx,
             'SubStreamEdu • Highlight • Save • Repeat',
             W / 2,
             watermarkY,
-            '600 14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
-            'rgba(255, 255, 255, 0.9)',
+            '600 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+            'rgba(255, 255, 255, 0.85)',
             'rgba(0, 0, 0, 0.4)',
             16,
-            8,
+            7,
             12,
             'rgba(255, 255, 255, 0.15)'
         );
