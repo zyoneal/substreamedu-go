@@ -449,22 +449,16 @@
 .heroDemoDock {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 32px;
-  padding: 16px 20px;
-  background: rgba(20, 19, 18, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  gap: 16px;
+  margin-top: 48px;
   max-width: 620px;
 }
 
 .heroDemoDockHeader {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+  padding-left: 4px;
 }
 
 .heroDemoDockTitleGroup {
@@ -474,11 +468,11 @@
 }
 
 .heroDemoPulseDot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
   flex-shrink: 0;
   animation: heroPulseAnim 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -489,7 +483,7 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.45;
+    opacity: 0.4;
     transform: scale(0.85);
   }
 }
@@ -497,62 +491,59 @@
 .heroDemoDockTitle {
   font-family: var(--font-sans);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--color-ink, #ede8e0);
 }
 
 .heroDemoDockSubtitle {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--color-body, #9e988f);
-  margin-left: 16px;
+  margin-left: 14px;
 }
 
 .heroDemoDockCards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  border: 1px solid var(--gray-200);
 }
 
 .heroDemoCard {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  gap: 12px;
+  padding: 16px 20px;
+  background: transparent;
+  border-right: 1px solid var(--gray-200);
   text-decoration: none;
   color: var(--color-ink, #ede8e0);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.15s ease;
   position: relative;
   overflow: hidden;
 }
 
+.heroDemoCard:last-child {
+  border-right: none;
+}
+
 .heroDemoCard:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(250, 249, 47, 0.45);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .heroDemoCardIconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #ede8e0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-body);
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .heroDemoCard:hover .heroDemoCardIconWrap {
-  background: rgba(250, 249, 47, 0.15);
   color: #faf92f;
 }
 
@@ -566,7 +557,7 @@
 .heroDemoCardTitle {
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: #ede8e0;
   white-space: nowrap;
   overflow: hidden;
@@ -575,9 +566,9 @@
 
 .heroDemoCardTag {
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
-  color: #9e988f;
+  color: #737373;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2029,12 +2020,18 @@
 
   .heroDemoDockCards {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 0;
   }
 
   .heroDemoCard {
     padding: 12px 14px;
     min-height: 48px;
+    border-right: none;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .heroDemoCard:last-child {
+    border-bottom: none;
   }
 
   .heroDemoCardTitle {
