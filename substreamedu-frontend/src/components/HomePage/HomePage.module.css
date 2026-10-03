@@ -396,7 +396,6 @@
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  margin-top: 28px;
   padding: 7px 18px 7px 16px;
   background: rgba(26, 25, 23, 0.75);
   border: 1px solid var(--gray-200);
