@@ -281,7 +281,7 @@ const Header = () => {
                 </div>
             )}
 
-            {!isPlayerActive && (location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
+            {!isPlayerActive && (location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
                 <div className={styles.languageSelectCompact}>
                     <LanguageSelector
                         currentLanguage={fluentLanguage}
