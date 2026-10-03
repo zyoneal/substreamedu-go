@@ -66,35 +66,37 @@ if [ -d ".git" ]; then
     fi
 fi
 
-# Step 2: Attempt Registry Image Pull (Pre-Built Immutable Artifacts)
-echo "🐳 Attempting to pull pre-built immutable container images from registry..."
-docker compose pull --ignore-pull-failures || true
+# Step 2: Pull Pre-Built Images from GitHub Container Registry
+echo "🐳 Pulling pre-built container images from ghcr.io..."
 
-# Step 3: Fast Incremental Build (Fallback if not pulling from registry)
-export DOCKER_BUILDKIT=1
-export COMPOSE_DOCKER_CLI_BUILD=1
-
-SERVICES_TO_BUILD=()
-if [ -z "$CHANGED_FILES" ] || echo "$CHANGED_FILES" | grep -qE "(docker-compose|deploy\.sh|\.env)"; then
-    echo "⚡ Configuration changes detected: selective verification..."
-    SERVICES_TO_BUILD=("iam-service" "dictionary-service" "media-service" "notification-service" "gateway" "frontend")
-else
-    echo "$CHANGED_FILES" | grep -q "^substreamedu-iam-service-go" && SERVICES_TO_BUILD+=("iam-service")
-    echo "$CHANGED_FILES" | grep -q "^substreamedu-dictionary-service-go" && SERVICES_TO_BUILD+=("dictionary-service")
-    echo "$CHANGED_FILES" | grep -q "^substreamedu-media-service-go" && SERVICES_TO_BUILD+=("media-service")
-    echo "$CHANGED_FILES" | grep -q "^substreamedu-notification-service-go" && SERVICES_TO_BUILD+=("notification-service")
-    echo "$CHANGED_FILES" | grep -q "^substreamedu-gateway-go" && SERVICES_TO_BUILD+=("gateway")
-    echo "$CHANGED_FILES" | grep -q "^substreamedu-frontend" && SERVICES_TO_BUILD+=("frontend")
+# Authenticate to ghcr.io if credentials are available
+if [ -n "$GHCR_TOKEN" ] && [ -n "$GHCR_USER" ]; then
+    echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin 2>/dev/null || true
 fi
 
-if [ ${#SERVICES_TO_BUILD[@]} -gt 0 ]; then
-    echo "🔨 Building changed services with BuildKit caching: ${SERVICES_TO_BUILD[*]}..."
-    for svc in "${SERVICES_TO_BUILD[@]}"; do
+# Pull all service images (pre-built by CI)
+PULL_SERVICES=("iam-service" "dictionary-service" "media-service" "notification-service" "gateway" "frontend")
+FAILED_PULLS=()
+
+for svc in "${PULL_SERVICES[@]}"; do
+    echo "Pulling $svc..."
+    if ! docker compose pull "$svc" 2>/dev/null; then
+        echo "⚠️ Pull failed for $svc, will build locally"
+        FAILED_PULLS+=("$svc")
+    fi
+done
+
+# Step 3: Local Build Fallback (only for services that failed to pull)
+if [ ${#FAILED_PULLS[@]} -gt 0 ]; then
+    export DOCKER_BUILDKIT=1
+    export COMPOSE_DOCKER_CLI_BUILD=1
+    echo "🔨 Building fallback services locally: ${FAILED_PULLS[*]}..."
+    for svc in "${FAILED_PULLS[@]}"; do
         echo "Building $svc..."
         docker compose build "$svc"
     done
 else
-    echo "⚡ No service code changes detected. Skipping container builds."
+    echo "✅ All images pulled from registry. No local builds needed."
 fi
 
 # Step 3.5: Pre-Deployment Database Backup

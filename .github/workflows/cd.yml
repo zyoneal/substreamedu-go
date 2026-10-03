@@ -1,18 +1,24 @@
 name: Continuous Delivery (CD)
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["Continuous Integration (CI)"]
+    types: [completed]
+    branches: [main]
 
 # Concurrency Guard: Queue deployments sequentially to prevent parallel SSH & git lock races
 concurrency:
-  group: cd-deployment-${{ github.ref }}
-  cancel-in-progress: true
+  group: cd-deployment
+  cancel-in-progress: false
 
 jobs:
   deploy-to-server:
     name: Zero-Downtime Production Deployment
     runs-on: ubuntu-latest
+    # Only deploy if CI succeeded on a push event (not PRs)
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     steps:
       - name: Trigger Remote Rolling Deployment via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -22,7 +28,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           timeout: 120s
-          command_timeout: 30m
+          command_timeout: 15m
           script: |
             set -eo pipefail
 

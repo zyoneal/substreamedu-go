@@ -121,6 +121,7 @@ services:
   # Microservice: Identity & Access Management (IAM)
   # ----------------------------------------------------------------------------
   iam-service:
+    image: ghcr.io/zyoneal/substreamedu-go/iam-service:latest
     build:
       context: ./substreamedu-iam-service-go
     container_name: iam-service
@@ -169,6 +170,7 @@ services:
   # Microservice: Dictionary & Vocabulary (FSRS / Anki)
   # ----------------------------------------------------------------------------
   dictionary-service:
+    image: ghcr.io/zyoneal/substreamedu-go/dictionary-service:latest
     build:
       context: ./substreamedu-dictionary-service-go
     container_name: dictionary-service
@@ -226,6 +228,7 @@ services:
   # Microservice: Media Streaming & Transcoding (FFmpeg / yt-dlp)
   # ----------------------------------------------------------------------------
   media-service:
+    image: ghcr.io/zyoneal/substreamedu-go/media-service:latest
     build:
       context: ./substreamedu-media-service-go
     container_name: media-service
@@ -270,6 +273,7 @@ services:
   # Microservice: Notification & Telegram Bot Engine
   # ----------------------------------------------------------------------------
   notification-service:
+    image: ghcr.io/zyoneal/substreamedu-go/notification-service:latest
     build:
       context: ./substreamedu-notification-service-go
     container_name: notification-service
@@ -316,6 +320,7 @@ services:
   # Edge Gateway: Single Ingress Entrypoint for API & Auth
   # ----------------------------------------------------------------------------
   gateway:
+    image: ghcr.io/zyoneal/substreamedu-go/gateway:latest
     build:
       context: ./substreamedu-gateway-go
     container_name: gateway
@@ -362,6 +367,7 @@ services:
   # Static Web Client (Asset Publisher)
   # ----------------------------------------------------------------------------
   frontend:
+    image: ghcr.io/zyoneal/substreamedu-go/frontend:latest
     build:
       context: ./substreamedu-frontend
       args:
