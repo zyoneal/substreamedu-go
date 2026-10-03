@@ -38,6 +38,13 @@ substreamedu.com, www.substreamedu.com {
         root * /var/www/frontend
         encode gzip zstd
 
+        # Prevent caching of index.html to ensure SPA updates are immediate
+        @htmlFiles {
+            path *.html
+            path /
+        }
+        header @htmlFiles Cache-Control "no-cache, no-store, must-revalidate"
+
         # SPA Routing: Try file, then directory, then fallback to index.html
         try_files {path} {path}/ /index.html
 
