@@ -1297,7 +1297,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     <div
                         className={styles.onboardingSelectionHint}
                         data-testid="onboarding-selection-hint"
-                        style={{ marginTop: '12px' }}
+                        style={{ marginTop: '6px' }}
                     >
                         <div className={styles.onboardingHintIconWrapper}>
                             <svg
