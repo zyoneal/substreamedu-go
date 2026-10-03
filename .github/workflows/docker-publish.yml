@@ -17,17 +17,17 @@ jobs:
       matrix:
         include:
           - service_name: iam-service
-            context: ./wordstream-iam-service-go
+            context: ./substreamedu-iam-service-go
           - service_name: dictionary-service
-            context: ./wordstream-dictionary-service-go
+            context: ./substreamedu-dictionary-service-go
           - service_name: media-service
-            context: ./wordstream-media-service-go
+            context: ./substreamedu-media-service-go
           - service_name: notification-service
-            context: ./wordstream-notification-service-go
+            context: ./substreamedu-notification-service-go
           - service_name: gateway
-            context: ./wordstream-gateway-go
+            context: ./substreamedu-gateway-go
           - service_name: frontend
-            context: ./wordstream-frontend
+            context: ./substreamedu-frontend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

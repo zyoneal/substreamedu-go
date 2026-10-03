@@ -3,10 +3,10 @@ name: Go CI
 on:
   push:
     paths:
-      - 'wordstream-*-go/**'
+      - 'substreamedu-*-go/**'
   pull_request:
     paths:
-      - 'wordstream-*-go/**'
+      - 'substreamedu-*-go/**'
 
 jobs:
   lint-and-test:
@@ -14,11 +14,11 @@ jobs:
     strategy:
       matrix:
         service: [
-          'wordstream-iam-service-go',
-          'wordstream-notification-service-go',
-          'wordstream-media-service-go',
-          'wordstream-dictionary-service-go',
-          'wordstream-gateway-go'
+          'substreamedu-iam-service-go',
+          'substreamedu-notification-service-go',
+          'substreamedu-media-service-go',
+          'substreamedu-dictionary-service-go',
+          'substreamedu-gateway-go'
         ]
     steps:
       - name: Checkout code
