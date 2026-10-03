@@ -24,6 +24,7 @@ export interface ReelGeneratorModalProps {
     videoSource: string | null;
     youtubeVideoId?: string | null;
     movieTitle?: string;
+    contextSubtitles?: { start: number; end: number; text: string }[];
 }
 
 // Helper: Rounded Rectangle
@@ -102,6 +103,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
     videoSource,
     youtubeVideoId,
     movieTitle = 'Movie Clip',
+    contextSubtitles,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const hiddenVideoRef = useRef<HTMLVideoElement>(null);
@@ -429,8 +431,6 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 2;
 
-        // Break sentence into words and measure for centered lines
-        const words = sentence.split(/\s+/).filter(Boolean);
         const maxTextW = 560; // Leaves comfortable margins for mobile social buttons
         const lineSpacing = isCinemaFocus ? 33 : 36;
         const normalFont = isCinemaFocus
@@ -440,6 +440,39 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ? '700 23px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
             : '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
 
+        // 1. Calculate target fixed position for subtitles and watermark to avoid jumping
+        let targetLinesCount = 1;
+        let tLen = 0;
+        ctx.font = normalFont;
+        sentence.split(/\s+/).filter(Boolean).forEach(w => {
+            const wordW = ctx.measureText(w + ' ').width;
+            if (tLen + wordW > maxTextW && tLen > 0) {
+                targetLinesCount++;
+                tLen = wordW;
+            } else {
+                tLen += wordW;
+            }
+        });
+        const targetTotalLinesH = targetLinesCount * lineSpacing;
+        const targetStartY = isCinemaFocus
+            ? Math.max(965, 1020 - targetTotalLinesH / 2)
+            : Math.max(890, 950 - targetTotalLinesH / 2);
+        const fixedWatermarkY = targetStartY + targetLinesCount * lineSpacing + 45;
+
+        // 2. Determine active dynamic sentence based on video time
+        let activeSentence = sentence;
+        if (video) {
+            const absoluteTime = activeYoutubeId ? Math.floor(effectiveStart) + video.currentTime : video.currentTime;
+            if (contextSubtitles && contextSubtitles.length > 0) {
+                const activeSub = contextSubtitles.find(s => absoluteTime >= s.start && absoluteTime <= s.end);
+                activeSentence = activeSub ? activeSub.text : '';
+            } else {
+                // If no context subtitles, just show the selected sentence dynamically during its bounds
+                const isVisible = absoluteTime >= startSec && absoluteTime <= endSec;
+                activeSentence = isVisible ? sentence : '';
+            }
+        }
+
         interface RenderWord {
             text: string;
             isMatch: boolean;
@@ -447,40 +480,41 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         }
 
         const lines: RenderWord[][] = [];
-        let currentLine: RenderWord[] = [];
-        let currentLineWidth = 0;
+        if (activeSentence) {
+            const words = activeSentence.split(/\s+/).filter(Boolean);
+            let currentLine: RenderWord[] = [];
+            let currentLineWidth = 0;
 
-        words.forEach((w) => {
-            const stripped = w.replace(/^[^\w\u0400-\u04FF]+|[^\w\u0400-\u04FF]+$/g, '');
-            const isMatch = stripped.toLowerCase() === cleanWord.toLowerCase();
-            ctx.font = isMatch ? matchFont : normalFont;
-            const wordW = ctx.measureText(w + ' ').width;
+            words.forEach((w) => {
+                const stripped = w.replace(/^[^\w\u0400-\u04FF]+|[^\w\u0400-\u04FF]+$/g, '');
+                const isMatch = stripped.toLowerCase() === cleanWord.toLowerCase();
+                ctx.font = isMatch ? matchFont : normalFont;
+                const wordW = ctx.measureText(w + ' ').width;
 
-            if (currentLineWidth + wordW > maxTextW && currentLine.length > 0) {
+                if (currentLineWidth + wordW > maxTextW && currentLine.length > 0) {
+                    lines.push(currentLine);
+                    currentLine = [];
+                    currentLineWidth = 0;
+                }
+
+                currentLine.push({ text: w, isMatch, width: wordW });
+                currentLineWidth += wordW;
+            });
+
+            if (currentLine.length > 0) {
                 lines.push(currentLine);
-                currentLine = [];
-                currentLineWidth = 0;
             }
-
-            currentLine.push({ text: w, isMatch, width: wordW });
-            currentLineWidth += wordW;
-        });
-
-        if (currentLine.length > 0) {
-            lines.push(currentLine);
         }
 
-        // Vertically position the dialogue lines in the safe area below the video
-        // No watermarks, no .com, no movie titles to prevent TikTok OCR copyright/spam flags
-        const totalLinesH = lines.length * lineSpacing;
-        const startY = isCinemaFocus
-            ? Math.max(965, 1020 - totalLinesH / 2)
-            : Math.max(890, 950 - totalLinesH / 2);
+        // Draw active dynamic sentence
+        const activeTotalLinesH = lines.length * lineSpacing;
+        // Center the active lines relative to the target container to prevent vertical jumping
+        const activeStartY = targetStartY + (targetTotalLinesH - activeTotalLinesH) / 2;
 
         lines.forEach((lineWords, lineIdx) => {
             const lineWidth = lineWords.reduce((sum, item) => sum + item.width, 0);
             let curX = (W - lineWidth) / 2; // Center each subtitle line horizontally
-            const lineY = startY + lineIdx * lineSpacing;
+            const lineY = activeStartY + lineIdx * lineSpacing;
 
             lineWords.forEach((item) => {
                 ctx.font = item.isMatch ? matchFont : normalFont;
@@ -493,13 +527,11 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.restore();
 
         // 5.5 Branding / Watermark (SubStreamEdu)
-        const watermarkY = startY + lines.length * lineSpacing + 45;
-
         drawTextWithBox(
             ctx,
             'SubStreamEdu • Highlight • Save • Repeat',
             W / 2,
-            watermarkY,
+            fixedWatermarkY,
             '600 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
             'rgba(255, 255, 255, 0.85)',
             'rgba(0, 0, 0, 0.4)',
@@ -541,7 +573,11 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.fillText('TikTok Icons', W - 55, 710);
             ctx.restore();
         }
-    }, [cleanWord, transcription, translation, sentence, theme, framingMode, posterLoaded, videoLoaded, activeYoutubeId, clipStart, clipEnd]);
+    }, [
+        cleanWord, transcription, translation, sentence, theme, framingMode,
+        posterLoaded, videoLoaded, activeYoutubeId, clipStart, clipEnd,
+        contextSubtitles, effectiveStart, endSec, startSec
+    ]);
 
     // Hidden Video Sync & Looping Loop
     useEffect(() => {

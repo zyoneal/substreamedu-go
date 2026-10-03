@@ -16,6 +16,7 @@ export interface ReelModalData {
     sentence: string;
     startSec: number;
     endSec: number;
+    contextSubtitles?: { start: number; end: number; text: string }[];
 }
 
 export interface VideoPlayerModalsProps {
@@ -148,6 +149,7 @@ export const VideoPlayerModals: React.FC<VideoPlayerModalsProps> = ({
                     videoSource={videoSource}
                     youtubeVideoId={youtubeVideoId}
                     movieTitle={movieTitle}
+                    contextSubtitles={reelModalData.contextSubtitles}
                 />
             )}
 

@@ -1351,7 +1351,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     onSaveToDict={saveToDict}
                     onOpenReelModal={() => {
                         if (!selectedText) return;
-                        const curSub = subtitlesForVideo?.find(s => currentTime >= s.startTimeMs / 1000 - 0.5 && currentTime <= s.endTimeMs / 1000 + 0.5);
+                        // Find exact subtitle by matching selectedSentence first to avoid drift, fallback to currentTime
+                        const exactSub = subtitlesForVideo?.find(s => s.text === selectedSentence);
+                        const timeSub = subtitlesForVideo?.find(s => currentTime >= s.startTimeMs / 1000 - 0.5 && currentTime <= s.endTimeMs / 1000 + 0.5);
+                        const curSub = exactSub || timeSub;
+                        
                         const startSec = curSub ? curSub.startTimeMs / 1000 : Math.max(0, currentTime - 2);
                         const endSec = curSub ? curSub.endTimeMs / 1000 : currentTime + 3;
                         const sentence = curSub ? curSub.text : selectedSentence || selectedText;
