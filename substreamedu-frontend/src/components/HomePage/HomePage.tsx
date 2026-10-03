@@ -483,10 +483,6 @@ const HomePage: React.FC = () => {
             </p>
 
             <div className={styles.heroActions}>
-              <Link to="/login" className={styles.btnPrimary}>
-                Start free
-                <ArrowRight size={14} className={styles.btnIcon} />
-              </Link>
               <button
                 type="button"
                 className={styles.btnSecondary}
@@ -497,23 +493,6 @@ const HomePage: React.FC = () => {
                 <Play size={12} className={styles.btnPlayIcon} />
                 Watch demo
               </button>
-            </div>
-
-            <div className={styles.heroTrustBadge}>
-              <span className={styles.heroTrustBadgeItem}>
-                <Check size={12} strokeWidth={2.5} className={styles.heroTrustBadgeIcon} />
-                Free tier included
-              </span>
-              <span className={styles.heroTrustDot}>&bull;</span>
-              <span className={styles.heroTrustBadgeItem}>
-                <CreditCard size={12} strokeWidth={1.75} className={styles.heroTrustBadgeIcon} />
-                No card required
-              </span>
-              <span className={styles.heroTrustDot}>&bull;</span>
-              <span className={styles.heroTrustBadgeItem}>
-                <Laptop size={12} strokeWidth={1.75} className={styles.heroTrustBadgeIcon} />
-                Desktop &amp; mobile
-              </span>
             </div>
 
             <div className={styles.heroDemoDock} data-testid="hero-demo-dock">
