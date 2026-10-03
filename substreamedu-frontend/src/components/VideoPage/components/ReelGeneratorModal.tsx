@@ -494,10 +494,6 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
         // 5.5 Branding / Watermark (SubStreamEdu)
         const watermarkY = startY + lines.length * lineSpacing + 45;
-        
-        // DEBUG RED RECTANGLE
-        ctx.fillStyle = 'red';
-        ctx.fillRect(W/2 - 100, H/2 - 100, 200, 200);
 
         drawTextWithBox(
             ctx,
