@@ -48,21 +48,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    background: #141312;
-    border: 1px solid #282522;
-    border-radius: 14px;
-    padding: 12px 18px;
+    padding: 0;
     color: #ede8e0;
     margin-bottom: 20px;
     width: 100%;
     box-sizing: border-box;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
-    transition: border-color 0.2s ease;
 }
 
-.header:hover {
-    border-color: #3d3934;
-}
+
 
 .wordCounter {
     display: flex;
@@ -231,11 +224,7 @@
 .textInputContainer {
     width: 100%;
     position: relative;
-    background: #141312;
-    border: 1px solid #282522;
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+    padding: 0;
     box-sizing: border-box;
 }
 
