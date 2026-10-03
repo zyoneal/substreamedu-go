@@ -796,3 +796,8 @@
         font-size: 13px;
     }
 }
+.rightControlsContainer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}

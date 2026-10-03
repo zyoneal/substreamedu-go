@@ -281,46 +281,47 @@ const Header = () => {
                 </div>
             )}
 
-            {!isPlayerActive && (location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
-                <div className={styles.languageSelectCompact}>
-                    <LanguageSelector
-                        currentLanguage={fluentLanguage}
-                        onLanguageSelect={handleFluentLangSelect}
-                        detectedRegion={detectedRegion}
-                    />
-                </div>
-            )}
+            <div className={styles.rightControlsContainer}>
+                {!isPlayerActive && (location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
+                    <div className={styles.languageSelectCompact}>
+                        <LanguageSelector
+                            currentLanguage={fluentLanguage}
+                            onLanguageSelect={handleFluentLangSelect}
+                            detectedRegion={detectedRegion}
+                        />
+                    </div>
+                )}
 
+                {!isLoggedIn && location.pathname !== '/login' && !['/youtube-demo', '/demo', '/movies'].includes(location.pathname) && (
+                    <div className={styles.languageSelectCompact}>
+                        <Link to="/login" className={styles.signUpButton}>
+                            <FormattedMessage id="signIn" defaultMessage="Login" />
+                        </Link>
+                    </div>
+                )}
 
-            {!isLoggedIn && location.pathname !== '/login' && !['/youtube-demo', '/demo', '/movies'].includes(location.pathname) && (
-                <div className={styles.languageSelectCompact}>
-                    <Link to="/login" className={styles.signUpButton}>
-                        <FormattedMessage id="signIn" defaultMessage="Login" />
-                    </Link>
-                </div>
-            )}
-
-            {isLoggedIn && (
-                <div className={`${styles.user_container} ${location.pathname !== '/dashboard' && location.pathname !== '/' ? styles.desktopOnly : ''}`}>
-                    <div
-                        aria-label="User Logout Button"
-                        tabIndex={0}
-                        role="button"
-                        className={styles.userProfile}
-                        onClick={handleLogout}
-                        onKeyDown={(e: React.KeyboardEvent) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleLogout();
-                            }
-                        }}
-                    >
-                        <div className={styles.logoutIconButton}>
-                            <LogOut size={18} strokeWidth={2.5} />
+                {isLoggedIn && (
+                    <div className={`${styles.user_container} ${location.pathname !== '/dashboard' && location.pathname !== '/' ? styles.desktopOnly : ''}`}>
+                        <div
+                            aria-label="User Logout Button"
+                            tabIndex={0}
+                            role="button"
+                            className={styles.userProfile}
+                            onClick={handleLogout}
+                            onKeyDown={(e: React.KeyboardEvent) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleLogout();
+                                }
+                            }}
+                        >
+                            <div className={styles.logoutIconButton}>
+                                <LogOut size={18} strokeWidth={2.5} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </header>
     );
 };
