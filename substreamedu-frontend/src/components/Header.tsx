@@ -8,9 +8,33 @@ import { FormattedMessage } from 'react-intl';
 import LogOut from 'lucide-react/dist/esm/icons/log-out';
 import MenuIcon from 'lucide-react/dist/esm/icons/menu';
 import X from 'lucide-react/dist/esm/icons/x';
+import LanguageSelector from './LanguageSelector/LanguageSelector';
+import { LanguageContext } from './LanguageContext';
+import { RegionService } from '../services/RegionService';
+import { SUPPORTED_LANGUAGES } from '../constants/languageConfig';
 
 const Header = () => {
     const { isLoggedIn, setIsLoggedIn, authorities } = useContext(AuthContext);
+    const { isPlayerActive, fluentLanguage, setFluentLanguage } = useContext(LanguageContext);
+    const [detectedRegion, setDetectedRegion] = useState<string>('US');
+
+    useEffect(() => {
+        RegionService.getRegion().then(setDetectedRegion);
+    }, []);
+
+    const handleFluentLangSelect = (code: string) => {
+        if (!code || code === 'en' || !SUPPORTED_LANGUAGES.some(l => l.code === code)) {
+            setFluentLanguage('');
+            try {
+                localStorage.removeItem('fluentLanguage');
+            } catch {}
+            return;
+        }
+        setFluentLanguage(code);
+        try {
+            localStorage.setItem('fluentLanguage', code);
+        } catch {}
+    };
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -77,7 +101,7 @@ const Header = () => {
                 )}
             </Link>
 
-            {isLoggedIn && !isDashboard && !isOnboarding && (
+            {isLoggedIn && !isDashboard && !isOnboarding && !isPlayerActive && (
                 <nav className={styles.navigation}>
                     <ul className="flex items-center gap-1 md:gap-2 m-0 p-0 list-none">
                         {!isMobileNav ? (
@@ -245,6 +269,16 @@ const Header = () => {
                         )}
                     </ul>
                 </nav>
+            )}
+
+            {isPlayerActive && (
+                <div className={styles.headerPlayerLangContainer}>
+                    <LanguageSelector
+                        currentLanguage={fluentLanguage}
+                        onLanguageSelect={handleFluentLangSelect}
+                        detectedRegion={detectedRegion}
+                    />
+                </div>
             )}
 
 

@@ -110,14 +110,24 @@ const App: React.FC = () => {
         [isLoggedIn, setIsLoggedIn, authorities, setAuthorities]
     );
 
+    const [isPlayerActive, setIsPlayerActive] = useState(false);
+
+    useEffect(() => {
+        if (!['/videos', '/youtube-demo', '/demo', '/movies'].includes(location.pathname)) {
+            setIsPlayerActive(false);
+        }
+    }, [location.pathname]);
+
     const languageContextValue = useMemo(
         () => ({
             learningLanguage,
             setLearningLanguage,
             fluentLanguage,
             setFluentLanguage,
+            isPlayerActive,
+            setIsPlayerActive,
         }),
-        [learningLanguage, setLearningLanguage, fluentLanguage, setFluentLanguage]
+        [learningLanguage, setLearningLanguage, fluentLanguage, setFluentLanguage, isPlayerActive, setIsPlayerActive]
     );
 
     const [premiumLimitType, setPremiumLimitType] = useState<'translation' | 'save' | 'guest_limit' | 'guest_save' | null>(null);

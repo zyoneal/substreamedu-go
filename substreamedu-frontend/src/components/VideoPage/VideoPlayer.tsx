@@ -29,9 +29,7 @@ import styles from "../../components/VideoPage/css/VideoPlayerPopover.module.css
 import { LanguageContext } from "../LanguageContext";
 import { AuthContext } from "../../store/AuthContext";
 import { useIntl, FormattedMessage } from "react-intl";
-import LanguageSelector from '../LanguageSelector/LanguageSelector';
-import { RegionService } from '../../services/RegionService';
-import { SUPPORTED_LANGUAGES } from '../../constants/languageConfig';
+
 
 import Zap from 'lucide-react/dist/esm/icons/zap';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
@@ -91,30 +89,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     onSelectAnotherVideo,
     isOnboarding = false,
 }) => {
-    const { learningLanguage: contextLearningLanguage } = useContext(LanguageContext);
+    const { learningLanguage: contextLearningLanguage, fluentLanguage, setIsPlayerActive } = useContext(LanguageContext);
     const learningLanguage = contextLearningLanguage || 'en';
-    const { fluentLanguage, setFluentLanguage } = useContext(LanguageContext);
     const { authorities, isLoggedIn } = useContext(AuthContext);
     const isAdmin = authorities.includes('SYSTEM_ADMIN') || authorities.includes('ADMIN');
 
-    const [detectedRegion, setDetectedRegion] = useState<string>('US');
     useEffect(() => {
-        RegionService.getRegion().then(setDetectedRegion);
-    }, []);
-
-    const handleFluentLangSelect = (code: string) => {
-        if (!code || code === 'en' || !SUPPORTED_LANGUAGES.some(l => l.code === code)) {
-            setFluentLanguage('');
-            try {
-                localStorage.removeItem('fluentLanguage');
-            } catch {}
-            return;
-        }
-        setFluentLanguage(code);
-        try {
-            localStorage.setItem('fluentLanguage', code);
-        } catch {}
-    };
+        setIsPlayerActive?.(true);
+        return () => {
+            setIsPlayerActive?.(false);
+        };
+    }, [setIsPlayerActive]);
 
     const { data: userDictionaryItems } = useUserDictionaryItemsLight();
 
@@ -1056,14 +1041,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                         </span>
                                     </Link>
 
-                                    <div className={styles.playerLangSelectorContainer}>
-                                        <LanguageSelector
-                                            currentLanguage={fluentLanguage}
-                                            onLanguageSelect={handleFluentLangSelect}
-                                            detectedRegion={detectedRegion}
-                                        />
-                                    </div>
-
                                     <Link
                                         to="/login"
                                         className={styles.demoCtaButton}
@@ -1088,14 +1065,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                             </span>
                                         </button>
                                     )}
-
-                                    <div className={styles.playerLangSelectorContainer}>
-                                        <LanguageSelector
-                                            currentLanguage={fluentLanguage}
-                                            onLanguageSelect={handleFluentLangSelect}
-                                            detectedRegion={detectedRegion}
-                                        />
-                                    </div>
                                 </div>
                             )
                         )}

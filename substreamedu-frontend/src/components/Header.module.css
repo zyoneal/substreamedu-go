@@ -748,3 +748,51 @@
         font-size: 12px;
     }
 }
+
+/* === PLAYER ACTIVE HEADER LANGUAGE SELECTOR === */
+.headerPlayerLangContainer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.headerPlayerLangContainer [class*="currentLang"] {
+    color: #ede8e0;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: color 0.15s ease;
+}
+
+.headerPlayerLangContainer button:hover [class*="currentLang"],
+.headerPlayerLangContainer button:focus [class*="currentLang"] {
+    color: #ffffff;
+}
+
+.headerPlayerLangContainer [class*="chevronIcon"] {
+    color: #a1a1aa;
+    transition: color 0.15s ease;
+}
+
+.headerPlayerLangContainer button:hover [class*="chevronIcon"],
+.headerPlayerLangContainer button:focus [class*="chevronIcon"] {
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .headerPlayerLangContainer {
+        position: relative;
+        left: auto;
+        transform: none;
+        margin-left: auto;
+        margin-right: 8px;
+    }
+
+    .headerPlayerLangContainer [class*="currentLang"] {
+        font-size: 13px;
+    }
+}

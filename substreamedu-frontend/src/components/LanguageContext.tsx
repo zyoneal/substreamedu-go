@@ -5,6 +5,8 @@ interface LanguageContextType {
 	setLearningLanguage: Dispatch<SetStateAction<string>>;
 	fluentLanguage: string;
 	setFluentLanguage: Dispatch<SetStateAction<string>>;
+	isPlayerActive?: boolean;
+	setIsPlayerActive?: Dispatch<SetStateAction<boolean>>;
 }
 
 export const LanguageContext = createContext<LanguageContextType>({
@@ -12,4 +14,6 @@ export const LanguageContext = createContext<LanguageContextType>({
 	setLearningLanguage: () => {},
 	fluentLanguage: '',
 	setFluentLanguage: () => {},
+	isPlayerActive: false,
+	setIsPlayerActive: () => {},
 });
