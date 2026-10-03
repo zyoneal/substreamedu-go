@@ -1,0 +1,161 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: wordstream-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "https://substreamedu.com"
+              - "https://www.substreamedu.com"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "Authorization"
+              - "Content-Type"
+              - "Accept"
+              - "Accept-Language"
+              - "X-Requested-With"
+              - "X-Request-ID"
+              - "X-Correlation-ID"
+              - "X-User-Id"
+              - "X-User-Email"
+              - "traceparent"
+              - "tracestate"
+              - "baggage"
+              - "sentry-trace"
+              - "refresh-token"
+              - "Access-Control-Allow-Origin"
+            exposedHeaders:
+              - "X-Request-ID"
+              - "X-Correlation-ID"
+              - "Authorization"
+            allowCredentials: true
+            maxAge: 3600
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Access-Control-Allow-Headers Access-Control-Allow-Methods Access-Control-Max-Age
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 50
+            redis-rate-limiter.burstCapacity: 100
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@userKeyResolver}"
+        - name: CircuitBreaker
+          args:
+            name: gatewayCircuitBreaker
+            fallbackUri: forward:/fallback
+      routes:
+        # Route to IAM Service
+        - id: iam-service
+          uri: http://${IAM_SERVICE_HOST:localhost}:3002
+          predicates:
+            - Path=/auth/**, /auth-internal/**
+          filters:
+            - PrefixPath=/auth-service
+
+        # Route to IAM Service (Users)
+        - id: user-service
+          uri: http://${IAM_SERVICE_HOST:localhost}:3002
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=1
+            - PrefixPath=/auth-service
+
+        # Route to Notification Service
+        - id: notification-service
+          uri: http://${NOTIFICATION_SERVICE_HOST:localhost}:3005
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - PrefixPath=/notification-service
+
+        # Route to Dictionary Service
+        - id: dictionary-service
+          uri: http://${DICTIONARY_SERVICE_HOST:localhost}:3003
+          predicates:
+            - Path=/api/dictionary/**
+          filters:
+            - StripPrefix=1
+            - PrefixPath=/dictionary-service
+
+        # Route to Dictionary Service (Migrated AI Text Gen)
+        - id: dictionary-ai-gen
+          uri: http://${DICTIONARY_SERVICE_HOST:localhost}:3003
+          predicates:
+            - Path=/api/subtitles/generate-text
+          filters:
+            - SetPath=/dictionary-service/dictionary/generate-text
+
+        # Route to Media Service
+        - id: media-service
+          uri: http://${MEDIA_SERVICE_HOST:localhost}:3004
+          predicates:
+            - Path=/api/youtube/**, /api/music/**, /api/subtitles/**, /api/lyrics/**, /api/media/**
+          filters:
+            - PrefixPath=/media-service
+
+        # Route to Monolith (default for everything else starting with /api)
+        - id: monolith-service
+          uri: http://${MONOLITH_HOST:localhost}:3001
+          predicates:
+            - Path=/api/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+    instances:
+      gatewayCircuitBreaker:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 10s
+    instances:
+      gatewayCircuitBreaker:
+        timeoutDuration: 10s
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: DEBUG
+
