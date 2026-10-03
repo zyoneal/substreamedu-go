@@ -507,7 +507,6 @@
 .heroDemoDockCards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--gray-200);
 }
 
 .heroDemoCard {
