@@ -1720,8 +1720,11 @@
   --accent-hover: #e6e52b;
   --font-sans: 'e-Ukraine', system-ui, -apple-system, sans-serif;
 
-  max-width: 960px !important;
-  max-height: min(calc(100vh - 48px), 820px) !important;
+  width: -moz-fit-content !important;
+  width: fit-content !important;
+  min-width: min(520px, calc(100vw - 32px));
+  max-width: min(960px, calc(100vw - 32px)) !important;
+  max-height: calc(100vh - 40px) !important;
   background: #141312;
   border: 1px solid var(--gray-200, #282522);
   border-radius: 16px;
@@ -1790,7 +1793,6 @@
 .modalVideoWrapper {
   width: 100%;
   min-height: 0;
-  max-height: calc(82vh - 120px);
   background: #000;
   position: relative;
   display: flex;
@@ -1801,12 +1803,12 @@
 }
 
 .modalVideo {
+  display: block;
   max-width: 100%;
-  max-height: 100%;
+  max-height: calc(100vh - 160px);
   width: auto;
   height: auto;
   object-fit: contain;
-  display: block;
 }
 
 .modalFooter {
@@ -1863,6 +1865,31 @@
 
 .modalCtaBtn:active {
   transform: scale(0.97);
+}
+
+@media (max-width: 640px) {
+  .demoModal {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .modalFooterNote {
+    font-size: 11px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .modalCtaBtn {
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 /* ================================================

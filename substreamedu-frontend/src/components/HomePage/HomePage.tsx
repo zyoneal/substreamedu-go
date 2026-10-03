@@ -1028,6 +1028,8 @@ const HomePage: React.FC = () => {
             loop
             muted
             playsInline
+            width={1110}
+            height={880}
             className={styles.modalVideo}
           >
             <source src="/movies_example.mp4" type="video/mp4" />
