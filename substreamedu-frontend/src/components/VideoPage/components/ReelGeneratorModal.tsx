@@ -493,19 +493,20 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         ctx.restore();
 
         // 5.5 Branding / Watermark (SubStreamEdu)
-        ctx.save();
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.shadowBlur = 12;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 2;
-        ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        (ctx as any).letterSpacing = '1.5px';
-        // Positioned safely above TikTok's bottom author & nav zone (Y > 1120px)
-        ctx.fillText('SubStreamEdu • Highlight • Save • Repeat', W / 2, 1090);
-        ctx.restore();
+        const watermarkY = 1130;
+        drawTextWithBox(
+            ctx,
+            'SubStreamEdu • Highlight • Save • Repeat',
+            W / 2,
+            watermarkY,
+            '600 14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif',
+            'rgba(255, 255, 255, 0.9)',
+            'rgba(0, 0, 0, 0.4)',
+            16,
+            8,
+            12,
+            'rgba(255, 255, 255, 0.15)'
+        );
 
         // 6. Optional Safe Zone Overlay Guides (Disabled by default, toggleable via Eye icon)
         if (includeGuides) {
