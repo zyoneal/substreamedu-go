@@ -39,13 +39,22 @@ fi
 echo "✅ Acquired deployment mutex lock."
 
 # Step 1: Synchronize Git Repository
-PREV_COMMIT=""
+PREV_COMMIT="${1:-}"
+STATE_FILE=".last_deployed_commit"
 CHANGED_FILES=""
+
+if [ -z "$PREV_COMMIT" ] && [ -f "$STATE_FILE" ]; then
+    PREV_COMMIT=$(cat "$STATE_FILE" 2>/dev/null || true)
+fi
+
 if [ -d ".git" ]; then
     # Clean up stale locks in case an earlier session was aborted
     rm -f .git/index.lock .git/refs/remotes/origin/main.lock .git/refs/heads/main.lock .git/shallow.lock 2>/dev/null || true
 
-    PREV_COMMIT=$(git rev-parse HEAD 2>/dev/null || true)
+    if [ -z "$PREV_COMMIT" ]; then
+        PREV_COMMIT=$(cat .git/ORIG_HEAD 2>/dev/null || git rev-parse HEAD@{1} 2>/dev/null || git rev-parse HEAD 2>/dev/null || true)
+    fi
+
     echo "📦 Pulling latest code changes from origin/main..."
     git fetch --prune --force origin main
     git reset --hard origin/main
@@ -53,15 +62,15 @@ if [ -d ".git" ]; then
 
     if [ -n "$PREV_COMMIT" ] && [ -n "$NEW_COMMIT" ] && [ "$PREV_COMMIT" != "$NEW_COMMIT" ]; then
         CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" "$NEW_COMMIT" 2>/dev/null || true)
-    elif [ -f ".git/ORIG_HEAD" ]; then
-        ORIG_COMMIT=$(cat .git/ORIG_HEAD 2>/dev/null || true)
-        if [ -n "$ORIG_COMMIT" ] && [ "$ORIG_COMMIT" != "$NEW_COMMIT" ]; then
-            CHANGED_FILES=$(git diff --name-only "$ORIG_COMMIT" "$NEW_COMMIT" 2>/dev/null || true)
+    elif [ -f "$STATE_FILE" ]; then
+        STATE_COMMIT=$(cat "$STATE_FILE" 2>/dev/null || true)
+        if [ -n "$STATE_COMMIT" ] && [ "$STATE_COMMIT" != "$NEW_COMMIT" ]; then
+            CHANGED_FILES=$(git diff --name-only "$STATE_COMMIT" "$NEW_COMMIT" 2>/dev/null || true)
         fi
     fi
 
     if [ -n "$CHANGED_FILES" ]; then
-        echo "📝 Changed files in this deployment:"
+        echo "📝 Changed files in this deployment (diff: ${PREV_COMMIT:0:8}..${NEW_COMMIT:0:8}):"
         echo "$CHANGED_FILES"
     fi
 fi
@@ -181,6 +190,9 @@ echo "🧹 Pruning untagged build cache..."
 docker image prune -f || true
 
 if [ "$ALL_HEALTHY" = true ]; then
+    if [ -n "$NEW_COMMIT" ]; then
+        echo "$NEW_COMMIT" > "$STATE_FILE" 2>/dev/null || true
+    fi
     echo "========================================="
     echo "🎉 Enterprise Deployment Rollout Successful!"
     echo "========================================="

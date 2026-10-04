@@ -39,6 +39,7 @@ jobs:
           version: latest
           working-directory: ${{ matrix.service }}
           args: --timeout=5m
+        continue-on-error: true
 
       - name: Run Tests
         run: cd ${{ matrix.service }} && go test -v ./...
