@@ -18,7 +18,7 @@ const PublicContentLanding: React.FC = () => {
           transition={{ repeat: Infinity, duration: 1.5 }}
           className={styles.loadingText}
         >
-          Загрузка материалов...
+          Loading materials...
         </motion.div>
       </div>
     );
@@ -27,8 +27,8 @@ const PublicContentLanding: React.FC = () => {
   if (error || !data) {
     return (
       <div className={styles.errorContainer}>
-        <h1>Ой! Мы не смогли найти этот контент.</h1>
-        <Link to="/" className={styles.backLink}>Вернуться на главную</Link>
+        <h1>Oops! We couldn't find this content.</h1>
+        <Link to="/" className={styles.backLink}>Back to home</Link>
       </div>
     );
   }
