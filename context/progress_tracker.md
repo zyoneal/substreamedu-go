@@ -4,8 +4,7 @@
 
 - **Current Phase**: Phase 2: Product Feature Expansion
 - **In Progress**: None
-- **Backlog (Phase 2 — Teacher Feedback Features)**:
-  - Spec 05F: Writing Practice (P3)
+- **Backlog**: None
 - **Completed (Phase 2)**:
   - Homepage Demo Modal Video Aspect Ratio & Viewport Height Clamping (ADR-090)
   - Video Selection Landing Screen Isolation & Video Player In-Context Language Selector Relocation (ADR-089)
