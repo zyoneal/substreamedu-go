@@ -494,7 +494,7 @@ const HomePage: React.FC = () => {
                 Watch demo
               </button>
 
-              <div className={styles.heroQuickDock}>
+              <div className={styles.heroQuickDock} data-testid="hero-demo-dock">
                 <span className={styles.heroQuickDockLabel}>
                   <FormattedMessage
                     id="homePage.hero.interactiveDemosShort"
