@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { useIntl } from 'react-intl';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, Sparkles, Check, X, ArrowRight, Lightbulb, RotateCcw, PenTool, Layers, BookOpen, Flame } from 'lucide-react';
+import { Volume2, Sparkles, Check, X, ArrowRight, Lightbulb, RotateCcw, PenTool, Layers, BookOpen, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DictionaryService, PracticeExercise, EvaluateSentenceResult } from '../../services/DictionaryService';
 import { LanguageContext } from '../LanguageContext';
 import { useTTS } from '../../hooks/useTTS';
@@ -303,6 +303,14 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
         }
     }, [currentIndex, exercises.length, resetCardState]);
 
+    const handlePrev = useCallback(() => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+            resetCardState();
+            setIsCompleted(false);
+        }
+    }, [currentIndex, resetCardState]);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -416,6 +424,9 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
 
     return (
         <div className={styles.container}>
+            <div className={styles.projectorBeam} aria-hidden="true" />
+            <div className={styles.filmVignette} aria-hidden="true" />
+            <div className={styles.filmGrain} aria-hidden="true" />
             {/* Mode Switcher */}
             <div className={styles.modeNav}>
                 <button
@@ -436,8 +447,26 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
 
             {/* Progress Header */}
             <div className={styles.progressRow}>
-                <div className={styles.counterBadge}>
-                    <span>{currentIndex + 1}</span> / <span>{exercises.length}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button 
+                        onClick={handlePrev} 
+                        disabled={currentIndex === 0}
+                        className={styles.navArrow}
+                        title="Previous Word"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <div className={styles.counterBadge}>
+                        <span>{currentIndex + 1}</span> / <span>{exercises.length}</span>
+                    </div>
+                    <button 
+                        onClick={handleNext} 
+                        disabled={currentIndex === exercises.length - 1}
+                        className={styles.navArrow}
+                        title="Next Word"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
                 </div>
                 {streak > 1 && (
                     <div className={styles.streakBadge}>
