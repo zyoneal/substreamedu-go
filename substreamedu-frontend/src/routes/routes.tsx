@@ -22,7 +22,6 @@ import TiktokPage from "../components/TiktokPage/TiktokPage";
 import AdminDashboard from '../components/AdminDashboard/AdminDashboard';
 import ProtectedRoute from './ProtectedRoute';
 import { UserRole } from '../constants/roles';
-import PublicContentLanding from '../components/PublicContentLanding/PublicContentLanding';
 import StudentLessonPage from '../components/LessonPage/StudentLessonPage';
 
 const AppRoutes = () => {
@@ -46,7 +45,6 @@ const AppRoutes = () => {
             <Route path="/subtitles/:fileId" element={<SubtitleViewer />} />
             <Route path="/dictionary/resources/:resourceName" element={<DictionaryItemsPage />} />
             <Route path="/text-paste" element={<TextPasteHighlighter />} />
-            <Route path="/learn/media/:slug" element={<PublicContentLanding />} />
             <Route path="/lesson/:shareToken" element={<StudentLessonPage />} />
 
             {}

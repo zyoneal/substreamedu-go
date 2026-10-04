@@ -970,21 +970,6 @@ const HomePage: React.FC = () => {
         <div className={styles.container}>
           <div className={styles.footerGrid}>
             <div className={styles.footerColumn}>
-              <h4 className={styles.footerTitle}>Popular Movie Lessons</h4>
-              <ul className={styles.footerList}>
-                <li>
-                  <Link to="/learn/media/interstellar-docking-scene" className={styles.footerLink}>
-                    Interstellar: Docking Scene
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/learn/media/peaky-blinders-negotiation" className={styles.footerLink}>
-                    Peaky Blinders: The Negotiation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div className={styles.footerColumn}>
               <h4 className={styles.footerTitle}>Resources</h4>
               <ul className={styles.footerList}>
                 <li><Link to="/videos" className={styles.footerLink}>Movie Player</Link></li>
