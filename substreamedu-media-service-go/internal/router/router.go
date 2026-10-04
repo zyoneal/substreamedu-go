@@ -11,9 +11,6 @@ func Setup(r *gin.Engine, contextPath string, mediaHandler *handler.MediaHandler
 	{
 		root.Use(middleware.OptionalAuthMiddleware(jwtSecret))
 
-		// Programmatic SEO landing pages endpoint
-		root.GET("/public/media/:slug", mediaHandler.GetPublicMedia)
-
 		youtube := root.Group("/youtube")
 		{
 			youtube.GET("/search", mediaHandler.SearchYoutube)
@@ -24,6 +21,9 @@ func Setup(r *gin.Engine, contextPath string, mediaHandler *handler.MediaHandler
 
 		subtitles := root.Group("/subtitles")
 		{
+			// Programmatic SEO landing pages endpoint
+			subtitles.GET("/public/media/:slug", mediaHandler.GetPublicMedia)
+			
 			subtitles.GET("", mediaHandler.GetAllSubtitles)
 			subtitles.GET("/:name", mediaHandler.GetSubtitles)
 			subtitles.GET("/video/:name", mediaHandler.GetSubtitlesForVideo)
