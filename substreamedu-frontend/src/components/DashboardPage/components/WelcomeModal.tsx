@@ -3,6 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FormattedMessage } from 'react-intl';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
+import Play from 'lucide-react/dist/esm/icons/play';
+import MousePointer2 from 'lucide-react/dist/esm/icons/mouse-pointer-2';
+import Bookmark from 'lucide-react/dist/esm/icons/bookmark';
+import { useNavigate } from 'react-router-dom';
 
 interface WelcomeModalProps {
     isOpen: boolean;
@@ -10,6 +14,13 @@ interface WelcomeModalProps {
 }
 
 export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
+    const navigate = useNavigate();
+
+    const handleStart = () => {
+        onClose();
+        navigate('/youtube-demo?onboarding=true');
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -60,15 +71,44 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
                             <FormattedMessage id="onboarding.welcome.title" defaultMessage="Welcome to SubStreamEdu" />
                         </h2>
                         
-                        <p style={{ fontSize: '15px', color: '#9e988f', lineHeight: 1.6, marginBottom: '32px' }}>
+                        <p style={{ fontSize: '15px', color: '#9e988f', lineHeight: 1.6, marginBottom: '24px' }}>
                             <FormattedMessage 
                                 id="onboarding.welcome.desc" 
-                                defaultMessage="You're 60 seconds away from learning English the natural way. Open any video, highlight any word or phrase you don't know, and we'll help you memorize it forever." 
+                                defaultMessage="Learn how to use the app in 3 simple steps:" 
                             />
                         </p>
 
+                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                <div style={{ background: '#282522', color: '#ede8e0', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Play size={16} />
+                                </div>
+                                <span style={{ color: '#ede8e0', fontSize: '14px', fontWeight: 500 }}>
+                                    <FormattedMessage id="onboarding.welcome.step1" defaultMessage="1. Watch the demo video" />
+                                </span>
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                <div style={{ background: '#282522', color: '#ede8e0', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <MousePointer2 size={16} />
+                                </div>
+                                <span style={{ color: '#ede8e0', fontSize: '14px', fontWeight: 500 }}>
+                                    <FormattedMessage id="onboarding.welcome.step2" defaultMessage="2. Highlight an unknown word" />
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                <div style={{ background: '#282522', color: '#ede8e0', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Bookmark size={16} />
+                                </div>
+                                <span style={{ color: '#ede8e0', fontSize: '14px', fontWeight: 500 }}>
+                                    <FormattedMessage id="onboarding.welcome.step3" defaultMessage="3. Save it to your dictionary" />
+                                </span>
+                            </div>
+                        </div>
+
                         <button
-                            onClick={onClose}
+                            onClick={handleStart}
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -82,12 +122,14 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
                                 fontWeight: 600,
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s ease',
+                                width: '100%',
+                                justifyContent: 'center'
                             }}
                             onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                             onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                             onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
                         >
-                            <FormattedMessage id="onboarding.welcome.start" defaultMessage="Start your first lesson" />
+                            <FormattedMessage id="onboarding.welcome.startInteractive" defaultMessage="Start Interactive Demo" />
                             <ArrowRight size={16} />
                         </button>
                     </motion.div>

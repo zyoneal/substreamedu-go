@@ -658,6 +658,77 @@ const SubtitleViewer: React.FC = () => {
         }
     };
 
+    const handleWordTap = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!isMobile) return;
+        
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length >= 2) {
+            return;
+        }
+
+        let clientX = 0;
+        let clientY = 0;
+
+        if ('touches' in e) {
+            if (e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            }
+        } else {
+            clientX = (e as React.MouseEvent).clientX;
+            clientY = (e as React.MouseEvent).clientY;
+        }
+
+        let range: Range | null = null;
+        if (document.caretRangeFromPoint) {
+            range = document.caretRangeFromPoint(clientX, clientY);
+        } else if ((document as any).caretPositionFromPoint) {
+            const pos = (document as any).caretPositionFromPoint(clientX, clientY);
+            if (pos) {
+                range = document.createRange();
+                range.setStart(pos.offsetNode, pos.offset);
+                range.collapse(true);
+            }
+        }
+
+        if (!range) return;
+
+        const node = range.startContainer;
+        if (node.nodeType !== Node.TEXT_NODE) return;
+
+        const text = node.textContent || '';
+        const offset = range.startOffset;
+
+        let start = offset;
+        while (start > 0 && /[a-zA-Z0-9']/.test(text[start - 1])) {
+            start--;
+        }
+
+        let end = offset;
+        while (end < text.length && /[a-zA-Z0-9']/.test(text[end])) {
+            end++;
+        }
+
+        if (start < end) {
+            const word = text.slice(start, end).trim();
+            if (word.length >= 2) {
+                const newRange = document.createRange();
+                newRange.setStart(node, start);
+                newRange.setEnd(node, end);
+                
+                const sel = window.getSelection();
+                if (sel) {
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                    setTimeout(handleTextSelection, 50);
+                }
+            }
+        }
+    };
+
     const queryClient = useQueryClient();
 
     const saveWordMutation = useSaveWord({
@@ -909,6 +980,7 @@ const SubtitleViewer: React.FC = () => {
                             ref={subtitlesContainerRef}
                             onMouseUp={handleTextSelection}
                             onTouchEnd={handleTextSelection}
+                            onClick={handleWordTap}
                             onContextMenu={(e) => e.preventDefault()}
                         >
                             {highlightedSubtitles.map((subtitle, idx) => (

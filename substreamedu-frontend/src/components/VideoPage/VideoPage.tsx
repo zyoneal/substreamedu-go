@@ -61,8 +61,10 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     if (typeof window === 'undefined') return false;
     const urlParams = new URLSearchParams(window.location.search);
     const isDemoRoute = ['/youtube-demo', '/demo', '/movies'].includes(window.location.pathname);
-    // Onboarding demo mode is strictly for unauthenticated demo routes
-    if (!isLoggedIn && (urlParams.get('onboarding') === 'true' || isDemoRoute)) {
+    
+    // Onboarding demo mode can be triggered by ?onboarding=true for anyone,
+    // or automatically for unauthenticated users on demo routes
+    if (urlParams.get('onboarding') === 'true' || (!isLoggedIn && isDemoRoute)) {
       return true;
     }
     return false;
@@ -86,7 +88,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     if (queryVideo && queryVideo !== videoState.videoUrl) {
       const parsedTime = queryTime ? parseFloat(queryTime) : undefined;
       videoActions.handleYoutubeUrlLoad(queryVideo, undefined, undefined, parsedTime);
-    } else if (!isLoggedIn && !videoState.videoUrl && (isOnboardingParam || isDemoRoute)) {
+    } else if (!videoState.videoUrl && (isOnboardingParam || isDemoRoute)) {
       videoActions.handleYoutubeUrlLoad(
         DEFAULT_ONBOARDING_PRESET.url,
         DEFAULT_ONBOARDING_PRESET.title,
@@ -487,11 +489,11 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                   onSubtitleUpload={handleSubtitleUpload}
                   isExtractingSubtitles={videoState.isExtractingSubtitles}
                   onSelectAnotherVideo={videoActions.handleSelectAnotherVideo}
-                  isOnboarding={!isLoggedIn && isOnboarding}
+                  isOnboarding={isOnboarding}
                 />
               </ErrorBoundary>
             </div>
-            {!isLoggedIn && isOnboarding && (
+            {isOnboarding && (
               <div className={styles.onboardingPresetBar}>
                 <span className={styles.presetBarTitle}>
                   <FormattedMessage id="videoPage.tryAnotherVideo" defaultMessage="Try another video:" />
