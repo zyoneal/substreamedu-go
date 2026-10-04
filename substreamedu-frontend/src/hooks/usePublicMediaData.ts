@@ -34,8 +34,13 @@ export const usePublicMediaData = (slug: string) => {
 
     AxiosService.get(urls.publicMedia(slug))
       .then((response: any) => {
-        if (isMounted && response.data?.success) {
-          setData(response.data.data);
+        // AxiosService response interceptor automatically unwraps { success: true, data: {...} } -> response.data
+        const payload = (response?.data && response.data.title)
+          ? response.data
+          : (response?.data?.data && response.data.data.title ? response.data.data : null);
+
+        if (isMounted && payload) {
+          setData(payload);
           setError(null);
         } else if (isMounted) {
           setError('Content not found');
