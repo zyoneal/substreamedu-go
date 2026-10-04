@@ -36,15 +36,11 @@ interface HeroWordItem {
 }
 
 const HERO_TITLE_WORDS: HeroWordItem[] = [
-  { text: 'Learn', isAccent: false },
+  { text: 'Understand', isAccent: false },
   { text: 'native', isAccent: false },
   { text: 'English', isAccent: true },
-  { text: 'naturally', isAccent: false },
-  { text: 'through', isAccent: false },
-  { text: 'movies,', isAccent: true },
-  { text: 'music,', isAccent: true },
-  { text: 'and', isAccent: false },
-  { text: 'texts', isAccent: true },
+  { text: 'without', isAccent: false },
+  { text: 'subtitles.', isAccent: true },
 ];
 
 const heroTitleContainerVariants = {
@@ -479,13 +475,21 @@ const HomePage: React.FC = () => {
             </motion.h1>
 
             <p className={styles.heroSub}>
-              Blurred subtitles, contextual phrase translation, and scientific spaced repetition from the content you already love.
+              Watch your favorite movies, highlight words to translate in context, and memorize them forever with our smart flashcards.
             </p>
 
             <div className={styles.heroActions}>
+              <Link
+                to="/videos"
+                className={styles.btnPrimary}
+                data-cursor="action"
+                data-cursor-text="Start Free"
+              >
+                Start learning for free
+              </Link>
               <button
                 type="button"
-                className={styles.btnPrimary}
+                className={styles.btnSecondary}
                 onClick={handleOpenModal}
                 data-cursor="action"
                 data-cursor-text="Video Walkthrough"
@@ -689,6 +693,57 @@ const HomePage: React.FC = () => {
                   <span>Try interactive player with movie scene &amp; subtitles</span>
                   <ArrowRight size={14} className={styles.demoCtaArrow} />
                 </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.reviewsSection}>
+        <div className={styles.container}>
+          <motion.div className={styles.pricingSectionHeader} {...fadeUp}>
+            <span className={styles.sectionEyebrow}>Wall of Love</span>
+            <h2 className={styles.sectionTitle}>
+              People learning English with us.
+            </h2>
+          </motion.div>
+          <div className={styles.reviewsGrid}>
+            <motion.div className={styles.reviewCard} {...fadeUp}>
+              <p className={styles.reviewContent}>
+                "I used to get lost whenever actors spoke fast or used slang. With SubStreamEdu, the moment I don't understand something, I just highlight the phrase and it gives me the exact meaning in context. No more pausing to google idioms!"
+              </p>
+              <div className={styles.reviewAuthor}>
+                <div className={styles.reviewAvatar}>M</div>
+                <div className={styles.reviewAuthorInfo}>
+                  <span className={styles.reviewAuthorName}>Maria K.</span>
+                  <span className={styles.reviewAuthorRole}>B2 English Learner</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div className={styles.reviewCard} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 }}>
+              <p className={styles.reviewContent}>
+                "The spaced repetition system is magic. I save a word from a movie, and the next day it appears in my Telegram bot. I've built a vocabulary of 500+ real words that I actually use in my daily job."
+              </p>
+              <div className={styles.reviewAuthor}>
+                <div className={styles.reviewAvatar}>A</div>
+                <div className={styles.reviewAuthorInfo}>
+                  <span className={styles.reviewAuthorName}>Alex D.</span>
+                  <span className={styles.reviewAuthorRole}>Software Engineer</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div className={styles.reviewCard} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.2 }}>
+              <p className={styles.reviewContent}>
+                "Blurred subtitles changed everything for me. It forces me to listen carefully first, but the safety net is right there if I need it. My listening comprehension has improved more in 2 months than in 2 years of traditional classes."
+              </p>
+              <div className={styles.reviewAuthor}>
+                <div className={styles.reviewAvatar}>S</div>
+                <div className={styles.reviewAuthorInfo}>
+                  <span className={styles.reviewAuthorName}>Sarah T.</span>
+                  <span className={styles.reviewAuthorRole}>C1 Advanced</span>
+                </div>
               </div>
             </motion.div>
           </div>

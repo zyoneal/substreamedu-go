@@ -33,32 +33,54 @@ const PendingSaveHandler: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) =
             right: '24px',
             zIndex: 9999,
             display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
+            flexDirection: 'column',
+            gap: '8px',
             backgroundColor: '#059669',
             color: '#ffffff',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-            fontWeight: 600,
-            fontSize: '14px',
+            padding: '16px 24px',
+            borderRadius: '16px',
+            boxShadow: '0 24px 30px -10px rgba(0, 0, 0, 0.4)',
         }}>
-            <span style={{ fontSize: '18px' }}>🎉</span>
-            <span>{savedNotification}</span>
-            <button
-                onClick={() => setSavedNotification(null)}
-                style={{
-                    marginLeft: '8px',
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    padding: '2px 6px',
-                }}
-            >
-                ✕
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 600, fontSize: '15px' }}>
+                <span style={{ fontSize: '18px' }}>🎉</span>
+                <span>{savedNotification}</span>
+                <button
+                    onClick={() => setSavedNotification(null)}
+                    style={{
+                        marginLeft: 'auto',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        padding: '2px 6px',
+                    }}
+                >
+                    ✕
+                </button>
+            </div>
+            
+            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.2)', paddingTop: '10px', marginTop: '2px', fontSize: '13px' }}>
+                <div style={{ marginBottom: '8px', color: 'rgba(255,255,255,0.9)' }}>
+                    Don't forget this word! Practice it tomorrow.
+                </div>
+                <a 
+                    href="/telegramBot" 
+                    onClick={() => setSavedNotification(null)}
+                    style={{ 
+                        display: 'inline-block',
+                        background: '#ffffff',
+                        color: '#059669',
+                        padding: '6px 14px',
+                        borderRadius: '100px',
+                        textDecoration: 'none',
+                        fontWeight: 700,
+                        fontSize: '12px'
+                    }}
+                >
+                    Connect Telegram Bot
+                </a>
+            </div>
         </div>
     );
 };

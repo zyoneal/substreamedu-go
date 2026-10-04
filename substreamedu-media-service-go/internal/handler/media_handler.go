@@ -92,6 +92,54 @@ func (h *MediaHandler) getOptionalUserId(c *gin.Context) *uuid.UUID {
 	return nil
 }
 
+type PublicMediaData struct {
+	Title            string              `json:"title"`
+	ArtistOrCreator  string              `json:"artistOrCreator"`
+	Type             string              `json:"type"`
+	CoverImageUrl    string              `json:"coverImageUrl"`
+	Snippet          []string            `json:"snippet"`
+	HighlightedWords []map[string]string `json:"highlightedWords"`
+	Slug             string              `json:"slug"`
+}
+
+func (h *MediaHandler) GetPublicMedia(c *gin.Context) {
+	slug := c.Param("slug")
+	
+	// Mock database for programmatic SEO landing pages (to be replaced with real DB query)
+	mockDatabase := map[string]PublicMediaData{
+		"shape-of-you-ed-sheeran": {
+			Slug: "shape-of-you-ed-sheeran",
+			Title: "Shape of You",
+			ArtistOrCreator: "Ed Sheeran",
+			Type: "song",
+			CoverImageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800",
+			Snippet: []string{"The club isn't the best place to find a lover", "So the bar is where I go"},
+			HighlightedWords: []map[string]string{
+				{"word": "lover", "transcription": "/ˈlʌv.ər/", "translation": "возлюбленный / любимый"},
+			},
+		},
+		"interstellar-docking-scene": {
+			Slug: "interstellar-docking-scene",
+			Title: "Interstellar (Docking Scene)",
+			ArtistOrCreator: "Christopher Nolan",
+			Type: "movie",
+			CoverImageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800",
+			Snippet: []string{"Cooper: CASE, if I black out, you take the stick."},
+			HighlightedWords: []map[string]string{
+				{"word": "black out", "transcription": "/blæk aʊt/", "translation": "потерять сознание"},
+			},
+		},
+	}
+
+	data, exists := mockDatabase[slug]
+	if !exists {
+		h.respondError(c, http.StatusNotFound, "Content not found")
+		return
+	}
+
+	h.respondSuccess(c, data)
+}
+
 func (h *MediaHandler) SearchYoutube(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {

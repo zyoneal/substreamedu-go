@@ -18,6 +18,7 @@ import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import { DictionaryService } from '../../services/DictionaryService';
 import { useRecentVideos } from '../../hooks/useRecentVideos';
 import { StreakShareModal, VectorFlameIcon } from './components/StreakShareModal';
+import { WelcomeModal } from './components/WelcomeModal';
 import styles from './css/DashboardPage.module.css';
 
 const parseDoTags = (message: string): (string | JSX.Element)[] => {
@@ -61,6 +62,22 @@ const DashboardPage: React.FC = () => {
             .then(setStats)
             .finally(() => setStatsLoading(false));
     }, []);
+
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (!statsLoading && (stats?.totalWords ?? 0) === 0) {
+            const hasSeenOnboarding = localStorage.getItem('hasSeenOnboardingModal');
+            if (!hasSeenOnboarding) {
+                setIsWelcomeModalOpen(true);
+            }
+        }
+    }, [stats, statsLoading]);
+
+    const handleCloseWelcomeModal = () => {
+        localStorage.setItem('hasSeenOnboardingModal', 'true');
+        setIsWelcomeModalOpen(false);
+    };
 
     const currentDayIndex = (new Date().getDay() + 6) % 7; // Monday = 0, Sunday = 6
     const reviewedToday = stats?.reviewedToday ?? false;
@@ -598,6 +615,11 @@ const DashboardPage: React.FC = () => {
                     weekDays={stats.weekDays}
                 />
             )}
+
+            <WelcomeModal 
+                isOpen={isWelcomeModalOpen} 
+                onClose={handleCloseWelcomeModal} 
+            />
         </motion.div>
     );
 };

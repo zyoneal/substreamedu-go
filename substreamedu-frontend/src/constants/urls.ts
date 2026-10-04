@@ -40,6 +40,7 @@ const urls = {
   processText: processText,
   payment: payment,
   lyrics: lyrics,
+  publicMedia: (slug: string) => `api/subtitles/public/media/${slug}`,
   admin: {
     users: 'api/admin/users',
     analytics: 'api/admin/analytics',

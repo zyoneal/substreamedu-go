@@ -21,20 +21,20 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
 
     const messages: Record<string, { title: string; description: string; icon: React.ReactNode; buttonText: string; action: () => void }> = {
         translation: {
-            icon: <Lock size={36} className="text-primary mx-auto" />,
-            title: 'Translation limit reached',
-            description: 'You have used all 100 free translations. Get unlimited translations with Premium.',
-            buttonText: 'Get Premium',
+            icon: <Sparkles size={36} className="text-primary mx-auto" style={{ color: '#faf92f' }} />,
+            title: 'You\'re learning fast! 🚀',
+            description: 'You\'ve translated 100 phrases. Upgrade to Premium to translate unlimited phrases and master this movie.',
+            buttonText: 'Unlock Premium',
             action: () => {
                 onClose();
                 navigate('/subscribe');
             },
         },
         save: {
-            icon: <Lock size={36} className="text-primary mx-auto" />,
-            title: 'Word save limit reached',
-            description: 'You have used all 50 free word saves. Get unlimited saves with Premium.',
-            buttonText: 'Get Premium',
+            icon: <BookOpen size={36} className="text-primary mx-auto" style={{ color: '#faf92f' }} />,
+            title: 'Your vocabulary is growing! 🧠',
+            description: 'You\'ve saved 50 words. If you stop now, you might forget them. Premium includes unlimited saves and spaced-repetition to lock them into your long-term memory.',
+            buttonText: 'Unlock Premium',
             action: () => {
                 onClose();
                 navigate('/subscribe');
@@ -97,6 +97,31 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
                 >
                     {msg.description}
                 </p>
+
+                {(type === 'translation' || type === 'save') && (
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '24px',
+                        textAlign: 'left',
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'flex-start'
+                    }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#3b82f6', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px', color: '#fff' }}>
+                            M
+                        </div>
+                        <div>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#ede8e0', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                "Upgrading was the best decision. I learned more in 2 months than in 2 years of classes."
+                            </p>
+                            <span style={{ fontSize: '11px', color: '#9e988f', marginTop: '6px', display: 'block' }}>— Maria K.</span>
+                        </div>
+                    </div>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button
                         type="button"
