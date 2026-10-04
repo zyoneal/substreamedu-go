@@ -1,5 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Play, Sparkles, BookOpen, Send, Lock } from 'lucide-react';
 import { usePublicMediaData } from '../../hooks/usePublicMediaData';
 import { SEO } from '../SEO/SEO';
 import styles from './PublicContentLanding.module.css';
@@ -9,7 +11,17 @@ const PublicContentLanding: React.FC = () => {
   const { data, loading, error } = usePublicMediaData(slug || '');
 
   if (loading) {
-    return <div className={styles.loadingContainer}>Загрузка материалов...</div>;
+    return (
+      <div className={styles.loadingContainer}>
+        <motion.div 
+          animate={{ opacity: [0.5, 1, 0.5] }} 
+          transition={{ repeat: Infinity, duration: 1.5 }}
+          className={styles.loadingText}
+        >
+          Загрузка материалов...
+        </motion.div>
+      </div>
+    );
   }
 
   if (error || !data) {
@@ -41,6 +53,11 @@ const PublicContentLanding: React.FC = () => {
     }
   };
 
+  const fadeUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  };
+
   return (
     <>
       <SEO 
@@ -53,29 +70,72 @@ const PublicContentLanding: React.FC = () => {
       />
 
       <main className={styles.container}>
-        <header className={styles.heroHeader} style={{ backgroundImage: `url(${data.coverImageUrl})` }}>
-          <div className={styles.heroOverlay}>
-            <h1 className={styles.heroTitle}>Учи английский по <span className={styles.highlightText}>{data.title}</span></h1>
-            <p className={styles.heroSubtitle}>от {data.artistOrCreator}</p>
+        {/* Cinematic Background Gradient */}
+        <div className={styles.ambientBackground}>
+          <div className={styles.glowOrb} style={{ background: `radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%)` }} />
+        </div>
+
+        <motion.header 
+          initial="hidden" 
+          animate="visible" 
+          variants={fadeUp} 
+          className={styles.heroHeader}
+        >
+          <div className={styles.heroImageWrapper}>
+            <img src={data.coverImageUrl} alt={data.title} className={styles.heroImage} />
+            <div className={styles.heroGradient} />
           </div>
-        </header>
+          
+          <div className={styles.heroContent}>
+            <span className={styles.eyebrow}>
+              <Sparkles size={14} />
+              {isSong ? 'SONG LESSON' : 'MOVIE LESSON'}
+            </span>
+            <h1 className={styles.heroTitle}>
+              Learn English with <br/>
+              <span className={styles.highlightText}>{data.title}</span>
+            </h1>
+            <p className={styles.heroSubtitle}>by {data.artistOrCreator}</p>
+          </div>
+        </motion.header>
 
         <section className={styles.contentGrid}>
-          <article className={styles.teaserPanel}>
-            <h2 className={styles.sectionTitle}>Отрывок {isSong ? 'текста песни' : 'субтитров'}</h2>
+          <motion.article 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUp} 
+            className={styles.teaserPanel}
+          >
+            <div className={styles.panelHeader}>
+              <Play size={18} className={styles.panelIcon} />
+              <h2 className={styles.sectionTitle}>Preview {isSong ? 'Lyrics' : 'Scene'}</h2>
+            </div>
+            
             <div className={styles.snippetBox}>
               {data.snippet.map((line, idx) => (
                 <p key={idx} className={styles.snippetLine}>{line}</p>
               ))}
               
               <div className={styles.fadeOutOverlay}>
-                <span>[ Остальной текст скрыт ]</span>
+                <Lock size={16} className={styles.lockIcon} />
+                <span>Full content is locked</span>
               </div>
             </div>
-          </article>
+          </motion.article>
 
-          <aside className={styles.vocabPanel}>
-            <h2 className={styles.sectionTitle}>Полезные слова из отрывка</h2>
+          <motion.aside 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUp} 
+            className={styles.vocabPanel}
+          >
+            <div className={styles.panelHeader}>
+              <BookOpen size={18} className={styles.panelIcon} />
+              <h2 className={styles.sectionTitle}>Key Vocabulary</h2>
+            </div>
+            
             <ul className={styles.vocabList}>
               {data.highlightedWords.map((item, idx) => (
                 <li key={idx} className={styles.vocabCard}>
@@ -87,28 +147,38 @@ const PublicContentLanding: React.FC = () => {
                 </li>
               ))}
             </ul>
-          </aside>
+          </motion.aside>
         </section>
 
-        <section className={styles.ctaLockSection}>
+        <motion.section 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true }}
+          variants={fadeUp} 
+          className={styles.ctaLockSection}
+        >
           <div className={styles.ctaCard}>
-            <h2 className={styles.ctaTitle}>Разблокируйте полное интерактивное видео</h2>
+            <div className={styles.ctaCardGlow} />
+            <h2 className={styles.ctaTitle}>Unlock the Full Interactive Lesson</h2>
             <p className={styles.ctaText}>
-              Зарегистрируйтесь, чтобы смотреть видео целиком с умными субтитрами. 
-              Кликайте на любые слова, отслеживайте свой прогресс и мгновенно отправляйте 
-              карточки в наш <strong>Telegram Bot</strong> для повторения по системе FSRS!
+              Join for free to watch the full video with smart subtitles. 
+              Highlight any word or phrase you don't know, save it to your dictionary, and practice with our <strong>Telegram Bot</strong> using spaced repetition!
             </p>
+            <div className={styles.ctaFeatures}>
+              <div className={styles.featureItem}><Sparkles size={16}/> Smart Subtitles</div>
+              <div className={styles.featureItem}><BookOpen size={16}/> Instant Translation</div>
+              <div className={styles.featureItem}><Send size={16}/> Telegram Bot Sync</div>
+            </div>
             <div className={styles.ctaButtons}>
               <Link to={`/subscribe?ref=media_${data.slug}`} className={styles.btnPrimary}>
-                Создать аккаунт
+                Start Learning for Free
               </Link>
               <Link to="/login" className={styles.btnSecondary}>
-                У меня уже есть аккаунт
+                I already have an account
               </Link>
             </div>
-            <p className={styles.guaranteeText}>Начните прямо сейчас.</p>
           </div>
-        </section>
+        </motion.section>
       </main>
     </>
   );
