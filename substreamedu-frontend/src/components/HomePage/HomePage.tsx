@@ -966,28 +966,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <footer className={styles.footerSection}>
-        <div className={styles.container}>
-          <div className={styles.footerGrid}>
-            <div className={styles.footerColumn}>
-              <h4 className={styles.footerTitle}>Resources</h4>
-              <ul className={styles.footerList}>
-                <li><Link to="/videos" className={styles.footerLink}>Movie Player</Link></li>
-                <li><Link to="/songs" className={styles.footerLink}>Synced Lyrics</Link></li>
-                <li><Link to="/subtitles" className={styles.footerLink}>Transcripts</Link></li>
-              </ul>
-            </div>
-            <div className={styles.footerColumn}>
-              <h4 className={styles.footerTitle}>Legal</h4>
-              <ul className={styles.footerList}>
-                <li><span className={styles.footerText}>© {new Date().getFullYear()} SubStreamEdu</span></li>
-                <li><a href="mailto:support@substreamedu.com" className={styles.footerLink}>support@substreamedu.com</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </footer>
-
       <Modal
         isOpen={isDemoModalOpen}
         onClose={handleCloseModal}
