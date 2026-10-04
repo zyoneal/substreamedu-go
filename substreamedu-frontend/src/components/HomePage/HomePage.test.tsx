@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 // Mock direct ESM icon imports for Jest
@@ -87,15 +87,15 @@ describe('HomePage Demo Modal', () => {
     const demoDock = screen.getByTestId('hero-demo-dock');
     expect(demoDock).toBeInTheDocument();
 
-    const movieDemoLink = screen.getByRole('link', { name: /movie player/i });
+    const movieDemoLink = within(demoDock).getByRole('link', { name: /movie player/i });
     expect(movieDemoLink).toBeInTheDocument();
     expect(movieDemoLink).toHaveAttribute('href', '/youtube-demo');
 
-    const songDemoLink = screen.getByRole('link', { name: /synced lyrics/i });
+    const songDemoLink = within(demoDock).getByRole('link', { name: /synced lyrics/i });
     expect(songDemoLink).toBeInTheDocument();
     expect(songDemoLink).toHaveAttribute('href', '/songs-demo');
 
-    const textDemoLink = screen.getByRole('link', { name: /ai stories/i });
+    const textDemoLink = within(demoDock).getByRole('link', { name: /ai stories/i });
     expect(textDemoLink).toBeInTheDocument();
     expect(textDemoLink).toHaveAttribute('href', '/texts-demo');
   });
