@@ -63,7 +63,7 @@
 }
 
 .minimalistButton:active:not(:disabled) {
-    transform: translateY(-0.5px);
+    transform: scale(0.97);
 }
 
 .minimalistButton:disabled {
@@ -720,6 +720,37 @@
 
 .seekBarWrapper:hover .seekBarProgress::after {
     transform: translateY(-50%) scale(1.2);
+}
+
+.seekBarWrapper.scrubbing .seekBar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.45);
+}
+
+.seekBarWrapper.scrubbing .seekBarProgress::after {
+    transform: translateY(-50%) scale(1.35);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.scrubBadge {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    background: rgba(20, 19, 18, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: var(--font-mono, monospace);
+    z-index: 50;
+    user-select: none;
 }
 
 .controlButton {
@@ -1894,7 +1925,6 @@
     max-width: 320px;
     min-width: 260px;
     z-index: 10000;
-    animation: popoverFadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     transform-origin: bottom center;
     pointer-events: auto;
     font-family: var(--font-body, 'e-Ukraine'), system-ui, -apple-system, sans-serif;
@@ -2402,6 +2432,14 @@
     height: 36px;
     transition: all 0.18s ease;
     flex-shrink: 0;
+    position: relative;
+}
+
+.closeButton::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
 }
 
 .closeButton:hover {

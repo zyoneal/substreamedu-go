@@ -1,4 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../store/AuthContext';
 import { AuthService } from '../services/AuthService';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -71,6 +73,27 @@ const Header = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMobileMenuOpen]);
 
+    useEffect(() => {
+        if (!isMobileMenuOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsMobileMenuOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isMobileMenuOpen]);
+
+    useEffect(() => {
+        if (isMobileScreen && isMobileMenuOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [isMobileScreen, isMobileMenuOpen]);
+
     const handleLogout = () => {
         AuthService.logout();
         setIsLoggedIn(false);
@@ -92,6 +115,7 @@ const Header = () => {
     const isDashboard = location.pathname === '/dashboard' || (isHomepage && isLoggedIn);
 
     return (
+        <>
         <header className={`${styles.header_container} ${!isLoggedIn && isHomepage ? styles.unauthenticatedLanding : ''} backdrop-blur-md bg-canvas/80 border-b border-hairline z-50`}>
             <Link to="/" className={styles.logo_container}>
                 {isMobileScreen ? (
@@ -191,80 +215,82 @@ const Header = () => {
                                         <MenuIcon size={24} strokeWidth={2.5} />
                                     )}
                                 </button>
-                                <div className={`${styles.dropdownContent} ${isMobileMenuOpen ? styles.showMobileMenu : ''}`}>
-                                    <Link
-                                        to="/videos"
-                                        className={`${styles.navItem} ${location.pathname === "/videos" ? styles.active : ""}`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <FormattedMessage id="videoPlayer" defaultMessage="Video Player" />
-                                    </Link>
-                                    <Link
-                                        to="/songs"
-                                        className={`${styles.navItem} ${location.pathname.startsWith("/songs") ? styles.active : ""}`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <FormattedMessage id="songs" defaultMessage="Songs" />
-                                    </Link>
-                                    <Link
-                                        to="/text-paste"
-                                        className={`${styles.navItem} ${location.pathname.startsWith("/text-paste") ? styles.active : ""}`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <FormattedMessage id="textPaste" defaultMessage="Text" />
-                                    </Link>
-                                    <Link
-                                        to="/subtitles"
-                                        className={`${styles.navItem} ${location.pathname.startsWith("/subtitles") ? styles.active : ""}`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <FormattedMessage id="subtitles" defaultMessage="Subtitles" />
-                                    </Link>
-                                    <Link
-                                        to="/dictionary"
-                                        className={`${styles.navItem} ${location.pathname === "/dictionary" || location.pathname.startsWith("/dictionary/resources/") ? styles.active : ""}`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <FormattedMessage id="dictionary" defaultMessage="Dictionary" />
-                                    </Link>
-                                    <Link
-                                        to="/learning"
-                                        className={`${styles.navItem} ${location.pathname.startsWith("/learning") ? styles.active : ""}`}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        <FormattedMessage id="learning" defaultMessage="Learning" />
-                                    </Link>
-                                    <li>
+                                {!isMobileScreen && (
+                                    <div className={`${styles.dropdownContent} ${isMobileMenuOpen ? styles.showMobileMenu : ''}`}>
                                         <Link
-                                            to="/telegramBot"
-                                            className={`${styles.navItem} ${location.pathname.startsWith("/telegramBot") ? styles.active : ""}`}
+                                            to="/videos"
+                                            className={`${styles.navItem} ${location.pathname === "/videos" ? styles.active : ""}`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            <FormattedMessage id="telegramChannelMenu" defaultMessage="TelegramBot" />
+                                            <FormattedMessage id="videoPlayer" defaultMessage="Video Player" />
                                         </Link>
-                                    </li>
-                                    {authorities.includes('SYSTEM_ADMIN') && (
                                         <Link
-                                            to="/admin"
-                                            className={`${styles.navItem} ${location.pathname === "/admin" ? styles.active : ""}`}
+                                            to="/songs"
+                                            className={`${styles.navItem} ${location.pathname.startsWith("/songs") ? styles.active : ""}`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            <FormattedMessage id="admin" defaultMessage="Admin" />
+                                            <FormattedMessage id="songs" defaultMessage="Songs" />
                                         </Link>
-                                    )}
-                                    {isLoggedIn && (
-                                        <button
-                                            type="button"
-                                            className={styles.logoutLink}
-                                            onClick={() => {
-                                                setIsMobileMenuOpen(false);
-                                                handleLogout();
-                                            }}
+                                        <Link
+                                            to="/text-paste"
+                                            className={`${styles.navItem} ${location.pathname.startsWith("/text-paste") ? styles.active : ""}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            <FormattedMessage id="exit" defaultMessage="Exit" />
-                                        </button>
-                                    )}
-                                </div>
+                                            <FormattedMessage id="textPaste" defaultMessage="Text" />
+                                        </Link>
+                                        <Link
+                                            to="/subtitles"
+                                            className={`${styles.navItem} ${location.pathname.startsWith("/subtitles") ? styles.active : ""}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <FormattedMessage id="subtitles" defaultMessage="Subtitles" />
+                                        </Link>
+                                        <Link
+                                            to="/dictionary"
+                                            className={`${styles.navItem} ${location.pathname === "/dictionary" || location.pathname.startsWith("/dictionary/resources/") ? styles.active : ""}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <FormattedMessage id="dictionary" defaultMessage="Dictionary" />
+                                        </Link>
+                                        <Link
+                                            to="/learning"
+                                            className={`${styles.navItem} ${location.pathname.startsWith("/learning") ? styles.active : ""}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <FormattedMessage id="learning" defaultMessage="Learning" />
+                                        </Link>
+                                        <li>
+                                            <Link
+                                                to="/telegramBot"
+                                                className={`${styles.navItem} ${location.pathname.startsWith("/telegramBot") ? styles.active : ""}`}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                <FormattedMessage id="telegramChannelMenu" defaultMessage="TelegramBot" />
+                                            </Link>
+                                        </li>
+                                        {authorities.includes('SYSTEM_ADMIN') && (
+                                            <Link
+                                                to="/admin"
+                                                className={`${styles.navItem} ${location.pathname === "/admin" ? styles.active : ""}`}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                <FormattedMessage id="admin" defaultMessage="Admin" />
+                                            </Link>
+                                        )}
+                                        {isLoggedIn && (
+                                            <button
+                                                type="button"
+                                                className={styles.logoutLink}
+                                                onClick={() => {
+                                                    setIsMobileMenuOpen(false);
+                                                    handleLogout();
+                                                }}
+                                            >
+                                                <FormattedMessage id="exit" defaultMessage="Exit" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </li>
                         )}
                     </ul>
@@ -322,6 +348,117 @@ const Header = () => {
                 )}
             </div>
         </header>
+        {typeof document !== 'undefined' && isMobileScreen && createPortal(
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <>
+                        <motion.div
+                            key="bottom-sheet-backdrop"
+                            className={styles.bottomSheetBackdrop}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        />
+                        <motion.div
+                            key="bottom-sheet-content"
+                            className={styles.bottomSheet}
+                            drag="y"
+                            dragConstraints={{ top: 0 }}
+                            dragElastic={{ top: 0, bottom: 0.5 }}
+                            onDragEnd={(_e, info) => {
+                                if (info.offset.y > 80 || info.velocity.y > 400) {
+                                    setIsMobileMenuOpen(false);
+                                }
+                            }}
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                        >
+                            <div className={styles.dragHandleContainer}>
+                                <div className={styles.dragHandle} />
+                            </div>
+                            <nav className={styles.bottomSheetNav}>
+                                <Link
+                                    to="/videos"
+                                    className={`${styles.bottomSheetLink} ${location.pathname === "/videos" ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="videoPlayer" defaultMessage="Video Player" />
+                                </Link>
+                                <Link
+                                    to="/songs"
+                                    className={`${styles.bottomSheetLink} ${location.pathname.startsWith("/songs") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="songs" defaultMessage="Songs" />
+                                </Link>
+                                <Link
+                                    to="/text-paste"
+                                    className={`${styles.bottomSheetLink} ${location.pathname.startsWith("/text-paste") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="textPaste" defaultMessage="Text" />
+                                </Link>
+                                <Link
+                                    to="/subtitles"
+                                    className={`${styles.bottomSheetLink} ${location.pathname.startsWith("/subtitles") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="subtitles" defaultMessage="Subtitles" />
+                                </Link>
+                                <Link
+                                    to="/dictionary"
+                                    className={`${styles.bottomSheetLink} ${location.pathname === "/dictionary" || location.pathname.startsWith("/dictionary/resources/") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="dictionary" defaultMessage="Dictionary" />
+                                </Link>
+                                <Link
+                                    to="/learning"
+                                    className={`${styles.bottomSheetLink} ${location.pathname.startsWith("/learning") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="learning" defaultMessage="Learning" />
+                                </Link>
+                                <Link
+                                    to="/telegramBot"
+                                    className={`${styles.bottomSheetLink} ${location.pathname.startsWith("/telegramBot") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="telegramChannelMenu" defaultMessage="TelegramBot" />
+                                </Link>
+                                {authorities.includes('SYSTEM_ADMIN') && (
+                                    <Link
+                                        to="/admin"
+                                        className={`${styles.bottomSheetLink} ${location.pathname === "/admin" ? styles.active : ""}`}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <FormattedMessage id="admin" defaultMessage="Admin" />
+                                    </Link>
+                                )}
+                                {isLoggedIn && (
+                                    <button
+                                        type="button"
+                                        className={styles.bottomSheetLogout}
+                                        onClick={() => {
+                                            setIsMobileMenuOpen(false);
+                                            handleLogout();
+                                        }}
+                                    >
+                                        <FormattedMessage id="exit" defaultMessage="Exit" />
+                                    </button>
+                                )}
+                            </nav>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>,
+            document.body
+        )}
+        </>
     );
 };
 

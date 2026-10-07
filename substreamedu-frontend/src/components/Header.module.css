@@ -33,6 +33,13 @@
     gap: 12px;
     text-decoration: none;
     order: 1;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+    user-select: none;
+}
+
+.logo_container:active {
+    transform: scale(0.97);
+    opacity: 0.85;
 }
 
 .logoText {
@@ -77,6 +84,14 @@
     background-color: transparent;
     color: var(--color-body);
     transition: all 0.2s ease;
+    position: relative;
+}
+
+.logoutIconButton::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
 }
 
 .userProfile:hover .logoutIconButton {
@@ -97,18 +112,23 @@
     font-weight: 600;
     font-size: 14px;
     text-decoration: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease-out;
     border: 1px solid #faf92f;
     cursor: pointer;
     height: 36px;
     display: inline-flex;
     align-items: center;
     line-height: 1;
+    user-select: none;
 }
 
 .signUpButton:hover {
     background-color: #e6e52b;
     border-color: #e6e52b;
+}
+
+.signUpButton:active {
+    transform: scale(0.96);
 }
 
 /* === NAVIGATION === */
@@ -136,16 +156,22 @@
     color: var(--color-body);
     position: relative;
     padding: 8px 16px;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, transform 0.1s ease-out;
     font-family: var(--font-body);
     font-weight: 400; /* regular */
     display: flex;
     align-items: center;
     letter-spacing: 0;
     line-height: 16px;
+    user-select: none;
 }
 
 .navItem:hover {
+    color: var(--color-ink);
+}
+
+.navItem:active {
+    transform: scale(0.96);
     color: var(--color-ink);
 }
 
@@ -272,15 +298,23 @@
     border: none;
     background: none;
     cursor: pointer;
-    width: auto;
-    text-align: left;
-    padding: 8px 16px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
     font-size: 14px;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, transform 0.1s ease-out;
+    user-select: none;
 }
 
 .menu:hover {
     color: var(--color-body);
+}
+
+.menu:active {
+    transform: scale(0.94);
 }
 
 .dropdown {
@@ -315,7 +349,9 @@
 .dropdownContent a {
     padding: 12px 24px;
     text-decoration: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
     color: #a1a1aa;
     transition: color 0.2s ease, background-color 0.2s ease;
     font-size: 14px;
@@ -325,6 +361,11 @@
 .dropdownContent a:hover {
     color: #ffffff;
     background: rgba(255, 255, 255, 0.05);
+}
+
+.dropdownContent a:active {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(0.985);
 }
 
 .dropdownContent a.active {
@@ -353,6 +394,11 @@
 .logoutLink:hover {
     background: rgba(255, 255, 255, 0.05);
     color: #ef4444;
+}
+
+.logoutLink:active {
+    background: rgba(239, 68, 68, 0.15);
+    transform: scale(0.985);
 }
 
 .desktopOnly {
@@ -414,13 +460,18 @@
     display: flex;
     align-items: center;
     position: relative;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, transform 0.1s ease-out;
     z-index: 2;
     height: auto;
+    user-select: none;
 }
 
 .customLangBtn:hover {
     color: var(--color-ink);
+}
+
+.customLangBtn:active {
+    transform: scale(0.96);
 }
 
 /* === FIGMA LANGUAGE SELECTOR === */
@@ -437,7 +488,12 @@
     border: none;
     cursor: pointer;
     padding: 8px 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, transform 0.1s ease-out;
+    user-select: none;
+}
+
+.figmaLangButton:active {
+    transform: scale(0.96);
 }
 
 .figmaLangText {
@@ -845,4 +901,120 @@
     align-items: center;
     gap: 16px;
     order: 3;
+}
+
+/* ============================================
+   APPLE MOBILE BOTTOM SHEET
+   ============================================ */
+.bottomSheetBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 12, 11, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9998;
+    touch-action: none;
+}
+
+.bottomSheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 85vh;
+    background: #141312;
+    border-top: 1px solid #282522;
+    border-radius: 20px 20px 0 0;
+    z-index: 9999;
+    padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px)) 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+.dragHandleContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 16px 0;
+    cursor: grab;
+}
+
+.dragHandle {
+    width: 36px;
+    height: 5px;
+    border-radius: 9999px;
+    background: #4a453f;
+    transition: background-color 0.15s ease;
+}
+
+.bottomSheet:active .dragHandle {
+    background: #666360;
+}
+
+.bottomSheetNav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.bottomSheetLink {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
+    color: var(--color-ink);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s ease, transform 0.1s ease-out, color 0.15s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bottomSheetLink:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.bottomSheetLink:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.bottomSheetLink.active {
+    color: #faf92f;
+    background: rgba(250, 249, 47, 0.08);
+    font-weight: 600;
+}
+
+.bottomSheetLogout {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
+    color: #ef4444;
+    font-size: 15px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    border-top: 1px solid #282522;
+    margin-top: 8px;
+    padding-top: 12px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease-out;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bottomSheetLogout:active {
+    transform: scale(0.98);
+    background: rgba(239, 68, 68, 0.1);
 }

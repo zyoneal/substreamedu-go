@@ -1224,6 +1224,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                     onVolumeChange={handleVolumeChange}
                                     onSeek={handleSeek}
                                     onTouchSeek={handleTouchSeek}
+                                    onSeekTo={seekTo}
                                     onToggleFullscreen={toggleFullscreen}
                                 />
                             </div>

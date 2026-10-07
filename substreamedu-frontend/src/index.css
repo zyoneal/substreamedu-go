@@ -366,3 +366,38 @@ code {
     padding-top: 48px !important;
   }
 }
+
+/* ==========================================================================
+   Apple Design Accessibility Standards
+   ========================================================================== */
+
+/* Respect user's motion preference (eliminates vestibular discomfort) */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Respect user's transparency preference (solid opaque surfaces) */
+@media (prefers-reduced-transparency: reduce) {
+  .header_container,
+  .backdrop,
+  [class*="backdrop-blur"],
+  [class*="backdropBlur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: var(--color-surface, #141312) !important;
+  }
+}
+
+/* Enhanced contrast mode */
+@media (prefers-contrast: more) {
+  :root {
+    --color-hairline: #4a453f;
+    --color-hairline-strong: #706a62;
+    --color-mute: #8a857d;
+  }
+}

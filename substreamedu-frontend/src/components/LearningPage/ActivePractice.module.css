@@ -832,6 +832,14 @@
   100% { opacity: 0.9; transform: translateX(-50%) scale(0.99); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .projectorBeam {
+    animation: none !important;
+    opacity: 0.9 !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
 .filmVignette {
   position: fixed;
   inset: 0;

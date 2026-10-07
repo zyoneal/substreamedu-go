@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import X from 'lucide-react/dist/esm/icons/x';
 import styles from './modal.module.css';
 
@@ -56,7 +57,7 @@ export const Modal: React.FC<ModalProps> & {
         };
     }, [isOpen, handleKeyDown]);
 
-    if (!isOpen || typeof document === 'undefined') return null;
+    if (typeof document === 'undefined') return null;
 
     const sizeClass = {
         sm: styles.sizeSm,
@@ -68,24 +69,38 @@ export const Modal: React.FC<ModalProps> & {
     }[size];
 
     return createPortal(
-        <div
-            className={styles.backdrop}
-            onClick={closeOnBackdropClick ? onClose : undefined}
-            role="dialog"
-            aria-modal="true"
-            aria-label={ariaLabel}
-            aria-describedby={ariaDescribedBy}
-            data-testid="modal-backdrop"
-        >
-            <div
-                className={`${styles.modal} ${sizeClass} ${className}`.trim()}
-                style={style}
-                onClick={(e) => e.stopPropagation()}
-                data-testid="modal-container"
-            >
-                {children}
-            </div>
-        </div>,
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    key="modal-backdrop"
+                    className={styles.backdrop}
+                    onClick={closeOnBackdropClick ? onClose : undefined}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={ariaLabel}
+                    aria-describedby={ariaDescribedBy}
+                    data-testid="modal-backdrop"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                    <motion.div
+                        key="modal-container"
+                        className={`${styles.modal} ${sizeClass} ${className}`.trim()}
+                        style={style}
+                        onClick={(e) => e.stopPropagation()}
+                        data-testid="modal-container"
+                        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                        transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+                    >
+                        {children}
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>,
         document.body
     );
 };

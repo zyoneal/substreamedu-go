@@ -39,6 +39,7 @@ export interface VideoControlsOverlayProps {
     onVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
     onTouchSeek: (e: React.TouchEvent<HTMLDivElement>) => void;
+    onSeekTo?: (seconds: number) => void;
     onToggleFullscreen: () => void;
     hideTopControls?: boolean;
 }
@@ -76,11 +77,81 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     onVolumeChange,
     onSeek,
     onTouchSeek,
+    onSeekTo,
     onToggleFullscreen,
     hideTopControls = false,
 }) => {
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
     const volumeControlRef = useRef<HTMLDivElement>(null);
+
+    // 1:1 Apple-style Scrubber Direct Manipulation
+    const [isScrubbing, setIsScrubbing] = useState(false);
+    const [scrubPercent, setScrubPercent] = useState(0);
+    const [scrubTime, setScrubTime] = useState(0);
+    const seekBarWrapperRef = useRef<HTMLDivElement>(null);
+
+    const getClientX = (e: React.PointerEvent<HTMLDivElement>): number => {
+        if (typeof e.clientX === 'number' && !isNaN(e.clientX)) return e.clientX;
+        if (e.nativeEvent && typeof (e.nativeEvent as any).clientX === 'number') return (e.nativeEvent as any).clientX;
+        if (typeof (e as any).pageX === 'number') return (e as any).pageX;
+        return 0;
+    };
+
+    const calculateSeekPos = (clientX?: number, targetEl?: HTMLElement | null): { time: number; percent: number } => {
+        const el = targetEl || seekBarWrapperRef.current;
+        if (!el || !duration) return { time: 0, percent: 0 };
+        const rect = el.getBoundingClientRect();
+        const width = rect.width || el.clientWidth || 1;
+        const x = typeof clientX === 'number' ? clientX : 0;
+        const pos = Math.max(0, Math.min(1, (x - rect.left) / width));
+        const percent = pos * 100;
+        const time = pos * duration;
+        return { time, percent };
+    };
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        if (typeof e.currentTarget.setPointerCapture === 'function') {
+            try {
+                e.currentTarget.setPointerCapture(e.pointerId);
+            } catch {}
+        }
+        const { percent, time } = calculateSeekPos(getClientX(e), e.currentTarget);
+        setIsScrubbing(true);
+        setScrubPercent(percent);
+        setScrubTime(time);
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!isScrubbing) return;
+        const { percent, time } = calculateSeekPos(getClientX(e), e.currentTarget);
+        setScrubPercent(percent);
+        setScrubTime(time);
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!isScrubbing) return;
+        if (typeof e.currentTarget.releasePointerCapture === 'function') {
+            try {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+            } catch {}
+        }
+        const { time } = calculateSeekPos(getClientX(e), e.currentTarget);
+        setIsScrubbing(false);
+        if (onSeekTo) {
+            onSeekTo(time);
+        }
+    };
+
+    const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!isScrubbing) return;
+        if (typeof e.currentTarget.releasePointerCapture === 'function') {
+            try {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+            } catch {}
+        }
+        setIsScrubbing(false);
+    };
 
     useEffect(() => {
         if (!isVolumeOpen) return;
@@ -250,14 +321,30 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                     {formatTime(currentTime)}
                 </div>
                 <div
-                    className={styles.seekBarWrapper}
+                    ref={seekBarWrapperRef}
+                    className={`${styles.seekBarWrapper} ${isScrubbing ? styles.scrubbing : ''}`}
                     onClick={onSeek}
                     onTouchStart={onTouchSeek}
                     onTouchMove={onTouchSeek}
                     onTouchEnd={onTouchSeek}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerCancel}
                 >
+                    {isScrubbing && (
+                        <div
+                            className={styles.scrubBadge}
+                            style={{ left: `${scrubPercent}%` }}
+                        >
+                            {formatTime(scrubTime)}
+                        </div>
+                    )}
                     <div className={styles.seekBar}>
-                        <div className={styles.seekBarProgress} style={{ width: `${progress}%` }}></div>
+                        <div
+                            className={styles.seekBarProgress}
+                            style={{ width: `${isScrubbing ? scrubPercent : progress}%` }}
+                        />
                     </div>
                 </div>
                 <div className={styles.timeDuration}>

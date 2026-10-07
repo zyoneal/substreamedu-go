@@ -101,4 +101,43 @@ describe('Header Component Mobile & Desktop Layout', () => {
         // Language selector should NOT be present on dictionary page
         expect(screen.queryByRole('button', { name: /select language/i })).not.toBeInTheDocument();
     });
+
+    it('renders Apple mobile bottom sheet on small screen and closes on backdrop click', () => {
+        const originalInnerWidth = window.innerWidth;
+        window.innerWidth = 400;
+
+        try {
+            renderHeader({ route: '/text-paste', isLoggedIn: true });
+            const menuButton = screen.getByRole('button', { name: /menu/i });
+
+            // Open bottom sheet
+            fireEvent.click(menuButton);
+
+            // Bottom sheet links are present
+            expect(screen.getByRole('link', { name: /songs/i })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: /dictionary/i })).toBeInTheDocument();
+
+            // Close via backdrop click (the fixed overlay behind sheet)
+            const backdrop = document.querySelector('[class*="bottomSheetBackdrop"]');
+            expect(backdrop).toBeInTheDocument();
+            if (backdrop) {
+                fireEvent.click(backdrop);
+            }
+
+            expect(screen.getByTestId('icon-menu')).toBeInTheDocument();
+        } finally {
+            window.innerWidth = originalInnerWidth;
+        }
+    });
+
+    it('closes mobile menu on Escape key press', () => {
+        renderHeader({ route: '/text-paste', isLoggedIn: true });
+        const menuButton = screen.getByRole('button', { name: /menu/i });
+
+        fireEvent.click(menuButton);
+        expect(screen.getByTestId('icon-x')).toBeInTheDocument();
+
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(screen.getByTestId('icon-menu')).toBeInTheDocument();
+    });
 });

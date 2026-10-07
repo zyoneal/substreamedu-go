@@ -5,19 +5,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,69,230,0.5)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,69,230,0.5)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] active:transition-transform active:duration-100 select-none cursor-pointer max-sm:min-h-[44px]",
   {
     variants: {
       variant: {
-        default: "bg-[#FFFFFF] text-black border border-black/5 hover:bg-[#0045e6] hover:text-white hover:border-[#0045e6] shadow-none hover:-translate-y-0.5 transition-all duration-300",
+        default: "bg-[#FFFFFF] text-black border border-black/5 hover:bg-[#0045e6] hover:text-white hover:border-[#0045e6] shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150",
         destructive:
-          "bg-red-600 text-white rounded-full hover:bg-red-700",
+          "bg-red-600 text-white rounded-full hover:bg-red-700 active:bg-red-800",
         outline:
-          "border border-black/5 bg-[#FFFFFF] text-black hover:bg-[#0045e6] hover:text-white hover:border-[#0045e6] shadow-none hover:-translate-y-0.5 transition-all duration-300",
+          "border border-black/5 bg-[#FFFFFF] text-black hover:bg-[#0045e6] hover:text-white hover:border-[#0045e6] shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150",
         secondary:
-          "border border-black/5 bg-[#FFFFFF] text-black hover:bg-[#0045e6] hover:text-white hover:border-[#0045e6] shadow-none hover:-translate-y-0.5 transition-all duration-300",
-        ghost: "bg-transparent text-black hover:bg-[#0045e6] hover:text-white hover:-translate-y-0.5 transition-all duration-300",
-        link: "text-black underline-offset-4 hover:underline",
+          "border border-black/5 bg-[#FFFFFF] text-black hover:bg-[#0045e6] hover:text-white hover:border-[#0045e6] shadow-none hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150",
+        ghost: "bg-transparent text-black hover:bg-[#0045e6] hover:text-white hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150",
+        link: "text-black underline-offset-4 hover:underline active:opacity-70 active:scale-100",
       },
       size: {
         default: "h-9 px-5 py-2",

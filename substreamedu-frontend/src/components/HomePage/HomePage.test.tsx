@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act, within } from '@testing-library/react';
+import { render, screen, fireEvent, act, within, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 // Mock direct ESM icon imports for Jest
@@ -49,7 +49,7 @@ describe('HomePage Demo Modal', () => {
     expect(demoBtn).toBeInTheDocument();
   });
 
-  it('opens demo modal when Watch demo is clicked and can be closed via close button', () => {
+  it('opens demo modal when Watch demo is clicked and can be closed via close button', async () => {
     renderHomePage();
     const demoBtn = screen.getByRole('button', { name: /watch demo/i });
 
@@ -79,7 +79,9 @@ describe('HomePage Demo Modal', () => {
       fireEvent.click(closeBtn);
     });
 
-    expect(screen.queryByRole('dialog', { name: /video walkthrough/i })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: /video walkthrough/i })).not.toBeInTheDocument();
+    });
   });
 
   it('renders interactive demo dock with all 3 instant sandbox options without requiring signup', () => {

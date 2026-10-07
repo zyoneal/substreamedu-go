@@ -93,6 +93,14 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .projectorBeam {
+    animation: none !important;
+    opacity: 0.9 !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
 
 
 /* 35mm Cinema Perimeter Vignette (Optical Falloff) */
@@ -436,6 +444,10 @@
   transform: translateY(-1px);
 }
 
+.heroQuickDockItem:active {
+  transform: scale(0.96);
+}
+
 .heroQuickDockDivider {
   width: 1px;
   height: 12px;
@@ -528,6 +540,10 @@
 
 .heroDemoCard:hover {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.heroDemoCard:active {
+  transform: scale(0.985);
 }
 
 .heroDemoCardIconWrap {
@@ -1223,6 +1239,10 @@
   transform: translateY(-1px);
 }
 
+.demoCtaButton:active {
+  transform: scale(0.97);
+}
+
 .demoCtaArrow {
   transition: transform 0.2s ease;
 }
@@ -1655,6 +1675,10 @@
   color: var(--white);
 }
 
+.faqQuestion:active {
+  opacity: 0.75;
+}
+
 .faqQuestion span:first-child {
   flex: 1;
 }
@@ -1856,6 +1880,14 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.modalCloseBtn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
 }
 
 .modalCloseBtn:hover {
@@ -2276,6 +2308,10 @@
   border-color: var(--accent);
   background: rgba(250, 249, 47, 0.04);
   transform: translateY(-1px);
+}
+
+.tryDemoDockItem:active {
+  transform: scale(0.96);
 }
 
 /* ================================================

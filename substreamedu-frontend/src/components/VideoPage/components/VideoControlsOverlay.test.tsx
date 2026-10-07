@@ -212,4 +212,46 @@ describe('VideoControlsOverlay Component', () => {
         // Bottom controls like play button should still be present
         expect(screen.getByTestId('icon-play')).toBeInTheDocument();
     });
+
+    it('performs 1:1 direct manipulation scrubbing with pointer events and shows floating time badge', () => {
+        const onSeekTo = jest.fn();
+        render(<VideoControlsOverlay {...defaultProps} duration={200} onSeekTo={onSeekTo} />);
+
+        const seekBarWrapper = document.querySelector('[class*="seekBarWrapper"]') as HTMLElement;
+        expect(seekBarWrapper).toBeInTheDocument();
+
+        // Mock bounding client rect: width 200px, left 0
+        jest.spyOn(seekBarWrapper, 'getBoundingClientRect').mockReturnValue({
+            left: 0,
+            top: 0,
+            right: 200,
+            bottom: 32,
+            width: 200,
+            height: 32,
+            x: 0,
+            y: 0,
+            toJSON: () => {},
+        });
+
+        // 1. Pointer Down at 50px (25% -> 50s)
+        const downEvent = new MouseEvent('pointerdown', { bubbles: true, clientX: 50 });
+        fireEvent(seekBarWrapper, downEvent);
+        expect(seekBarWrapper).toHaveClass('scrubbing');
+
+        // Floating badge appears showing "0:50"
+        const badge = document.querySelector('[class*="scrubBadge"]');
+        expect(badge).toBeInTheDocument();
+        expect(badge).toHaveTextContent('0:50');
+
+        // 2. Pointer Move to 100px (50% -> 100s = 1:40)
+        const moveEvent = new MouseEvent('pointermove', { bubbles: true, clientX: 100 });
+        fireEvent(seekBarWrapper, moveEvent);
+        expect(badge).toHaveTextContent('1:40');
+
+        // 3. Pointer Up commits seekTo(100)
+        const upEvent = new MouseEvent('pointerup', { bubbles: true, clientX: 100 });
+        fireEvent(seekBarWrapper, upEvent);
+        expect(seekBarWrapper).not.toHaveClass('scrubbing');
+        expect(onSeekTo).toHaveBeenCalledWith(100);
+    });
 });

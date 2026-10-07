@@ -1,5 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import X from 'lucide-react/dist/esm/icons/x';
 import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
 import { useIntl } from 'react-intl';
@@ -109,7 +110,9 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
     const activeChunks = translationData?.chunks ?? chunks ?? null;
     const activeTypicalContexts = translationData?.typicalContexts ?? typicalContexts ?? null;
 
-    if (!selectionPosition || !isPopoverOpen || (!activeTranslation && !isLoading)) {
+    const isVisible = Boolean(selectionPosition && isPopoverOpen && (activeTranslation || isLoading));
+
+    if (typeof document === 'undefined') {
         return null;
     }
 
@@ -134,31 +137,51 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
     const isErrorTranslation = activeTranslation?.includes('could not translate') || activeTranslation?.includes('Error fetching translation');
 
     return createPortal(
-        <div
-            id="popover-id"
-            className={`${styles.popover} ${styles.glass3d} ${selectionPosition?.showBelow ? styles.popoverBelow : ''} ${selectionPosition?.isConstrained ? styles.popoverConstrained : ''}`}
-            style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                transform: selectionPosition?.showBelow
-                    ? `translate(${isMobile ? window.innerWidth / 2 : selectionPosition.x}px, ${selectionPosition.y}px) translate(-50%, 0)`
-                    : `translate(${isMobile ? window.innerWidth / 2 : selectionPosition.x}px, ${selectionPosition.y}px) translate(-50%, -100%)`,
-                ...(typeof CSS !== 'undefined' && CSS.supports && CSS.supports('backdrop-filter', 'blur(25px)')
-                    ? {
-                        backdropFilter: 'blur(25px)',
-                        WebkitBackdropFilter: 'blur(25px)',
-                    }
-                    : {
-                        background: 'rgba(22, 22, 28, 0.6)',
-                    }),
-                zIndex: 10001,
-                ...(selectionPosition?.maxHeight ? { maxHeight: `${selectionPosition.maxHeight}px` } : {}),
-            }}
-            onMouseEnter={onMouseEnter}
-        >
-            <div className={styles.popoverArrow}></div>
-            <div className={styles.popoverContent}>
+        <AnimatePresence>
+            {isVisible && selectionPosition && (
+                <motion.div
+                    key="popover-id"
+                    id="popover-id"
+                    className={`${styles.popover} ${styles.glass3d} ${selectionPosition.showBelow ? styles.popoverBelow : ''} ${selectionPosition.isConstrained ? styles.popoverConstrained : ''}`}
+                    initial={{
+                        opacity: 0,
+                        scale: 0.94,
+                        x: '-50%',
+                        y: selectionPosition.showBelow ? 0 : '-100%',
+                    }}
+                    animate={{
+                        opacity: 1,
+                        scale: 1,
+                        x: '-50%',
+                        y: selectionPosition.showBelow ? 0 : '-100%',
+                    }}
+                    exit={{
+                        opacity: 0,
+                        scale: 0.94,
+                        x: '-50%',
+                        y: selectionPosition.showBelow ? 0 : '-100%',
+                    }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
+                    style={{
+                        position: 'absolute',
+                        left: `${isMobile ? window.innerWidth / 2 : selectionPosition.x}px`,
+                        top: `${selectionPosition.y}px`,
+                        transformOrigin: selectionPosition.showBelow ? 'top center' : 'bottom center',
+                        ...(typeof CSS !== 'undefined' && CSS.supports && CSS.supports('backdrop-filter', 'blur(25px)')
+                            ? {
+                                backdropFilter: 'blur(25px)',
+                                WebkitBackdropFilter: 'blur(25px)',
+                            }
+                            : {
+                                background: 'rgba(22, 22, 28, 0.6)',
+                            }),
+                        zIndex: 10001,
+                        ...(selectionPosition.maxHeight ? { maxHeight: `${selectionPosition.maxHeight}px` } : {}),
+                    }}
+                    onMouseEnter={onMouseEnter}
+                >
+                    <div className={styles.popoverArrow}></div>
+                    <div className={styles.popoverContent}>
                 <div className={styles.selectedTextRow}>
                     <h3 className={styles.selectedText}>{selectedText}</h3>
                     {cleanTranscription && (
@@ -304,7 +327,9 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                     </div>
                 </div>
             </div>
-        </div>,
-        (typeof document !== 'undefined' && (document.fullscreenElement || document.body)) || document.body
-    );
+        </motion.div>
+    )}
+</AnimatePresence>,
+(typeof document !== 'undefined' && (document.fullscreenElement || document.body)) || document.body
+);
 };
