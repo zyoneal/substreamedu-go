@@ -193,3 +193,10 @@
         height: 14px;
     }
 }
+
+@media (max-width: 768px) {
+    .dropdown {
+        left: calc(50% - 110px);
+        right: auto;
+    }
+}

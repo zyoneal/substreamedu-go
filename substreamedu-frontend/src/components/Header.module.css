@@ -32,6 +32,7 @@
     align-items: center;
     gap: 12px;
     text-decoration: none;
+    order: 1;
 }
 
 .logoText {
@@ -116,6 +117,7 @@
     align-items: center;
     gap: 0;
     flex-wrap: wrap;
+    order: 2;
 }
 
 .dashboardNav {
@@ -365,6 +367,30 @@
     .desktopOnly {
         display: none !important;
     }
+
+    .navigation {
+        margin-left: auto;
+        order: 10;
+    }
+
+    .rightControlsContainer {
+        order: 5;
+    }
+
+    .dropdownContent {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    .headerPlayerLangContainer,
+    .headerPlayerLangContainerInline {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        z-index: 10;
+    }
 }
 
 @media (min-width: 1141px) {
@@ -538,6 +564,8 @@
         position: relative;
         left: auto;
         transform: none;
+        margin-left: auto;
+        order: 10;
     }
 
     .dashboardNav {
@@ -552,10 +580,12 @@
     }
 
     .menu {
-        padding: 4px;
+        padding: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 
@@ -796,12 +826,13 @@
 }
 
 @media (max-width: 768px) {
-    .headerPlayerLangContainer {
-        position: relative;
-        left: auto;
-        transform: none;
-        margin-left: auto;
-        margin-right: 8px;
+    .headerPlayerLangContainer,
+    .headerPlayerLangContainerInline {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        z-index: 10;
     }
 
     .headerPlayerLangContainer [class*="currentLang"],
@@ -813,4 +844,5 @@
     display: flex;
     align-items: center;
     gap: 16px;
+    order: 3;
 }
