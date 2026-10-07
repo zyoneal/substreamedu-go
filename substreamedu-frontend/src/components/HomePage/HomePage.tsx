@@ -547,6 +547,7 @@ const HomePage: React.FC = () => {
 
           <motion.div
             className={styles.tryDemoDock}
+            data-testid="hero-demo-dock"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-40px' }}
