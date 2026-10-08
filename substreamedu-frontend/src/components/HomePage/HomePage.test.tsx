@@ -49,11 +49,11 @@ describe('HomePage Demo Modal', () => {
     expect(demoBtn).toBeInTheDocument();
   });
 
-  it('renders Try with a YouTube video button leading to /youtube-demo', () => {
+  it('renders Try with a YouTube video button leading to /youtube-demo?onboarding=true', () => {
     renderHomePage();
     const tryBtn = screen.getByRole('link', { name: /try with a youtube video/i });
     expect(tryBtn).toBeInTheDocument();
-    expect(tryBtn).toHaveAttribute('href', '/youtube-demo');
+    expect(tryBtn).toHaveAttribute('href', '/youtube-demo?onboarding=true');
   });
 
   it('opens demo modal when Watch demo is clicked and can be closed via close button', async () => {

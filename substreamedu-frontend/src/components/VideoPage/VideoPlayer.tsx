@@ -208,16 +208,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
     const isGuestDemoMode = !isLoggedIn && isDemoRoute;
 
-    const isOnboardingMode = Boolean(
-        !isLoggedIn &&
-        !hasSavedWords &&
-        !onboardingDismissed &&
-        (isOnboarding || isUrlOnboarding)
-    );
-
-    const effectiveBlur = isOnboardingMode ? false : blurSubtitles;
-    const effectiveDelay = isOnboardingMode ? 0 : delay;
-
     const location = useLocation();
 
     const isUrlOnboardingParam = typeof window !== 'undefined' && (
@@ -225,6 +215,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         new URLSearchParams(location.search).get('onboarding') === 'true'
     );
     const isOnboardingActive = Boolean(isOnboarding || isUrlOnboardingParam);
+
+    const isOnboardingMode = Boolean(
+        !onboardingDismissed && (
+            isUrlOnboardingParam ||
+            (!isLoggedIn && !hasSavedWords && (isOnboarding || isUrlOnboarding))
+        )
+    );
+
+    const effectiveBlur = isOnboardingMode ? false : blurSubtitles;
+    const effectiveDelay = isOnboardingMode ? 0 : delay;
 
     const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(1);
 

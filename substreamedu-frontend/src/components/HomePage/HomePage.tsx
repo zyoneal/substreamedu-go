@@ -486,7 +486,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.heroActions}>
               <Link
-                to="/youtube-demo"
+                to="/youtube-demo?onboarding=true"
                 className={styles.btnPrimary}
                 data-cursor="action"
                 data-cursor-text="Try Free"
@@ -1056,7 +1056,7 @@ const HomePage: React.FC = () => {
             exit={{ y: 80, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Link to="/youtube-demo" className={styles.stickyMobileCtaBtn}>
+            <Link to="/youtube-demo?onboarding=true" className={styles.stickyMobileCtaBtn}>
               Try free · 100 translations
               <ArrowRight size={13} />
             </Link>
