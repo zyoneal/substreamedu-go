@@ -57,7 +57,7 @@ describe('VideoPlayer Header & Replace Button', () => {
         onSelectAnotherVideo: jest.fn(),
     };
 
-    const renderPlayer = ({ isLoggedIn, route }: { isLoggedIn: boolean; route: string }) => {
+    const renderPlayer = ({ isLoggedIn, route, isOnboarding }: { isLoggedIn: boolean; route: string; isOnboarding?: boolean }) => {
         delete (window as any).location;
         (window as any).location = new URL(`https://substreamedu.com${route}`);
 
@@ -75,7 +75,7 @@ describe('VideoPlayer Header & Replace Button', () => {
                 }}>
                     <IntlProvider locale="en" messages={enMessages}>
                         <MemoryRouter initialEntries={[route]}>
-                            <VideoPlayer {...defaultProps} />
+                            <VideoPlayer {...defaultProps} isOnboarding={isOnboarding} />
                         </MemoryRouter>
                     </IntlProvider>
                 </AuthContext.Provider>
@@ -95,13 +95,34 @@ describe('VideoPlayer Header & Replace Button', () => {
         expect(defaultProps.onSelectAnotherVideo).toHaveBeenCalled();
     });
 
-    it('renders Replace button for registered users even if on a demo route', () => {
+    it('renders Replace button for registered users even if on a demo route when onboarding is false', () => {
         renderPlayer({ isLoggedIn: true, route: '/youtube-demo' });
 
         const replaceButton = screen.getByRole('button', { name: /replace/i });
         expect(replaceButton).toBeInTheDocument();
         expect(replaceButton).toHaveTextContent('Replace');
         expect(screen.queryByTestId('demo-player-header')).not.toBeInTheDocument();
+    });
+
+    it('renders Exit button linking to /dashboard for registered users when onboarding is true', () => {
+        renderPlayer({ isLoggedIn: true, route: '/youtube-demo?onboarding=true' });
+
+        const exitButton = screen.getByRole('link', { name: /exit/i });
+        expect(exitButton).toBeInTheDocument();
+        expect(exitButton).toHaveAttribute('href', '/dashboard');
+        expect(screen.queryByRole('button', { name: /replace/i })).not.toBeInTheDocument();
+
+        fireEvent.click(exitButton);
+        expect(localStorage.getItem('substreamedu_onboarding_completed')).toBe('true');
+    });
+
+    it('renders Exit button linking to / for guests when onboarding is true on non-demo routes', () => {
+        renderPlayer({ isLoggedIn: false, route: '/videos?onboarding=true' });
+
+        const exitButton = screen.getByRole('link', { name: /exit/i });
+        expect(exitButton).toBeInTheDocument();
+        expect(exitButton).toHaveAttribute('href', '/');
+        expect(screen.queryByRole('button', { name: /replace/i })).not.toBeInTheDocument();
     });
 
     it('renders demo navigation ("Back to Home" and "Start Free") for unregistered guests on demo routes', () => {

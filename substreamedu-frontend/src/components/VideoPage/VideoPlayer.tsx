@@ -36,7 +36,7 @@ import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 import Play from 'lucide-react/dist/esm/icons/play';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { isMobile } from 'react-device-detect';
 import { createPortal } from 'react-dom';
@@ -218,12 +218,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const effectiveBlur = isOnboardingMode ? false : blurSubtitles;
     const effectiveDelay = isOnboardingMode ? 0 : delay;
 
+    const location = useLocation();
+
+    const isUrlOnboardingParam = typeof window !== 'undefined' && (
+        new URLSearchParams(window.location.search).get('onboarding') === 'true' ||
+        new URLSearchParams(location.search).get('onboarding') === 'true'
+    );
+    const isOnboardingActive = Boolean(isOnboarding || isUrlOnboardingParam);
+
     const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(1);
 
     const handleDismissOnboarding = useCallback(() => {
         setOnboardingDismissed(true);
         try {
             localStorage.setItem('substreamedu_onboarding_completed', 'true');
+            sessionStorage.removeItem('videoUrl');
+            sessionStorage.removeItem('videoFileName');
+            sessionStorage.removeItem('videoCurrentTime');
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('substreamedu:onboarding_completed'));
             }
@@ -1032,6 +1043,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 <div className={styles.demoPlayerHeader} data-testid="demo-player-header">
                                     <Link
                                         to="/"
+                                        onClick={handleDismissOnboarding}
                                         className={styles.demoBackHomeButton}
                                         aria-label={intl.formatMessage({ id: 'videoPage.backToHome', defaultMessage: 'Back to Home' })}
                                     >
@@ -1053,17 +1065,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 </div>
                             ) : (
                                 <div className={styles.registeredPlayerHeader}>
-                                    {onSelectAnotherVideo && (
-                                        <button
-                                            onClick={onSelectAnotherVideo}
+                                    {isOnboardingActive ? (
+                                        <Link
+                                            to={isLoggedIn ? "/dashboard" : "/"}
+                                            onClick={handleDismissOnboarding}
                                             className={styles.backButton}
-                                            aria-label={intl.formatMessage({ id: 'videoPage.selectAnotherVideo', defaultMessage: 'Replace' })}
+                                            aria-label={intl.formatMessage({ id: 'exit', defaultMessage: 'Exit' })}
                                         >
                                             <ArrowLeft size={18} strokeWidth={2.5} />
                                             <span>
-                                                <FormattedMessage id="videoPage.selectAnotherVideo" defaultMessage="Replace" />
+                                                <FormattedMessage id="exit" defaultMessage="Exit" />
                                             </span>
-                                        </button>
+                                        </Link>
+                                    ) : (
+                                        onSelectAnotherVideo && (
+                                            <button
+                                                onClick={onSelectAnotherVideo}
+                                                className={styles.backButton}
+                                                aria-label={intl.formatMessage({ id: 'videoPage.selectAnotherVideo', defaultMessage: 'Replace' })}
+                                            >
+                                                <ArrowLeft size={18} strokeWidth={2.5} />
+                                                <span>
+                                                    <FormattedMessage id="videoPage.selectAnotherVideo" defaultMessage="Replace" />
+                                                </span>
+                                            </button>
+                                        )
                                     )}
                                 </div>
                             )
