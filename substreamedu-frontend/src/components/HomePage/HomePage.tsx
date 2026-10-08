@@ -486,12 +486,12 @@ const HomePage: React.FC = () => {
 
             <div className={styles.heroActions}>
               <Link
-                to="/videos"
+                to="/youtube-demo"
                 className={styles.btnPrimary}
                 data-cursor="action"
                 data-cursor-text="Try Free"
               >
-                Try with a movie scene
+                Try with a YouTube video
                 <ArrowRight size={14} className={styles.btnIcon} />
               </Link>
               <button
@@ -1056,7 +1056,7 @@ const HomePage: React.FC = () => {
             exit={{ y: 80, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Link to="/videos" className={styles.stickyMobileCtaBtn}>
+            <Link to="/youtube-demo" className={styles.stickyMobileCtaBtn}>
               Try free · 100 translations
               <ArrowRight size={13} />
             </Link>
