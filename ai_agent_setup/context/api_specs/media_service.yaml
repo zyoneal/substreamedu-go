@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: SubStreamEdu Media & Subtitle Service API
+  version: 1.0.0
+  description: Subtitle extraction, SubDL external search, YouTube metadata, audio tracks, and clip streaming.
+
+servers:
+  - url: /api
+    description: Public Gateway routed path
+  - url: http://media-service:3004/media-service
+    description: Internal direct service address
+
+paths:
+  /subtitles/external/search:
+    get:
+      summary: Search SubDL for External Subtitles
+      description: Queries external SubDL API by film title or movie name and returns matched subtitle tracks.
+      parameters:
+        - name: filmName
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "The Shawshank Redemption"
+        - name: languages
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "en"
+      responses:
+        '200':
+          description: List of available subtitle releases from SubDL
+
+  /subtitles/external/download/{id}:
+    get:
+      summary: Download External Subtitle Track
+      description: Downloads and unzips subtitle file from SubDL, caching it locally for instant video playback.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subtitle content parsed and ready for playback
+
+  /subtitles/video/{name}:
+    get:
+      summary: Get Subtitles by Video Filename
+      description: Returns parsed SRT/VTT cue list for a video stored in shared media or Google Drive cache.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subtitle track payload with cues and timestamps
+
+  /subtitles/upload:
+    post:
+      summary: Upload Custom Subtitle File
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, videoName]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                videoName:
+                  type: string
+      responses:
+        '201':
+          description: Subtitle uploaded and indexed successfully
+
+  /youtube/clip/{videoId}:
+    get:
+      summary: Stream Short HD Video Clip
+      description: Extracts and streams a 15–60s slice of a YouTube video for vertical 9:16 social reel generation.
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9_-]{11}$'
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: number
+            example: 120.5
+        - name: duration
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 15.0
+            maximum: 60.0
+      responses:
+        '200':
+          description: Binary MP4 video stream
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

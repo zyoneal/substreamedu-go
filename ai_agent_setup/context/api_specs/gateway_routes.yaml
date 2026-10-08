@@ -1,0 +1,47 @@
+version: '1.0'
+description: SubStreamEdu API Gateway Route Ingress Configuration & Upstream Mapping
+
+routes:
+  - id: iam-auth
+    public_path: /api/auth/**
+    upstream_target: http://iam-service:3002
+    strip_prefix: 1
+    prefix_path: /auth-service
+    rate_limit: 10 req/min (IP-based on auth endpoints)
+    cors: allowed
+
+  - id: iam-users
+    public_path: /api/users/**
+    upstream_target: http://iam-service:3002
+    strip_prefix: 1
+    prefix_path: /auth-service
+    auth_required: true
+
+  - id: iam-admin
+    public_path: /api/admin/**
+    upstream_target: http://iam-service:3002
+    strip_prefix: 1
+    prefix_path: /auth-service
+    auth_required: true
+    role_required: SYSTEM_ADMIN
+
+  - id: dictionary-service
+    public_path: /api/dictionary/**
+    upstream_target: http://dictionary-service:3003
+    strip_prefix: 1
+    prefix_path: /dictionary-service
+    auth_policy: mixed (mutations require Bearer JWT; catalog reads public)
+
+  - id: media-service
+    public_path: /api/subtitles/**, /api/lyrics/**, /api/youtube/**
+    upstream_target: http://media-service:3004
+    strip_prefix: 1
+    prefix_path: /media-service
+    auth_policy: mixed (upload/delete require Bearer JWT; streaming/search public)
+
+  - id: notification-service
+    public_path: /api/notifications/**
+    upstream_target: http://notification-service:3005
+    strip_prefix: 1
+    prefix_path: /notification-service
+    auth_required: true

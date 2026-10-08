@@ -216,12 +216,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
     const isOnboardingActive = Boolean(isOnboarding || isUrlOnboardingParam);
 
-    const isOnboardingMode = Boolean(
-        !onboardingDismissed && (
-            isUrlOnboardingParam ||
-            (!isLoggedIn && !hasSavedWords && (isOnboarding || isUrlOnboarding))
-        )
-    );
+    const isOnboardingMode = false; // Disabled by AI: Onboarding mode was hiding the core V1 mechanics (blur, delay, and top controls)
 
     const effectiveBlur = isOnboardingMode ? false : blurSubtitles;
     const effectiveDelay = isOnboardingMode ? 0 : delay;

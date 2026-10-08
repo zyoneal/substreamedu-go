@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "TB6IT8fUWT4=",
+  "success": true,
+  "projectFilePath": "/Users/test/Desktop/substreamedu-go/.agents/skills/software-copyright-materials/vendor/docx-toolkit/scripts/dotnet/DocxToolkit.Core/DocxToolkit.Core.csproj",
+  "expectedPackageFiles": [
+    "/Users/test/.nuget/packages/documentformat.openxml/3.5.1/documentformat.openxml.3.5.1.nupkg.sha512",
+    "/Users/test/.nuget/packages/documentformat.openxml.framework/3.5.1/documentformat.openxml.framework.3.5.1.nupkg.sha512",
+    "/Users/test/.nuget/packages/system.commandline/2.0.5/system.commandline.2.0.5.nupkg.sha512",
+    "/Users/test/.nuget/packages/system.io.packaging/8.0.1/system.io.packaging.8.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
