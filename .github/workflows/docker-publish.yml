@@ -1,0 +1,50 @@
+name: Publish Docker Images
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - service_name: iam-service
+            context: ./substreamedu-iam-service-go
+          - service_name: dictionary-service
+            context: ./substreamedu-dictionary-service-go
+          - service_name: media-service
+            context: ./substreamedu-media-service-go
+          - service_name: notification-service
+            context: ./substreamedu-notification-service-go
+          - service_name: gateway
+            context: ./substreamedu-gateway-go
+          - service_name: frontend
+            context: ./substreamedu-frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service_name }}:latest
+            ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service_name }}:${{ github.sha }}
