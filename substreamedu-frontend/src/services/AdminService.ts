@@ -98,7 +98,7 @@ const AdminService = {
 
     async getAnalytics(): Promise<AnalyticsSummary> {
         const response = await axiosService.get(urls.admin.analytics);
-        return response.data.data;
+        return response.data;
     }
 };
 
