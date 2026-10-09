@@ -29,9 +29,9 @@ const UserRow: React.FC<{ user: User; onUpdateUser: (userId: string, data: any) 
                     <span className={styles.id}>{user.id}</span>
                 </div>
             </td>
-            <td>{stats ? stats.wordCount : '...'}</td>
-            <td>{stats ? stats.resourceCount : '...'}</td>
-            <td>{stats ? stats.subtitleCount : '...'}</td>
+            <td className={styles.wordCount}>{stats ? stats.wordCount : '...'}</td>
+            <td className={styles.metricValue}>{stats ? stats.resourceCount : '...'}</td>
+            <td className={styles.metricValue}>{stats ? stats.subtitleCount : '...'}</td>
             <td>
                 <select
                     className={styles.select}
@@ -50,7 +50,7 @@ const UserRow: React.FC<{ user: User; onUpdateUser: (userId: string, data: any) 
                     {user.isPremium ? 'Premium' : 'Free'}
                 </button>
             </td>
-            <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+            <td className={styles.date}>{new Date(user.createdAt).toLocaleDateString()}</td>
         </tr>
     );
 };

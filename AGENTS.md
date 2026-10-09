@@ -33,4 +33,4 @@ Every AI agent starting a new turn or task MUST read the following context files
 7. **Bug Diagnosis — Feedback Loop First**: Never patch code blindly. Build a single-command reproducible test/script that fails deterministically (turns RED) before fixing any bug.
 8. **Deep Modules & Design It Twice**: Encapsulate complexity behind clean seams. For non-trivial features, explore 2–3 alternative designs at the spec stage before choosing an implementation.
 9. **Never Tear Down Unlanded Work**: Never run destructive git commands (`reset --hard`, `checkout .`, `clean -fd`, `push --force`) that risk destroying uncommitted changes or altering remote history without explicit user instruction.
-
+10. **Local CI Only**: All CI/CD pipelines (GitHub Actions, GitLab CI, etc.) have been removed. You MUST run all tests, linters, and checks locally before any push to `main`. No automated CI checks will run on push.
