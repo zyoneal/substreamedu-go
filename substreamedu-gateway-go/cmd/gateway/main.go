@@ -62,7 +62,7 @@ func main() {
 		mux.HandleFunc("/gateway/debug/pprof/trace", pprof.Trace)
 	}
 
-	gatewayLimiter := middleware.NewRateLimiter(100, time.Minute)
+	gatewayLimiter := middleware.NewRateLimiter(600, time.Minute)
 	finalHandler := middleware.StripSpoofableHeaders()(
 		middleware.SecurityHeaders()(
 			middleware.CORS(cfg.CORS.AllowedOrigins)(

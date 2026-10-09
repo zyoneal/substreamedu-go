@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styles from './css/UserTable.module.css';
 import AdminService, { User } from '../../services/AdminService';
 
@@ -9,20 +9,34 @@ interface UserTableProps {
 
 const UserRow: React.FC<{ user: User; onUpdateUser: (userId: string, data: any) => void }> = ({ user, onUpdateUser }) => {
     const [stats, setStats] = useState<any>(null);
+    const rowRef = useRef<HTMLTableRowElement>(null);
 
     useEffect(() => {
         let mounted = true;
-        Promise.all([
-            AdminService.getUserOverview(user.id),
-            AdminService.getUserMediaStats(user.id)
-        ]).then(([overview, media]) => {
-            if (mounted) setStats({ ...overview, ...media });
-        }).catch(err => console.error(err));
-        return () => { mounted = false; };
-    }, [user.id]);
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !stats) {
+                Promise.all([
+                    AdminService.getUserOverview(user.id),
+                    AdminService.getUserMediaStats(user.id)
+                ]).then(([overview, media]) => {
+                    if (mounted) setStats({ ...overview, ...media });
+                }).catch(err => console.error(err));
+                observer.disconnect();
+            }
+        }, { rootMargin: '50px' });
+
+        if (rowRef.current) {
+            observer.observe(rowRef.current);
+        }
+
+        return () => {
+            mounted = false;
+            observer.disconnect();
+        };
+    }, [user.id, stats]);
 
     return (
-        <tr>
+        <tr ref={rowRef}>
             <td>
                 <div className={styles.userInfo}>
                     <span className={styles.email}>{user.email}</span>
