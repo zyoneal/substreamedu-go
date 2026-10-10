@@ -323,7 +323,7 @@ const LoginPage: React.FC = () => {
                     {!otpSent && (
                         <div className={styles.brandHeader}>
                             <span className={styles.brandEyebrow}>Authentication</span>
-                            <h2 className={styles.brandTitle}>SubStreamEdu</h2>
+                            <h2 id="login-title" className={styles.brandTitle}>SubStreamEdu</h2>
                             <p className={styles.brandSubtitle}>
                                 {intl.formatMessage({
                                     id: "loginWelcome",
@@ -374,13 +374,13 @@ const LoginPage: React.FC = () => {
                                 >
                                     <div className={styles.otpSection}>
                                         <div className={styles.otpHeader}>
-                                            <h2 className={styles.otpTitle}>
+                                            <h2 id="login-title" className={styles.otpTitle}>
                                                 {intl.formatMessage({
                                                     id: "enterEmailCode",
                                                     defaultMessage: "Enter verification code"
                                                 })}
                                             </h2>
-                                            <p className={styles.otpHelper}>
+                                            <p id="otp-helper" className={styles.otpHelper}>
                                                 {intl.formatMessage({
                                                     id: "enterEmailCodeHelper",
                                                     defaultMessage: "We sent a code to your email. Check your spam folder if you don't see it."
@@ -412,6 +412,7 @@ const LoginPage: React.FC = () => {
                                                 })}
                                                 maxLength={6}
                                                 autoComplete="one-time-code"
+                                                aria-label="Confirmation code"
                                                 aria-describedby="otp-helper"
                                                 inputMode="numeric"
                                                 pattern="[0-9]*"

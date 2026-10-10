@@ -86,4 +86,29 @@ describe('DictionaryPage Empty State (0 words)', () => {
     const emptyHeading = await screen.findByText(/Word lists not found|No collections yet/i);
     expect(emptyHeading).toBeInTheDocument();
   });
+
+  it('renders Apple-minimalist collection cards without bracketed technical tags or noisy badges', async () => {
+    jest.spyOn(require('../../services/AuthService').AuthService, 'getUserEmail').mockReturnValue('test@example.com');
+    (DictionaryService.fetchDictionaryResources as jest.Mock).mockResolvedValue([
+      {
+        groupName: 'Inception.srt',
+        numberOfWords: 14,
+        sampleWords: ['subconscious', 'paradox', 'totem'],
+      },
+    ]);
+
+    renderComponent();
+
+    const collectionTitle = await screen.findByText('Inception.srt');
+    expect(collectionTitle).toBeInTheDocument();
+    expect(screen.getByText('14 words')).toBeInTheDocument();
+    expect(screen.getByText('subconscious')).toBeInTheDocument();
+
+    // Ensure bracketed technical tags and noisy pill badges are not rendered
+    expect(screen.queryByText('[MOVIES]')).not.toBeInTheDocument();
+    expect(screen.queryByText('[YOUTUBE]')).not.toBeInTheDocument();
+    expect(screen.queryByText('SAVED')).not.toBeInTheDocument();
+    expect(screen.queryByText('SOURCES')).not.toBeInTheDocument();
+    expect(screen.queryByText('Vocabulary Preview')).not.toBeInTheDocument();
+  });
 });

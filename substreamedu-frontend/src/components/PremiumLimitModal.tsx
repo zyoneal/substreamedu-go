@@ -21,29 +21,29 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
 
     const messages: Record<string, { title: string; description: string; icon: React.ReactNode; buttonText: string; action: () => void }> = {
         translation: {
-            icon: <Sparkles size={36} className="text-primary mx-auto" style={{ color: '#faf92f' }} />,
-            title: 'You\'re learning fast! 🚀',
+            icon: <Sparkles size={36} className="text-primary mx-auto" style={{ color: 'var(--accent, #faf92f)' }} />,
+            title: 'You\'re learning fast!',
             description: 'You\'ve translated 100 phrases. Upgrade to Premium to translate unlimited phrases and master this movie.',
-            buttonText: 'Unlock Premium',
+            buttonText: 'Upgrade to Premium',
             action: () => {
                 onClose();
                 navigate('/subscribe');
             },
         },
         save: {
-            icon: <BookOpen size={36} className="text-primary mx-auto" style={{ color: '#faf92f' }} />,
-            title: 'Your vocabulary is growing! 🧠',
+            icon: <BookOpen size={36} className="text-primary mx-auto" style={{ color: 'var(--accent, #faf92f)' }} />,
+            title: 'Your vocabulary is growing!',
             description: 'You\'ve saved 50 words. If you stop now, you might forget them. Premium includes unlimited saves and spaced-repetition to lock them into your long-term memory.',
-            buttonText: 'Unlock Premium',
+            buttonText: 'Upgrade to Premium',
             action: () => {
                 onClose();
                 navigate('/subscribe');
             },
         },
         guest_limit: {
-            icon: <Sparkles size={36} className="text-primary mx-auto" />,
+            icon: <Sparkles size={36} className="text-primary mx-auto" style={{ color: 'var(--accent, #faf92f)' }} />,
             title: `Guest limit reached (${guestLimit}/${guestLimit})`,
-            description: `You’ve used all ${guestLimit} free guest highlights! Create a free account in 10 seconds to unlock 100 translations, save words, and repeat them with our Telegram bot.`,
+            description: `You’ve used all ${guestLimit} free guest highlights! Create a free account in 10 seconds to get full access to 100 translations, save words, and repeat them with our Telegram bot.`,
             buttonText: 'Sign up for free',
             action: () => {
                 onClose();
@@ -51,7 +51,7 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
             },
         },
         guest_save: {
-            icon: <BookOpen size={36} className="text-primary mx-auto" />,
+            icon: <BookOpen size={36} className="text-primary mx-auto" style={{ color: 'var(--accent, #faf92f)' }} />,
             title: 'Sign in to save words',
             description: 'Save any phrase or idiom with context, audio, and spaced-repetition scheduling. Free account includes 50 word saves!',
             buttonText: 'Sign up / Login',
@@ -117,7 +117,7 @@ const PremiumLimitModal: React.FC<PremiumLimitModalProps> = ({ type, onClose }) 
                             <p style={{ margin: 0, fontSize: '13px', color: '#ede8e0', fontStyle: 'italic', lineHeight: 1.5 }}>
                                 "Upgrading was the best decision. I learned more in 2 months than in 2 years of classes."
                             </p>
-                            <span style={{ fontSize: '11px', color: '#9e988f', marginTop: '6px', display: 'block' }}>— Maria K.</span>
+                            <span style={{ fontSize: '12px', color: '#9e988f', marginTop: '6px', display: 'block' }}>— Maria K.</span>
                         </div>
                     </div>
                 )}

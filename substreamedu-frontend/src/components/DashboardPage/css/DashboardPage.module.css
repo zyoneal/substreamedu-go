@@ -1,928 +1,495 @@
 /* ==========================================================================
-   SUBSTREAMEDU — BENTO GRID DASHBOARD
-   Darkroom + e-Ukraine Design System
+   SUBSTREAMEDU — APPLE-MINIMALIST FULL-VIEWPORT BENTO DASHBOARD
+   Wide Widescreen Canvas, Balanced 3-Row Viewport Fill & Scaled Typography
    ========================================================================== */
 
 .dashboardContainer {
-    min-height: 100vh;
-    padding-top: 120px;
-    padding-left: 24px;
-    padding-right: 24px;
-    padding-bottom: 96px;
+    min-height: 100dvh;
+    padding: 84px 48px 36px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    position: relative;
-    overflow-x: hidden;
-    background-color: var(--color-canvas);
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    color: var(--color-ink);
-}
-
-/* Atmospheric warm ambient depth */
-.ambientGlow {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 1200px;
-    height: 480px;
-    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(245, 158, 11, 0.035) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.ambientGlowSecond {
-    display: none;
+    background-color: var(--color-canvas, #0d0c0b);
+    font-family: var(--font-body, 'e-Ukraine', -apple-system, BlinkMacSystemFont, sans-serif);
+    color: var(--color-ink, #ede8e0);
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
 }
 
 .contentWrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    max-width: 1180px;
+    justify-content: center;
+    flex: 1;
+    max-width: 1560px;
     width: 100%;
     margin: 0 auto;
-    position: relative;
-    z-index: 1;
-}
-
-/* Header Section */
-.headerSection {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    margin-bottom: 32px;
-    width: 100%;
-}
-
-.eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #666360;
-    margin-bottom: 10px;
-    display: inline-block;
-}
-
-.statusPill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px;
-    background: #111110;
-    border: 1px solid #242220;
-    border-radius: 100px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: #8a8580;
-    margin-bottom: 14px;
-}
-
-.statusDot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #4ade80;
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
-    animation: statusPulse 2.5s infinite ease-in-out;
-}
-
-@keyframes statusPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-}
-
-.pageTitle {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: clamp(2rem, 3.5vw, 2.75rem);
-    font-weight: 300;
-    color: #ede8e0;
-    margin: 0;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-}
-
-.accent {
-    font-weight: 400;
-    font-style: normal;
-    color: #faf92f;
 }
 
 /* ==========================================================================
-   BENTO GRID SYSTEM
+   QUIET HEADER
+   ========================================================================== */
+
+.headerSection {
+    margin-bottom: 24px;
+}
+
+.pageTitle {
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
+    font-size: clamp(2rem, 2.6vw, 2.65rem);
+    font-weight: 400;
+    color: var(--color-ink, #ede8e0);
+    margin: 0;
+    letter-spacing: -0.026em;
+    line-height: 1.14;
+}
+
+.accent {
+    color: var(--color-ink, #ede8e0);
+    font-weight: 400;
+}
+
+/* ==========================================================================
+   APPLE BENTO GRID (FULL-SCREEN PROPORTIONAL FILL)
    ========================================================================== */
 
 .bentoGrid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 16px;
+    grid-template-rows: minmax(185px, 1fr) minmax(215px, 1.15fr) minmax(195px, 1.05fr);
+    gap: 18px;
     width: 100%;
+    flex: 1;
+    max-height: 760px;
 }
 
-/* Common Bento Card Styles */
 .bentoCard {
-    background: #141312;
-    border: 1px solid #282522;
-    border-radius: 16px;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
-    position: relative;
-    overflow: hidden;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 24px;
+    padding: 28px 32px;
     text-decoration: none;
-    color: #ede8e0;
+    color: var(--color-ink, #ede8e0);
     display: flex;
     flex-direction: column;
-    transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    justify-content: space-between;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
     box-sizing: border-box;
+    transition:
+        transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+        background-color 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+        border-color 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .bentoCard:hover {
-    background: #1a1917;
-    border-color: #3d3934;
-    transform: translateY(-2px);
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.056);
+    border-color: rgba(255, 255, 255, 0.125);
 }
 
 .bentoCard:active {
-    transform: translateY(0);
+    transform: scale(0.988);
+    transition-duration: 0.1s;
 }
 
-/* Floating Glass Pill Tags */
-.glassPillRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 14px;
-}
-
-.monoTag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    background: #161514;
-    border: 1px solid #2e2c2a;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8a8580;
-    line-height: 1.2;
-}
-
-.monoTagAccent {
-    background: rgba(250, 249, 47, 0.08);
-    border-color: rgba(250, 249, 47, 0.25);
-    color: #faf92f;
-}
-
-.monoTagFire {
-    background: rgba(249, 115, 22, 0.08);
-    border-color: rgba(249, 115, 22, 0.25);
-    color: #fb923c;
+.bentoCard:focus-visible {
+    outline: 2px solid var(--color-focus-ring, rgba(250, 249, 47, 0.65));
+    outline-offset: 2px;
 }
 
 /* ==========================================================================
-   TOP ROW: STATS & MOMENTUM WIDGETS
+   TOP ROW: 3 METRIC CARDS (SPAN 4 EACH)
    ========================================================================== */
 
-/* 1. Streak Card */
-.cardStreak {
+.cardStreak,
+.cardReview,
+.cardVault {
     grid-column: span 4;
-    padding: 22px 24px;
-    cursor: pointer;
-    background: #141312;
-    border-color: #282522;
 }
 
-.cardStreak:hover {
-    border-color: #3d3934;
+.cardStreak {
+    cursor: pointer;
 }
 
 .streakTop {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    margin-bottom: 14px;
+    gap: 12px;
 }
 
-.streakNumberRow {
+.streakNumberRow,
+.metricRow {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    gap: 10px;
 }
 
-.streakBigNumber {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 34px;
+.metricValue {
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
+    font-size: 42px;
     font-weight: 400;
-    color: #ede8e0;
+    color: var(--color-ink, #ede8e0);
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
 }
 
-.streakNumberZero {
-    color: #666360;
+.metricValueMuted {
+    color: var(--color-mute, #7e7972);
 }
 
-.streakLabel {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #8a8580;
-    text-transform: uppercase;
-    font-weight: 500;
-    letter-spacing: 0.06em;
+.metricValueAccent {
+    color: var(--accent, #faf92f);
 }
 
-.streakShareBadge {
+.metricValueSuccess {
+    color: #4ade80;
+}
+
+.metricLabel {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--color-body, #9e988f);
+}
+
+.sharePill {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    background: #161514;
-    border: 1px solid #3a3836;
+    gap: 6px;
+    padding: 6px 13px;
     border-radius: 100px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #ede8e0;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-body, #9e988f);
+    font-size: 13px;
+    font-weight: 400;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.cardStreak:hover .streakShareBadge {
-    background: #242220;
-    border-color: #ede8e0;
-    color: #ffffff;
+.cardStreak:hover .sharePill {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--color-ink, #ede8e0);
 }
 
-.streakReadyBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    background: #161514;
-    border: 1px solid #3a3836;
-    border-radius: 100px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #faf92f;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.streakWeekNodes {
+/* Minimal 7-Day Row */
+.streakWeekRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid #1e1c1a;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
 }
 
-.weekNode {
+.weekDayCol {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
-.weekNodeDay {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #666360;
+.weekDayLetter {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-mute, #7e7972);
+    line-height: 1;
+}
+
+.weekDayLetterToday {
+    color: var(--color-ink, #ede8e0);
     font-weight: 500;
 }
 
-.weekNodeCircle {
-    width: 22px;
-    height: 22px;
+.weekDot {
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: #111110;
-    border: 1px solid #242220;
+    background: rgba(255, 255, 255, 0.055);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
     color: transparent;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.weekNodeActive {
-    background: #ede8e0;
-    border-color: #ede8e0;
-    color: #000000;
+.weekDotActive {
+    background: var(--color-ink, #ede8e0);
+    color: var(--color-canvas, #0d0c0b);
 }
 
-.weekNodeToday {
-    border-color: #faf92f;
-    box-shadow: 0 0 0 1px #faf92f;
+.weekDotToday {
+    box-shadow: inset 0 0 0 1.5px var(--accent, #faf92f);
 }
 
-.weekNodeActive.weekNodeToday {
-    border-color: #ede8e0;
-    box-shadow: none;
-}
-
-/* 2. Review Card */
-.cardReview {
-    grid-column: span 4;
-    padding: 22px 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-}
-
-.cardReview:hover {
-    border-color: #3d3934;
-}
-
-.reviewHeader {
+/* Metric Cards (Review & Dictionary) */
+.metricTopGroup {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.reviewStatNumber {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 34px;
+.zeroStateHeading {
+    font-size: 22px;
     font-weight: 400;
-    color: #ede8e0;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    color: var(--color-ink, #ede8e0);
+    letter-spacing: -0.015em;
 }
 
-.reviewStatNumberActive {
-    color: #faf92f;
-}
-
-.reviewStatNumberDone {
-    color: #4ade80;
-}
-
-.reviewNumberRow {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.srsBreakdownRow {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-}
-
-.srsChipReview {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    background: #161514;
-    border: 1px solid #3a3836;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #fb923c;
-}
-
-.srsChipNew {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    background: #161514;
-    border: 1px solid #3a3836;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #93c5fd;
-}
-
-.srsChipNewOptional {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    background: #161514;
-    border: 1px dashed #3a3836;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #93c5fd;
-}
-
-.srsAllDoneBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    background: rgba(74, 222, 128, 0.08);
-    border: 1px solid rgba(74, 222, 128, 0.25);
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #4ade80;
-}
-
-.srsAllDoneRow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
+.metricSubtext {
+    font-size: 14.5px;
     font-weight: 300;
-    color: #4ade80;
+    color: var(--color-body, #9e988f);
 }
 
-.srsCheckIcon {
-    color: #4ade80;
-}
-
-.reviewActionRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.reviewBtn {
+.metricSubtextSuccess {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
-    background: #ede8e0;
-    color: #000000;
-    border: none;
-    border-radius: 100px;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
+    font-size: 14.5px;
+    font-weight: 400;
+    color: #4ade80;
 }
 
-.reviewBtnOptional {
-    background: #161514;
-    border: 1px solid #3a3836;
-    color: #ede8e0;
-}
-
-.cardReview:hover .reviewBtn {
-    background: #faf92f;
-    color: #000000;
-}
-
-.cardReview:hover .reviewBtnOptional {
-    background: #4ade80;
-    border-color: #4ade80;
-    color: #000000;
-}
-
-/* 3. Vocabulary Vault Card */
-.cardVault {
-    grid-column: span 4;
-    padding: 22px 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-}
-
-.cardVault:hover {
-    border-color: #3d3934;
-}
-
-.vaultStatsRow {
+.metricFooter {
     display: flex;
     align-items: center;
-    gap: 24px;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
 }
 
-.vaultStatItem {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.vaultZeroStateRow {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.vaultZeroStateTitle {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-    color: #ede8e0;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-}
-
-.vaultZeroStateSubtitle {
-    font-size: 11px;
-    font-weight: 400;
-    color: #8a8580;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.zeroStateCardTitle {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 20px;
-    font-weight: 400;
-    color: #ede8e0;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-}
-
-.srsZeroBadge {
+.metricFooterTitle {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    background: #161514;
-    border: 1px solid #3a3836;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    color: #faf92f;
-}
-
-.vaultValue {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 26px;
+    gap: 8px;
+    font-size: 14.5px;
     font-weight: 400;
-    color: #ede8e0;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    color: var(--color-body, #9e988f);
 }
 
-.vaultSubLabel {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #8a8580;
-    text-transform: uppercase;
-    font-weight: 500;
-    letter-spacing: 0.06em;
+.inlineAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14.5px;
+    font-weight: 400;
+    color: var(--color-ink, #ede8e0);
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), color 0.2s ease;
+}
+
+.cardReview:hover .inlineAction {
+    color: var(--accent, #faf92f);
+    transform: translateX(2px);
+}
+
+.quietChevron {
+    color: var(--color-mute, #7e7972);
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), color 0.2s ease;
+}
+
+.bentoCard:hover .quietChevron {
+    color: var(--color-ink, #ede8e0);
+    transform: translateX(3px);
 }
 
 /* ==========================================================================
-   CORE BENTO MATRIX: LEARNING FORMATS
+   LEARNING FORMAT CARDS (SCALED WIDESCREEN SQUIRCLES)
    ========================================================================== */
 
-/* Featured Video Hero Card (Span 8) */
+/* Featured Video Card (Span 8) */
 .cardHeroVideo {
     grid-column: span 8;
-    padding: 28px 32px;
-    min-height: 240px;
+    padding: 32px 36px;
+    background: rgba(255, 255, 255, 0.045);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-    position: relative;
-}
-
-.cardHeroVideo:hover {
-    border-color: #3d3934;
+    gap: 32px;
 }
 
 .heroCardBody {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    max-width: 580px;
-    z-index: 2;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.formatHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
 }
 
 .heroTitle {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 22px;
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
+    font-size: 23px;
     font-weight: 400;
-    color: #ede8e0;
+    color: var(--color-ink, #ede8e0);
     margin: 0;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
 }
 
 .heroDescription {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 300;
-    line-height: 1.6;
-    color: #b0a99e;
+    line-height: 1.55;
+    color: var(--color-body, #9e988f);
     margin: 0;
+    max-width: 680px;
 }
 
 .heroFooter {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-top: 24px;
-    z-index: 2;
+    flex-shrink: 0;
 }
 
-.heroPrimaryBtn {
+.primaryPillBtn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    background: #ede8e0;
-    color: #000000;
+    gap: 9px;
+    padding: 12px 24px;
+    background: var(--color-ink, #ede8e0);
+    color: var(--color-canvas, #0d0c0b);
     border-radius: 100px;
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
+    font-size: 14.5px;
     font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    transition: background 0.2s ease, transform 0.15s ease;
-}
-
-.cardHeroVideo:hover .heroPrimaryBtn {
-    background: #faf92f;
-    color: #000000;
-}
-
-.heroThumbnailWatermark {
-    position: absolute;
-    right: 28px;
-    bottom: 24px;
-    width: 120px;
-    height: 120px;
-    opacity: 0.04;
-    color: #ffffff;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
-}
-
-.cardHeroVideo:hover .heroThumbnailWatermark {
-    opacity: 0.08;
-    transform: scale(1.05);
-}
-
-/* Recent Video Banner (Inside Hero Video Card) */
-.recentVideoBanner {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 14px;
-    background: #111110;
-    border: 1px solid #242220;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
-.recentThumb {
-    width: 54px;
-    height: 38px;
-    border-radius: 6px;
-    background: #161514;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 1px solid #2e2c2a;
-}
-
-.recentInfo {
-    flex: 1;
-    min-width: 0;
-}
-
-.recentTitle {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    color: #ede8e0;
-    margin: 0;
+    letter-spacing: -0.01em;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* Music & Lyrics Card (Span 4) */
-.cardSongs {
+.cardHeroVideo:hover .primaryPillBtn {
+    background: var(--accent, #faf92f);
+}
+
+/* Secondary Format Cards (Span 4 Each) */
+.cardFormat {
     grid-column: span 4;
-    padding: 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
+    justify-content: center;
+    gap: 14px;
 }
 
-.cardSongs:hover {
-    border-color: #3d3934;
-}
-
-.cardIconHeader {
+.formatTop {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
+    gap: 12px;
 }
 
-.cardIconBox {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #1a1917;
-    border: 1px solid #282522;
+.iconSquircle {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.062);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ede8e0;
-    transition: all 0.2s ease;
+    color: var(--color-ink, #ede8e0);
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.bentoCard:hover .cardIconBox {
-    border-color: #3d3934;
-    background: #201e1c;
+.bentoCard:hover .iconSquircle {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .cardTitle {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 17px;
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
+    font-size: 20px;
     font-weight: 400;
-    color: #ede8e0;
-    margin: 0 0 6px 0;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    color: var(--color-ink, #ede8e0);
+    margin: 0;
+    line-height: 1.24;
+    letter-spacing: -0.015em;
 }
 
 .cardDescription {
-    font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    font-size: 12px;
+    font-size: 14.5px;
     font-weight: 300;
-    line-height: 1.55;
-    color: #8a8580;
+    line-height: 1.54;
+    color: var(--color-body, #9e988f);
     margin: 0;
-}
-
-/* Article Reader Card (Span 4) */
-.cardReader {
-    grid-column: span 4;
-    padding: 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-}
-
-.cardReader:hover {
-    border-color: #3d3934;
-}
-
-/* Dictionary Card (Span 4) */
-.cardDictionary {
-    grid-column: span 4;
-    padding: 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-}
-
-.cardDictionary:hover {
-    border-color: #3d3934;
-}
-
-/* Telegram Assistant Card (Span 4) */
-.cardTelegram {
-    grid-column: span 4;
-    padding: 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-}
-
-.cardTelegram:hover {
-    border-color: #3d3934;
-}
-
-/* Subtitle Studio Card (Span 4) */
-.cardSubtitles {
-    grid-column: span 4;
-    padding: 24px;
-    justify-content: space-between;
-    background: #141312;
-    border-color: #282522;
-}
-
-.cardSubtitles:hover {
-    border-color: #3d3934;
-}
-
-.subtitlesRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 16px;
-}
-
-.subtitlesLeft {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.subtitlesText {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.arrowPill {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #111110;
-    border: 1px solid #242220;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666360;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.bentoCard:hover .arrowPill {
-    color: #ede8e0;
-    background: #1e1c1a;
-    border-color: #3a3836;
-    transform: translateX(3px);
 }
 
 /* ==========================================================================
    RESPONSIVE BREAKPOINTS
    ========================================================================== */
 
-@media (max-width: 1024px) {
-    .cardStreak { grid-column: span 6; }
-    .cardReview { grid-column: span 6; }
-    .cardVault { grid-column: span 12; }
-    .cardHeroVideo { grid-column: span 12; }
-    .cardSongs { grid-column: span 6; }
-    .cardReader { grid-column: span 6; }
-    .cardDictionary { grid-column: span 6; }
-    .cardSubtitles { grid-column: span 6; }
-    .cardTelegram { grid-column: span 12; }
+@media (max-width: 1180px) {
+    .dashboardContainer {
+        padding: 88px 28px 48px;
+    }
+
+    .bentoGrid {
+        grid-template-rows: auto;
+        max-height: none;
+    }
+
+    .cardStreak,
+    .cardReview {
+        grid-column: span 6;
+    }
+
+    .cardVault,
+    .cardHeroVideo {
+        grid-column: span 12;
+    }
+
+    .cardFormat {
+        grid-column: span 6;
+    }
 }
 
 @media (max-width: 768px) {
     .dashboardContainer {
-        padding-top: 84px;
-        padding-left: 16px;
-        padding-right: 16px;
-        padding-bottom: 80px;
+        padding: 84px 16px 64px;
+        justify-content: flex-start;
+    }
+
+    .headerSection {
+        margin-bottom: 20px;
     }
 
     .bentoGrid {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
         gap: 12px;
+        max-height: none;
     }
 
     .cardStreak,
     .cardReview,
     .cardVault,
     .cardHeroVideo,
-    .cardSongs,
-    .cardReader,
-    .cardDictionary,
-    .cardTelegram,
-    .cardSubtitles {
+    .cardFormat {
         grid-column: span 1;
-        padding: 20px;
-        border-radius: 14px;
+        padding: 20px 22px;
+        border-radius: 20px;
+    }
+
+    .cardHeroVideo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
     }
 
     .heroTitle {
         font-size: 20px;
     }
 
-    .streakBigNumber,
-    .reviewStatNumber {
-        font-size: 30px;
+    .cardTitle {
+        font-size: 18px;
     }
 
-    .subtitlesRow {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
+    .metricValue {
+        font-size: 32px;
     }
 }

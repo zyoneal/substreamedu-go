@@ -759,11 +759,14 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                         <div className={styles.storyContent}>
                             <div className={styles.storyBlock}>
                                 <div className={styles.storyHeaderWrapper}>
-                                    <div className={styles.storyTabs}>
+                                    <div className={styles.storyTabs} role="tablist">
                                         <button
                                             onClick={() => setActiveStoryTab('original')}
                                             className={`${styles.storyTab} ${activeStoryTab === 'original' ? styles.storyTabActive : ''}`}
                                             title={intl.formatMessage({ id: 'flashcards.originalStory' })}
+                                            aria-label="Native Integration"
+                                            role="tab"
+                                            aria-selected={activeStoryTab === 'original'}
                                         >
                                             <Languages size={18} />
                                         </button>
@@ -771,6 +774,9 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                             onClick={() => setActiveStoryTab('fluent')}
                                             className={`${styles.storyTab} ${activeStoryTab === 'fluent' ? styles.storyTabActive : ''}`}
                                             title={intl.formatMessage({ id: 'flashcards.fluentStory' })}
+                                            aria-label="Dual-Language Mastery"
+                                            role="tab"
+                                            aria-selected={activeStoryTab === 'fluent'}
                                         >
                                             <Sparkles size={18} />
                                         </button>
@@ -778,6 +784,9 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                             onClick={() => setActiveStoryTab('questions')}
                                             className={`${styles.storyTab} ${activeStoryTab === 'questions' ? styles.storyTabActive : ''}`}
                                             title={intl.formatMessage({ id: 'flashcards.sessionQuestions' })}
+                                            aria-label="Speaking Practice"
+                                            role="tab"
+                                            aria-selected={activeStoryTab === 'questions'}
                                         >
                                             <MessageSquare size={18} />
                                         </button>

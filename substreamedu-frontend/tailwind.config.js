@@ -30,8 +30,8 @@ module.exports = {
       fontFamily: {
         sans: ['"e-Ukraine"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
         body: ['"e-Ukraine"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        heading: ['"e-UkraineHead"', 'Nunito', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['"e-UkraineHead"', 'Nunito', 'system-ui', '-apple-system', 'sans-serif'],
+        heading: ['"e-UkraineHead"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"e-UkraineHead"', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Courier New', 'monospace'],
       },
       colors: {
@@ -39,7 +39,7 @@ module.exports = {
         canvas: 'var(--color-canvas)',
         surface: 'var(--color-surface)',
         'surface-elevated': 'var(--color-surface-elevated)',
-        'surface-soft': 'var(--color-surface)',
+        'surface-soft': 'var(--color-surface-soft)',
         'surface-card': 'var(--color-surface)',
         'surface-dark': 'var(--color-surface-elevated)',
 
@@ -55,12 +55,15 @@ module.exports = {
         hairline: 'var(--color-hairline)',
         'hairline-strong': 'var(--color-hairline-strong)',
 
+        danger: 'var(--color-danger)',
+        success: 'var(--color-success)',
+
         /* Accent & feedback */
-        accent: '#6366f1',
-        'accent-light': '#818cf8',
-        'accent-glow': 'rgba(99,102,241,0.12)',
-        'accent-subtle': 'rgba(99,102,241,0.08)',
-        'focus-ring': 'rgba(0, 69, 230, 0.5)',
+        accent: 'var(--accent)',
+        'accent-light': 'var(--accent-hover)',
+        'accent-glow': 'rgba(250, 249, 47, 0.12)',
+        'accent-subtle': 'rgba(250, 249, 47, 0.08)',
+        'focus-ring': 'var(--color-focus-ring)',
         'terminal-red': '#ff5f56',
         'terminal-yellow': '#ffbd2e',
         'terminal-green': '#27c93f',

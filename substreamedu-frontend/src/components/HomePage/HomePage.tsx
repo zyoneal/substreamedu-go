@@ -268,7 +268,7 @@ const HomePage: React.FC = () => {
       ),
     },
     {
-      q: intl.formatMessage({ id: 'homePage.faq.q2', defaultMessage: 'How to upload video?' }),
+      q: intl.formatMessage({ id: 'homePage.faq.q2', defaultMessage: 'How to upload a video?' }),
       a: (
         <ul className={styles.faqListWrapper}>
           <li className={styles.faqListItem}>
@@ -316,7 +316,7 @@ const HomePage: React.FC = () => {
       a: (
         <>
           {intl.formatMessage({ id: 'homePage.faq.a5', defaultMessage: 'Unlike generic translators, SubStreamEdu analyzes the full sentence context to translate idioms and slang accurately. Every word is saved with audio, phonetics, and context sentence, scheduled via the scientific FSRS algorithm.' })}
-          {' '}<a href="https://youglish.com/" target="_blank" rel="noopener noreferrer">Youglish</a>
+          {' '}<a href="https://youglish.com/" target="_blank" rel="noopener noreferrer">YouGlish</a>
         </>
       ),
     },
@@ -366,7 +366,7 @@ const HomePage: React.FC = () => {
       },
       {
         '@type': 'Question',
-        name: 'How to upload video?',
+        name: 'How to upload a video?',
         acceptedAnswer: {
           '@type': 'Answer',
           text: 'Upload any video file (.mp4 or .mkv) with the movie title in the filename, or paste a YouTube link. Choose matching subtitles from the suggested list, or upload your own .srt file. Watch and highlight unfamiliar words or whole phrases with your cursor. Save words directly into your smart SRS dictionary with translation, context, and audio.',
@@ -612,6 +612,14 @@ const HomePage: React.FC = () => {
               <div
                 className={`${styles.subtitleLineBlurred} ${isSubtitleRevealed ? styles.subtitleLineUnblurredActive : ''}`}
                 onClick={() => setIsSubtitleRevealed((prev) => !prev)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsSubtitleRevealed((prev) => !prev);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
                 title="Click or hover cursor to unblur and reveal"
                 data-cursor="reveal"
                 data-cursor-text={isSubtitleRevealed ? "Click to blur" : "Hover to reveal"}
@@ -753,7 +761,7 @@ const HomePage: React.FC = () => {
                 </li>
                 <li className={styles.pricingListItem}>
                   <Check size={13} className={styles.pricingCheck} />
-                  <FormattedMessage id="homePage.pricing.premium.feature3" defaultMessage="Contextual AI translation" />
+                  <FormattedMessage id="homePage.pricing.free.feature3" defaultMessage="Google Translate (no context)" />
                 </li>
               </ul>
               <Link to="/login" className={styles.pricingBtnSecondary}>
@@ -788,6 +796,10 @@ const HomePage: React.FC = () => {
                 <li className={styles.pricingListItem}>
                   <Check size={13} className={styles.pricingCheck} />
                   <FormattedMessage id="homePage.pricing.premium.feature2" defaultMessage="Unlimited saves to dictionary" />
+                </li>
+                <li className={styles.pricingListItem}>
+                  <Check size={13} className={styles.pricingCheck} />
+                  <FormattedMessage id="homePage.pricing.premium.feature3" defaultMessage="Contextual AI translation" />
                 </li>
                 <li className={styles.pricingListItem}>
                   <Check size={13} className={styles.pricingCheck} />

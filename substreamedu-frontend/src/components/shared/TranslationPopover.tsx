@@ -298,7 +298,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                             <button
                                 type="button"
                                 className={styles.iconButton}
-                                style={{ color: '#D4AF37', background: 'rgba(255, 215, 0, 0.1)' }}
+                                style={{ color: 'var(--accent)', background: 'rgba(250, 249, 47, 0.1)' }}
                                 onClick={() => {
                                     window.location.href = "/subscribe";
                                 }}

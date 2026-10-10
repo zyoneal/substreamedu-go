@@ -415,13 +415,13 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
 
         // Brand text
         ctx.fillStyle = '#ffffff';
-        ctx.font = '700 20px -apple-system, BlinkMacSystemFont, "Nunito", "Inter", sans-serif';
+        ctx.font = '700 20px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.textBaseline = 'middle';
         ctx.fillText('SUBSTREAMEDU', brandPillX + 48, brandPillY + 27);
 
         // Right Milestone Badge
         ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.font = '700 18px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        ctx.font = '700 18px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
         ctx.fillText('STREAK MILESTONE', cardX + cardWidth - 50, brandPillY + 27);
         ctx.restore();
@@ -463,18 +463,18 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
         ctx.shadowBlur = 20;
-        ctx.font = '900 156px -apple-system, BlinkMacSystemFont, "Nunito", "Inter", sans-serif';
+        ctx.font = '900 156px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.fillText(`${streakDays}`, flameCenterX, flameCenterY + 110);
 
         // Day Streak Label
         ctx.fillStyle = '#f1f5f9';
         ctx.shadowBlur = 0;
-        ctx.font = '800 32px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        ctx.font = '800 32px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.fillText('DAY STREAK', flameCenterX, flameCenterY + 280);
 
         // Motto pill
         const mottoText = getMotto(streakDays);
-        ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        ctx.font = '500 24px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         const mottoWidth = ctx.measureText(mottoText).width + 60;
         const mottoX = flameCenterX - mottoWidth / 2;
         const mottoY = flameCenterY + 340;
@@ -520,7 +520,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
 
             // Day label (top)
             ctx.fillStyle = isActive ? '#ffffff' : '#71717a';
-            ctx.font = '700 18px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+            ctx.font = '700 18px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(dayLabel, nodeCenterX, ringBoxY + 26);
@@ -546,7 +546,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
 
                 // Inner check or flame
                 ctx.fillStyle = '#ffffff';
-                ctx.font = '700 16px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+                ctx.font = '700 16px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
                 ctx.fillText('✓', nodeCenterX, nodeCenterY + 13);
             } else {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
@@ -568,18 +568,16 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
 
         let statCardsLabel = 'CARDS TODAY';
         let statCardsValue = `${dailyCount}`;
-        let statCardsIcon = '📝';
 
         if (isAllCaughtUp) {
             statCardsLabel = 'DAILY GOAL';
             statCardsValue = 'DONE';
-            statCardsIcon = '✅';
         }
 
         const statsData = [
-            { label: 'WORDS', value: `${totalWords}`, icon: '📚' },
-            { label: 'LEARNING', value: `${learningWords}`, icon: '📈' },
-            { label: statCardsLabel, value: statCardsValue, icon: statCardsIcon }
+            { label: 'WORDS', value: `${totalWords}` },
+            { label: 'LEARNING', value: `${learningWords}` },
+            { label: statCardsLabel, value: statCardsValue }
         ];
 
         statsData.forEach((stat, i) => {
@@ -595,12 +593,12 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
 
             ctx.textAlign = 'center';
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '600 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.font = '600 24px "JetBrains Mono", monospace';
             ctx.fillText(stat.label, chipX + statsChipW / 2, statsBoxY + 45);
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = '700 38px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-            ctx.fillText(`${stat.icon} ${stat.value}`, chipX + statsChipW / 2, statsBoxY + 92);
+            ctx.font = '700 38px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillText(`${stat.value}`, chipX + statsChipW / 2, statsBoxY + 92);
             ctx.restore();
         });
 
@@ -615,13 +613,13 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
         ctx.stroke();
 
         ctx.fillStyle = '#64748b';
-        ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        ctx.font = '500 20px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillText('Master English with Movies & Songs', cardX + 50, footerY);
 
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 22px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+        ctx.font = '700 22px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
         ctx.fillText('substreamedu.com', cardX + cardWidth - 50, footerY);
         ctx.restore();
@@ -635,7 +633,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
     }, [streakDays, totalWords, learningWords, dueToday, sessionCards, reviewedToday, currentDayIndex, activeStreakCount, getMotto, weekDays]);
 
     // Share text message
-    const shareText = `🔥 I'm on a ${streakDays}-day learning streak on SubstreamEdu! 🚀 ${totalWords} words mastered. Keep the flame alive!`;
+    const shareText = `I'm on a ${streakDays}-day learning streak on SubstreamEdu! ${totalWords} words mastered. Keep the flame alive!`;
     const shareUrl = 'https://substreamedu.com';
 
     // Copy Image Action
@@ -745,7 +743,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
         : 'none';
 
     return createPortal(
-        <div className={styles.modalOverlay} onClick={onClose} role="dialog" aria-modal="true">
+        <div className={styles.modalOverlay} onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="streak-share-modal-title">
             <canvas ref={confettiCanvasRef} className={styles.confettiCanvas} />
 
             <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
@@ -755,7 +753,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
                             <VectorFlameIcon theme={theme} size={24} />
                         </div>
                         <div className={styles.headerTitles}>
-                            <h2 className={styles.modalTitle}>
+                            <h2 id="streak-share-modal-title" className={styles.modalTitle}>
                                 <FormattedMessage id="streakShare.modal.title" defaultMessage="Streak Milestone" />
                                 <Sparkles size={16} style={{ color: '#eab308' }} />
                             </h2>
@@ -885,9 +883,9 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
                     </div>
                     <div className={styles.controlsSection}>
                         <div className={styles.sectionBlock}>
-                            <label className={styles.sectionLabel}>
+                            <div className={styles.sectionLabel}>
                                 <FormattedMessage id="streakShare.section.cardTheme" defaultMessage="Card Theme" />
-                            </label>
+                            </div>
                             <div className={styles.themeGrid}>
                                 <button
                                     type="button"
@@ -980,9 +978,9 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
                                 </button>
                             </div>
                             <div className={styles.sectionBlock} style={{ marginTop: '8px' }}>
-                                <label className={styles.sectionLabel}>
+                                <div className={styles.sectionLabel}>
                                     <FormattedMessage id="streakShare.section.quickShare" defaultMessage="Quick Share" />
-                                </label>
+                                </div>
                                 <div className={styles.socialRow}>
                                     <a
                                         href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}

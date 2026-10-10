@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useIntl } from 'react-intl';
 import Play from 'lucide-react/dist/esm/icons/play';
-import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
-import Zap from 'lucide-react/dist/esm/icons/zap';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import styles from './QuickStartVideoPicks.module.css';
 
@@ -77,19 +75,16 @@ export const QuickStartVideoPicks: React.FC<QuickStartVideoPicksProps> = ({
     return (
         <div className={styles.container} data-testid="quick-start-video-picks">
             <div className={styles.header}>
-                <div className={styles.titleGroup}>
-                    <Sparkles className={styles.sparkleIcon} size={15} />
-                    <h3 className={styles.title}>
-                        {intl.formatMessage({
-                            id: 'videoPage.quickStartTitle',
-                            defaultMessage: '1-Click Quick Start'
-                        })}
-                    </h3>
-                </div>
+                <h3 className={styles.title}>
+                    {intl.formatMessage({
+                        id: 'videoPage.quickStartTitle',
+                        defaultMessage: '1-Click Quick Start'
+                    })}
+                </h3>
                 <span className={styles.subtitle}>
                     {intl.formatMessage({
                         id: 'videoPage.quickStartSubtitle',
-                        defaultMessage: 'No URL needed — pick a trending clip to test interactive subtitles'
+                        defaultMessage: 'Pick a curated clip to start with interactive subtitles'
                     })}
                 </span>
             </div>
@@ -126,34 +121,8 @@ export const QuickStartVideoPicks: React.FC<QuickStartVideoPicksProps> = ({
                             </div>
 
                             <div className={styles.cardContent}>
-                                <div className={styles.categoryRow}>
-                                    <span className={styles.category}>{item.category}</span>
-                                </div>
                                 <h4 className={styles.cardTitle}>{item.title}</h4>
                                 <p className={styles.cardDesc}>{item.description}</p>
-                                <div className={styles.instantLaunch}>
-                                    {isCardSelected ? (
-                                        <>
-                                            <Loader2 size={12} className={styles.spinner} />
-                                            <span>
-                                                {intl.formatMessage({
-                                                    id: 'videoPage.starting',
-                                                    defaultMessage: 'Starting...'
-                                                })}
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Zap size={12} fill="currentColor" />
-                                            <span>
-                                                {intl.formatMessage({
-                                                    id: 'videoPage.tryIn1Click',
-                                                    defaultMessage: 'Play & Translate'
-                                                })}
-                                            </span>
-                                        </>
-                                    )}
-                                </div>
                             </div>
                         </button>
                     );

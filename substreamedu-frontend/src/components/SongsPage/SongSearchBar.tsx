@@ -49,6 +49,7 @@ export const SongSearchBar: React.FC<SongSearchBarProps> = ({ onSearch, loading 
                             onClick={() => setQuery('')}
                             className={styles.clearButton}
                             type="button"
+                            aria-label="Clear search query"
                         >
                             <X size={16} />
                         </button>

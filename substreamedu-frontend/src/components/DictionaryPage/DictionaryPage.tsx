@@ -112,13 +112,13 @@ const getSourceType = (resourceName: string): 'youtube' | 'movies' | 'songs' | '
     return 'songs';
 };
 
-const getSourceTag = (sourceType: string): string => {
+const getSourceIcon = (sourceType: string): React.ComponentType<any> => {
     switch (sourceType) {
-        case 'youtube': return '[YOUTUBE]';
-        case 'movies': return '[MOVIES]';
-        case 'text': return '[TEXTS]';
-        case 'songs': return '[LYRICS]';
-        default: return '[MEDIA]';
+        case 'youtube': return Play;
+        case 'movies': return Film;
+        case 'text': return Type;
+        case 'songs': return Music;
+        default: return Folder;
     }
 };
 
@@ -622,32 +622,27 @@ const DictionaryPage: React.FC = () => {
         const filterCategories = [
             {
                 key: null,
-                name: intl.formatMessage({ id: 'dictionary.categories.all', defaultMessage: 'ALL' }),
-                tag: '[ALL]',
+                label: intl.formatMessage({ id: 'dictionary.categories.all', defaultMessage: 'All' }),
                 icon: Layers
             },
             {
                 key: 'youtube',
-                name: intl.formatMessage({ id: 'dictionary.categories.youtube', defaultMessage: 'YOUTUBE' }),
-                tag: '[YOUTUBE]',
+                label: intl.formatMessage({ id: 'dictionary.categories.youtube', defaultMessage: 'YouTube' }),
                 icon: Play
             },
             {
                 key: 'movies',
-                name: intl.formatMessage({ id: 'dictionary.categories.movies', defaultMessage: 'MOVIES' }),
-                tag: '[MOVIES]',
+                label: intl.formatMessage({ id: 'dictionary.categories.movies', defaultMessage: 'Movies' }),
                 icon: Film
             },
             {
                 key: 'text',
-                name: intl.formatMessage({ id: 'dictionary.categories.text', defaultMessage: 'TEXTS' }),
-                tag: '[TEXTS]',
+                label: intl.formatMessage({ id: 'dictionary.categories.text', defaultMessage: 'Texts' }),
                 icon: Type
             },
             {
                 key: 'songs',
-                name: intl.formatMessage({ id: 'dictionary.categories.songs', defaultMessage: 'LYRICS' }),
-                tag: '[LYRICS]',
+                label: intl.formatMessage({ id: 'dictionary.categories.songs', defaultMessage: 'Lyrics' }),
                 icon: Music
             }
         ];
@@ -665,8 +660,8 @@ const DictionaryPage: React.FC = () => {
                             role="tab"
                             aria-selected={isActive}
                         >
-                            <Icon size={13} />
-                            <span>{cat.tag}</span>
+                            <Icon size={14} />
+                            <span>{cat.label}</span>
                         </button>
                     );
                 })}
@@ -676,7 +671,7 @@ const DictionaryPage: React.FC = () => {
 
     const renderResourceCard = (res: DictionaryResource, index: number) => {
         const sourceType = getSourceType(res.groupName || '');
-        const tag = getSourceTag(sourceType);
+        const SourceIcon = getSourceIcon(sourceType);
 
         return (
             <div
@@ -701,21 +696,21 @@ const DictionaryPage: React.FC = () => {
                     className={styles.groupCardLink}
                 >
                     <div className={styles.groupCardHeader}>
-                        <div className={styles.groupTagRow}>
-                            <span className={styles.monoTag}>{tag}</span>
+                        <div className={styles.groupHeaderLeft}>
+                            <div className={styles.sourceIconBox}>
+                                <SourceIcon size={18} />
+                            </div>
+                            <h3 className={styles.groupTitle}>
+                                {res.groupName || 'Untitled Group'}
+                            </h3>
                         </div>
                         <span className={styles.groupWordCountPill}>
                             {res.numberOfWords} {res.numberOfWords === 1 ? 'word' : 'words'}
                         </span>
                     </div>
 
-                    <h3 className={styles.groupTitle}>
-                        {res.groupName || 'Untitled Group'}
-                    </h3>
-
                     {res.sampleWords && res.sampleWords.length > 0 && (
                         <div className={styles.sampleWordsBox}>
-                            <span className={styles.sampleWordsLabel}>Vocabulary Preview</span>
                             <div className={styles.sampleWordsChips}>
                                 {res.sampleWords.slice(0, 4).map((word, idx) => (
                                     <span key={idx} className={styles.wordChip}>
@@ -737,7 +732,7 @@ const DictionaryPage: React.FC = () => {
 
     const renderResourceListItem = (res: DictionaryResource, index: number) => {
         const sourceType = getSourceType(res.groupName || '');
-        const tag = getSourceTag(sourceType);
+        const SourceIcon = getSourceIcon(sourceType);
 
         return (
             <div
@@ -749,7 +744,9 @@ const DictionaryPage: React.FC = () => {
                     className={styles.groupListItemLink}
                 >
                     <div className={styles.listItemLeft}>
-                        <span className={styles.monoTag}>{tag}</span>
+                        <div className={styles.sourceIconBoxSmall}>
+                            <SourceIcon size={15} />
+                        </div>
                         <h3 className={styles.listItemTitle}>
                             {res.groupName || 'Untitled Group'}
                         </h3>
@@ -809,7 +806,8 @@ const DictionaryPage: React.FC = () => {
                         <button
                             onClick={() => handleYouGlishClick(word.highlightedText || '')}
                             className={styles.wordClickableTitle}
-                            title="Listen pronunciation on YouGlish"
+                            title="Listen to pronunciation on YouGlish"
+                            aria-label="Listen to pronunciation on YouGlish"
                         >
                             <span>{word.highlightedText || 'Untitled Word'}</span>
                             <Volume2 className={styles.soundWaveIcon} />
@@ -902,8 +900,9 @@ const DictionaryPage: React.FC = () => {
                 />
                 <Modal.Body>
                     <div className={styles.modalFieldGroup}>
-                        <label className={styles.modalLabel}>Translation</label>
+                        <label htmlFor="edit-word-input" className={styles.modalLabel}>Translation</label>
                         <Input
+                            id="edit-word-input"
                             value={editingWord.translatedText || ''}
                             onChange={(e) => setEditingWord({ ...editingWord, translatedText: e.target.value })}
                             className={styles.modalInput}
@@ -912,8 +911,9 @@ const DictionaryPage: React.FC = () => {
                     </div>
 
                     <div className={styles.modalFieldGroup}>
-                        <label className={styles.modalLabel}>Definition</label>
+                        <label htmlFor="edit-translation-input" className={styles.modalLabel}>Definition</label>
                         <Input
+                            id="edit-translation-input"
                             value={editingWord.definition || ''}
                             onChange={(e) => setEditingWord({ ...editingWord, definition: e.target.value })}
                             className={styles.modalInput}
@@ -922,8 +922,9 @@ const DictionaryPage: React.FC = () => {
                     </div>
 
                     <div className={styles.modalFieldGroup}>
-                        <label className={styles.modalLabel}>Context Sentence</label>
+                        <label htmlFor="edit-context-input" className={styles.modalLabel}>Context Sentence</label>
                         <Input
+                            id="edit-context-input"
                             value={editingWord.context || ''}
                             onChange={(e) => setEditingWord({ ...editingWord, context: e.target.value })}
                             className={styles.modalInput}
@@ -1030,115 +1031,104 @@ const DictionaryPage: React.FC = () => {
             <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
 
             <div className={styles.contentWrapper}>
-                {/* Header Section */}
-                <motion.div className={styles.headerSection} variants={itemVariants}>
+                {/* Apple-Minimalist Top Bar */}
+                <motion.div className={styles.topBar} variants={itemVariants}>
                     <h1 className={styles.pageTitle}>
                         {parseDoTags(intl.formatMessage({
                             id: 'dictionaryTitle',
                             defaultMessage: 'My <do>dictionary</do>'
                         }))}
                     </h1>
+
+                    <div className={styles.topBarActions}>
+                        {renderViewModeToggle()}
+
+                        <button
+                            onClick={handleExport}
+                            className={styles.exportButton}
+                            aria-label="Export dictionary to Anki (.apkg)"
+                            disabled={isExporting || totalWordsCount === 0}
+                        >
+                            {isExporting ? (
+                                <div className={styles.spinner} />
+                            ) : (
+                                <Download size={14} />
+                            )}
+                            <span>{isExporting ? 'Exporting…' : 'Export Anki'}</span>
+                        </button>
+                    </div>
                 </motion.div>
 
-                {/* Top Stats Hero Bar (3 Bento Cards) */}
+                {/* Top Stats Hero Bar (3 Apple-Minimalist Telemetry Cards) */}
                 <motion.div className={styles.statsGrid} variants={itemVariants}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIconWrapper}>
-                            <BookOpen size={22} />
-                        </div>
-                        <div className={styles.statInfo}>
-                            <div className={styles.statValueRow}>
-                                <span className={styles.statValue}>{totalWordsCount}</span>
-                                <span className={`${styles.statBadge} bg-indigo-500/10 text-indigo-400 border border-indigo-500/20`}>
-                                    SAVED
-                                </span>
-                            </div>
+                        <div className={styles.statHeader}>
                             <span className={styles.statLabel}>Total Vocabulary Words</span>
+                            <BookOpen size={16} className={styles.statIcon} />
+                        </div>
+                        <div className={styles.statBottomRow}>
+                            <span className={styles.statValue}>{totalWordsCount}</span>
+                            <span className={styles.statSubtext}>words saved</span>
                         </div>
                     </div>
 
                     <div className={styles.statCard}>
-                        <div className={styles.statIconWrapper}>
-                            <Sparkles size={22} />
-                        </div>
-                        <div className={styles.statInfo}>
-                            <div className={styles.statValueRow}>
-                                <span className={styles.statValue}>{masteredCount}</span>
-                                <span className={`${styles.statBadge} bg-emerald-500/10 text-emerald-400 border border-emerald-500/20`}>
-                                    {totalWordsCount > 0 ? `${Math.round((masteredCount / totalWordsCount) * 100)}%` : '0%'}
-                                </span>
-                            </div>
+                        <div className={styles.statHeader}>
                             <span className={styles.statLabel}>Mastered in Memory</span>
+                            <Sparkles size={16} className={styles.statIcon} />
+                        </div>
+                        <div className={styles.statBottomRow}>
+                            <span className={styles.statValue}>{masteredCount}</span>
+                            <span className={styles.statSubtext}>
+                                {totalWordsCount > 0 ? `${Math.round((masteredCount / totalWordsCount) * 100)}% retention` : '0% retention'}
+                            </span>
                         </div>
                     </div>
 
                     <div className={styles.statCard}>
-                        <div className={styles.statIconWrapper}>
-                            <Layers size={22} />
-                        </div>
-                        <div className={styles.statInfo}>
-                            <div className={styles.statValueRow}>
-                                <span className={styles.statValue}>{activeGroupsCount}</span>
-                                <span className={`${styles.statBadge} bg-amber-500/10 text-amber-400 border border-amber-500/20`}>
-                                    SOURCES
-                                </span>
-                            </div>
+                        <div className={styles.statHeader}>
                             <span className={styles.statLabel}>Active Collections</span>
+                            <Layers size={16} className={styles.statIcon} />
+                        </div>
+                        <div className={styles.statBottomRow}>
+                            <span className={styles.statValue}>{activeGroupsCount}</span>
+                            <span className={styles.statSubtext}>media sources</span>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Controls & Filters Bar */}
+                {/* Single-Row Filter & Search Toolbar */}
                 <motion.div className={styles.controlsContainer} variants={itemVariants}>
-                    <div className={styles.topControlsRow}>
-                        {renderViewModeToggle()}
+                    {view.mode !== 'categories' ? renderCategoryFilters() : <div />}
+
+                    <div className={styles.rightActionsGroup}>
                         {renderSearchBar()}
-                    </div>
 
-                    <div className={styles.bottomControlsRow}>
-                        {view.mode !== 'categories' && renderCategoryFilters()}
-
-                        <div className={styles.rightActionsGroup}>
-                            {view.mode === 'groups' && (
-                                <div className={styles.layoutToggle} role="tablist" aria-label="Layout mode">
-                                    <button
-                                        onClick={() => setView(prev => ({ ...prev, layout: 'grid' }))}
-                                        className={`${styles.layoutButton} ${view.layout === 'grid' ? styles.layoutButtonActive : ''}`}
-                                        title="Grid view"
-                                        aria-label="Grid view"
-                                    >
-                                        <Grid3X3 size={15} />
-                                    </button>
-                                    <button
-                                        onClick={() => setView(prev => ({ ...prev, layout: 'list' }))}
-                                        className={`${styles.layoutButton} ${view.layout === 'list' ? styles.layoutButtonActive : ''}`}
-                                        title="List view"
-                                        aria-label="List view"
-                                    >
-                                        <List size={15} />
-                                    </button>
-                                </div>
-                            )}
-
-                            <button
-                                onClick={handleExport}
-                                className={styles.exportButton}
-                                aria-label="Export dictionary to Anki (.apkg)"
-                                disabled={isExporting || totalWordsCount === 0}
-                            >
-                                {isExporting ? (
-                                    <div className={styles.spinner} />
-                                ) : (
-                                    <Download size={13} />
-                                )}
-                                <span>{isExporting ? 'EXPORTING...' : 'EXPORT ANKI'}</span>
-                            </button>
-                        </div>
+                        {view.mode === 'groups' && (
+                            <div className={styles.layoutToggle} role="tablist" aria-label="Layout mode">
+                                <button
+                                    onClick={() => setView(prev => ({ ...prev, layout: 'grid' }))}
+                                    className={`${styles.layoutButton} ${view.layout === 'grid' ? styles.layoutButtonActive : ''}`}
+                                    title="Grid view"
+                                    aria-label="Grid view"
+                                >
+                                    <Grid3X3 size={15} />
+                                </button>
+                                <button
+                                    onClick={() => setView(prev => ({ ...prev, layout: 'list' }))}
+                                    className={`${styles.layoutButton} ${view.layout === 'list' ? styles.layoutButtonActive : ''}`}
+                                    title="List view"
+                                    aria-label="List view"
+                                >
+                                    <List size={15} />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </motion.div>
 
                 {/* Main Content Area */}
-                <motion.div className="w-full" variants={itemVariants}>
+                <motion.div className={styles.mainContentArea} variants={itemVariants}>
                     {status === 'loading' || (view.mode === 'words' && isLoadingWords) ? (
                         <div className={styles.groupsGrid}>
                             {[...Array(6)].map((_, i) => (
@@ -1161,7 +1151,7 @@ const DictionaryPage: React.FC = () => {
                         ) : (
                             <div className={styles.emptyState}>
                                 <div className={styles.emptyStateIcon}>
-                                    <Folder size={28} />
+                                    <Folder size={26} />
                                 </div>
                                 <h3 className={styles.emptyStateTitle}>
                                     {search.debouncedQuery
@@ -1223,7 +1213,7 @@ const DictionaryPage: React.FC = () => {
                                 ) : (
                                     <div className={styles.emptyState}>
                                         <div className={styles.emptyStateIcon}>
-                                            <BookOpen size={28} />
+                                            <BookOpen size={26} />
                                         </div>
                                         <h3 className={styles.emptyStateTitle}>
                                             {search.debouncedQuery
@@ -1237,12 +1227,12 @@ const DictionaryPage: React.FC = () => {
                                 )}
                             </div>
                         ) : (
-                            <div>
+                            <div className={styles.themesContainer}>
                                 <div className={styles.categorizeBanner}>
                                     <div className={styles.categorizeBannerText}>
                                         <h3 className={styles.categorizeBannerTitle}>AI Semantic Categorization</h3>
                                         <p className={styles.categorizeBannerSubtitle}>
-                                            Automatically clusters your phrasal verbs, idioms, and vocabulary into 12 semantic themes using high-throughput micro-batching.
+                                            Automatically clusters your phrasal verbs, idioms, and vocabulary into 12 semantic themes.
                                         </p>
                                         {categorizeProgress && (
                                             <div>
@@ -1254,13 +1244,13 @@ const DictionaryPage: React.FC = () => {
                                                         }}
                                                     />
                                                 </div>
-                                                <span className="text-xs text-zinc-400 mt-1 inline-block">
+                                                <span className={styles.categorizeStatusText}>
                                                     Processed {categorizeProgress.processed} / {categorizeProgress.total} words ({categorizeProgress.remaining} remaining)
                                                 </span>
                                             </div>
                                         )}
                                         {categorizeMessage && !categorizeProgress && (
-                                            <span className="text-xs text-yellow-300 mt-1 inline-block">
+                                            <span className={styles.categorizeStatusText}>
                                                 {categorizeMessage}
                                             </span>
                                         )}
@@ -1271,7 +1261,7 @@ const DictionaryPage: React.FC = () => {
                                         className={styles.categorizeBtn}
                                     >
                                         <RefreshCw size={14} className={isCategorizing ? 'animate-spin' : ''} />
-                                        <span>{isCategorizing ? 'Categorizing...' : 'Categorize Vocabulary'}</span>
+                                        <span>{isCategorizing ? 'Categorizing…' : 'Categorize Vocabulary'}</span>
                                     </button>
                                 </div>
 
@@ -1280,31 +1270,37 @@ const DictionaryPage: React.FC = () => {
                                         {filteredCategoryList.map((cat, i) => (
                                             <div
                                                 key={cat.categoryName || `cat-${i}`}
-                                                className={styles.groupCard}
+                                                className={`${styles.groupCard} ${styles.themeGroupCard}`}
                                                 onClick={() => handleSelectCategory(cat.categoryName)}
-                                                style={{ cursor: 'pointer' }}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault();
+                                                        handleSelectCategory(cat.categoryName);
+                                                    }
+                                                }}
                                             >
                                                 <div className={styles.groupCardHeader}>
-                                                    <div className={styles.categoryIconCircle}>
-                                                        <Tag size={16} />
+                                                    <div className={styles.groupHeaderLeft}>
+                                                        <div className={styles.sourceIconBox}>
+                                                            <Tag size={18} />
+                                                        </div>
+                                                        <h3 className={styles.groupTitle}>
+                                                            {cat.categoryName}
+                                                        </h3>
                                                     </div>
                                                     <span className={styles.groupWordCountPill}>
                                                         {cat.numberOfWords} {cat.numberOfWords === 1 ? 'word' : 'words'}
                                                     </span>
                                                 </div>
-                                                <h3 className={styles.groupTitle} style={{ marginTop: '14px' }}>
-                                                    {cat.categoryName}
-                                                </h3>
-                                                <p className="text-xs text-zinc-400 mt-2">
-                                                    Click to view vocabulary in this theme →
-                                                </p>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className={styles.emptyState}>
                                         <div className={styles.emptyStateIcon}>
-                                            <Sparkles size={28} />
+                                            <Sparkles size={26} />
                                         </div>
                                         <h3 className={styles.emptyStateTitle}>
                                             {search.debouncedQuery
@@ -1329,7 +1325,7 @@ const DictionaryPage: React.FC = () => {
                         ) : (
                             <div className={styles.emptyState}>
                                 <div className={styles.emptyStateIcon}>
-                                    <BookOpen size={28} />
+                                    <BookOpen size={26} />
                                 </div>
                                 <h3 className={styles.emptyStateTitle}>
                                     {search.debouncedQuery

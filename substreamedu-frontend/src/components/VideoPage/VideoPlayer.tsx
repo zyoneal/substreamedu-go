@@ -1024,7 +1024,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center',
-                            backgroundColor: 'black'
+                            backgroundColor: '#0d0c0b'
                         } : {
                             marginTop: '0',
                             maxWidth: `${playerWidth}px`,
@@ -1418,7 +1418,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             onClick={() => setShowLanguageOverlay(false)}
                             style={{
                                 marginTop: '4px',
-                                background: '#000000',
+                                background: '#0d0c0b',
                                 color: '#ffffff',
                                 border: 'none',
                                 borderRadius: '8px',

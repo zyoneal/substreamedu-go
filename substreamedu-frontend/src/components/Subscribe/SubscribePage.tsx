@@ -52,7 +52,7 @@ const SubscribePage: React.FC = () => {
                         <div className={styles.headerGroup}>
                             <span className={styles.eyebrow}>08 // PLANS & PRICING</span>
                             <h1 className={styles.displayTitle}>
-                                <FormattedMessage id="paymentPage.title" defaultMessage="Unlock your full learning potential." />
+                                <FormattedMessage id="paymentPage.title" defaultMessage="Get full access to your learning potential." />
                             </h1>
                         </div>
                         <p className={styles.description}>

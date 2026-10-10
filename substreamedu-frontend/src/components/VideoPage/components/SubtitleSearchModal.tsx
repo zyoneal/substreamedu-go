@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SubtitleWithScore } from '../../../services/SubtitleService';
 
 import X from 'lucide-react/dist/esm/icons/x';
@@ -27,6 +27,17 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
     isLoading = false,
     onSearchDifferentTitle,
 }) => {
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     const getLanguageName = (code: string) => {
@@ -48,7 +59,13 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
 
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
-            <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+            <div
+                className={styles.modalContainer}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Select Subtitles"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className={styles.modalHeader}>
                     <div>
                         <h2 className={styles.modalTitle}>Available Subtitles</h2>
@@ -90,7 +107,15 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
                                 <div
                                     key={subtitle.subtitlesId || subtitle.name}
                                     className={styles.subtitleCard}
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => onSelectSubtitle(subtitle)}
+                                    onKeyDown={(e) => {
+                                        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                                            e.preventDefault();
+                                            onSelectSubtitle(subtitle);
+                                        }
+                                    }}
                                 >
                                     <div className={styles.subtitleCardContent}>
                                         <div className={styles.subtitleInfo}>
@@ -144,6 +169,7 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
                                                         onQuickTest(subtitle);
                                                     }}
                                                     title="Quick Test - Try without saving"
+                                                    aria-label="Test subtitle sync"
                                                 >
                                                     <Zap className={styles.buttonIcon} />
                                                     <span className={styles.tooltip}>Quick Test</span>
@@ -156,6 +182,7 @@ export const SubtitleSearchModal: React.FC<SubtitleSearchModalProps> = ({
                                                     onSelectSubtitle(subtitle);
                                                 }}
                                                 title="Download and Save"
+                                                aria-label="Download and apply subtitle"
                                             >
                                                 <Download className={styles.buttonIcon} />
                                                 <span className={styles.tooltip}>Save</span>

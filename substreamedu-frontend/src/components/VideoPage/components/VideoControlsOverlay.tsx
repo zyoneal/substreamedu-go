@@ -323,6 +323,22 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                 <div
                     ref={seekBarWrapperRef}
                     className={`${styles.seekBarWrapper} ${isScrubbing ? styles.scrubbing : ''}`}
+                    role="slider"
+                    tabIndex={0}
+                    aria-label="Seek video timeline"
+                    aria-valuemin={0}
+                    aria-valuemax={Math.round(duration || 100)}
+                    aria-valuenow={Math.round(currentTime || 0)}
+                    onKeyDown={(e) => {
+                        if (!onSeekTo || !duration) return;
+                        if (e.key === 'ArrowRight') {
+                            e.preventDefault();
+                            onSeekTo(Math.min(duration, (currentTime || 0) + 5));
+                        } else if (e.key === 'ArrowLeft') {
+                            e.preventDefault();
+                            onSeekTo(Math.max(0, (currentTime || 0) - 5));
+                        }
+                    }}
                     onClick={onSeek}
                     onTouchStart={onTouchSeek}
                     onTouchMove={onTouchSeek}

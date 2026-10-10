@@ -105,7 +105,7 @@
 .text-body-sm, .text-secondary, .text-explanatory, .text-desc {
   font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.5;
   letter-spacing: 0;
   text-wrap: pretty;
@@ -219,7 +219,6 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   transition: opacity 0.2s ease;
-  color: #0045e6;
 }
 
 .link:hover {
@@ -342,14 +341,4 @@ pre code {
 :focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
-}
-
-::selection {
-  background-color: rgba(0, 69, 230, 0.15);
-  color: var(--color-ink);
-}
-
-::-moz-selection {
-  background-color: rgba(0, 69, 230, 0.15);
-  color: var(--color-ink);
 }

@@ -90,17 +90,22 @@
   --color-canvas: #0d0c0b;
   --color-surface: #141312;
   --color-surface-elevated: #1a1917;
+  --color-surface-soft: #1a1917;
   
   --color-primary: #0045e6;
   --color-on-primary: #ffffff;
   
   --color-ink: #ede8e0;
   --color-body: #9e988f;
-  --color-mute: #666360;
+  --color-mute: #7e7972;
 
-  /* Brand Accents */
+  /* Brand & Semantic Accents */
   --accent: #faf92f;
+  --color-accent: #faf92f;
   --accent-hover: #e6e52b;
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+  --color-focus-ring: rgba(250, 249, 47, 0.65);
 
   /* Borders */
   --color-hairline: #282522;
@@ -126,6 +131,7 @@
   --rounded-sm: 6px;
   --rounded-md: 8px;
   --rounded-lg: 12px;
+  --rounded-xl: 16px;
   --rounded-full: 9999px;
 
   font-size: 100%;
@@ -200,8 +206,6 @@ p {
 
 a {
   font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 16px;
   font-weight: 400;
   text-decoration: underline;
   text-transform: none;
@@ -211,12 +215,19 @@ a {
   max-width: 45ch;
 }
 
-button,
+button {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+}
+
 input,
 select,
 textarea {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   letter-spacing: 0;
   text-rendering: optimizeLegibility;
@@ -331,7 +342,7 @@ code {
 }
 
 .transition-all {
-  transition-property: all;
+  transition-property: transform, opacity, color, background-color, border-color, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }

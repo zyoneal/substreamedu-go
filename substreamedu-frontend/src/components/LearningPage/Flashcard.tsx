@@ -120,13 +120,26 @@ const Flashcard: React.FC<FlashcardProps> = ({
     return (
       <>
         <div className={styles.wordSection}>
-          <h1 className={styles.word} onClick={onWordClick}>{word}</h1>
+          <h1
+            className={styles.word}
+            onClick={onWordClick}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onWordClick();
+              }
+            }}
+          >
+            {word}
+          </h1>
           {cleanTranscription && <p className={styles.transcription}>[{cleanTranscription}]</p>}
           {word.trim() && (
             <button
               onClick={onPlayPronunciation}
               className={`${styles.playButton} ${isPlaying ? styles.playing : ''}`}
               disabled={isPlaying}
+              aria-label="Listen to pronunciation"
             >
               <PlayIcon className={styles.playIcon} />
             </button>
@@ -149,13 +162,26 @@ const Flashcard: React.FC<FlashcardProps> = ({
         {!isProduction && renderDefinitionTranslation()}
         {isProduction && (
           <div className={styles.wordSection}>
-            <h1 className={styles.word} onClick={onWordClick}>{word}</h1>
+            <h1
+              className={styles.word}
+              onClick={onWordClick}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onWordClick();
+                }
+              }}
+            >
+              {word}
+            </h1>
             {cleanTranscription && <p className={styles.transcription}>[{cleanTranscription}]</p>}
             {word.trim() && (
               <button
                 onClick={onPlayPronunciation}
                 className={`${styles.playButton} ${isPlaying ? styles.playing : ''}`}
                 disabled={isPlaying}
+                aria-label="Listen to pronunciation"
               >
                 <PlayIcon className={styles.playIcon} />
               </button>
@@ -181,7 +207,18 @@ const Flashcard: React.FC<FlashcardProps> = ({
       </div>
 
       {!isRevealed ? (
-        <div className={styles.revealHint} onClick={onRevealNext}>
+        <div
+          className={styles.revealHint}
+          onClick={onRevealNext}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onRevealNext();
+            }
+          }}
+        >
           <p className={styles.hintText}>
             {intl.formatMessage({ id: 'flashcards.tapToReveal', defaultMessage: 'Tap to reveal' })}
           </p>

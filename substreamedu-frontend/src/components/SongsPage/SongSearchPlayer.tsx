@@ -9,12 +9,11 @@ import { useIntl } from 'react-intl';
 import { debugLog, debugError } from '../../utils/debug';
 // PERF: Direct imports from lucide-react (bundle-barrel-imports rule)
 import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
+import Music from 'lucide-react/dist/esm/icons/music';
 import styles from "./SongSearchPlayer.module.css";
 import { createPortal } from 'react-dom';
 import { Modal } from '../ui/modal';
 import { TranslationPopover } from '../shared/TranslationPopover';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Separator } from '../ui/separator';
 import MobileHint from '../shared/MobileHint';
 import { MOBILE_HINT_STEPS } from '../shared/MobileHint.types';
 import { useSaveWord, SaveWordData, SaveWordContext, useUserDictionaryItems } from '../../hooks/useDictionary';
@@ -584,13 +583,13 @@ export default function SongSearchPlayer() {
                 } else {
                     debugLog('No lyrics found');
                     setLyrics(
-                        `🎵 Lyrics not available right now\n\n` +
+                        `Lyrics not available right now\n\n` +
                         `We couldn't find lyrics for "${song.title}" by ${song.artist}\n\n` +
                         `This happens because:\n` +
                         `• Free lyrics APIs have rate limits and CORS restrictions\n` +
                         `• Some songs aren't in public databases\n` +
                         `• APIs may be temporarily unavailable\n\n` +
-                        `💡 What you can do:\n` +
+                        `What you can do:\n` +
                         `• Try searching from the local song library (below the search bar)\n` +
                         `• Wait a few minutes and try again\n` +
                         `• Search for a different song\n` +
@@ -1099,289 +1098,280 @@ export default function SongSearchPlayer() {
         }
     }, [translation, definition, imageUrl, measuredPopoverHeight, activeSelection, showSelectionTooltip]);
 
-    const parseDoTags = (message: string): (string | JSX.Element)[] => {
-        const parts = message.split(/(<do>.*?<\/do>)/g);
-        return parts.map((part: string, index: number) => {
-            if (part.startsWith('<do>') && part.endsWith('</do>')) {
-                const content = part.replace(/<\/?do>/g, '');
-                return <span key={index} className={styles.accent}>{content}</span>;
-            }
-            return part;
-        }).filter((part: string | JSX.Element) => part !== '');
+    const stripDoTags = (message: string): string => {
+        return message.replace(/<\/?do>/g, '');
     };
 
     return (
         <motion.div className={styles.container} initial="hidden" animate="visible" variants={containerVariants}>
-            <div className={styles.ambientGlow} />
-            <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
             <div className={styles.content}>
-            {notification && (
-                <div className="mb-3">
-                    <StatusNotification
-                        type="info"
-                        message={notification}
-                        onClose={() => setNotification(null)}
-                    />
-                </div>
-            )}
+                {notification && (
+                    <div>
+                        <StatusNotification
+                            type="info"
+                            message={notification}
+                            onClose={() => setNotification(null)}
+                        />
+                    </div>
+                )}
 
-            <motion.div className={styles.headerGroup} variants={itemVariants} ref={searchAreaRef}>
-                <span className={styles.eyebrow}>04 // SONGS & LYRICS</span>
-                <h1 className={styles.pageTitle}>
-                    {parseDoTags(intl.formatMessage({
-                        id: 'songs.learnFromSongs',
-                        defaultMessage: 'Learn from <do>songs</do>'
-                    }))}
-                </h1>
-            </motion.div>
+                <motion.div className={styles.topBar} variants={itemVariants} ref={searchAreaRef}>
+                    <h1 className={styles.pageTitle}>
+                        {stripDoTags(intl.formatMessage({
+                            id: 'songs.learnFromSongs',
+                            defaultMessage: 'Learn from songs'
+                        }))}
+                    </h1>
+                </motion.div>
 
-            {/* Enhanced Search Bar */}
-            <motion.div className="mb-8" variants={itemVariants}>
-                <SongSearchBar
-                    onSearch={handleEnhancedSearch}
-                    loading={searchLoading}
-                />
-            </motion.div>
-
-            {/* Enhanced Search Results */}
-            {(searchLoading || enhancedSearchResults.length > 0) && (
-                <motion.div variants={itemVariants}>
-                    <SongSearchResults
-                        songs={enhancedSearchResults}
-                        onSongSelect={handleEnhancedSongSelect}
-                        selectedSongId={selectedEnhancedSong?.id}
+                {/* Unified Widescreen Search Bar */}
+                <motion.div className={styles.searchSection} variants={itemVariants}>
+                    <SongSearchBar
+                        onSearch={handleEnhancedSearch}
                         loading={searchLoading}
                     />
-                    <Separator className={styles.sectionSeparator} />
                 </motion.div>
-            )}
 
-            {tooltipState && createPortal(
-                <div
-                    className={styles.wordTooltip}
-                    style={{
-                        left: tooltipState.x,
-                        top: tooltipState.y
-                    }}
-                    role="tooltip"
-                >
-                    {tooltipState.text}
-                </div>,
-                document.body
-            )}
-            <MobileHint
-                isVisible={isMobile && showMobileHint}
-                onClose={() => setShowMobileHint(false)}
-                steps={MOBILE_HINT_STEPS.SONGS_AND_TEXT}
-            />
+                {/* Enhanced Search Results */}
+                {(searchLoading || enhancedSearchResults.length > 0) && (
+                    <motion.div variants={itemVariants}>
+                        <SongSearchResults
+                            songs={enhancedSearchResults}
+                            onSongSelect={handleEnhancedSongSelect}
+                            selectedSongId={selectedEnhancedSong?.id}
+                            loading={searchLoading}
+                        />
+                    </motion.div>
+                )}
 
-            {/* Level Selector and Recommended Songs */}
-            <motion.div variants={itemVariants} style={{ width: '100%' }}>
-                <Card className={styles.searchCard}>
-                <CardHeader>
-                    <CardTitle className="text-xl md:text-2xl">
-                        {intl.formatMessage({
-                            id: 'songs.recommendedByLevel',
-                            defaultMessage: 'Recommended Songs by Level'
-                        })}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className={styles.levelSelectorRow}>
-                        {(['A1', 'A2', 'B1', 'B2', 'C1'] as const).map(lvl => (
-                            <button
-                                key={lvl}
-                                onClick={() => setSelectedLevel(lvl)}
-                                className={`${styles.levelSelectorButton} ${selectedLevel === lvl ? styles.levelSelectorButtonActive : ''}`}
-                                aria-label={`Select recommended songs for level ${lvl}`}
-                            >
-                                {lvl}
-                            </button>
-                        ))}
+                {/* Active Song Studio Workspace (2-Column Widescreen Split: Player + Lyrics) */}
+                {(track || lyrics || loading) && (
+                    <motion.div
+                        className={styles.workspaceGrid}
+                        variants={itemVariants}
+                        ref={playerContainerRef}
+                    >
+                        {track && (
+                            <div className={styles.trackInfoCard}>
+                                <div className={styles.trackHeader}>
+                                    <div className={styles.songIconBox}>
+                                        <Music size={18} />
+                                    </div>
+                                    <div className={styles.trackMeta}>
+                                        <h2 className={styles.trackTitle}>{track.name}</h2>
+                                        <div className={styles.trackArtist}>{track.artist}</div>
+                                    </div>
+                                </div>
+
+                                {track.embedUrl?.includes('youtube.com') ? (
+                                    <>
+                                        <iframe
+                                            src={track.embedUrl}
+                                            width="100%"
+                                            height="260"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            className={styles.spotifyPlayer}
+                                            title={`YouTube player for ${track.name}`}
+                                        />
+                                        <div className={styles.playerNotice}>
+                                            <p className={styles.playerNoticeText}>
+                                                <Lightbulb size={14} className={styles.noticeIcon} />
+                                                <span><strong className={styles.playerNoticeStrong}>YouTube Player:</strong> Full songs available for free.</span>
+                                            </p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <iframe
+                                            src={track.embedUrl}
+                                            width="100%"
+                                            height="152"
+                                            frameBorder="0"
+                                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                            className={styles.spotifyPlayer}
+                                            title={`Spotify player for ${track.name}`}
+                                        />
+                                        <div className={styles.playerNotice}>
+                                            <p className={styles.playerNoticeText}>
+                                                <Lightbulb size={14} className={styles.noticeIcon} />
+                                                <span><strong className={styles.playerNoticeStrong}>Tip:</strong> Log in to Spotify in your browser to listen to full tracks.</span>
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        <div className={styles.lyricsCard}>
+                            <div className={styles.lyricsHeader}>
+                                <h2 className={styles.lyricsTitle}>Lyrics</h2>
+                                <span className={styles.lyricsHint}>Select any word or phrase to translate</span>
+                            </div>
+                            {loading ? (
+                                <div className={styles.loading}>Loading lyrics...</div>
+                            ) : lyrics ? (
+                                <div
+                                    ref={lyricsContainerRef}
+                                    className={styles.lyricsContainer}
+                                    contentEditable={true}
+                                    suppressContentEditableWarning={true}
+                                    onMouseUp={handleTextSelection}
+                                    onTouchEnd={handleTextSelection}
+                                    onContextMenu={(e) => e.preventDefault()}
+                                    onBeforeInput={(e) => e.preventDefault()}
+                                    onKeyDown={(e) => e.preventDefault()}
+                                    onPaste={(e) => e.preventDefault()}
+                                    onCut={(e) => e.preventDefault()}
+                                    onDrop={(e) => e.preventDefault()}
+                                    style={{ outline: 'none', cursor: 'text', userSelect: 'text', WebkitUserSelect: 'text' }}
+                                >
+                                    <div
+                                        className={styles.lyrics}
+                                        dangerouslySetInnerHTML={{ __html: highlightText(lyrics) }}
+                                    />
+                                </div>
+                            ) : null}
+                        </div>
+                    </motion.div>
+                )}
+
+                {tooltipState && createPortal(
+                    <div
+                        className={styles.wordTooltip}
+                        style={{
+                            left: tooltipState.x,
+                            top: tooltipState.y
+                        }}
+                        role="tooltip"
+                    >
+                        {tooltipState.text}
+                    </div>,
+                    document.body
+                )}
+                <MobileHint
+                    isVisible={isMobile && showMobileHint}
+                    onClose={() => setShowMobileHint(false)}
+                    steps={MOBILE_HINT_STEPS.SONGS_AND_TEXT}
+                />
+
+                {/* Curated Songs by CEFR Level (Widescreen 4-Column Bento) */}
+                <motion.div className={styles.recommendedSection} variants={itemVariants}>
+                    <div className={styles.recommendedHeader}>
+                        <h2 className={styles.recommendedTitle}>
+                            {intl.formatMessage({
+                                id: 'songs.recommendedByLevel',
+                                defaultMessage: 'Recommended Songs by Level'
+                            })}
+                        </h2>
+                        <div className={styles.levelSelectorRow} role="tablist" aria-label="CEFR difficulty level">
+                            {(['A1', 'A2', 'B1', 'B2', 'C1'] as const).map(lvl => (
+                                <button
+                                    key={lvl}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={selectedLevel === lvl}
+                                    onClick={() => setSelectedLevel(lvl)}
+                                    className={`${styles.levelSelectorButton} ${selectedLevel === lvl ? styles.levelSelectorButtonActive : ''}`}
+                                    aria-label={`Select recommended songs for level ${lvl}`}
+                                >
+                                    {lvl}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className={styles.songList}>
                         {(recommendedSongsData[selectedLevel] as Array<{ title: string, artist: string, reason: string }>).map((song, idx) => {
                             const isSelected = selectedRecommendedSong?.title === song.title && selectedRecommendedSong?.artist === song.artist;
                             return (
-                                <Card
+                                <div
                                     key={`${song.title}-${song.artist}-${idx}`}
-                                    className={styles.songItemCard}
+                                    className={`${styles.songItemCard} ${isSelected ? styles.songItemCardActive : ''}`}
                                     onClick={() => handleRecommendedSongClick(song.title, song.artist)}
                                     role="button"
                                     aria-label={`Select recommended song: ${song.title} by ${song.artist}`}
                                     tabIndex={0}
                                     onKeyDown={(e: React.KeyboardEvent) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
                                             handleRecommendedSongClick(song.title, song.artist);
                                         }
                                     }}
-                                    style={{
-                                        borderColor: isSelected ? '#faf92f' : undefined,
-                                        backgroundColor: isSelected ? '#141412' : undefined
-                                    }}
                                 >
-                                    <CardContent className="p-5">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div className="flex-1">
-                                                <h3 className={styles.recommendedSongTitle}>
-                                                    {song.title}
-                                                </h3>
-                                                <p className={styles.recommendedSongArtist}>{song.artist}</p>
-                                            </div>
-                                            <span className={styles.recommendedLevelBadge}>
-                                                {selectedLevel}
-                                            </span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                    <div className={styles.songIconBox}>
+                                        <Music size={17} />
+                                    </div>
+                                    <div className={styles.songItemMeta}>
+                                        <h3 className={styles.recommendedSongTitle}>
+                                            {song.title}
+                                        </h3>
+                                        <p className={styles.recommendedSongArtist}>{song.artist}</p>
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>
-                </CardContent>
-            </Card>
-            </motion.div>
-            <Separator className={styles.sectionSeparator} />
-            {track && (
-                <motion.div variants={itemVariants} style={{ width: '100%' }}>
-                    <Card className={styles.trackInfoCard} ref={playerContainerRef}>
-                    <CardHeader>
-                        <CardTitle className={styles.trackTitle}>{track.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className={styles.trackArtist}>{track.artist}</div>
-                        {/* Render YouTube or Spotify embed based on availability */}
-                        {track.embedUrl?.includes('youtube.com') ? (
-                            <>
-                                <iframe
-                                    src={track.embedUrl}
-                                    width="100%"
-                                    height="315"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    className={styles.spotifyPlayer}
-                                    title={`YouTube player for ${track.name}`}
-                                />
-                                <div className={styles.playerNotice}>
-                                    <p className={`${styles.playerNoticeText} flex items-center gap-1.5`}>
-                                        <Lightbulb size={14} className="text-primary shrink-0" /> <span className={styles.playerNoticeStrong}>YouTube Player:</span> Full songs available for free!
-                                    </p>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <iframe
-                                    src={track.embedUrl}
-                                    width="100%"
-                                    height="80"
-                                    frameBorder="0"
-                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                    className={styles.spotifyPlayer}
-                                    title={`Spotify player for ${track.name}`}
-                                />
-                                <div className={styles.playerNotice}>
-                                    <p className={`${styles.playerNoticeText} flex items-center gap-1.5`}>
-                                        <Lightbulb size={14} className="text-primary shrink-0" /> <span className={styles.playerNoticeStrong}>Tip:</span> Log in to your Spotify account in your browser to listen to full songs
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
                 </motion.div>
-            )}
 
-            {loading && <div className={styles.loading}>Loading...</div>}
-            {lyrics && (
-                <motion.div variants={itemVariants} style={{ width: '100%' }}>
-                    <Card className={styles.lyricsCard}>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-lg">Lyrics</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div
-                            ref={lyricsContainerRef}
-                            className={styles.lyricsContainer}
-                            contentEditable={true}
-                            suppressContentEditableWarning={true}
-                            onMouseUp={handleTextSelection}
-                            onTouchEnd={handleTextSelection}
-                            onContextMenu={(e) => e.preventDefault()}
-                            onBeforeInput={(e) => e.preventDefault()}
-                            onKeyDown={(e) => e.preventDefault()}
-                            onPaste={(e) => e.preventDefault()}
-                            onCut={(e) => e.preventDefault()}
-                            onDrop={(e) => e.preventDefault()}
-                            style={{ outline: 'none', cursor: 'text', userSelect: 'text', WebkitUserSelect: 'text' }}
+                <TranslationPopover
+                    selectionPosition={selectionPosition}
+                    isPopoverOpen={isPopoverOpen}
+                    isLoading={isLoading}
+                    isMobile={isMobile}
+                    selectedText={selectedText}
+                    selectedSentence={selectedSentence}
+                    translation={translation}
+                    definition={definition}
+                    transcription={transcription}
+                    imageUrl={imageUrl}
+                    showImage={showImage}
+                    synonyms={synonyms}
+                    otherMeanings={otherMeanings}
+                    collocations={collocations}
+                    examples={examples}
+                    recommendedSelections={recommendedSelections}
+                    isSaving={saveWordMutation.isPending}
+                    showSubmitButton={showSubmitButton}
+                    onSaveToDict={saveToDict}
+                    onSelectMeaning={(meaning) => setTranslation(meaning)}
+                    onClose={() => {
+                        setIsPopoverOpen(false);
+                        resetPopoverState();
+                    }}
+                    onRemoveImage={() => setShowImage(false)}
+                />
+
+                <Modal
+                    isOpen={showLanguageOverlay}
+                    onClose={() => setShowLanguageOverlay(false)}
+                    size="sm"
+                >
+                    <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
+                        <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                            Select a language in the header to translate
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setShowLanguageOverlay(false)}
+                            style={{
+                                marginTop: '4px',
+                                background: '#ffffff',
+                                color: '#0d0c0b',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 24px',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                            }}
+                            aria-label="Dismiss language overlay"
                         >
-                            <div
-                                className={styles.lyrics}
-                                dangerouslySetInnerHTML={{ __html: highlightText(lyrics) }}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-                </motion.div>
-            )}
-            <TranslationPopover
-                selectionPosition={selectionPosition}
-                isPopoverOpen={isPopoverOpen}
-                isLoading={isLoading}
-                isMobile={isMobile}
-                selectedText={selectedText}
-                selectedSentence={selectedSentence}
-                translation={translation}
-                definition={definition}
-                transcription={transcription}
-                imageUrl={imageUrl}
-                showImage={showImage}
-                synonyms={synonyms}
-                otherMeanings={otherMeanings}
-                collocations={collocations}
-                examples={examples}
-                recommendedSelections={recommendedSelections}
-                isSaving={saveWordMutation.isPending}
-                showSubmitButton={showSubmitButton}
-                onSaveToDict={saveToDict}
-                onSelectMeaning={(meaning) => setTranslation(meaning)}
-                onClose={() => {
-                    setIsPopoverOpen(false);
-                    resetPopoverState();
-                }}
-                onRemoveImage={() => setShowImage(false)}
-            />
-
-            <Modal
-                isOpen={showLanguageOverlay}
-                onClose={() => setShowLanguageOverlay(false)}
-                size="sm"
-            >
-                <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
-                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
-                        Select a language in the header to translate
-                    </p>
-                    <button
-                        type="button"
-                        onClick={() => setShowLanguageOverlay(false)}
-                        style={{
-                            marginTop: '4px',
-                            background: '#ffffff',
-                            color: '#000000',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 24px',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                        }}
-                        aria-label="Dismiss language overlay"
-                    >
-                        OK
-                    </button>
-                </Modal.Body>
-            </Modal>
+                            OK
+                        </button>
+                    </Modal.Body>
+                </Modal>
             </div>
-
-        </motion.div >
+        </motion.div>
     );
 }

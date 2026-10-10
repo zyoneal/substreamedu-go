@@ -173,7 +173,7 @@ const Header = () => {
                                 <li>
                                     <Link
                                         to="/learning"
-                                        className={`${styles.navItem} hover:text-white transition-colors duration-200 ${location.pathname.startsWith("/learning") ? "text-primary font-medium" : "text-zinc-400"}`}
+                                        className={`${styles.navItem} ${location.pathname.startsWith("/learning") ? `${styles.active} ${styles.activeNavItem}` : ""}`}
                                     >
                                         <FormattedMessage id="learning" defaultMessage="Learning" />
                                     </Link>
@@ -204,6 +204,7 @@ const Header = () => {
                                 <button
                                     className={styles.menu}
                                     aria-label="Menu"
+                                    aria-expanded={isMobileMenuOpen}
                                     onClick={(e: React.MouseEvent) => {
                                         e.stopPropagation();
                                         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -254,12 +255,12 @@ const Header = () => {
                                         </Link>
                                         <Link
                                             to="/learning"
-                                            className={`${styles.navItem} ${location.pathname.startsWith("/learning") ? styles.active : ""}`}
+                                            className={`${styles.navItem} ${location.pathname.startsWith("/learning") ? `${styles.active} ${styles.activeNavItem}` : ""}`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <FormattedMessage id="learning" defaultMessage="Learning" />
                                         </Link>
-                                        <li>
+                                        <div className={styles.dropdownItem}>
                                             <Link
                                                 to="/telegramBot"
                                                 className={`${styles.navItem} ${location.pathname.startsWith("/telegramBot") ? styles.active : ""}`}
@@ -267,7 +268,7 @@ const Header = () => {
                                             >
                                                 <FormattedMessage id="telegramChannelMenu" defaultMessage="TelegramBot" />
                                             </Link>
-                                        </li>
+                                        </div>
                                         {authorities.includes('SYSTEM_ADMIN') && (
                                             <Link
                                                 to="/admin"

@@ -2,11 +2,7 @@ import React from 'react';
 
 import Play from 'lucide-react/dist/esm/icons/play';
 import Music from 'lucide-react/dist/esm/icons/music';
-import Calendar from 'lucide-react/dist/esm/icons/calendar';
-import FileText from 'lucide-react/dist/esm/icons/file-text';
-import Star from 'lucide-react/dist/esm/icons/star';
 import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
 import { EnhancedSong } from '../../types/song.types';
 import styles from './SongSearchResults.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,7 +38,7 @@ export const SongSearchResults: React.FC<SongSearchResultsProps> = ({
         return (
             <div className={styles.container}>
                 <div className={styles.empty}>
-                    <Music size={48} className={styles.emptyIcon} />
+                    <Music size={36} className={styles.emptyIcon} />
                     <h3>No songs found</h3>
                     <p>Try a different search term</p>
                 </div>
@@ -55,7 +51,7 @@ export const SongSearchResults: React.FC<SongSearchResultsProps> = ({
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.05
+                staggerChildren: 0.04
             }
         }
     };
@@ -63,33 +59,26 @@ export const SongSearchResults: React.FC<SongSearchResultsProps> = ({
     const cardVariants = {
         hidden: {
             opacity: 0,
-            y: 20,
-            scale: 0.95
+            y: 12
         },
         visible: {
             opacity: 1,
             y: 0,
-            scale: 1,
             transition: {
-                type: "spring",
-                stiffness: 300,
-                damping: 30
+                duration: 0.3,
+                ease: [0.16, 1, 0.3, 1]
             }
         }
     };
 
     return (
         <div className={styles.container}>
-            <motion.div
-                className={styles.resultsHeader}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-            >
-                <h3>
-                    {songs.length} {songs.length === 1 ? 'song' : 'songs'} found
-                </h3>
-            </motion.div>
+            <div className={styles.resultsHeader}>
+                <h2 className={styles.resultsTitle}>Search Results</h2>
+                <span className={styles.resultsCount}>
+                    {songs.length} {songs.length === 1 ? 'track' : 'tracks'}
+                </span>
+            </div>
 
             <motion.div
                 className={styles.grid}
@@ -98,10 +87,8 @@ export const SongSearchResults: React.FC<SongSearchResultsProps> = ({
                 animate="visible"
             >
                 <AnimatePresence mode="popLayout">
-                    {Array.isArray(songs) && songs.map((song) => {
+                    {songs.map((song) => {
                         const isSelected = song.id === selectedSongId;
-                        const hasLyrics = !!song.lyrics?.text;
-                        const hasAudio = !!song.audio?.spotifyEmbedUrl || !!song.audio?.youtubeUrl;
 
                         return (
                             <motion.div
@@ -112,9 +99,18 @@ export const SongSearchResults: React.FC<SongSearchResultsProps> = ({
                                 <Card
                                     className={`${styles.songCard} ${isSelected ? styles.selected : ''}`}
                                     onClick={() => onSongSelect(song)}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`Play ${song.title} by ${song.artist}`}
+                                    onKeyDown={(e: React.KeyboardEvent) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            onSongSelect(song);
+                                        }
+                                    }}
                                 >
                                     <CardContent className={styles.cardContent}>
-                                        {song.metadata?.imageUrl && (
+                                        {song.metadata?.imageUrl ? (
                                             <div className={styles.imageContainer}>
                                                 <img
                                                     src={song.metadata.imageUrl}
@@ -122,58 +118,20 @@ export const SongSearchResults: React.FC<SongSearchResultsProps> = ({
                                                     className={styles.albumArt}
                                                 />
                                                 <div className={styles.playOverlay}>
-                                                    <Play size={32} fill="currentColor" />
+                                                    <Play size={22} fill="currentColor" />
                                                 </div>
+                                            </div>
+                                        ) : (
+                                            <div className={styles.fallbackArtwork}>
+                                                <Music size={24} />
                                             </div>
                                         )}
 
                                         <div className={styles.songInfo}>
                                             <h4 className={styles.songTitle}>
                                                 {song.title}
-                                                {song.metadata?.explicit && (
-                                                    <Badge variant="secondary" className={styles.explicitBadge}>
-                                                        E
-                                                    </Badge>
-                                                )}
                                             </h4>
                                             <p className={styles.artistName}>{song.artist}</p>
-
-                                            {song.album && (
-                                                <p className={styles.albumName}>{song.album}</p>
-                                            )}
-
-                                            <div className={styles.metadata}>
-                                                {song.year && (
-                                                    <span className={styles.metadataItem}>
-                                                        <Calendar size={14} />
-                                                        {song.year}
-                                                    </span>
-                                                )}
-
-                                                {song.lyrics?.source && (
-                                                    <span className={styles.sourceBadge}>
-                                                        {song.lyrics.source}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <div className={styles.features}>
-                                                {hasLyrics && (
-                                                    <span className={styles.feature}>
-                                                        <FileText size={12} className="inline mr-1" />Lyrics
-                                                    </span>
-                                                )}
-                                                {hasAudio && (
-                                                    <span className={styles.feature}>
-                                                        <Music size={12} className="inline mr-1" />Audio
-                                                    </span>
-                                                )}
-                                                {song.metadata?.popularity && song.metadata.popularity > 70 && (
-                                                    <span className={styles.feature}>
-                                                        <Star size={12} className="inline mr-1" />Popular
-                                                    </span>
-                                                )}
-                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>

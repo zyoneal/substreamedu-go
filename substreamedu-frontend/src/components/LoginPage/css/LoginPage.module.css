@@ -49,7 +49,7 @@
     border: 1px solid #282522;
     color: #9e988f;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     flex-shrink: 0;
 }
 
@@ -81,7 +81,7 @@
 .brandEyebrow {
     display: inline-block;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -121,7 +121,7 @@
 
 .progressStepItem {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #666360;
@@ -135,14 +135,14 @@
 
 .progressDivider {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     color: #3d3934;
 }
 
 .stepContainer {
     width: 100%;
     min-height: 180px;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stepContainerEmail {
@@ -177,7 +177,7 @@
 .dividerText {
     padding: 0 14px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     color: #666360;
     text-transform: uppercase;
@@ -296,7 +296,9 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 3px;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 6px;
     border-radius: 4px;
     color: #8a857d;
     transition: color 0.2s ease;
@@ -443,7 +445,7 @@
     background: none;
     border: none;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #666360;

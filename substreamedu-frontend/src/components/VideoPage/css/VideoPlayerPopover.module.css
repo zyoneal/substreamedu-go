@@ -1,8 +1,3 @@
-:global(::selection) {
-    background: rgba(255, 255, 255, 0.15);
-    color: #FFFFFF;
-}
-
 .currentSubtitle :global(::selection) {
     background: rgba(255, 255, 255, 0.2);
     color: #FFFFFF;
@@ -44,19 +39,19 @@
     background: #faf92f !important;
     border: none !important;
     border-radius: 12px;
-    color: #000000 !important;
+    color: #0d0c0b !important;
     font-family: var(--font-body), sans-serif;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
     box-shadow: none;
 }
 
 .minimalistButton:hover:not(:disabled) {
     background: #e6e52b !important;
-    color: #000000 !important;
+    color: #0d0c0b !important;
     border-color: transparent !important;
     transform: translateY(-2px);
     box-shadow: none;
@@ -164,7 +159,7 @@
     cursor: pointer;
     padding: 7px 14px;
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     margin-bottom: 14px;
     margin-top: 4px;
     align-self: flex-start;
@@ -205,7 +200,7 @@
     padding: 7px 14px;
     border-radius: 8px;
     text-decoration: none;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
@@ -229,7 +224,7 @@
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .demoCtaButton:hover {
@@ -390,7 +385,7 @@
     z-index: -1;
     border-radius: 20px;
     pointer-events: none;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .currentSubtitleContainer.hasContent:hover {
@@ -488,7 +483,7 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     user-select: none;
     line-height: 1;
 }
@@ -675,6 +670,11 @@
     margin: 0 4px;
 }
 
+.seekBarWrapper:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
 .seekBar {
     width: 100%;
     height: 4px;
@@ -736,7 +736,7 @@
     background: rgba(20, 19, 18, 0.92);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: #ffffff;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     padding: 3px 8px;
     border-radius: 6px;
@@ -760,7 +760,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     opacity: 0.9;
 }
 
@@ -835,7 +835,7 @@
 
 .volumePercentageText {
     font-family: var(--font-mono, 'JetBrains Mono', monospace);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
     letter-spacing: 0.02em;
@@ -860,11 +860,15 @@
     cursor: pointer;
     accent-color: #ffffff;
     margin: 0;
-    outline: none;
     background: rgba(255, 255, 255, 0.25);
     border-radius: 9999px;
     -webkit-appearance: auto;
     appearance: auto;
+}
+
+.verticalVolumeSlider:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .volumeMuteMiniButton {
@@ -877,7 +881,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .volumeMuteMiniButton:hover {
@@ -902,7 +906,7 @@
     font-family: inherit;
     letter-spacing: 0.02em;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -910,8 +914,12 @@
     line-height: 1;
     user-select: none;
     white-space: nowrap;
-    outline: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.quickPillButton:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .quickPillButton:hover {
@@ -976,9 +984,10 @@
     }
 
     .quickPillButton {
-        height: 26px;
-        padding: 0 8px;
-        font-size: 11px;
+        min-height: 36px;
+        height: 36px;
+        padding: 0 12px;
+        font-size: 12px;
         gap: 3px;
     }
 
@@ -1010,7 +1019,7 @@
 .settingsMenu h4 {
     color: rgba(255, 255, 255, 0.6);
     margin: 0 0 4px 0;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1023,22 +1032,22 @@
     gap: 6px;
     width: 100%;
     padding: 8px 12px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0%, rgba(168, 85, 247, 0.35) 100%);
-    border: 1px solid rgba(168, 85, 247, 0.5);
+    background: var(--color-surface-elevated, #1a1917);
+    border: 1px solid var(--color-hairline-strong, #3d3934);
     border-radius: 9px;
-    color: #f3e8ff;
+    color: var(--color-ink, #ede8e0);
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 10px rgba(168, 85, 247, 0.2);
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    box-shadow: none;
 }
 
 .autoAlignButton:hover:not(:disabled) {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.55) 0%, rgba(168, 85, 247, 0.55) 100%);
-    border-color: rgba(168, 85, 247, 0.8);
+    background: #242220;
+    border-color: var(--color-ink, #ede8e0);
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+    box-shadow: none;
 }
 
 .autoAlignButton:disabled {
@@ -1059,9 +1068,9 @@
     padding: 5px 6px;
     border-radius: 7px;
     cursor: pointer;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     flex: 1;
     text-align: center;
     min-width: 32px;
@@ -1291,13 +1300,13 @@
     margin-top: 10px;
     padding: 12px 24px;
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     font-size: 15px;
     font-weight: 600;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     font-family: inherit;
 }
 
@@ -1329,19 +1338,19 @@
     background-color: rgba(255, 255, 255, 0.6);
     
     border: 1px solid #2a2a2a;
-    color: #e8e8e8;
+    color: #0d0c0b;
     border-radius: 12px;
     padding: 12px 24px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: var(--font-body), sans-serif;
 }
 
 .subtitleButton:hover {
     background-color: #e8e8e8;
-    color: #e8e8e8;
+    color: #0d0c0b;
     transform: translateY(-2px);
     box-shadow: none;
 }
@@ -1361,7 +1370,7 @@
     border-radius: 20px;
     padding: 32px;
     box-shadow: none;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .loadingText {
@@ -1417,14 +1426,14 @@
 
 .submitButton {
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     font-size: 14px;
     font-weight: 500;
     border: none;
     border-radius: 6px;
     padding: 12px 24px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     font-family: inherit;
 }
 
@@ -1434,14 +1443,14 @@
 
 .subscribeButton {
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     font-size: 14px;
     font-weight: 500;
     border: none;
     border-radius: 6px;
     padding: 12px 24px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     font-family: inherit;
     width: 100%;
 }
@@ -1470,7 +1479,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .resetButton:hover {
@@ -1489,7 +1498,7 @@
 }
 
 .noteContainer::before {
-    content: "✍";
+    content: "";
     position: absolute;
     left: 12px;
     top: 50%;
@@ -1507,16 +1516,21 @@
     background-color: #111111;
     color: #e8e8e8;
     border-radius: 12px;
-    font-size: 14px;
+    font-size: 16px;
+    min-height: 36px;
     font-weight: 400;
     font-family: var(--font-body), sans-serif;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .noteInput:focus {
     border-color: #e8e8e8;
-    outline: none;
     box-shadow: none;
+}
+
+.noteInput:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .noteInput::placeholder {
@@ -1542,7 +1556,7 @@
     background: #111111;
     
     border-radius: 20px;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
     border: 1px solid #2a2a2a;
 }
 
@@ -1636,7 +1650,7 @@
 }
 
 .cardBack .highlightedText {
-    color: #e8e8e8;
+    color: #0d0c0b;
     font-size: 1.6rem;
 }
 
@@ -1650,7 +1664,7 @@
 }
 
 .cardBack .highlightedContext {
-    color: #cccccc;
+    color: #3d3934;
 }
 
 .highlight {
@@ -1662,8 +1676,8 @@
 }
 
 .cardBack .highlight {
-    background: rgba(255, 255, 255, 0.05);
-    color: #e8e8e8;
+    background: rgba(13, 12, 11, 0.08);
+    color: #0d0c0b;
 }
 
 .cardContainer::after {
@@ -1777,7 +1791,7 @@
 
     .delayButtons button {
         padding: 8px 16px;
-        font-size: 10px;
+        font-size: 12px;
     }
 
     .videoWrapper video {
@@ -1810,7 +1824,8 @@
     }
 
     .noteInput {
-        font-size: 14px;
+        font-size: 16px;
+        min-height: 36px;
     }
 
     .translationRow {
@@ -1849,7 +1864,8 @@
     }
 
     .noteInput {
-        font-size: 14px;
+        font-size: 16px;
+        min-height: 36px;
         padding: 10px;
     }
 }
@@ -2037,7 +2053,7 @@
 
 .selectedTextLabel {
     color: #777777;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -2056,7 +2072,7 @@
 }
 
 .transcription {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-body, #9e988f);
     font-size: 14px;
     font-style: normal;
     font-weight: 400;
@@ -2076,7 +2092,7 @@
     padding: 8px;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     font-weight: 600;
     font-size: 12px;
     display: flex;
@@ -2114,7 +2130,7 @@
 .translationLabel,
 .definitionLabel {
     color: #777777;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -2175,14 +2191,14 @@
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     font-size: 16px;
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     padding: 0;
     line-height: 1;
 }
@@ -2243,13 +2259,14 @@
     }
 
     .translationTypeButton {
-        font-size: 11px;
+        font-size: 12px;
         width: 32px;
         height: 32px;
     }
 
     .noteInput {
-        font-size: 13px;
+        font-size: 16px;
+        min-height: 36px;
         padding: 7px 7px 7px 36px;
     }
 }
@@ -2302,10 +2319,10 @@
     }
 
     .noteInput {
-        min-height: 24px;
-        height: 24px;
-        padding: 4px 4px 4px 24px;
-        font-size: 10px;
+        min-height: 36px;
+        height: 36px;
+        padding: 4px 8px 4px 24px;
+        font-size: 16px;
     }
 
     .popoverActions {
@@ -2327,12 +2344,12 @@
     }
 
     .translationTypeButton {
-        font-size: 9px;
+        font-size: 12px;
     }
 
     .saveButton {
         padding: 7px 14px;
-        font-size: 11px;
+        font-size: 12px;
     }
 }
 
@@ -2342,7 +2359,7 @@
 }
 
 .noteContainer::before {
-    content: "✍";
+    content: "";
     position: absolute;
     left: 8px;
     top: 50%;
@@ -2359,17 +2376,17 @@
     border-radius: 12px;
     padding: 12px 16px;
     color: #e8e8e8;
-    font-size: 13px;
+    font-size: 16px;
+    min-height: 36px;
     resize: none;
     height: 48px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: var(--font-body), sans-serif;
 }
 
 .noteInput:focus {
     border-color: #555555;
     background: #1a1a1a;
-    outline: none;
 }
 
 .popoverActions {
@@ -2401,7 +2418,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
     width: 40px;
     height: 40px;
 }
@@ -2427,7 +2444,7 @@
     border-radius: 50%;
     width: 36px;
     height: 36px;
-    transition: all 0.18s ease;
+    transition: transform 0.18s ease, opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     flex-shrink: 0;
     position: relative;
 }
@@ -2459,14 +2476,14 @@
     align-items: center;
     justify-content: center;
     border-radius: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 40px;
     height: 40px;
 }
 
 .iconButtonPremium:hover {
     background: #D4AF37;
-    color: #e8e8e8;
+    color: #0d0c0b;
     transform: translateY(-2px);
     box-shadow: none;
 }
@@ -2479,7 +2496,7 @@
     display: block;
     color: #777777;
     margin-bottom: 8px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -2516,7 +2533,7 @@
     font-size: 13px;
     color: #e8e8e8;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: var(--font-body), sans-serif;
 }
 
@@ -2528,7 +2545,7 @@
 
 .translationItem.active {
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     border-color: #ffffff;
     box-shadow: none;
     transform: translateY(-2px);
@@ -2612,7 +2629,7 @@
     right: 0 !important;
     bottom: 0 !important;
     margin: 0 !important;
-    background: #000 !important;
+    background: #0d0c0b !important;
 }
 
 .videoWrapper:fullscreen .videoPlayerContainer video,
@@ -2644,7 +2661,7 @@
     bottom: 0 !important;
     margin: 0 !important;
     z-index: 1 !important;
-    background: #000 !important;
+    background: #0d0c0b !important;
     max-width: none !important;
     max-height: none !important;
 }
@@ -2657,7 +2674,7 @@
     height: 100% !important;
     position: relative !important;
     margin: 0 !important;
-    background: #000 !important;
+    background: #0d0c0b !important;
     display: block !important;
     flex-direction: unset !important;
 }
@@ -2698,7 +2715,7 @@
     bottom: 0 !important;
     margin: 0 !important;
     z-index: 1 !important;
-    background: #000 !important;
+    background: #0d0c0b !important;
     max-width: none !important;
     max-height: none !important;
 }
@@ -2846,13 +2863,13 @@
     margin-top: 10px;
     padding: 12px 24px;
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
     border-radius: 6px;
     border: none;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
     font-family: inherit;
 }
@@ -2897,7 +2914,7 @@
     cursor: pointer;
     z-index: 5;
     box-shadow: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
 }
 
@@ -2989,7 +3006,7 @@
     border-radius: 12px;
     font-size: 13px;
     margin-bottom: 24px;
-    border-left: 4px solid #000000;
+    border-left: 4px solid #0d0c0b;
     color: #cccccc;
     text-align: left;
 }
@@ -3048,7 +3065,7 @@
     justify-content: center;
     box-shadow: none;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fabButton svg {
@@ -3060,7 +3077,7 @@
 .fabButton:hover,
 .fabButton:focus {
     background: #ffffff;
-    color: #e8e8e8;
+    color: #0d0c0b;
     transform: scale(1.1);
     box-shadow: none;
 }
@@ -3080,17 +3097,20 @@
     justify-content: center;
     box-shadow: none;
     cursor: pointer;
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    transition: background-color 0.2s, transform 0.15s, color 0.2s;
     font-size: 1.2em;
-    outline: none;
     z-index: 21;
-    
+}
+
+.toggleCardsFab:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .toggleCardsFab:hover,
 .toggleCardsFab:focus {
     background: #ffffff;
-    color: #e8e8e8;
+    color: #0d0c0b;
     transform: scale(1.1);
     box-shadow: none;
 }
@@ -3200,7 +3220,7 @@
     text-decoration: none;
     cursor: pointer;
     position: relative;
-    transition: all 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     color: #e8e8e8 !important;
     font-weight: 600;
     font-style: italic;
@@ -3236,7 +3256,7 @@
     padding: 10px 16px;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
     min-width: 200px;
     margin: 10px 0;
     font-family: var(--font-body), sans-serif;
@@ -3247,8 +3267,9 @@
     background: #161616;
 }
 
-.subtitleSelect:focus {
-    outline: none;
+.subtitleSelect:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
     border-color: #e8e8e8;
     box-shadow: none;
 }
@@ -3273,14 +3294,14 @@
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;
     font-family: var(--font-body), sans-serif;
 }
 
 .button:hover {
     background: #ffffff;
-    color: #e8e8e8;
+    color: #0d0c0b;
     transform: translateY(-2px);
     box-shadow: none;
 }
@@ -3299,14 +3320,14 @@
 
 .addToDictionaryButton {
     background: #ffffff;
-    color: #e8e8e8;
+    color: #0d0c0b;
     border: none;
     padding: 10px 20px;
     border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;
     display: flex;
     align-items: center;
@@ -3316,6 +3337,7 @@
 
 .addToDictionaryButton:hover {
     background: #090909;
+    color: #ede8e0;
     transform: translateY(-2px);
     box-shadow: none;
 }
@@ -3421,7 +3443,7 @@
 
 .closeHintButton {
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     border: none;
     padding: 12px 24px;
     border-radius: 6px;
@@ -3430,7 +3452,7 @@
     font-weight: 500;
     font-size: 14px;
     font-family: inherit;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     width: 100%;
 }
 
@@ -3570,7 +3592,7 @@
 
 .spinnerPath {
     opacity: 0.8;
-    fill: #000000;
+    fill: #0d0c0b;
 }
 
 @keyframes spin {
@@ -3587,7 +3609,7 @@
     position: relative;
     width: 100%;
     aspect-ratio: 16/9;
-    background: #000;
+    background: #0d0c0b;
     border-radius: 10px;
     overflow: hidden;
     margin: 0 auto;
@@ -3626,7 +3648,7 @@
     aspect-ratio: 16/9 !important;
     object-fit: contain !important;
     border-radius: 10px;
-    background: #000;
+    background: #0d0c0b;
 }
 
 @media (min-width: 769px) and (max-width: 1366px) {}
@@ -3966,7 +3988,7 @@ video[playsinline] {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.85);
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 
@@ -4006,7 +4028,7 @@ video[playsinline] {
     color: #e8e8e8;
     font-weight: 500;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .collocationChip:hover {
@@ -4113,14 +4135,14 @@ video[playsinline] {
 
 .saveButton {
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #0d0c0b !important;
     border: none !important;
     border-radius: 20px;
     padding: 9px 20px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     align-items: center;
     gap: 7px;
@@ -4141,33 +4163,37 @@ video[playsinline] {
 
 .saveButton svg {
     stroke: currentColor;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
 }
 
-.reelButton {
-    background: #FF385C !important;
-    color: #ffffff !important;
-    border: none !important;
+.reelButton,
+.reelActionBtn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--color-ink, #ede8e0) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
     border-radius: 20px;
     padding: 8px 16px;
     font-size: 12.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     gap: 6px;
     letter-spacing: 0.02em;
-    box-shadow: 0 2px 10px rgba(255, 56, 92, 0.35);
+    box-shadow: none;
 }
 
-.reelButton:hover {
-    background: #e00b41 !important;
+.reelButton:hover,
+.reelActionBtn:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(255, 56, 92, 0.5);
+    box-shadow: none;
 }
 
-.reelButton:active {
+.reelButton:active,
+.reelActionBtn:active {
     transform: scale(0.97);
 }
 
@@ -4258,7 +4284,7 @@ video[playsinline] {
     font-size: 11px;
     font-weight: 600;
     color: #888888;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .tagChipContrast {
@@ -4573,7 +4599,7 @@ video[playsinline] {
     background: rgba(0, 69, 230, 0.1) !important;
     border: 1px solid rgba(0, 69, 230, 0.2) !important;
     color: #a0c4ff !important;
-    transition: all 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .chunkChip:hover {
@@ -4729,9 +4755,13 @@ video[playsinline] {
     font-size: 11.5px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
-    outline: none;
+    transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
     font-family: inherit;
+}
+
+.optionPill:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .optionPill:hover {
@@ -4794,9 +4824,13 @@ video[playsinline] {
     font-size: 11px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s ease;
-    outline: none;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     font-family: inherit;
+}
+
+.chunkPill:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .chunkPill:hover {
@@ -5061,7 +5095,7 @@ video[playsinline] {
 .saveButtonOnboarding {
     animation: savePulse 1.6s ease-in-out infinite !important;
     background: #faf92f !important;
-    color: #000000 !important;
+    color: #0d0c0b !important;
     font-weight: 700 !important;
     box-shadow: 0 0 15px rgba(250, 249, 47, 0.6) !important;
 }

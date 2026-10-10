@@ -207,7 +207,10 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
         setSubtitleUploadStatus(null);
       }, 3000);
     } catch {
-      setSubtitleUploadStatus(intl.formatMessage({ id: 'videoPage.subtitleUploadError' }));
+      setSubtitleUploadStatus(intl.formatMessage({
+        id: 'videoPage.subtitleUploadError',
+        defaultMessage: 'Failed to upload subtitles. Please check the file format and try again.'
+      }));
       setTimeout(() => {
         setSubtitleUploadStatus(null);
       }, 5000);
@@ -284,19 +287,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     >
       <div className={styles.ambientGlow} />
       <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
-      {videoState.showInfoBlock && (
-        <motion.div className={styles.headerGroup} variants={itemVariants}>
-          <span className={styles.eyebrow}>03 // VIDEO PLAYER</span>
-          <h1 className={styles.pageTitle}>
-            {parseDoTags(intl.formatMessage({
-              id: 'videoPage.uploadContent',
-              defaultMessage: 'Learn with <do>video</do>'
-            }))}
-          </h1>
-        </motion.div>
-      )}
-
-      <div className="relative z-10">
+      <div className="relative z-10 flex-1 flex flex-col">
         {videoState.showInfoBlock && (
           <motion.div
             className={styles.contentWrapper}
@@ -305,42 +296,51 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
             onTouchEnd={onTouchEnd}
             variants={itemVariants}
           >
-            {/* 1. Balanced Tabs */}
-            <motion.nav className={styles.tabNav} role="tablist" variants={itemVariants}>
-              <button
-                onClick={() => setActiveTab('youtube')}
-                className={`${styles.tab} ${activeTab === 'youtube' ? styles.tabActive : ''}`}
-                role="tab"
-                aria-selected={activeTab === 'youtube'}
-              >
-                <Youtube size={16} strokeWidth={2} />
-                <span>YouTube</span>
-              </button>
+            {/* Apple-Minimalist Top Bar */}
+            <div className={styles.topBar}>
+              <h1 className={styles.pageTitle}>
+                {parseDoTags(intl.formatMessage({
+                  id: 'videoPage.uploadContent',
+                  defaultMessage: 'Learn with <do>video</do>'
+                }))}
+              </h1>
 
-              <button
-                onClick={() => setActiveTab('upload')}
-                className={`${styles.tab} ${activeTab === 'upload' ? styles.tabActive : ''}`}
-                role="tab"
-                aria-selected={activeTab === 'upload'}
-              >
-                <Upload size={16} strokeWidth={2} />
-                <span>
-                  <FormattedMessage id="videoPage.upload" defaultMessage="Upload" />
-                </span>
-              </button>
-
-              {!hideGoogleDrive && (
+              <nav className={styles.tabNav} role="tablist">
                 <button
-                  onClick={() => setActiveTab('googledrive')}
-                  className={`${styles.tab} ${activeTab === 'googledrive' ? styles.tabActive : ''}`}
+                  onClick={() => setActiveTab('youtube')}
+                  className={`${styles.tab} ${activeTab === 'youtube' ? styles.tabActive : ''}`}
                   role="tab"
-                  aria-selected={activeTab === 'googledrive'}
+                  aria-selected={activeTab === 'youtube'}
                 >
-                  <Cloud size={16} strokeWidth={2} />
-                  <span>Google Drive</span>
+                  <Youtube size={16} strokeWidth={2} />
+                  <span>YouTube</span>
                 </button>
-              )}
-            </motion.nav>
+
+                <button
+                  onClick={() => setActiveTab('upload')}
+                  className={`${styles.tab} ${activeTab === 'upload' ? styles.tabActive : ''}`}
+                  role="tab"
+                  aria-selected={activeTab === 'upload'}
+                >
+                  <Upload size={16} strokeWidth={2} />
+                  <span>
+                    <FormattedMessage id="videoPage.upload" defaultMessage="Upload" />
+                  </span>
+                </button>
+
+                {!hideGoogleDrive && (
+                  <button
+                    onClick={() => setActiveTab('googledrive')}
+                    className={`${styles.tab} ${activeTab === 'googledrive' ? styles.tabActive : ''}`}
+                    role="tab"
+                    aria-selected={activeTab === 'googledrive'}
+                  >
+                    <Cloud size={16} strokeWidth={2} />
+                    <span>Google Drive</span>
+                  </button>
+                )}
+              </nav>
+            </div>
 
             <div className={styles.tabContent}>
               {activeTab === 'youtube' && (

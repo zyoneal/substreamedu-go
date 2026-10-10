@@ -107,7 +107,7 @@
     font-size: 13px;
     font-weight: 400;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .searchDifferentButton:hover {
@@ -122,7 +122,7 @@
     background: rgba(255, 255, 255, 0.03);
     border: none;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s cubic-bezier(0.22, 1, 0.36, 1), transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
     color: #888888;
     display: flex;
     align-items: center;
@@ -201,7 +201,12 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.subtitleCard:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .subtitleCard:hover {
@@ -298,7 +303,7 @@
     gap: 6px;
     padding: 6px 14px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     font-family: var(--font-body), sans-serif;
     text-transform: uppercase;
@@ -314,13 +319,13 @@
 
 .trustedBadge {
     background: rgba(52, 199, 89, 0.1);
-    color: #248a3d;
+    color: #4ade80;
     border: 1px solid rgba(52, 199, 89, 0.2);
 }
 
 .hiBadge {
     background: rgba(175, 82, 222, 0.1);
-    color: #8944ab;
+    color: #d8b4fe;
     border: 1px solid rgba(175, 82, 222, 0.2);
 }
 
@@ -367,7 +372,7 @@
     border-radius: 16px;
     border: none;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
 }
 
@@ -378,7 +383,7 @@
 
 .quickTestButton:hover {
     background: #faf92f;
-    color: #000000;
+    color: #0d0c0b;
     transform: translateY(-2px);
 }
 
@@ -389,7 +394,7 @@
 
 .downloadButton:hover {
     background: #faf92f;
-    color: #000000;
+    color: #0d0c0b;
     transform: translateY(-2px);
 }
 
@@ -406,7 +411,7 @@
     transform: translateX(-50%);
     padding: 6px 10px;
     background: #ffffff;
-    color: #000000;
+    color: #0d0c0b;
     font-size: 0.75rem;
     border-radius: 4px;
     white-space: nowrap;
@@ -501,12 +506,12 @@
     }
 
     .syncScore {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         padding: 2px 8px;
     }
 
     .syncReason {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         margin-bottom: 4px;
     }
 
@@ -517,7 +522,7 @@
     }
 
     .badge {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         padding: 2px 8px;
     }
 
@@ -578,7 +583,7 @@
     }
 
     .warningMessage {
-        font-size: 0.725rem;
+        font-size: 0.75rem;
     }
 
     .modalContent {
@@ -607,7 +612,9 @@
     .closeButton {
         top: 10px;
         right: 10px;
-        padding: 4px;
+        min-width: 36px;
+        min-height: 36px;
+        padding: 8px;
     }
 
     .tooltip {
@@ -642,21 +649,21 @@
     gap: 8px;
     padding: 10px 18px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    color: #ffffff;
+    background: var(--accent, #faf92f);
+    color: #0d0c0b;
     font-family: var(--font-body), sans-serif;
     font-size: 0.875rem;
     font-weight: 700;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: none;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .autoSyncButton:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
-    filter: brightness(1.1);
+    background: #e6e52b;
+    box-shadow: none;
 }
 
 .autoSyncButton:disabled {
@@ -667,8 +674,8 @@
 .autoSyncIcon {
     width: 16px;
     height: 16px;
-    fill: #faf92f;
-    color: #faf92f;
+    fill: #0d0c0b;
+    color: #0d0c0b;
 }
 
 .autoSyncBanner {
@@ -727,7 +734,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .cancelSyncButton:hover {
@@ -754,7 +761,7 @@
 
 .progressBarFill {
     height: 100%;
-    background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
+    background: var(--color-primary, #0045e6);
     border-radius: 999px;
     transition: width 0.3s ease;
 }

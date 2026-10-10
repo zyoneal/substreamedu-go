@@ -503,6 +503,7 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                                     onClick={() => playTTS(currentExercise?.target_word || currentWordItem?.word, currentIndex, learningLanguage || 'en')}
                                     className={styles.ttsButton}
                                     title="Listen to pronunciation"
+                                    aria-label="Listen to pronunciation"
                                 >
                                     <Volume2 size={16} />
                                 </button>
@@ -514,6 +515,7 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                                     onClick={() => playTTS(currentExercise?.target_word || currentWordItem?.word, currentIndex, learningLanguage || 'en')}
                                     className={styles.ttsButton}
                                     title="Listen to pronunciation"
+                                    aria-label="Listen to pronunciation"
                                 >
                                     <Volume2 size={16} />
                                 </button>
@@ -559,7 +561,10 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
 
                             {showHint && currentExercise.hint && (
                                 <div className={styles.hintText}>
-                                    <span>💡 {currentExercise.hint}</span>
+                                    <span>
+                                        <Lightbulb size={16} aria-hidden="true" style={{ display: 'inline', marginRight: 6, verticalAlign: 'text-bottom' }} />
+                                        {currentExercise.hint}
+                                    </span>
                                     {inputMode === 'type' && currentExercise.target_word && (
                                         <span style={{ marginLeft: '6px', opacity: 0.75 }}>
                                             ({currentExercise.target_word.includes(' ')
@@ -582,6 +587,7 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                                                 onChange={e => setUserAnswer(e.target.value)}
                                                 onKeyDown={handleKeyDown}
                                                 placeholder="Type the missing word..."
+                                                aria-label="Type the missing word or phrase"
                                                 className={styles.textInput}
                                                 autoFocus
                                             />
@@ -660,6 +666,7 @@ export const ActivePractice: React.FC<ActivePracticeProps> = ({
                                 value={userSentence}
                                 onChange={e => setUserSentence(e.target.value)}
                                 placeholder={`e.g. Write a sentence featuring "${currentWordItem.word}"...`}
+                                aria-label="Write a sentence"
                                 className={styles.builderTextarea}
                                 disabled={isEvaluating}
                             />

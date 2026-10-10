@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { motion } from 'framer-motion';
-import Share2 from 'lucide-react/dist/esm/icons/share-2';
-import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
-import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
-import Play from 'lucide-react/dist/esm/icons/play';
-import Music from 'lucide-react/dist/esm/icons/music';
-import FileText from 'lucide-react/dist/esm/icons/file-text';
-import BookOpen from 'lucide-react/dist/esm/icons/book-open';
-import Send from 'lucide-react/dist/esm/icons/send';
-import Film from 'lucide-react/dist/esm/icons/film';
-import Layers from 'lucide-react/dist/esm/icons/layers';
-import Check from 'lucide-react/dist/esm/icons/check';
-import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
+import {
+    Share2,
+    ArrowRight,
+    Play,
+    Music,
+    FileText,
+    BookOpen,
+    Send,
+    Film,
+    Layers,
+    Check,
+    RotateCcw,
+} from 'lucide-react';
 
 import { DictionaryService } from '../../services/DictionaryService';
 import { useRecentVideos } from '../../hooks/useRecentVideos';
@@ -87,8 +88,9 @@ const DashboardPage: React.FC = () => {
     const sessionCardsCount = stats ? (stats.sessionCards ?? stats.dueToday ?? 0) : 0;
     const dueCount = stats ? (stats.sessionDueCards ?? stats.dueToday ?? 0) : 0;
     const newCardsCount = stats ? (stats.sessionNewCards ?? 0) : 0;
-    const newWordsCount = stats ? (stats.sessionNewWords ?? Math.floor(newCardsCount / 2)) : 0;
-    const isNewUser = !statsLoading && (stats?.totalWords ?? 0) === 0;
+    const totalWords = stats?.totalWords ?? 0;
+    const learningWords = stats?.learningWords ?? 0;
+    const isNewUser = !statsLoading && totalWords === 0;
     const isAllCaughtUp = !isNewUser && reviewedToday && dueCount === 0;
 
     const containerVariants = {
@@ -96,18 +98,18 @@ const DashboardPage: React.FC = () => {
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.06,
-                delayChildren: 0.04
+                staggerChildren: 0.04,
+                delayChildren: 0.02
             }
         }
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 16 },
+        hidden: { opacity: 0, y: 10 },
         visible: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
+            transition: { type: 'spring', bounce: 0, duration: 0.45 }
         }
     };
 
@@ -118,53 +120,51 @@ const DashboardPage: React.FC = () => {
             animate="visible"
             variants={containerVariants}
         >
-            <div className={styles.ambientGlow} />
-            <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
-
             <div className={styles.contentWrapper}>
-                <motion.div className={styles.headerSection} variants={itemVariants}>
-                    <span className={styles.eyebrow}>00 // DASHBOARD</span>
+                <motion.header className={styles.headerSection} variants={itemVariants}>
                     <h1 className={styles.pageTitle}>
                         {parseDoTags(intl.formatMessage({
                             id: 'dashboard.chooseAction',
                             defaultMessage: 'Choose your <do>learning</do> format'
                         }))}
                     </h1>
-                </motion.div>
+                </motion.header>
 
                 <motion.div className={styles.bentoGrid} variants={containerVariants}>
+                    {/* 1. STREAK WIDGET */}
                     <motion.div
                         className={`${styles.bentoCard} ${styles.cardStreak}`}
                         variants={itemVariants}
                         onClick={() => !isNewUser && setIsStreakModalOpen(true)}
-                        role="button"
-                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (!isNewUser && (e.key === 'Enter' || e.key === ' ')) {
+                                e.preventDefault();
+                                setIsStreakModalOpen(true);
+                            }
+                        }}
+                        role={!isNewUser ? 'button' : undefined}
+                        tabIndex={!isNewUser ? 0 : undefined}
                         aria-label={intl.formatMessage({ id: 'dashboard.stats.shareStreak', defaultMessage: 'Share streak' })}
                     >
                         <div className={styles.streakTop}>
                             <div className={styles.streakNumberRow}>
-                                <VectorFlameIcon theme="solar" size={28} />
-                                <span className={`${styles.streakBigNumber} ${isNewUser ? styles.streakNumberZero : ''}`}>
+                                <VectorFlameIcon theme="solar" size={24} />
+                                <span className={`${styles.metricValue} ${isNewUser ? styles.metricValueMuted : ''}`}>
                                     {statsLoading ? '–' : stats?.streakDays ?? 0}
                                 </span>
-                                <span className={styles.streakLabel}>
+                                <span className={styles.metricLabel}>
                                     <FormattedMessage id="dashboard.stats.streak" defaultMessage="day streak" />
                                 </span>
                             </div>
-                            {isNewUser ? (
-                                <span className={styles.streakReadyBadge}>
-                                    <Sparkles size={10} strokeWidth={2.5} />
-                                    <FormattedMessage id="dashboard.stats.dayOne" defaultMessage="Day 1" />
-                                </span>
-                            ) : (
-                                <span className={styles.streakShareBadge}>
-                                    <Share2 size={11} strokeWidth={2.5} />
+                            {!isNewUser && (
+                                <span className={styles.sharePill}>
+                                    <Share2 size={12} strokeWidth={2} />
                                     <FormattedMessage id="dashboard.stats.share" defaultMessage="Share" />
                                 </span>
                             )}
                         </div>
 
-                        <div className={styles.streakWeekNodes}>
+                        <div className={styles.streakWeekRow}>
                             {DAYS_LETTERS.map((day, idx) => {
                                 const isActive = stats?.weekDays && stats.weekDays.length === 7
                                     ? stats.weekDays[idx]
@@ -173,14 +173,16 @@ const DashboardPage: React.FC = () => {
                                         : idx < currentDayIndex && (currentDayIndex - 1 - idx < activeStreakCount));
                                 const isToday = idx === currentDayIndex;
                                 return (
-                                    <div key={idx} className={styles.weekNode}>
-                                        <span className={styles.weekNodeDay}>{day}</span>
+                                    <div key={idx} className={styles.weekDayCol}>
+                                        <span className={`${styles.weekDayLetter} ${isToday ? styles.weekDayLetterToday : ''}`}>
+                                            {day}
+                                        </span>
                                         <div
-                                            className={`${styles.weekNodeCircle} ${
-                                                isActive ? styles.weekNodeActive : ''
-                                            } ${isToday && !isActive ? styles.weekNodeToday : ''}`}
+                                            className={`${styles.weekDot} ${
+                                                isActive ? styles.weekDotActive : ''
+                                            } ${isToday && !isActive ? styles.weekDotToday : ''}`}
                                         >
-                                            {isActive && <Check size={11} strokeWidth={3} />}
+                                            {isActive && <Check size={10} strokeWidth={3} />}
                                         </div>
                                     </div>
                                 );
@@ -188,416 +190,263 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </motion.div>
 
+                    {/* 2. DAILY REVIEW WIDGET */}
                     <MotionLink
                         to={isNewUser ? "/videos" : "/learning"}
                         className={`${styles.bentoCard} ${styles.cardReview}`}
                         variants={itemVariants}
                     >
-                        <div>
-                            <div className={styles.glassPillRow}>
-                                <span className={`${styles.monoTag} ${styles.monoTagAccent}`}>
-                                    <Sparkles size={10} />
-                                    {isNewUser ? (
-                                        <FormattedMessage id="dashboard.bento.tag.getStarted" defaultMessage="GET STARTED" />
-                                    ) : (
-                                        <FormattedMessage id="dashboard.bento.tag.instantSrs" defaultMessage="01 // INSTANT SRS" />
+                        <div className={styles.metricTopGroup}>
+                            {isNewUser ? (
+                                <>
+                                    <span className={styles.zeroStateHeading}>
+                                        <FormattedMessage id="dashboard.zeroState.srsTitle" defaultMessage="Start Your Deck" />
+                                    </span>
+                                    <span className={styles.metricSubtext}>
+                                        <FormattedMessage id="dashboard.zeroState.srsBadge" defaultMessage="Save words while watching" />
+                                    </span>
+                                </>
+                            ) : isAllCaughtUp ? (
+                                <>
+                                    <div className={styles.metricRow}>
+                                        <span className={`${styles.metricValue} ${styles.metricValueSuccess}`}>0</span>
+                                        <span className={styles.metricLabel}>
+                                            <FormattedMessage id="dashboard.stats.dueToday" defaultMessage="due today" />
+                                        </span>
+                                    </div>
+                                    <span className={styles.metricSubtextSuccess}>
+                                        <Check size={13} strokeWidth={2.5} />
+                                        <FormattedMessage id="dashboard.stats.dailyGoalCompleted" defaultMessage="Daily goal completed!" />
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <div className={styles.metricRow}>
+                                        <span className={`${styles.metricValue} ${sessionCardsCount > 0 ? styles.metricValueAccent : ''}`}>
+                                            {statsLoading ? '–' : sessionCardsCount}
+                                        </span>
+                                        <span className={styles.metricLabel}>
+                                            <FormattedMessage id="dashboard.stats.cardsToday" defaultMessage="cards today" />
+                                        </span>
+                                    </div>
+                                    {!statsLoading && sessionCardsCount > 0 && (
+                                        <span className={styles.metricSubtext}>
+                                            {dueCount > 0 && `${dueCount} to review`}
+                                            {dueCount > 0 && newCardsCount > 0 && ' · '}
+                                            {newCardsCount > 0 && `${newCardsCount} new`}
+                                        </span>
                                     )}
-                                </span>
-                            </div>
-                            <div className={styles.reviewHeader}>
-                                <div>
-                                    {isNewUser ? (
-                                        <>
-                                            <div className={styles.reviewNumberRow}>
-                                                <span className={styles.zeroStateCardTitle}>
-                                                    <FormattedMessage id="dashboard.zeroState.srsTitle" defaultMessage="Start Your Deck" />
-                                                </span>
-                                            </div>
-                                            <div className={styles.srsBreakdownRow}>
-                                                <span className={styles.srsZeroBadge}>
-                                                    <Sparkles size={10} strokeWidth={2.5} />
-                                                    <FormattedMessage id="dashboard.zeroState.srsBadge" defaultMessage="Save words while watching" />
-                                                </span>
-                                            </div>
-                                        </>
-                                    ) : isAllCaughtUp ? (
-                                        <>
-                                            <div className={styles.reviewNumberRow}>
-                                                <span className={`${styles.reviewStatNumber} ${styles.reviewStatNumberDone}`}>
-                                                    0
-                                                </span>
-                                                <span className={styles.streakLabel}>
-                                                    <FormattedMessage id="dashboard.stats.dueToday" defaultMessage="due today" />
-                                                </span>
-                                            </div>
-                                            <div className={styles.srsBreakdownRow}>
-                                                <span className={styles.srsAllDoneBadge}>
-                                                    <Check size={11} strokeWidth={3} className={styles.srsCheckIcon} />
-                                                    <FormattedMessage id="dashboard.stats.dailyGoalCompleted" defaultMessage="Daily goal completed!" />
-                                                </span>
-                                                {newCardsCount > 0 && (
-                                                    <span className={styles.srsChipNewOptional}>
-                                                        <Sparkles size={10} strokeWidth={2.5} />
-                                                        <FormattedMessage
-                                                            id="dashboard.stats.extraPracticeBadge"
-                                                            defaultMessage="{count} new (optional practice)"
-                                                            values={{ count: newCardsCount }}
-                                                        />
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className={styles.reviewNumberRow}>
-                                                <span className={`${styles.reviewStatNumber} ${sessionCardsCount > 0 ? styles.reviewStatNumberActive : ''}`}>
-                                                    {statsLoading ? '–' : sessionCardsCount}
-                                                </span>
-                                                <span className={styles.streakLabel}>
-                                                    <FormattedMessage id="dashboard.stats.cardsToday" defaultMessage="cards today" />
-                                                </span>
-                                            </div>
-                                            {!statsLoading && sessionCardsCount > 0 && (
-                                                <div className={styles.srsBreakdownRow}>
-                                                    {dueCount > 0 && (
-                                                        <span className={styles.srsChipReview}>
-                                                            <RotateCcw size={10} strokeWidth={2.5} />
-                                                            <FormattedMessage
-                                                                id="dashboard.stats.reviewsBadge"
-                                                                defaultMessage="{count} to review"
-                                                                values={{ count: dueCount }}
-                                                            />
-                                                        </span>
-                                                    )}
-                                                    {newCardsCount > 0 && (
-                                                        <span className={styles.srsChipNew}>
-                                                            <Sparkles size={10} strokeWidth={2.5} />
-                                                            <FormattedMessage
-                                                                id="dashboard.stats.newBadge"
-                                                                defaultMessage="{count} new ({words} words)"
-                                                                values={{ count: newCardsCount, words: newWordsCount }}
-                                                            />
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {!statsLoading && sessionCardsCount === 0 && (
-                                                <div className={styles.srsAllDoneRow}>
-                                                    <Check size={12} strokeWidth={2.5} className={styles.srsCheckIcon} />
-                                                    <FormattedMessage id="dashboard.stats.allCaughtUp" defaultMessage="All caught up for today!" />
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                                </>
+                            )}
                         </div>
 
-                        <div className={styles.reviewActionRow}>
-                            <span className={styles.cardDescription}>
-                                {isNewUser ? (
-                                    <FormattedMessage
-                                        id="dashboard.zeroState.srsDesc"
-                                        defaultMessage="Click any subtitle to save words, then train them here with smart flashcards."
-                                    />
-                                ) : isAllCaughtUp ? (
-                                    <FormattedMessage
-                                        id="dashboard.learning.allDoneDesc"
-                                        defaultMessage="Great job! Take a rest or practice extra words"
-                                    />
-                                ) : (
-                                    <FormattedMessage
-                                        id="dashboard.learning.desc"
-                                        defaultMessage="Train memory with smart flashcards"
-                                    />
-                                )}
+                        <div className={styles.metricFooter}>
+                            <span className={styles.metricFooterTitle}>
+                                <RotateCcw size={14} strokeWidth={2} />
+                                <FormattedMessage id="learning" defaultMessage="Repetition" />
                             </span>
-                            <span className={`${styles.reviewBtn} ${isAllCaughtUp ? styles.reviewBtnOptional : ''}`}>
+                            <span className={styles.inlineAction}>
                                 {isNewUser ? (
-                                    <>
-                                        <FormattedMessage id="dashboard.bento.exploreVideos" defaultMessage="Explore Videos" />
-                                        <ArrowRight size={12} strokeWidth={2.5} />
-                                    </>
+                                    <FormattedMessage id="dashboard.bento.exploreVideos" defaultMessage="Explore Videos" />
                                 ) : isAllCaughtUp ? (
-                                    <>
-                                        <FormattedMessage id="dashboard.bento.practiceMore" defaultMessage="Practice More" />
-                                        <ArrowRight size={12} strokeWidth={2.5} />
-                                    </>
+                                    <FormattedMessage id="dashboard.bento.practiceMore" defaultMessage="Practice More" />
                                 ) : (
-                                    <>
-                                        <FormattedMessage id="dashboard.bento.startReview" defaultMessage="Start Review" />
-                                        <ArrowRight size={12} strokeWidth={2.5} />
-                                    </>
+                                    <FormattedMessage id="dashboard.bento.startReview" defaultMessage="Start Review" />
                                 )}
+                                <ArrowRight size={13} strokeWidth={2.2} />
                             </span>
                         </div>
                     </MotionLink>
 
+                    {/* 3. DICTIONARY WIDGET */}
                     <MotionLink
                         to={isNewUser ? "/videos" : "/dictionary"}
                         className={`${styles.bentoCard} ${styles.cardVault}`}
                         variants={itemVariants}
                     >
-                        <div>
-                            <div className={styles.glassPillRow}>
-                                <span className={styles.monoTag}>
-                                    <BookOpen size={10} />
-                                    <FormattedMessage id="dashboard.bento.vocabularyVault" defaultMessage="02 // VOCABULARY VAULT" />
-                                </span>
-                            </div>
-
-                            <div className={styles.vaultStatsRow}>
-                                {isNewUser ? (
-                                    <div className={styles.vaultZeroStateRow}>
-                                        <span className={styles.vaultZeroStateTitle}>
-                                            <FormattedMessage id="dashboard.zeroState.vaultTitle" defaultMessage="Your Vault is Empty" />
+                        <div className={styles.metricTopGroup}>
+                            {isNewUser ? (
+                                <>
+                                    <span className={styles.zeroStateHeading}>
+                                        <FormattedMessage id="dashboard.zeroState.vaultTitle" defaultMessage="Your Vault is Empty" />
+                                    </span>
+                                    <span className={styles.metricSubtext}>
+                                        <FormattedMessage id="dashboard.zeroState.vaultSubtitle" defaultMessage="Collect words from subtitles" />
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <div className={styles.metricRow}>
+                                        <span className={styles.metricValue}>
+                                            {statsLoading ? '–' : totalWords.toLocaleString()}
                                         </span>
-                                        <span className={styles.vaultZeroStateSubtitle}>
-                                            <FormattedMessage id="dashboard.zeroState.vaultSubtitle" defaultMessage="Collect words from subtitles" />
+                                        <span className={styles.metricLabel}>
+                                            <FormattedMessage id="dashboard.stats.totalWords" defaultMessage="total words" />
                                         </span>
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className={styles.vaultStatItem}>
-                                            <span className={styles.vaultValue}>
-                                                {statsLoading ? '–' : stats?.totalWords.toLocaleString() ?? 0}
-                                            </span>
-                                            <span className={styles.vaultSubLabel}>
-                                                <FormattedMessage id="dashboard.stats.totalWords" defaultMessage="total words" />
-                                            </span>
-                                        </div>
-                                        <div className={styles.vaultStatItem}>
-                                            <span className={styles.vaultValue} style={{ color: '#60a5fa' }}>
-                                                {statsLoading ? '–' : stats?.learningWords.toLocaleString() ?? 0}
-                                            </span>
-                                            <span className={styles.vaultSubLabel}>
-                                                <FormattedMessage id="dashboard.stats.learning" defaultMessage="in progress" />
-                                            </span>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
+                                    <span className={styles.metricSubtext}>
+                                        {statsLoading ? '–' : learningWords.toLocaleString()}{' '}
+                                        <FormattedMessage id="dashboard.stats.learning" defaultMessage="in progress" />
+                                    </span>
+                                </>
+                            )}
                         </div>
 
-                        <div className={styles.subtitlesRow} style={{ marginTop: 12 }}>
-                            <span className={styles.cardDescription}>
-                                {isNewUser ? (
-                                    <FormattedMessage
-                                        id="dashboard.zeroState.vaultDesc"
-                                        defaultMessage="Every word and phrase you save will be organized and analyzed here."
-                                    />
-                                ) : (
-                                    <FormattedMessage
-                                        id="dashboard.dictionary.desc"
-                                        defaultMessage="Manage saved words and phrases"
-                                    />
-                                )}
+                        <div className={styles.metricFooter}>
+                            <span className={styles.metricFooterTitle}>
+                                <BookOpen size={14} strokeWidth={2} />
+                                <FormattedMessage id="dictionary" defaultMessage="Dictionary" />
                             </span>
-                            <div className={styles.arrowPill}>
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </div>
+                            <ArrowRight size={15} strokeWidth={2} className={styles.quietChevron} />
                         </div>
                     </MotionLink>
 
+                    {/* 4. FEATURED FORMAT: VIDEO LEARNING (SPAN 8) */}
                     <MotionLink
                         to="/videos"
                         className={`${styles.bentoCard} ${styles.cardHeroVideo}`}
                         variants={itemVariants}
                     >
                         <div className={styles.heroCardBody}>
-                            <div className={styles.glassPillRow}>
-                                <span className={`${styles.monoTag} ${styles.monoTagAccent}`}>
-                                    <Film size={10} />
-                                    <FormattedMessage id="dashboard.bento.tag.cinema" defaultMessage="03 // YOUTUBE & MOVIES" />
-                                </span>
-                                <span className={styles.monoTag}>
-                                    <FormattedMessage id="dashboard.bento.tag.aiLookup" defaultMessage="AI LOOKUP" />
-                                </span>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Film size={21} strokeWidth={1.8} />
+                                </div>
+                                <h2 className={styles.heroTitle}>
+                                    {latestRecentVideo ? (
+                                        <FormattedMessage id="dashboard.bento.resume" defaultMessage="Resume Watching" />
+                                    ) : (
+                                        <FormattedMessage id="dashboard.uploadMovie" defaultMessage="Video-based learning" />
+                                    )}
+                                </h2>
                             </div>
 
-                            {latestRecentVideo ? (
-                                <>
-                                    <h2 className={styles.heroTitle}>
-                                        <FormattedMessage id="dashboard.bento.resume" defaultMessage="Resume Watching" />
-                                    </h2>
-                                    <p className={styles.heroDescription}>
-                                        <FormattedMessage id="dashboard.uploadMovieDesc" defaultMessage="Open a YouTube video from the link or a movie / TV series from your computer. Watch, read the subtitles, and save new words and phrases to your dictionary." />
-                                    </p>
-                                    <div className={styles.recentVideoBanner}>
-                                        {latestRecentVideo.thumbnailUrl ? (
-                                            <img
-                                                src={latestRecentVideo.thumbnailUrl}
-                                                alt=""
-                                                className={styles.recentThumb}
-                                            />
-                                        ) : (
-                                            <div className={styles.recentThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <Film size={18} color="#94a3b8" />
-                                            </div>
-                                        )}
-                                        <div className={styles.recentInfo}>
-                                            <h4 className={styles.recentTitle}>{latestRecentVideo.name}</h4>
-                                            <span className={styles.monoTag} style={{ fontSize: 9, padding: '1px 6px' }}>
-                                                {latestRecentVideo.date}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <h2 className={styles.heroTitle}>
-                                        <FormattedMessage id="dashboard.uploadMovie" defaultMessage="Video-based learning" />
-                                    </h2>
-                                    <p className={styles.heroDescription}>
-                                        <FormattedMessage id="dashboard.uploadMovieDesc" defaultMessage="Open a YouTube video from the link or a movie / TV series from your computer. Watch, read the subtitles, and save new words and phrases to your dictionary." />
-                                    </p>
-                                </>
-                            )}
+                            <p className={styles.heroDescription}>
+                                {latestRecentVideo ? (
+                                    latestRecentVideo.name
+                                ) : (
+                                    <FormattedMessage
+                                        id="dashboard.uploadMovieDesc"
+                                        defaultMessage="Open a YouTube video from the link or a movie / TV series from your computer. Watch, read the subtitles, and save new words and phrases to your dictionary."
+                                    />
+                                )}
+                            </p>
                         </div>
 
                         <div className={styles.heroFooter}>
-                            <span className={styles.heroPrimaryBtn}>
-                                <Play size={13} fill="currentColor" strokeWidth={0} />
+                            <span className={styles.primaryPillBtn}>
+                                <Play size={14} fill="currentColor" strokeWidth={0} />
                                 {latestRecentVideo ? (
                                     <FormattedMessage id="dashboard.bento.continue" defaultMessage="Continue" />
                                 ) : (
                                     <FormattedMessage id="dashboard.bento.browseCatalog" defaultMessage="Explore Catalog" />
                                 )}
                             </span>
-                            <div className={styles.arrowPill}>
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </div>
                         </div>
-
-                        <Film className={styles.heroThumbnailWatermark} />
                     </MotionLink>
 
+                    {/* 5. SONGS & LYRICS (SPAN 4) */}
                     <MotionLink
                         to="/songs"
-                        className={`${styles.bentoCard} ${styles.cardSongs}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
                         variants={itemVariants}
                     >
-                        <div>
-                            <div className={styles.cardIconHeader}>
-                                <div className={styles.cardIconBox}>
-                                    <Music size={20} />
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Music size={20} strokeWidth={1.8} />
                                 </div>
-                                <span className={styles.monoTag}>
-                                    <FormattedMessage id="dashboard.bento.tag.lyrics" defaultMessage="04 // SONGS & LYRICS" />
-                                </span>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.learnWithSongs" defaultMessage="Learning with songs" />
+                                </h3>
                             </div>
-                            <h3 className={styles.cardTitle}>
-                                <FormattedMessage id="dashboard.learnWithSongs" defaultMessage="Learn with songs" />
-                            </h3>
-                            <p className={styles.cardDescription}>
-                                <FormattedMessage id="dashboard.learnWithSongs.desc" defaultMessage="Translate lyrics in real time while listening to your favorite tracks." />
-                            </p>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
                         </div>
 
-                        <div className={styles.subtitlesRow} style={{ marginTop: 18 }}>
-                            <span className={styles.monoTag} style={{ textTransform: 'none' }}>
-                                Spotify & YouTube
-                            </span>
-                            <div className={styles.arrowPill}>
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </div>
-                        </div>
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.learnWithSongs.desc"
+                                defaultMessage="Listen to your favorite music, read the lyrics, and highlight words and phrases to save."
+                            />
+                        </p>
                     </MotionLink>
 
+                    {/* 6. TEXTS & AI (SPAN 4) */}
                     <MotionLink
                         to="/text-paste"
-                        className={`${styles.bentoCard} ${styles.cardReader}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
                         variants={itemVariants}
                     >
-                        <div>
-                            <div className={styles.cardIconHeader}>
-                                <div className={styles.cardIconBox}>
-                                    <FileText size={20} />
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <FileText size={20} strokeWidth={1.8} />
                                 </div>
-                                <span className={styles.monoTag}>
-                                    <FormattedMessage id="dashboard.bento.tag.analysis" defaultMessage="05 // TEXT & AI" />
-                                </span>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.learnWithText" defaultMessage="Learning with texts" />
+                                </h3>
                             </div>
-                            <h3 className={styles.cardTitle}>
-                                <FormattedMessage id="dashboard.learnWithText" defaultMessage="Learn with text" />
-                            </h3>
-                            <p className={styles.cardDescription}>
-                                <FormattedMessage id="dashboard.learnWithText.desc" defaultMessage="Paste any English text, analyze difficulty, and save complex phrases." />
-                            </p>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
                         </div>
 
-                        <div className={styles.subtitlesRow} style={{ marginTop: 18 }}>
-                            <span className={styles.monoTag} style={{ textTransform: 'none' }}>
-                                CEFR A1 - C1
-                            </span>
-                            <div className={styles.arrowPill}>
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </div>
-                        </div>
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.learnWithText.desc"
+                                defaultMessage="Write or paste any text, highlight individual words or entire phrases, and add them to your dictionary."
+                            />
+                        </p>
                     </MotionLink>
 
+                    {/* 7. SUBTITLES (SPAN 4) */}
                     <MotionLink
                         to="/subtitles"
-                        className={`${styles.bentoCard} ${styles.cardSubtitles}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
                         variants={itemVariants}
                     >
-                        <div>
-                            <div className={styles.cardIconHeader}>
-                                <div className={styles.cardIconBox}>
-                                    <Layers size={20} />
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Layers size={20} strokeWidth={1.8} />
                                 </div>
-                                <span className={styles.monoTag}>
-                                    <FormattedMessage id="dashboard.bento.tag.sync" defaultMessage="06 // SUBTITLES" />
-                                </span>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.uploadSubtitles" defaultMessage="Learning with subtitles" />
+                                </h3>
                             </div>
-                            <h3 className={styles.cardTitle}>
-                                <FormattedMessage id="dashboard.uploadSubtitles" defaultMessage="Add subtitles" />
-                            </h3>
-                            <p className={styles.cardDescription}>
-                                <FormattedMessage id="dashboard.uploadSubtitles.desc" defaultMessage="Upload custom SRT/VTT subtitle files for your uploaded movies." />
-                            </p>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
                         </div>
 
-                        <div className={styles.subtitlesRow} style={{ marginTop: 18 }}>
-                            <span className={styles.monoTag} style={{ textTransform: 'none' }}>
-                                SRT · VTT
-                            </span>
-                            <div className={styles.arrowPill}>
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </div>
-                        </div>
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.uploadSubtitles.desc"
+                                defaultMessage="Upload a subtitle file and save any words or phrases to learn."
+                            />
+                        </p>
                     </MotionLink>
 
+                    {/* 8. TELEGRAM BOT (SPAN 4) */}
                     <MotionLink
                         to="/telegramBot"
-                        className={`${styles.bentoCard} ${styles.cardTelegram}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
                         variants={itemVariants}
                     >
-                        <div>
-                            <div className={styles.cardIconHeader}>
-                                <div className={styles.cardIconBox}>
-                                    <Send size={20} />
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Send size={20} strokeWidth={1.8} />
                                 </div>
-                                <span className={styles.monoTag}>
-                                    <FormattedMessage id="dashboard.bento.tag.bot" defaultMessage="07 // TELEGRAM BOT" />
-                                </span>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.telegramBot" defaultMessage="Telegram bot practice" />
+                                </h3>
                             </div>
-                            <h3 className={styles.cardTitle}>
-                                <FormattedMessage id="dashboard.telegramBot" defaultMessage="Telegram bot practice" />
-                            </h3>
-                            <p className={styles.cardDescription}>
-                                <FormattedMessage id="dashboard.telegramBot.desc" defaultMessage="Connect our Telegram assistant bot to receive words daily." />
-                            </p>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
                         </div>
 
-                        <div className={styles.subtitlesRow} style={{ marginTop: 18 }}>
-                            <span className={styles.monoTag} style={{ textTransform: 'none' }}>
-                                @substreamedu_bot
-                            </span>
-                            <div className={styles.arrowPill}>
-                                <ArrowRight size={14} strokeWidth={2.5} />
-                            </div>
-                        </div>
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.telegramBot.desc"
+                                defaultMessage="Review saved words and phrases daily in a convenient format right in Telegram."
+                            />
+                        </p>
                     </MotionLink>
                 </motion.div>
             </div>
@@ -616,9 +465,9 @@ const DashboardPage: React.FC = () => {
                 />
             )}
 
-            <WelcomeModal 
-                isOpen={isWelcomeModalOpen} 
-                onClose={handleCloseWelcomeModal} 
+            <WelcomeModal
+                isOpen={isWelcomeModalOpen}
+                onClose={handleCloseWelcomeModal}
             />
         </motion.div>
     );

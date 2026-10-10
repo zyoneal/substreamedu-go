@@ -54,7 +54,7 @@
     border: 1px solid transparent;
     border-radius: 100px;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
 }
 
@@ -107,7 +107,7 @@
     background: var(--gray-100);
     color: var(--gray-400);
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navArrow:hover:not(:disabled) {
@@ -175,7 +175,7 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -205,9 +205,12 @@
     border: none;
     color: var(--gray-400);
     cursor: pointer;
-    padding: 2px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 6px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -235,7 +238,7 @@
     color: var(--accent);
     font-weight: 500;
     text-align: center;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     background: rgba(250, 249, 47, 0.05);
     border-radius: 4px 4px 0 0;
 }
@@ -248,14 +251,24 @@
 
 .clozeBlankCorrect {
     border-bottom-color: #48bb78;
+    border-bottom-style: double;
     background: rgba(72, 187, 120, 0.15);
     color: #48bb78;
 }
 
+.clozeBlankCorrect::before {
+    content: "✓ ";
+}
+
 .clozeBlankIncorrect {
     border-bottom-color: #f56565;
+    border-bottom-style: wavy;
     background: rgba(245, 101, 101, 0.15);
     color: #f56565;
+}
+
+.clozeBlankIncorrect::before {
+    content: "✗ ";
 }
 
 /* --- Hint Section --- */
@@ -274,14 +287,15 @@
     border: 1px solid var(--gray-200);
     color: var(--gray-400);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 8px 14px;
+    min-height: 36px;
+    padding: 6px 12px;
     border-radius: 100px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hintButton:hover {
@@ -413,7 +427,7 @@
     font-size: 15px;
     font-weight: 400;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
 }
 
@@ -503,7 +517,7 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nextButton:hover {
@@ -564,7 +578,7 @@
     align-items: center;
     gap: 8px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -614,7 +628,7 @@
 
 .improvedLabel {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -720,7 +734,7 @@
     height: 52px;
     border-radius: 100px;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .secondaryButton:hover {
@@ -780,6 +794,11 @@
 
     .textInput {
         width: 100%;
+        font-size: 16px;
+    }
+
+    .builderTextarea {
+        font-size: 16px;
     }
 
     .submitButton, .nextButton, .secondaryButton {

@@ -1162,6 +1162,7 @@ const TextPasteHighlighter: React.FC = () => {
                         type="text"
                         className={styles.topicInput}
                         placeholder={intl.formatMessage({ id: 'textPasteHighlighter.topicPlaceholder', defaultMessage: 'Topic (optional)' })}
+                        aria-label="Topic (optional)"
                         value={topicInput}
                         onChange={(e) => setTopicInput(e.target.value)}
                         disabled={isGenerating}
@@ -1185,6 +1186,7 @@ const TextPasteHighlighter: React.FC = () => {
                             onClick={pasteFromClipboard}
                             disabled={isGenerating}
                             title={intl.formatMessage({ id: 'textPasteHighlighter.pasteButton' })}
+                            aria-label="Paste from clipboard"
                         >
                             <Clipboard size={16} />
                         </button>
@@ -1193,6 +1195,7 @@ const TextPasteHighlighter: React.FC = () => {
                             onClick={clearText}
                             disabled={isGenerating}
                             title={intl.formatMessage({ id: 'textPasteHighlighter.clearButton' })}
+                            aria-label="Clear text"
                         >
                             <Trash2 size={16} />
                         </button>
@@ -1203,6 +1206,9 @@ const TextPasteHighlighter: React.FC = () => {
                         className={styles.textInput}
                         contentEditable={true}
                         suppressContentEditableWarning={true}
+                        role="textbox"
+                        aria-multiline="true"
+                        aria-label="Text to study"
                         ref={textDisplayRef}
                         onInput={handleInput}
                         onPaste={handlePaste}

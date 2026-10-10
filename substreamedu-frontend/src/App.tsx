@@ -17,6 +17,7 @@ import PremiumLimitModal from './components/PremiumLimitModal';
 import ScrollToTop from './components/ScrollToTop';
 import { SUPPORTED_LANGUAGES } from './constants/languageConfig';
 
+import { CheckCircle2, X } from 'lucide-react';
 import enMessages from './locales/en.json';
 import { AnalyticsService } from './services/AnalyticsService';
 import { usePendingWordAutoSave } from './hooks/usePendingWordAutoSave';
@@ -27,52 +28,64 @@ const PendingSaveHandler: React.FC<{ isLoggedIn: boolean }> = ({ isLoggedIn }) =
     if (!savedNotification) return null;
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: '80px',
-            right: '24px',
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            backgroundColor: '#059669',
-            color: '#ffffff',
-            padding: '16px 24px',
-            borderRadius: '16px',
-            boxShadow: '0 24px 30px -10px rgba(0, 0, 0, 0.4)',
-        }}>
+        <div
+            role="status"
+            aria-live="polite"
+            style={{
+                position: 'fixed',
+                top: '80px',
+                right: '24px',
+                zIndex: 9999,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                backgroundColor: 'var(--color-surface-elevated)',
+                border: '1px solid var(--color-hairline-strong)',
+                color: 'var(--color-ink)',
+                padding: '16px 24px',
+                borderRadius: 'var(--rounded-xl)',
+                boxShadow: '0 24px 30px -10px rgba(0, 0, 0, 0.5)',
+            }}
+        >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 600, fontSize: '15px' }}>
-                <span style={{ fontSize: '18px' }}>🎉</span>
+                <CheckCircle2 size={18} style={{ color: 'var(--color-success)', flexShrink: 0 }} aria-hidden="true" />
                 <span>{savedNotification}</span>
                 <button
+                    type="button"
+                    aria-label="Dismiss notification"
                     onClick={() => setSavedNotification(null)}
                     style={{
                         marginLeft: 'auto',
                         background: 'transparent',
                         border: 'none',
-                        color: 'rgba(255, 255, 255, 0.8)',
+                        color: 'var(--color-body)',
                         cursor: 'pointer',
-                        fontSize: '18px',
-                        padding: '2px 6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: '32px',
+                        minHeight: '32px',
+                        padding: '6px',
+                        borderRadius: 'var(--rounded-md)',
                     }}
                 >
-                    ✕
+                    <X size={16} aria-hidden="true" />
                 </button>
             </div>
             
-            <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.2)', paddingTop: '10px', marginTop: '2px', fontSize: '13px' }}>
-                <div style={{ marginBottom: '8px', color: 'rgba(255,255,255,0.9)' }}>
-                    Don't forget this word! Practice it tomorrow.
+            <div style={{ borderTop: '1px solid var(--color-hairline)', paddingTop: '10px', marginTop: '2px', fontSize: '13px' }}>
+                <div style={{ marginBottom: '8px', color: 'var(--color-body)' }}>
+                    Don&apos;t forget this word! Practice it tomorrow.
                 </div>
                 <a 
                     href="/telegramBot" 
                     onClick={() => setSavedNotification(null)}
                     style={{ 
                         display: 'inline-block',
-                        background: '#ffffff',
-                        color: '#059669',
+                        background: 'var(--accent)',
+                        color: 'var(--color-canvas)',
                         padding: '6px 14px',
-                        borderRadius: '100px',
+                        borderRadius: 'var(--rounded-full)',
                         textDecoration: 'none',
                         fontWeight: 700,
                         fontSize: '12px'

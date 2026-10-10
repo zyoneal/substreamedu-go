@@ -106,7 +106,7 @@
 
 .modalSubtitle {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     color: #8a8580;
     margin: 0;
 }
@@ -122,7 +122,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .closeButton:hover {
@@ -171,7 +171,7 @@
     box-shadow: 
         0 25px 60px -15px rgba(0, 0, 0, 0.7),
         0 0 0 1px rgba(255, 255, 255, 0.1);
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Dynamic Themes */
@@ -224,7 +224,7 @@
     padding: 5px 10px;
     border-radius: 9999px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
     color: #e2e8f0;
@@ -243,7 +243,7 @@
 .themeEmerald .brandLogoDot { background: #10b981; box-shadow: 0 0 8px #10b981; }
 
 .milestonePill {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -372,7 +372,7 @@
 }
 
 .dayLabel {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     color: #71717a;
     text-transform: uppercase;
@@ -392,7 +392,7 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .dayCircleActive {
@@ -456,7 +456,7 @@
 }
 
 .statChipLabel {
-    font-size: 9.5px;
+    font-size: 12px;
     color: #888892;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -470,7 +470,7 @@
     width: 100%;
     padding-top: 4px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 10.5px;
+    font-size: 12px;
     color: #71717a;
 }
 
@@ -525,7 +525,7 @@
     font-family: inherit;
     font-size: 13px;
     font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
 }
 
@@ -571,7 +571,7 @@
     height: 48px;
     padding: 0 20px;
     background: #ede8e0;
-    color: #000000;
+    color: #0d0c0b;
     border: none;
     border-radius: 100px;
     font-size: 13px;
@@ -586,7 +586,7 @@
 
 .btnPrimary:hover {
     background: #faf92f;
-    color: #000000;
+    color: #0d0c0b;
 }
 
 .btnPrimary:active {
@@ -595,7 +595,7 @@
 
 .btnPrimarySuccess {
     background: #4ade80 !important;
-    color: #000000 !important;
+    color: #0d0c0b !important;
 }
 
 /* Secondary Actions Grid */
@@ -620,7 +620,7 @@
     font-weight: 400;
     cursor: pointer;
     font-family: 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     box-sizing: border-box;
 }
 
@@ -656,7 +656,7 @@
     text-decoration: none;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.03);
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .socialBtnTelegram:hover {
