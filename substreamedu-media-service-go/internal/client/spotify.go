@@ -15,6 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
+var sharedSpotifyClient = &http.Client{
+	Timeout: 3 * time.Second,
+	Transport: &http.Transport{
+		MaxIdleConns:        50,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+	},
+}
+
 type SpotifyClient struct {
 	cfg		*config.SpotifyConfig
 	logger		*zap.Logger
@@ -55,8 +64,7 @@ func (c *SpotifyClient) getAccessToken(ctx context.Context) (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := sharedSpotifyClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -90,8 +98,7 @@ func (c *SpotifyClient) SearchTracks(ctx context.Context, query string) ([]dto.M
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := sharedSpotifyClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

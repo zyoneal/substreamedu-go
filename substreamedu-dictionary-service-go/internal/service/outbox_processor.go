@@ -6,6 +6,7 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"github.com/substreamedu/substreamedu-dictionary-service/internal/repository"
+	"github.com/substreamedu/substreamedu-dictionary-service/internal/resilience"
 	"go.uber.org/zap"
 )
 
@@ -57,27 +58,26 @@ func (p *OutboxProcessor) processEvents(ctx context.Context) {
 			Value:	[]byte(event.Payload),
 		}
 
-		var lastErr error
-		for i := 0; i < 3; i++ {
-			if err := p.writer.WriteMessages(ctx, msg); err == nil {
-				lastErr = nil
-				break
-			} else {
-				lastErr = err
-				p.logger.Warn("Kafka write attempt failed, retrying...",
-					zap.Int("attempt", i+1),
-					zap.String("eventID", event.ID.String()),
-					zap.Error(err),
-				)
-				time.Sleep(time.Duration(i+1) * 500 * time.Millisecond)
-			}
+		retryCfg := resilience.RetryConfig{
+			MaxAttempts:     3,
+			InitialInterval: 100 * time.Millisecond,
+			MaxInterval:     1 * time.Second,
+			Multiplier:      2.0,
+			IsRetryable:     func(err error) bool { return true },
 		}
 
+		lastErr := resilience.Retry(ctx, retryCfg, func(opCtx context.Context) error {
+			return p.writer.WriteMessages(opCtx, msg)
+		})
+
 		if lastErr != nil {
-			p.logger.Error("Failed to publish event to Kafka after 3 retries",
+			p.logger.Error("Failed to publish event to Kafka after 3 retries, routing to DEAD_LETTER",
 				zap.String("eventID", event.ID.String()),
 				zap.Error(lastErr),
 			)
+			if dlqErr := p.repo.MarkDeadLetter(ctx, event.ID, lastErr.Error()); dlqErr != nil {
+				p.logger.Error("Failed to mark outbox event as DEAD_LETTER", zap.String("eventID", event.ID.String()), zap.Error(dlqErr))
+			}
 			continue
 		}
 

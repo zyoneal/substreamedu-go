@@ -22,6 +22,15 @@ type LyricsService struct {
 	logger *zap.Logger
 }
 
+var sharedLyricsClient = &http.Client{
+	Timeout: 2500 * time.Millisecond,
+	Transport: &http.Transport{
+		MaxIdleConns:        50,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+	},
+}
+
 func NewLyricsService(logger *zap.Logger) *LyricsService {
 	return &LyricsService{logger: logger}
 }
@@ -44,8 +53,7 @@ func (s *LyricsService) tryLrcLib(ctx context.Context, artist, title string) *Ly
 	apiURL := fmt.Sprintf("https://lrclib.net/api/search?q=%s", query)
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := sharedLyricsClient.Do(req)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil
 	}
@@ -75,8 +83,7 @@ func (s *LyricsService) tryLyricsOvh(ctx context.Context, artist, title string) 
 	apiURL := fmt.Sprintf("https://api.lyrics.ovh/v1/%s/%s", url.PathEscape(artist), url.PathEscape(title))
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := sharedLyricsClient.Do(req)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil
 	}

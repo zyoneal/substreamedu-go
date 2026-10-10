@@ -61,6 +61,11 @@ func (r *OutboxRepository) MarkProcessed(ctx context.Context, id uuid.UUID) erro
 	return err
 }
 
+func (r *OutboxRepository) MarkDeadLetter(ctx context.Context, id uuid.UUID, reason string) error {
+	_, err := r.db.Exec(ctx, `UPDATE outbox_events SET status = 'DEAD_LETTER', processed_at = NOW() WHERE id = $1`, id)
+	return err
+}
+
 func (r *OutboxRepository) DeleteProcessedBefore(ctx context.Context, before time.Time) (int64, error) {
 	result, err := r.db.Exec(ctx, `DELETE FROM outbox_events WHERE status = 'PROCESSED' AND processed_at < $1`, before)
 	if err != nil {

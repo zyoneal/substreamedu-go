@@ -10,24 +10,27 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sony/gobreaker"
+	"github.com/substreamedu/substreamedu-dictionary-service/internal/resilience"
 	"go.uber.org/zap"
 )
 
 type UsageInfo struct {
-	IsPremium		bool
-	TranslationCount	int
-	SavedWordsCount		int
+	IsPremium        bool
+	TranslationCount int
+	SavedWordsCount  int
 }
 
 type usageCacheEntry struct {
-	info		UsageInfo
-	expiresAt	time.Time
+	info      UsageInfo
+	expiresAt time.Time
 }
 
 type IAMClient struct {
 	baseURL            string
 	internalServiceKey string
 	httpClient         *http.Client
+	breaker            *gobreaker.CircuitBreaker
 	cache              map[string]*usageCacheEntry
 	mu                 sync.RWMutex
 	cacheTTL           time.Duration
@@ -38,12 +41,11 @@ func NewIAMClient(baseURL string, internalServiceKey string, logger *zap.Logger)
 	return &IAMClient{
 		baseURL:            baseURL,
 		internalServiceKey: internalServiceKey,
-		httpClient: &http.Client{
-			Timeout: 5 * time.Second,
-		},
-		cache:    make(map[string]*usageCacheEntry),
-		cacheTTL: 60 * time.Second,
-		logger:   logger,
+		httpClient: resilience.NewResilientClient(resilience.DefaultClientOptions(1500 * time.Millisecond)),
+		breaker:    resilience.NewCircuitBreaker("iam-client", logger),
+		cache:      make(map[string]*usageCacheEntry),
+		cacheTTL:   60 * time.Second,
+		logger:     logger,
 	}
 }
 
@@ -60,14 +62,21 @@ func (c *IAMClient) GetUsage(ctx context.Context, userID uuid.UUID) (*UsageInfo,
 
 	info, err := c.fetchUsage(ctx, userID)
 	if err != nil {
+		c.mu.RLock()
+		if staleEntry, hasStale := c.cache[key]; hasStale {
+			c.mu.RUnlock()
+			c.logger.Warn("IAM fetch failed, returning stale usage cache", zap.Error(err))
+			return &staleEntry.info, nil
+		}
+		c.mu.RUnlock()
 		return nil, err
 	}
 
 	if info != nil {
 		c.mu.Lock()
 		c.cache[key] = &usageCacheEntry{
-			info:		*info,
-			expiresAt:	time.Now().Add(c.cacheTTL),
+			info:      *info,
+			expiresAt: time.Now().Add(c.cacheTTL),
 		}
 		c.mu.Unlock()
 	}
@@ -78,37 +87,61 @@ func (c *IAMClient) GetUsage(ctx context.Context, userID uuid.UUID) (*UsageInfo,
 func (c *IAMClient) fetchUsage(ctx context.Context, userID uuid.UUID) (*UsageInfo, error) {
 	url := fmt.Sprintf("%s/auth-service/auth/internal/user/%s/usage", c.baseURL, userID.String())
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	val, err := c.breaker.Execute(func() (interface{}, error) {
+		var apiResp struct {
+			Success bool      `json:"success"`
+			Data    UsageInfo `json:"data"`
+		}
+
+		retryCfg := resilience.RetryConfig{
+			MaxAttempts:     3,
+			InitialInterval: 50 * time.Millisecond,
+			MaxInterval:     500 * time.Millisecond,
+			Multiplier:      2.0,
+			IsRetryable:     resilience.IsTransientNetworkError,
+		}
+
+		err := resilience.Retry(ctx, retryCfg, func(reqCtx context.Context) error {
+			req, reqErr := http.NewRequestWithContext(reqCtx, http.MethodGet, url, nil)
+			if reqErr != nil {
+				return reqErr
+			}
+			if c.internalServiceKey != "" {
+				req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+			}
+
+			resp, doErr := c.httpClient.Do(req)
+			if doErr != nil {
+				return doErr
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return &resilience.HTTPStatusError{
+					StatusCode: resp.StatusCode,
+					Message:    fmt.Sprintf("IAM returned status %d", resp.StatusCode),
+				}
+			}
+
+			if decodeErr := json.NewDecoder(resp.Body).Decode(&apiResp); decodeErr != nil {
+				return fmt.Errorf("decode response: %w", decodeErr)
+			}
+			if !apiResp.Success {
+				return fmt.Errorf("IAM returned unsuccessful response")
+			}
+			return nil
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		return &apiResp.Data, nil
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("create request: %w", err)
+		return nil, err
 	}
-	if c.internalServiceKey != "" {
-		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("get usage: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("IAM returned status %d", resp.StatusCode)
-	}
-
-	var apiResp struct {
-		Success	bool		`json:"success"`
-		Data	UsageInfo	`json:"data"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return nil, fmt.Errorf("decode response: %w", err)
-	}
-
-	if !apiResp.Success {
-		return nil, fmt.Errorf("IAM returned unsuccessful response")
-	}
-
-	return &apiResp.Data, nil
+	return val.(*UsageInfo), nil
 }
 
 func (c *IAMClient) InvalidateCache(userID uuid.UUID) {
@@ -118,7 +151,7 @@ func (c *IAMClient) InvalidateCache(userID uuid.UUID) {
 	c.mu.Unlock()
 }
 
-func (c *IAMClient) IncrementUsage(ctx context.Context, userID uuid.UUID, usageType string) error {
+func (c *IAMClient) IncrementUsage(ctx context.Context, userID uuid.UUID, usageType string, idempotencyKey ...string) error {
 	url := fmt.Sprintf("%s/auth-service/auth/internal/user/%s/usage/increment", c.baseURL, userID.String())
 
 	body := map[string]string{"type": usageType}
@@ -127,23 +160,46 @@ func (c *IAMClient) IncrementUsage(ctx context.Context, userID uuid.UUID, usageT
 		return fmt.Errorf("marshal body: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return fmt.Errorf("create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if c.internalServiceKey != "" {
-		req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
-	}
+	_, err = c.breaker.Execute(func() (interface{}, error) {
+		retryCfg := resilience.RetryConfig{
+			MaxAttempts:     3,
+			InitialInterval: 50 * time.Millisecond,
+			MaxInterval:     500 * time.Millisecond,
+			Multiplier:      2.0,
+			IsRetryable:     resilience.IsTransientNetworkError,
+		}
 
-	resp, err := c.httpClient.Do(req)
+		return nil, resilience.Retry(ctx, retryCfg, func(reqCtx context.Context) error {
+			req, reqErr := http.NewRequestWithContext(reqCtx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
+			if reqErr != nil {
+				return reqErr
+			}
+			req.Header.Set("Content-Type", "application/json")
+			if c.internalServiceKey != "" {
+				req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+			}
+			if len(idempotencyKey) > 0 && idempotencyKey[0] != "" {
+				req.Header.Set("Idempotency-Key", idempotencyKey[0])
+			}
+
+			resp, doErr := c.httpClient.Do(req)
+			if doErr != nil {
+				return doErr
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return &resilience.HTTPStatusError{
+					StatusCode: resp.StatusCode,
+					Message:    fmt.Sprintf("IAM returned status %d", resp.StatusCode),
+				}
+			}
+			return nil
+		})
+	})
+
 	if err != nil {
 		return fmt.Errorf("increment usage: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("IAM returned status %d", resp.StatusCode)
 	}
 
 	c.InvalidateCache(userID)

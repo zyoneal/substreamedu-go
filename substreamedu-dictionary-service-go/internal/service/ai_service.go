@@ -60,7 +60,7 @@ func NewAIService(deepseekKey, groqKey, geminiKey string, rdb *redis.Client, log
 		deepseekURL:	"https://api.deepseek.com",
 		groqURL:	"https://api.groq.com/openai/v1",
 		geminiURL:	"https://generativelanguage.googleapis.com/v1beta/openai",
-		httpClient:	&http.Client{Timeout: 45 * time.Second},
+		httpClient:	resilience.NewResilientClient(resilience.DefaultClientOptions(4500 * time.Millisecond)),
 		languageCache:	cache,
 		redis:		rdb,
 		logger:		logger,

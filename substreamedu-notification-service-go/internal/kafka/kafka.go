@@ -13,23 +13,23 @@ import (
 )
 
 type Producer struct {
-	writer	*kafka.Writer
-	logger	*zap.Logger
+	writer *kafka.Writer
+	logger *zap.Logger
 }
 
 func NewProducer(cfg *config.KafkaConfig, logger *zap.Logger) *Producer {
 	writer := &kafka.Writer{
-		Addr:		kafka.TCP(strings.Split(cfg.Brokers, ",")...),
-		Topic:		cfg.Topic,
-		Balancer:	&kafka.LeastBytes{},
-		BatchSize:	100,
-		BatchTimeout:	1 * time.Second,
-		RequiredAcks:	kafka.RequireOne,
+		Addr:         kafka.TCP(strings.Split(cfg.Brokers, ",")...),
+		Topic:        cfg.Topic,
+		Balancer:     &kafka.LeastBytes{},
+		BatchSize:    100,
+		BatchTimeout: 1 * time.Second,
+		RequiredAcks: kafka.RequireOne,
 	}
 
 	return &Producer{
-		writer:	writer,
-		logger:	logger,
+		writer: writer,
+		logger: logger,
 	}
 }
 
@@ -40,8 +40,8 @@ func (p *Producer) PublishWordReviewed(ctx context.Context, event *dto.WordRevie
 	}
 
 	msg := kafka.Message{
-		Key:	[]byte(event.UserID.String()),
-		Value:	data,
+		Key:   []byte(event.UserID.String()),
+		Value: data,
 	}
 
 	err = p.writer.WriteMessages(ctx, msg)
@@ -66,26 +66,36 @@ func (p *Producer) Close() error {
 }
 
 type Consumer struct {
-	reader	*kafka.Reader
-	logger	*zap.Logger
-	handler	func(event *dto.WordReviewedEvent)
+	reader    *kafka.Reader
+	dlqWriter *kafka.Writer
+	logger    *zap.Logger
+	handler   func(event *dto.WordReviewedEvent)
 }
 
 func NewConsumer(cfg *config.KafkaConfig, logger *zap.Logger, handler func(event *dto.WordReviewedEvent)) *Consumer {
+	brokers := strings.Split(cfg.Brokers, ",")
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:	strings.Split(cfg.Brokers, ","),
-		Topic:		cfg.Topic,
-		GroupID:	cfg.GroupID,
-		MinBytes:	10e3,
-		MaxBytes:	10e6,
-		MaxWait:	1 * time.Second,
-		CommitInterval:	time.Second,
+		Brokers:        brokers,
+		Topic:          cfg.Topic,
+		GroupID:        cfg.GroupID,
+		MinBytes:       10e3,
+		MaxBytes:       10e6,
+		MaxWait:        1 * time.Second,
+		CommitInterval: time.Second,
 	})
 
+	dlqWriter := &kafka.Writer{
+		Addr:         kafka.TCP(brokers...),
+		Topic:        cfg.Topic + "-dlq",
+		Balancer:     &kafka.LeastBytes{},
+		RequiredAcks: kafka.RequireOne,
+	}
+
 	return &Consumer{
-		reader:		reader,
-		logger:		logger,
-		handler:	handler,
+		reader:    reader,
+		dlqWriter: dlqWriter,
+		logger:    logger,
+		handler:   handler,
 	}
 }
 
@@ -108,10 +118,25 @@ func (c *Consumer) Start(ctx context.Context) {
 
 				var event dto.WordReviewedEvent
 				if err := json.Unmarshal(msg.Value, &event); err != nil {
-					c.logger.Error("Failed to unmarshal event, skipping",
+					c.logger.Error("Failed to unmarshal event, routing to DLQ",
 						zap.Error(err),
 						zap.ByteString("body", msg.Value),
 					)
+					dlqMsg := kafka.Message{
+						Key:   msg.Key,
+						Value: msg.Value,
+						Headers: []kafka.Header{
+							{Key: "x-original-topic", Value: []byte(c.reader.Config().Topic)},
+							{Key: "x-error-reason", Value: []byte("unmarshal_error: " + err.Error())},
+							{Key: "x-failed-at", Value: []byte(time.Now().UTC().Format(time.RFC3339))},
+						},
+					}
+					if dlqErr := c.dlqWriter.WriteMessages(ctx, dlqMsg); dlqErr != nil {
+						c.logger.Error("Failed to forward bad message to DLQ", zap.Error(dlqErr))
+					} else {
+						c.logger.Info("Forwarded malformed message to DLQ topic", zap.String("topic", c.reader.Config().Topic+"-dlq"))
+					}
+
 					if commitErr := c.reader.CommitMessages(ctx, msg); commitErr != nil {
 						c.logger.Error("Failed to commit offset for bad message", zap.Error(commitErr))
 					}
@@ -130,5 +155,6 @@ func (c *Consumer) Start(ctx context.Context) {
 }
 
 func (c *Consumer) Close() error {
+	_ = c.dlqWriter.Close()
 	return c.reader.Close()
 }

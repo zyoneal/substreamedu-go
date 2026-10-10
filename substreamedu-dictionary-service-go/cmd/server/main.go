@@ -118,7 +118,13 @@ func main() {
 		pprof.Register(r, "/dictionary-service/debug/pprof")
 	}
 	rateLimiter := middleware.NewRateLimiter(600, time.Minute)
-	router.Setup(r, cfg.Server.ContextPath, dictHandler, adminHandler, healthHandler, logger, cfg.JWT.SecretKey, cfg.InternalServiceKey, rateLimiter)
+	var idempotencyStore middleware.IdempotencyStore
+	if rdb != nil {
+		idempotencyStore = middleware.NewRedisIdempotencyStore(rdb)
+	} else {
+		idempotencyStore = middleware.NewMemoryIdempotencyStore()
+	}
+	router.Setup(r, cfg.Server.ContextPath, dictHandler, adminHandler, healthHandler, logger, cfg.JWT.SecretKey, cfg.InternalServiceKey, rateLimiter, idempotencyStore)
 
 	srv := &http.Server{
 		Addr:		":" + cfg.Server.Port,

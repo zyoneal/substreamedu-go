@@ -2,9 +2,11 @@ package bot
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"net/url"
 	"os"
 	"strconv"
@@ -170,8 +172,15 @@ func (b *TelegramBot) triggerDailyReviews(ctx context.Context) {
 			break
 		}
 
-		backoff := time.Duration(math.Pow(2, float64(attempt-1))) * baseRetryDelay
-		b.logger.Warn("FindAllActiveUsers failed, retrying",
+		baseBackoff := time.Duration(math.Pow(2, float64(attempt-1))) * baseRetryDelay
+		backoff := baseBackoff
+		if maxMillis := int64(baseBackoff / time.Millisecond); maxMillis > 0 {
+			if n, rErr := rand.Int(rand.Reader, big.NewInt(maxMillis+1)); rErr == nil {
+				backoff = time.Duration(n.Int64()) * time.Millisecond
+			}
+		}
+
+		b.logger.Warn("FindAllActiveUsers failed, retrying with full jitter",
 			zap.Int("attempt", attempt),
 			zap.Int("max_attempts", maxRetryAttempts),
 			zap.Duration("backoff", backoff),
@@ -182,7 +191,6 @@ func (b *TelegramBot) triggerDailyReviews(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(backoff):
-
 		}
 	}
 
@@ -199,10 +207,21 @@ func (b *TelegramBot) triggerDailyReviews(ctx context.Context) {
 		zap.Duration("db_latency", time.Since(start)),
 	)
 
-	for _, user := range users {
+	// Bulkhead: bound concurrent reviews to prevent API saturation and goroutine leaks
+	const maxConcurrentReviews = 10
+	sem := make(chan struct{}, maxConcurrentReviews)
 
+	for _, user := range users {
 		b.userStates.Store(user.ChatID, Authenticated(user.UserID))
-		go b.runDailyReview(ctx, user.ChatID, user.UserID)
+		select {
+		case <-ctx.Done():
+			return
+		case sem <- struct{}{}:
+			go func(u model.TelegramUser) {
+				defer func() { <-sem }()
+				b.runDailyReview(ctx, u.ChatID, u.UserID)
+			}(user)
+		}
 	}
 }
 

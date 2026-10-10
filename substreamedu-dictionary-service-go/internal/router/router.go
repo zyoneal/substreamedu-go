@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah *handler.AdminHandler, hh *handler.HealthHandler, logger *zap.Logger, jwtSecret string, internalServiceKey string, rateLimiter *middleware.RateLimiter) {
+func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah *handler.AdminHandler, hh *handler.HealthHandler, logger *zap.Logger, jwtSecret string, internalServiceKey string, rateLimiter *middleware.RateLimiter, idempotencyStore ...middleware.IdempotencyStore) {
 
 	r.Use(middleware.MaxBodySize(1 << 20))
 	r.Use(middleware.ValidateContentType())
@@ -17,6 +17,11 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 	r.Use(middleware.Tracing("dictionary-service"))
 	r.Use(middleware.Logging(logger))
 	r.Use(gin.Recovery())
+
+	var idempStore middleware.IdempotencyStore
+	if len(idempotencyStore) > 0 && idempotencyStore[0] != nil {
+		idempStore = idempotencyStore[0]
+	}
 
 	p := ginprometheus.NewPrometheus("gin")
 	p.MetricsPath = contextPath + "/actuator/prometheus"
@@ -63,9 +68,12 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 			api.POST("/lessons", dh.SaveLessonPlan)
 			api.GET("/lessons/share/:shareToken", dh.GetSharedLessonPlan)
 
-			// Mutations require strict JWT authentication
+			// Mutations require strict JWT authentication & idempotency deduplication
 			mutations := api.Group("")
 			mutations.Use(middleware.AuthMiddleware(jwtSecret, internalServiceKey))
+			if idempStore != nil {
+				mutations.Use(middleware.IdempotencyMiddleware(idempStore, logger))
+			}
 			{
 				mutations.POST("/translated", dh.AddWord)
 				mutations.POST("/categorize", dh.CategorizeWordsBatch)

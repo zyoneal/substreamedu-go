@@ -15,7 +15,7 @@ import (
 
 var (
 	sharedDeepSeekClient = &http.Client{
-		Timeout:	60 * time.Second,
+		Timeout:	4500 * time.Millisecond,
 		Transport: &http.Transport{
 			MaxIdleConns:		100,
 			MaxIdleConnsPerHost:	10,

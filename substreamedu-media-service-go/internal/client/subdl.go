@@ -16,7 +16,7 @@ import (
 
 var (
 	sharedSubDLClient = &http.Client{
-		Timeout:	15 * time.Second,
+		Timeout:	3 * time.Second,
 		Transport: &http.Transport{
 			MaxIdleConns:		100,
 			MaxIdleConnsPerHost:	10,

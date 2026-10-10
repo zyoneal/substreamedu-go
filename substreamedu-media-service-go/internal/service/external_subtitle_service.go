@@ -163,7 +163,7 @@ func (s *ExternalSubtitleService) SearchSubtitles(ctx context.Context, filmName,
 }
 
 var sharedDownloadClient = &http.Client{
-	Timeout:	60 * time.Second,
+	Timeout:	15 * time.Second,
 	Transport: &http.Transport{
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dialer := &net.Dialer{
