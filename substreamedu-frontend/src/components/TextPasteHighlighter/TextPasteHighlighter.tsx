@@ -4,6 +4,7 @@ import { SubtitleService } from '../../services/SubtitleService';
 
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import Clipboard from 'lucide-react/dist/esm/icons/clipboard';
+import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import styles from './TextPasteHighlighter.module.css';
 import { DictionaryService } from '../../services/DictionaryService';
 import { AuthService } from '../../services/AuthService';
@@ -1115,111 +1116,133 @@ const TextPasteHighlighter: React.FC = () => {
         };
     }, [dictionaryItems, highlightedWords, tooltipState]);
 
-    const parseDoTags = (message: string): (string | JSX.Element)[] => {
-        const parts = message.split(/(<do>.*?<\/do>)/g);
-        return parts.map((part: string, index: number) => {
-            if (part.startsWith('<do>') && part.endsWith('</do>')) {
-                const content = part.replace(/<\/?do>/g, '');
-                return <span key={index} className={styles.accent}>{content}</span>;
-            }
-            return part;
-        }).filter((part: string | JSX.Element) => part !== '');
+    const stripDoTags = (message: string): string => {
+        return message.replace(/<\/?do>/g, '');
     };
+
+    const wordCount = inputText.trim() ? inputText.trim().split(/\s+/).length : 0;
+    const charCount = inputText.length;
 
     return (
         <div className={styles.container}>
-            <div className={styles.ambientGlow} />
-            <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
             <div className={styles.content}>
-            {notification && (
-                <div className="mb-3">
-                    <StatusNotification
-                        type="info"
-                        message={notification}
-                        onClose={() => setNotification(null)}
-                    />
-                </div>
-            )}
-            <div className={styles.headerGroup}>
-                <span className={styles.eyebrow}>05 // TEXT & AI</span>
-                <h1 className={styles.pageTitle}>
-                    {parseDoTags(intl.formatMessage({
-                        id: 'videoPage.learnFromText',
-                        defaultMessage: 'Learn from <do>text</do>'
-                    }))}
-                </h1>
-            </div>
+                {notification && (
+                    <div>
+                        <StatusNotification
+                            type="info"
+                            message={notification}
+                            onClose={() => setNotification(null)}
+                        />
+                    </div>
+                )}
 
-            { }
-            <div className={styles.mainContent}>
-                { }
-                <div className={styles.header}>
-                    <div className={styles.wordCounter}>
-                        <div className={styles.counterDot}></div>
-                        <span>{foundWordsCount} {intl.formatMessage({ id: 'textPasteHighlighter.knownWords' })}</span>
+                <div className={styles.topBar}>
+                    <h1 className={styles.pageTitle}>
+                        {stripDoTags(intl.formatMessage({
+                            id: 'videoPage.learnFromText',
+                            defaultMessage: 'Learn from text'
+                        }))}
+                    </h1>
+
+                    <div className={styles.knownWordsBadge} title={intl.formatMessage({ id: 'textPasteHighlighter.knownWords', defaultMessage: 'known words in text' })}>
+                        <span className={styles.counterDot} />
+                        <span className={styles.counterText}>
+                            {foundWordsCount} {intl.formatMessage({ id: 'textPasteHighlighter.knownWords', defaultMessage: 'known words' })}
+                        </span>
                     </div>
-                    <input
-                        type="text"
-                        className={styles.topicInput}
-                        placeholder={intl.formatMessage({ id: 'textPasteHighlighter.topicPlaceholder', defaultMessage: 'Topic (optional)' })}
-                        aria-label="Topic (optional)"
-                        value={topicInput}
-                        onChange={(e) => setTopicInput(e.target.value)}
-                        disabled={isGenerating}
-                    />
-                    <div className={styles.levelButtons}>
-                        {['A1', 'A2', 'B1', 'B2', 'C1'].map(level => (
-                            <button
-                                key={level}
-                                className={`${styles.levelButton} ${selectedLevel === level ? styles.levelButtonActive : ''}`}
-                                onClick={() => handleLevelClick(level)}
-                                disabled={isGenerating}
-                                title={intl.formatMessage({ id: `textPasteHighlighter.level${level}`, defaultMessage: `Generate ${level} level text` })}
-                            >
-                                {level}
-                            </button>
-                        ))}
+                </div>
+
+                {/* Unified Apple-Style AI & Action Toolbar */}
+                <div className={styles.controlBar}>
+                    <div className={styles.topicInputWrapper}>
+                        <Sparkles size={14} className={styles.topicIcon} />
+                        <input
+                            type="text"
+                            className={styles.topicInput}
+                            placeholder={intl.formatMessage({ id: 'textPasteHighlighter.topicPlaceholder', defaultMessage: 'Topic or keywords (optional)...' })}
+                            aria-label="Topic (optional)"
+                            value={topicInput}
+                            onChange={(e) => setTopicInput(e.target.value)}
+                            disabled={isGenerating}
+                        />
                     </div>
-                    <div className={styles.headerControls}>
+
+                    <div className={styles.levelButtonsGroup}>
+                        <span className={styles.levelGroupLabel}>AI Level:</span>
+                        <div className={styles.levelButtons} role="tablist" aria-label="Generate text by CEFR level">
+                            {['A1', 'A2', 'B1', 'B2', 'C1'].map(level => (
+                                <button
+                                    key={level}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={selectedLevel === level}
+                                    className={`${styles.levelButton} ${selectedLevel === level ? styles.levelButtonActive : ''}`}
+                                    onClick={() => handleLevelClick(level)}
+                                    disabled={isGenerating}
+                                    title={intl.formatMessage({ id: `textPasteHighlighter.level${level}`, defaultMessage: `Generate ${level} level text` })}
+                                >
+                                    {level}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className={styles.actionButtons}>
                         <button
+                            type="button"
                             className={styles.pasteButton}
                             onClick={pasteFromClipboard}
                             disabled={isGenerating}
-                            title={intl.formatMessage({ id: 'textPasteHighlighter.pasteButton' })}
+                            title={intl.formatMessage({ id: 'textPasteHighlighter.pasteButton', defaultMessage: 'Paste from clipboard' })}
                             aria-label="Paste from clipboard"
                         >
-                            <Clipboard size={16} />
+                            <Clipboard size={15} />
+                            <span className={styles.buttonLabel}>Paste</span>
                         </button>
                         <button
+                            type="button"
                             className={styles.trashButton}
                             onClick={clearText}
-                            disabled={isGenerating}
-                            title={intl.formatMessage({ id: 'textPasteHighlighter.clearButton' })}
+                            disabled={isGenerating || !inputText}
+                            title={intl.formatMessage({ id: 'textPasteHighlighter.clearButton', defaultMessage: 'Clear text' })}
                             aria-label="Clear text"
                         >
-                            <Trash2 size={16} />
+                            <Trash2 size={15} />
+                            <span className={styles.buttonLabel}>Clear</span>
                         </button>
                     </div>
                 </div>
-                <div className={styles.textInputContainer}>
-                    <div
-                        className={styles.textInput}
-                        contentEditable={true}
-                        suppressContentEditableWarning={true}
-                        role="textbox"
-                        aria-multiline="true"
-                        aria-label="Text to study"
-                        ref={textDisplayRef}
-                        onInput={handleInput}
-                        onPaste={handlePaste}
-                        onMouseUp={handleTextSelection}
-                        onTouchEnd={handleTextSelection}
-                        onContextMenu={e => e.preventDefault()}
-                        spellCheck={true}
-                        data-placeholder={getPlaceholderStart()}
-                    />
+
+                {/* Studio Text Reading Canvas */}
+                <div className={styles.editorCard}>
+                    <div className={styles.textInputContainer}>
+                        <div
+                            className={styles.textInput}
+                            contentEditable={true}
+                            suppressContentEditableWarning={true}
+                            role="textbox"
+                            aria-multiline="true"
+                            aria-label="Text to study"
+                            ref={textDisplayRef}
+                            onInput={handleInput}
+                            onPaste={handlePaste}
+                            onMouseUp={handleTextSelection}
+                            onTouchEnd={handleTextSelection}
+                            onContextMenu={e => e.preventDefault()}
+                            spellCheck={true}
+                            data-placeholder={getPlaceholderStart()}
+                        />
+                    </div>
+
+                    <div className={styles.editorFooter}>
+                        <div className={styles.metricsRow}>
+                            <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
+                            <span className={styles.metricDot}>·</span>
+                            <span>{charCount} characters</span>
+                        </div>
+                        <span className={styles.editorHint}>Select any word or phrase to translate</span>
+                    </div>
                 </div>
-            </div>
 
             { }
             {tooltipState && createPortal(
