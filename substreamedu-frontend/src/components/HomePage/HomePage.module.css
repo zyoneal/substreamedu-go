@@ -131,7 +131,7 @@
    CONTAINER
    ================================================ */
 .container {
-  max-width: 1280px;
+  max-width: 1560px;
   margin: 0 auto;
   padding: 0 48px;
 }
@@ -203,8 +203,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 56px;
-  max-width: 1320px;
+  gap: 64px;
+  max-width: 1560px;
   width: 100%;
   margin: 0 auto;
   position: relative;
@@ -214,7 +214,7 @@
 .heroContent {
   flex: 1.15;
   min-width: 0;
-  max-width: 680px;
+  max-width: 720px;
   text-align: left;
   position: relative;
   z-index: 5;
@@ -1343,7 +1343,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: var(--gray-200);
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   align-items: stretch;
 }
