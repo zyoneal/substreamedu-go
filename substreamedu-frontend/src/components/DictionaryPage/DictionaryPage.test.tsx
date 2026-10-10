@@ -4,6 +4,7 @@ import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import DictionaryPage from './DictionaryPage';
 import { DictionaryService } from '../../services/DictionaryService';
+import { AuthService } from '../../services/AuthService';
 import enMessages from '../../locales/en.json';
 
 // Mock ESM icon modules from lucide-react to prevent Jest CommonJS parsing errors
@@ -88,7 +89,7 @@ describe('DictionaryPage Empty State (0 words)', () => {
   });
 
   it('renders Apple-minimalist collection cards without bracketed technical tags or noisy badges', async () => {
-    jest.spyOn(require('../../services/AuthService').AuthService, 'getUserEmail').mockReturnValue('test@example.com');
+    jest.spyOn(AuthService, 'getUserEmail').mockReturnValue('test@example.com');
     (DictionaryService.fetchDictionaryResources as jest.Mock).mockResolvedValue([
       {
         groupName: 'Inception.srt',
