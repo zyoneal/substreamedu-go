@@ -1,8 +1,8 @@
 .container {
   width: 100%;
-  background: rgba(255, 255, 255, 0.032);
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 22px;
+  background: var(--color-surface-elevated, #eae7e1);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.12));
+  border-radius: 20px;
   padding: 40px 48px;
   display: flex;
   flex-direction: column;
@@ -28,13 +28,13 @@
 }
 
 .title {
-  font-family: var(--font-display, 'e-Ukraine', sans-serif);
-  font-weight: 600;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-weight: 700;
   font-size: 22px;
   line-height: 1.25;
-  color: var(--color-ink, #ede8e0);
+  color: var(--color-ink, #0a0a0a);
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .description {
@@ -42,18 +42,18 @@
   flex-direction: column;
   gap: 12px;
   text-align: left;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  background: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.12));
   border-radius: 16px;
   padding: 18px 22px;
 }
 
 .descriptionMain {
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-weight: 400;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--color-body, #9e988f);
+  color: var(--color-body, #4a4a48);
   margin: 0;
 }
 
@@ -64,11 +64,11 @@
 }
 
 .formatLine {
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-weight: 500;
   font-size: 13.5px;
   line-height: 1.5;
-  color: var(--color-ink, #ede8e0);
+  color: var(--color-ink, #0a0a0a);
   margin: 0;
   display: flex;
   align-items: center;
@@ -76,8 +76,8 @@
 }
 
 .formatLabel {
-  color: var(--color-ink, #ede8e0);
-  font-weight: 500;
+  color: var(--color-ink, #0a0a0a);
+  font-weight: 600;
 }
 
 .exampleLine {
@@ -85,7 +85,7 @@
   font-weight: 400;
   font-size: 12.5px;
   line-height: 1.5;
-  color: var(--color-mute, #7e7972);
+  color: var(--color-mute, #8e8e8e);
   margin: 0;
 }
 
@@ -106,17 +106,20 @@
   height: 48px;
   padding: 0 32px;
   border-radius: 9999px;
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
-  font-size: 14.5px;
-  font-weight: 600;
-  background: var(--color-ink, #ede8e0);
-  color: var(--color-canvas, #0d0c0b);
-  border: none;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--color-ink, #0a0a0a);
+  color: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-ink, #0a0a0a);
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .openVideoButton:hover:not(:disabled) {
-  opacity: 0.92;
+  opacity: 0.88;
+  transform: translateY(-1px);
 }
 
 .openVideoButton:active:not(:disabled) {
@@ -132,12 +135,14 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  filter: brightness(0);
+  filter: brightness(0) invert(1);
 }
 
 .buttonText {
-  font-weight: 600;
-  font-size: 14.5px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: inherit;
 }
 
@@ -151,7 +156,7 @@
 .formatInfo {
   font-size: 13px;
   line-height: 1.5;
-  color: var(--color-mute, #7e7972);
+  color: var(--color-mute, #8e8e8e);
   margin: 0;
 }
 

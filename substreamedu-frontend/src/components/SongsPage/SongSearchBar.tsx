@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
-import Search from 'lucide-react/dist/esm/icons/search';
-import X from 'lucide-react/dist/esm/icons/x';
+import { Search, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import styles from './SongSearchBar.module.css';
 import { useIntl } from 'react-intl';

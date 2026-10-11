@@ -18,6 +18,7 @@ import {
 
 import { DictionaryService } from '../../services/DictionaryService';
 import { useRecentVideos } from '../../hooks/useRecentVideos';
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { StreakShareModal, VectorFlameIcon } from './components/StreakShareModal';
 import { WelcomeModal } from './components/WelcomeModal';
 import styles from './css/DashboardPage.module.css';
@@ -52,6 +53,7 @@ interface DashboardStats {
 const DAYS_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const DashboardPage: React.FC = () => {
+    usePixzenTheme();
     const intl = useIntl();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [statsLoading, setStatsLoading] = useState(true);
@@ -120,6 +122,7 @@ const DashboardPage: React.FC = () => {
             animate="visible"
             variants={containerVariants}
         >
+            <div className="pixzenGrain" aria-hidden="true" />
             <div className={styles.contentWrapper}>
                 <motion.header className={styles.headerSection} variants={itemVariants}>
                     <h1 className={styles.pageTitle}>
@@ -131,7 +134,51 @@ const DashboardPage: React.FC = () => {
                 </motion.header>
 
                 <motion.div className={styles.bentoGrid} variants={containerVariants}>
-                    {/* 1. STREAK WIDGET */}
+                    {/* ROW 1, COLS 1–8: FEATURED FORMAT: VIDEO LEARNING (SPAN 8) */}
+                    <MotionLink
+                        to="/videos"
+                        className={`${styles.bentoCard} ${styles.cardHeroVideo}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.heroCardBody}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Film size={21} strokeWidth={1.8} />
+                                </div>
+                                <h2 className={styles.heroTitle}>
+                                    {latestRecentVideo ? (
+                                        <FormattedMessage id="dashboard.bento.resume" defaultMessage="Resume Watching" />
+                                    ) : (
+                                        <FormattedMessage id="dashboard.uploadMovie" defaultMessage="Video-based learning" />
+                                    )}
+                                </h2>
+                            </div>
+
+                            <p className={styles.heroDescription}>
+                                {latestRecentVideo ? (
+                                    latestRecentVideo.name
+                                ) : (
+                                    <FormattedMessage
+                                        id="dashboard.uploadMovieDesc"
+                                        defaultMessage="Open a YouTube video from the link or a movie / TV series from your computer. Watch, read the subtitles, and save new words and phrases to your dictionary."
+                                    />
+                                )}
+                            </p>
+                        </div>
+
+                        <div className={styles.heroFooter}>
+                            <span className={styles.primaryPillBtn}>
+                                <Play size={14} fill="currentColor" strokeWidth={0} />
+                                {latestRecentVideo ? (
+                                    <FormattedMessage id="dashboard.bento.continue" defaultMessage="Continue" />
+                                ) : (
+                                    <FormattedMessage id="dashboard.bento.browseCatalog" defaultMessage="Explore Catalog" />
+                                )}
+                            </span>
+                        </div>
+                    </MotionLink>
+
+                    {/* ROW 1, COLS 9–12: STREAK WIDGET */}
                     <motion.div
                         className={`${styles.bentoCard} ${styles.cardStreak}`}
                         variants={itemVariants}
@@ -190,7 +237,59 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </motion.div>
 
-                    {/* 2. DAILY REVIEW WIDGET */}
+                    {/* ROW 2, COLS 1–4: SONGS & LYRICS (SPAN 4) */}
+                    <MotionLink
+                        to="/songs"
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Music size={20} strokeWidth={1.8} />
+                                </div>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.learnWithSongs" defaultMessage="Learning with songs" />
+                                </h3>
+                            </div>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
+                        </div>
+
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.learnWithSongs.desc"
+                                defaultMessage="Listen to your favorite music, read the lyrics, and highlight words and phrases to save."
+                            />
+                        </p>
+                    </MotionLink>
+
+                    {/* ROW 2, COLS 5–8: TEXTS & AI (SPAN 4) */}
+                    <MotionLink
+                        to="/text-paste"
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <FileText size={20} strokeWidth={1.8} />
+                                </div>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.learnWithText" defaultMessage="Learning with texts" />
+                                </h3>
+                            </div>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
+                        </div>
+
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.learnWithText.desc"
+                                defaultMessage="Write or paste any text, highlight individual words or entire phrases, and add them to your dictionary."
+                            />
+                        </p>
+                    </MotionLink>
+
+                    {/* ROW 2, COLS 9–12: DAILY REVIEW WIDGET */}
                     <MotionLink
                         to={isNewUser ? "/videos" : "/learning"}
                         className={`${styles.bentoCard} ${styles.cardReview}`}
@@ -258,7 +357,59 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </MotionLink>
 
-                    {/* 3. DICTIONARY WIDGET */}
+                    {/* ROW 3, COLS 1–4: SUBTITLES (SPAN 4) */}
+                    <MotionLink
+                        to="/subtitles"
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Layers size={20} strokeWidth={1.8} />
+                                </div>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.uploadSubtitles" defaultMessage="Learning with subtitles" />
+                                </h3>
+                            </div>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
+                        </div>
+
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.uploadSubtitles.desc"
+                                defaultMessage="Upload a subtitle file and save any words or phrases to learn."
+                            />
+                        </p>
+                    </MotionLink>
+
+                    {/* ROW 3, COLS 5–8: TELEGRAM BOT (SPAN 4) */}
+                    <MotionLink
+                        to="/telegramBot"
+                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <Send size={20} strokeWidth={1.8} />
+                                </div>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.telegramBot" defaultMessage="Telegram bot practice" />
+                                </h3>
+                            </div>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
+                        </div>
+
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.telegramBot.desc"
+                                defaultMessage="Review saved words and phrases daily in a convenient format right in Telegram."
+                            />
+                        </p>
+                    </MotionLink>
+
+                    {/* ROW 3, COLS 9–12: DICTIONARY WIDGET */}
                     <MotionLink
                         to={isNewUser ? "/videos" : "/dictionary"}
                         className={`${styles.bentoCard} ${styles.cardVault}`}
@@ -299,154 +450,6 @@ const DashboardPage: React.FC = () => {
                             </span>
                             <ArrowRight size={15} strokeWidth={2} className={styles.quietChevron} />
                         </div>
-                    </MotionLink>
-
-                    {/* 4. FEATURED FORMAT: VIDEO LEARNING (SPAN 8) */}
-                    <MotionLink
-                        to="/videos"
-                        className={`${styles.bentoCard} ${styles.cardHeroVideo}`}
-                        variants={itemVariants}
-                    >
-                        <div className={styles.heroCardBody}>
-                            <div className={styles.formatHeaderLeft}>
-                                <div className={styles.iconSquircle}>
-                                    <Film size={21} strokeWidth={1.8} />
-                                </div>
-                                <h2 className={styles.heroTitle}>
-                                    {latestRecentVideo ? (
-                                        <FormattedMessage id="dashboard.bento.resume" defaultMessage="Resume Watching" />
-                                    ) : (
-                                        <FormattedMessage id="dashboard.uploadMovie" defaultMessage="Video-based learning" />
-                                    )}
-                                </h2>
-                            </div>
-
-                            <p className={styles.heroDescription}>
-                                {latestRecentVideo ? (
-                                    latestRecentVideo.name
-                                ) : (
-                                    <FormattedMessage
-                                        id="dashboard.uploadMovieDesc"
-                                        defaultMessage="Open a YouTube video from the link or a movie / TV series from your computer. Watch, read the subtitles, and save new words and phrases to your dictionary."
-                                    />
-                                )}
-                            </p>
-                        </div>
-
-                        <div className={styles.heroFooter}>
-                            <span className={styles.primaryPillBtn}>
-                                <Play size={14} fill="currentColor" strokeWidth={0} />
-                                {latestRecentVideo ? (
-                                    <FormattedMessage id="dashboard.bento.continue" defaultMessage="Continue" />
-                                ) : (
-                                    <FormattedMessage id="dashboard.bento.browseCatalog" defaultMessage="Explore Catalog" />
-                                )}
-                            </span>
-                        </div>
-                    </MotionLink>
-
-                    {/* 5. SONGS & LYRICS (SPAN 4) */}
-                    <MotionLink
-                        to="/songs"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
-                        variants={itemVariants}
-                    >
-                        <div className={styles.formatTop}>
-                            <div className={styles.formatHeaderLeft}>
-                                <div className={styles.iconSquircle}>
-                                    <Music size={20} strokeWidth={1.8} />
-                                </div>
-                                <h3 className={styles.cardTitle}>
-                                    <FormattedMessage id="dashboard.learnWithSongs" defaultMessage="Learning with songs" />
-                                </h3>
-                            </div>
-                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
-                        </div>
-
-                        <p className={styles.cardDescription}>
-                            <FormattedMessage
-                                id="dashboard.learnWithSongs.desc"
-                                defaultMessage="Listen to your favorite music, read the lyrics, and highlight words and phrases to save."
-                            />
-                        </p>
-                    </MotionLink>
-
-                    {/* 6. TEXTS & AI (SPAN 4) */}
-                    <MotionLink
-                        to="/text-paste"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
-                        variants={itemVariants}
-                    >
-                        <div className={styles.formatTop}>
-                            <div className={styles.formatHeaderLeft}>
-                                <div className={styles.iconSquircle}>
-                                    <FileText size={20} strokeWidth={1.8} />
-                                </div>
-                                <h3 className={styles.cardTitle}>
-                                    <FormattedMessage id="dashboard.learnWithText" defaultMessage="Learning with texts" />
-                                </h3>
-                            </div>
-                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
-                        </div>
-
-                        <p className={styles.cardDescription}>
-                            <FormattedMessage
-                                id="dashboard.learnWithText.desc"
-                                defaultMessage="Write or paste any text, highlight individual words or entire phrases, and add them to your dictionary."
-                            />
-                        </p>
-                    </MotionLink>
-
-                    {/* 7. SUBTITLES (SPAN 4) */}
-                    <MotionLink
-                        to="/subtitles"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
-                        variants={itemVariants}
-                    >
-                        <div className={styles.formatTop}>
-                            <div className={styles.formatHeaderLeft}>
-                                <div className={styles.iconSquircle}>
-                                    <Layers size={20} strokeWidth={1.8} />
-                                </div>
-                                <h3 className={styles.cardTitle}>
-                                    <FormattedMessage id="dashboard.uploadSubtitles" defaultMessage="Learning with subtitles" />
-                                </h3>
-                            </div>
-                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
-                        </div>
-
-                        <p className={styles.cardDescription}>
-                            <FormattedMessage
-                                id="dashboard.uploadSubtitles.desc"
-                                defaultMessage="Upload a subtitle file and save any words or phrases to learn."
-                            />
-                        </p>
-                    </MotionLink>
-
-                    {/* 8. TELEGRAM BOT (SPAN 4) */}
-                    <MotionLink
-                        to="/telegramBot"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
-                        variants={itemVariants}
-                    >
-                        <div className={styles.formatTop}>
-                            <div className={styles.formatHeaderLeft}>
-                                <div className={styles.iconSquircle}>
-                                    <Send size={20} strokeWidth={1.8} />
-                                </div>
-                                <h3 className={styles.cardTitle}>
-                                    <FormattedMessage id="dashboard.telegramBot" defaultMessage="Telegram bot practice" />
-                                </h3>
-                            </div>
-                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
-                        </div>
-
-                        <p className={styles.cardDescription}>
-                            <FormattedMessage
-                                id="dashboard.telegramBot.desc"
-                                defaultMessage="Review saved words and phrases daily in a convenient format right in Telegram."
-                            />
-                        </p>
                     </MotionLink>
                 </motion.div>
             </div>

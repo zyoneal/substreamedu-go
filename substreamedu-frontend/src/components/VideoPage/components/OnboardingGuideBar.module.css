@@ -1,5 +1,5 @@
 /* ========================================================
-   BOTTOM FLOATING ONBOARDING TOAST (APPLE / LINEAR STYLE)
+   BOTTOM FLOATING ONBOARDING TOAST (PIXZEN MONOCHROME EDITORIAL)
    ======================================================== */
 
 .guideBarContainer {
@@ -25,11 +25,11 @@
 
 .guideCard {
   width: 100%;
-  background: rgba(18, 17, 15, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(245, 243, 239, 0.96);
+  border: 1px solid rgba(10, 10, 10, 0.14);
   border-radius: 14px;
   padding: 12px 16px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 16px 36px rgba(10, 10, 10, 0.12), 0 0 0 1px rgba(10, 10, 10, 0.04);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   position: relative;
@@ -39,13 +39,13 @@
 }
 
 .guideCard.step2 {
-  border-color: rgba(250, 249, 47, 0.3);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(250, 249, 47, 0.08);
+  border-color: rgba(10, 10, 10, 0.32);
+  box-shadow: 0 16px 36px rgba(10, 10, 10, 0.16);
 }
 
 .guideCard.completed {
-  border-color: rgba(74, 222, 128, 0.35);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(74, 222, 128, 0.08);
+  border-color: rgba(22, 163, 74, 0.4);
+  box-shadow: 0 16px 36px rgba(10, 10, 10, 0.14);
 }
 
 .cardHeader {
@@ -68,31 +68,32 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 9999px;
-  background: rgba(250, 249, 47, 0.14);
-  border: 1px solid rgba(250, 249, 47, 0.3);
-  color: #fef08a;
+  background: #0a0a0a;
+  border: 1px solid #0a0a0a;
+  color: #f5f3ef;
   font-size: 11px;
   font-weight: 700;
   font-family: var(--font-mono, monospace);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   flex-shrink: 0;
 }
 
 .stepPillSuccess {
-  background: rgba(74, 222, 128, 0.15);
-  border-color: rgba(74, 222, 128, 0.35);
-  color: #4ade80;
+  background: rgba(22, 163, 74, 0.12);
+  border-color: rgba(22, 163, 74, 0.35);
+  color: #15803d;
 }
 
 .stepTitle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #f4f4f5;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0a0a0a;
   letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
@@ -100,12 +101,12 @@
 }
 
 .stepIcon {
-  color: #fef08a;
+  color: #0a0a0a;
   flex-shrink: 0;
 }
 
 .completedTitle {
-  color: #4ade80;
+  color: #15803d;
 }
 
 .headerRight {
@@ -116,21 +117,23 @@
 }
 
 .actionButton {
-  background: #4ade80;
-  color: #09090b;
+  background: #0a0a0a;
+  color: #f5f3ef;
   border: none;
-  font-family: inherit;
-  font-size: 11.5px;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 11px;
   font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 6px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 9999px;
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
   white-space: nowrap;
 }
 
 .actionButton:hover {
-  opacity: 0.92;
+  opacity: 0.88;
   transform: scale(1.02);
 }
 
@@ -141,38 +144,40 @@
 .closeButton {
   background: transparent;
   border: none;
-  color: #71717a;
+  color: #8e8e8e;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  transition: color 0.15s ease, background 0.15s ease;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 0;
+  transition: color 0.2s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .closeButton:hover {
-  color: #f4f4f5;
-  background: rgba(255, 255, 255, 0.08);
+  color: #0a0a0a;
+  background: transparent;
+  transform: rotate(90deg);
 }
 
 .hintText {
-  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-size: 12.5px;
-  color: #a1a1aa;
+  color: #4a4a48;
   line-height: 1.45;
   margin: 6px 0 0 0;
 }
 
 .highlightHint {
-  color: #fef08a;
-  font-weight: 600;
+  color: #0a0a0a;
+  font-weight: 700;
 }
 
 .highlightHintSuccess {
-  color: #4ade80;
-  font-weight: 600;
+  color: #15803d;
+  font-weight: 700;
 }
 
 @media (max-width: 480px) {
@@ -200,21 +205,22 @@
 }
 
 .recommendedWordsLabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: #71717a;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #8e8e8e;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
 }
 
 .recommendedWordChip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  background: rgba(250, 249, 47, 0.1);
-  border: 1px solid rgba(250, 249, 47, 0.3);
-  border-radius: 6px;
-  color: #faf92f;
+  padding: 2px 9px;
+  background: #eae7e1;
+  border: 1px solid rgba(10, 10, 10, 0.18);
+  border-radius: 9999px;
+  color: #0a0a0a;
   font-size: 11.5px;
   font-weight: 600;
   letter-spacing: -0.01em;

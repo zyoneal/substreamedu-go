@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusNotification } from '../VideoPage/components/StatusNotification';
 import { SubtitleService } from '../../services/SubtitleService';
-
-import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
-import Clipboard from 'lucide-react/dist/esm/icons/clipboard';
-import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
+import { Trash2, Clipboard, Sparkles } from 'lucide-react';
 import styles from './TextPasteHighlighter.module.css';
 import { DictionaryService } from '../../services/DictionaryService';
 import { AuthService } from '../../services/AuthService';
@@ -17,6 +14,7 @@ import { useSaveWord, SaveWordData, SaveWordContext } from '../../hooks/useDicti
 import { useQueryClient } from '@tanstack/react-query';
 import { Modal, ConfirmModal } from '../ui/modal';
 import { TranslationPopover } from '../shared/TranslationPopover';
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 
 interface SelectionPosition {
     x: number;
@@ -24,9 +22,29 @@ interface SelectionPosition {
     showBelow?: boolean;
 }
 
+interface TextDictionaryItem {
+    id?: number | string;
+    resourceName?: string;
+    highlightedText?: string;
+    translatedText?: string;
+    context?: string;
+    definition?: string;
+    normalizedText: string;
+}
 
+interface MutationError {
+    status?: number;
+    message?: string;
+    response?: {
+        status?: number;
+        data?: {
+            message?: string;
+        };
+    };
+}
 
 const TextPasteHighlighter: React.FC = () => {
+    usePixzenTheme();
     const intl = useIntl();
     const [notification, setNotification] = useState<string | null>(null);
 
@@ -54,7 +72,7 @@ const TextPasteHighlighter: React.FC = () => {
     const [note, setNote] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showSubmitButton, setShowSubmitButton] = useState(false);
-    const [dictionaryItems, setDictionaryItems] = useState<any[]>([]);
+    const [dictionaryItems, setDictionaryItems] = useState<TextDictionaryItem[]>([]);
     const [highlightedWords, setHighlightedWords] = useState<string[]>([]);
     const [foundWordsCount, setFoundWordsCount] = useState<number>(0);
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
@@ -385,14 +403,19 @@ const TextPasteHighlighter: React.FC = () => {
         }
         try {
             const items = await DictionaryService.fetchDictionaryItemsByUser();
-            const actualItems = Array.isArray(items) ? items : (items && (items as any).items ? (items as any).items : []);
-            const normalizedItems = actualItems.map((item: any) => ({
+            const rawContainer = items as unknown as { items?: Partial<TextDictionaryItem>[] };
+            const actualItems: Partial<TextDictionaryItem>[] = Array.isArray(items)
+                ? items
+                : (rawContainer && Array.isArray(rawContainer.items) ? rawContainer.items : []);
+            const normalizedItems: TextDictionaryItem[] = actualItems.map((item) => ({
                 ...item,
                 normalizedText: item.highlightedText?.toLowerCase().trim() || ''
             }));
             setDictionaryItems(normalizedItems);
-            setHighlightedWords(normalizedItems.map((item: any) => item.normalizedText));
-        } catch { }
+            setHighlightedWords(normalizedItems.map((item) => item.normalizedText));
+        } catch {
+            // Ignore dictionary fetch errors when unauthenticated or offline
+        }
     };
 
     const queryClient = useQueryClient();
@@ -403,7 +426,7 @@ const TextPasteHighlighter: React.FC = () => {
 
             const previousItems = dictionaryItems;
 
-            const optimisticItem: any = {
+            const optimisticItem: TextDictionaryItem = {
                 id: Date.now(),
                 resourceName: newData.resourceName,
                 highlightedText: newData.highlightedText,
@@ -416,7 +439,7 @@ const TextPasteHighlighter: React.FC = () => {
             const updatedItems = [...previousItems, optimisticItem];
 
             setDictionaryItems(updatedItems);
-            setHighlightedWords(updatedItems.map((item: any) => item.normalizedText));
+            setHighlightedWords(updatedItems.map((item) => item.normalizedText));
 
             setShowSubmitButton(false);
             setIsPopoverOpen(false);
@@ -429,18 +452,19 @@ const TextPasteHighlighter: React.FC = () => {
 
             return { previousItems };
         },
-        onError: (err: any, _variables: SaveWordData, context: SaveWordContext | undefined) => {
+        onError: (err: unknown, _variables: SaveWordData, context: SaveWordContext | undefined) => {
             if (context?.previousItems) {
-                setDictionaryItems(context.previousItems);
-                setHighlightedWords(context.previousItems.map((item: any) => item.normalizedText));
+                const prevTyped = context.previousItems as TextDictionaryItem[];
+                setDictionaryItems(prevTyped);
+                setHighlightedWords(prevTyped.map((item) => item.normalizedText));
                 // Revert highlighting
                 if (inputText && textDisplayRef.current) {
-                    textDisplayRef.current.innerHTML = highlightText(inputText, context.previousItems);
+                    textDisplayRef.current.innerHTML = highlightText(inputText, prevTyped);
                 }
             }
-            const errorResponse = err as any;
-            const status = err?.status || err?.response?.status;
-            const message = (err?.message || err?.response?.data?.message || '').toLowerCase();
+            const errorResponse = err as MutationError;
+            const status = errorResponse?.status || errorResponse?.response?.status;
+            const message = (errorResponse?.message || errorResponse?.response?.data?.message || '').toLowerCase();
 
             if (status === 403 || message.includes('save limit') || message.includes('word save')) {
                 window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
@@ -478,7 +502,7 @@ const TextPasteHighlighter: React.FC = () => {
         });
     };
 
-    const highlightText = (text: string, items: any[] = dictionaryItems) => {
+    const highlightText = (text: string, items: TextDictionaryItem[] = dictionaryItems) => {
         if (!text) return text;
 
         const wordMap = new Map<string, { translations: string[], definitions: string[] }>();
@@ -624,7 +648,7 @@ const TextPasteHighlighter: React.FC = () => {
                 nextSearchIndex: foundIndex + 1
             };
         }
-        let endIndex = foundIndex + searchPhrase.length;
+        const endIndex = foundIndex + searchPhrase.length;
         const remainingText = text.slice(endIndex);
         let punctuationLength = 0;
         let hasValidEnd = false;
@@ -845,9 +869,10 @@ const TextPasteHighlighter: React.FC = () => {
                 id: 'textPasteHighlighter.generationSuccess',
                 defaultMessage: `Text generated successfully for level ${level}`
             }));
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error generating text:', error);
-            setNotification(error.message || intl.formatMessage({
+            const errMessage = error instanceof Error ? error.message : '';
+            setNotification(errMessage || intl.formatMessage({
                 id: 'textPasteHighlighter.generationFailed',
                 defaultMessage: 'Failed to generate text'
             }));
@@ -1125,6 +1150,7 @@ const TextPasteHighlighter: React.FC = () => {
 
     return (
         <div className={styles.container}>
+            <div className="pixzenGrain" aria-hidden="true" />
             <div className={styles.content}>
                 {notification && (
                     <div>
@@ -1270,21 +1296,24 @@ const TextPasteHighlighter: React.FC = () => {
                 size="sm"
             >
                 <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
-                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #0a0a0a)', fontSize: '15px', fontFamily: "var(--font-body, 'Satoshi', sans-serif)" }}>
                         {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
                     </p>
                     <button
                         type="button"
                         onClick={() => setShowLanguageOverlay(false)}
                         style={{
-                            background: 'var(--color-ink, #ede8e0)',
-                            color: 'var(--color-canvas, #0d0c0b)',
+                            background: '#0a0a0a',
+                            color: '#f5f3ef',
                             border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 24px',
-                            fontWeight: 600,
+                            borderRadius: '9999px',
+                            padding: '10px 28px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            letterSpacing: '0.14em',
+                            textTransform: 'uppercase',
                             cursor: 'pointer',
-                            fontFamily: "var(--font-body, 'e-Ukraine', sans-serif)"
+                            fontFamily: "var(--font-display, 'Satoshi', sans-serif)"
                         }}
                     >
                         OK
@@ -1298,7 +1327,7 @@ const TextPasteHighlighter: React.FC = () => {
                     onClose={handleConfirmCancel}
                 />
                 <Modal.Body>
-                    <p style={{ color: 'var(--color-body, #9e988f)', margin: 0, lineHeight: 1.6 }}>
+                    <p style={{ color: 'var(--color-body, #4a4a48)', margin: 0, lineHeight: 1.6 }}>
                         {intl.formatMessage({ id: 'textPasteHighlighter.modal.message' })}
                     </p>
                 </Modal.Body>

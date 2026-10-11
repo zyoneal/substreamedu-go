@@ -1,22 +1,22 @@
 /* ==========================================================================
-   YOUTUBE URL INPUT — Apple-Minimalist Widescreen Hero Card
+   YOUTUBE URL INPUT — Pixzen Monochrome Editorial Card
    ========================================================================== */
 
 .container {
   width: 100%;
-  background: rgba(255, 255, 255, 0.032);
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 22px;
+  background: var(--color-surface-elevated, #eae7e1);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.12));
+  border-radius: 20px;
   padding: 26px 32px;
   display: flex;
   flex-direction: column;
   gap: 18px;
   box-sizing: border-box;
-  transition: background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .container:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-border-hover, rgba(10, 10, 10, 0.24));
 }
 
 .textSection {
@@ -28,19 +28,19 @@
 }
 
 .description {
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
-  font-weight: 400;
+  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-weight: 500;
   font-size: 15px;
   line-height: 1.5;
-  color: var(--color-ink, #ede8e0);
+  color: var(--color-ink, #0a0a0a);
   margin: 0;
 }
 
 .hint {
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-weight: 400;
   font-size: 13px;
-  color: var(--color-mute, #7e7972);
+  color: var(--color-mute, #8e8e8e);
   margin: 0;
 }
 
@@ -69,30 +69,31 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.14));
   border-radius: 9999px;
   padding: 0 18px;
   height: 48px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
 }
 
 .inputContainer:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(10, 10, 10, 0.28);
 }
 
 .inputContainer:focus-within {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.055);
+  border-color: var(--color-ink, #0a0a0a);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.06);
 }
 
 .inputContainer.valid {
-  border-color: rgba(74, 222, 128, 0.6);
+  border-color: rgba(22, 163, 74, 0.55);
 }
 
 .inputContainer.invalid {
-  border-color: rgba(239, 68, 68, 0.6);
+  border-color: rgba(220, 38, 38, 0.55);
 }
 
 .youtubeIconContainer {
@@ -115,11 +116,11 @@
   background: transparent;
   border: none;
   outline: none;
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-weight: 400;
   font-size: 14.5px;
   line-height: 1.5;
-  color: var(--color-ink, #ede8e0);
+  color: var(--color-ink, #0a0a0a);
   min-width: 0;
 }
 
@@ -130,7 +131,7 @@
 }
 
 .input::placeholder {
-  color: var(--color-mute, #7e7972);
+  color: var(--color-mute, #8e8e8e);
   font-weight: 400;
 }
 
@@ -144,7 +145,7 @@
 .checkIcon {
   width: 16px;
   height: 16px;
-  color: #4ade80;
+  color: #16a34a;
   stroke-width: 2.5px;
   flex-shrink: 0;
 }
@@ -158,15 +159,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  border-radius: 9999px;
-  color: var(--color-body, #9e988f);
+  transition: color 0.15s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0;
+  color: var(--color-mute, #8e8e8e);
 }
 
 .clearButton:hover,
 .pasteButton:hover {
-  color: var(--color-ink, #ede8e0);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-ink, #0a0a0a);
+  background: transparent;
+}
+
+.clearButton:hover {
+  transform: rotate(90deg);
 }
 
 .loadButton {
@@ -179,18 +184,21 @@
   height: 48px;
   padding: 0 32px;
   border-radius: 9999px;
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
-  font-size: 14.5px;
-  font-weight: 600;
-  background: var(--color-ink, #ede8e0);
-  color: var(--color-canvas, #0d0c0b);
-  border: none;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--color-ink, #0a0a0a);
+  color: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-ink, #0a0a0a);
   flex-shrink: 0;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .loadButton:hover:not(:disabled) {
-  opacity: 0.92;
+  opacity: 0.88;
+  transform: translateY(-1px);
 }
 
 .loadButton:active:not(:disabled) {
@@ -203,8 +211,10 @@
 }
 
 .buttonText {
-  font-weight: 600;
-  font-size: 14.5px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: inherit;
 }
 
@@ -212,15 +222,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #f87171;
+  color: #dc2626;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
   padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
 }
 
 .errorAlertIcon {
-  color: #ef4444;
+  color: #dc2626;
 }

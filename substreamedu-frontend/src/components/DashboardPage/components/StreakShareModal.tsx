@@ -322,7 +322,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
         if (!ctx) throw new Error('Canvas context not available');
 
         // 1. Background Theme Setup
-        let bgGradient = ctx.createRadialGradient(width / 2, 350, 50, width / 2, height / 2, 700);
+        const bgGradient = ctx.createRadialGradient(width / 2, 350, 50, width / 2, height / 2, 700);
         let accentColor = '#f97316';
         let glowColor = 'rgba(249, 115, 22, 0.4)';
         let secondaryColor = '#eab308';
@@ -712,7 +712,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
             }
         } catch (err) {
             // If user dismissed or failed, ignore or copy text
-            if ((err as any).name !== 'AbortError') {
+            if (!(err instanceof Error && err.name === 'AbortError')) {
                 handleCopyText();
             }
         }
@@ -755,7 +755,7 @@ export const StreakShareModal: React.FC<StreakShareModalProps> = ({
                         <div className={styles.headerTitles}>
                             <h2 id="streak-share-modal-title" className={styles.modalTitle}>
                                 <FormattedMessage id="streakShare.modal.title" defaultMessage="Streak Milestone" />
-                                <Sparkles size={16} style={{ color: '#eab308' }} />
+                                <Sparkles size={16} style={{ color: '#0a0a0a' }} />
                             </h2>
                             <p className={styles.modalSubtitle}>
                                 <FormattedMessage id="streakShare.modal.subtitle" defaultMessage="Celebrate your consistency & share with friends!" />

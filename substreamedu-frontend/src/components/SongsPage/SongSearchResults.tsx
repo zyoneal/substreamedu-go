@@ -1,7 +1,6 @@
 import React from 'react';
 
-import Play from 'lucide-react/dist/esm/icons/play';
-import Music from 'lucide-react/dist/esm/icons/music';
+import { Play, Music } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { EnhancedSong } from '../../types/song.types';
 import styles from './SongSearchResults.module.css';

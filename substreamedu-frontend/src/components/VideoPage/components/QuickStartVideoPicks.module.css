@@ -1,5 +1,5 @@
 /* ================================================
-   QUICK START 1-CLICK VIDEO PICKS (APPLE-MINIMALIST WIDESCREEN)
+   QUICK START 1-CLICK VIDEO PICKS (PIXZEN MONOCHROME EDITORIAL)
    ================================================ */
 
 .container {
@@ -16,18 +16,18 @@
 }
 
 .title {
-  font-family: var(--font-display, 'e-Ukraine', sans-serif);
+  font-family: var(--font-display, 'Satoshi', sans-serif);
   font-size: 17px;
-  font-weight: 600;
-  color: var(--color-ink, #ede8e0);
+  font-weight: 700;
+  color: var(--color-ink, #0a0a0a);
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .subtitle {
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-size: 13.5px;
-  color: var(--color-mute, #7e7972);
+  color: var(--color-mute, #8e8e8e);
 }
 
 .grid {
@@ -53,19 +53,21 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.032);
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 20px;
+  background: var(--color-surface-elevated, #eae7e1);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.12));
+  border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
   padding: 0;
   text-align: left;
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card:hover {
-  background: rgba(255, 255, 255, 0.048);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: var(--color-canvas, #f5f3ef);
+  border-color: var(--color-ink, #0a0a0a);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(10, 10, 10, 0.08);
 }
 
 .card:active {
@@ -73,7 +75,7 @@
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
+  outline: 2px solid var(--color-ink, #0a0a0a);
   outline-offset: 2px;
 }
 
@@ -81,7 +83,7 @@
   position: relative;
   width: 100%;
   padding-top: 56.25%;
-  background: #141312;
+  background: #0a0a0a;
   overflow: hidden;
 }
 
@@ -92,7 +94,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card:hover .thumbImg {
@@ -105,44 +107,47 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(13, 12, 11, 0.2);
+  background: rgba(10, 10, 10, 0.18);
   transition: background-color 0.2s ease;
 }
 
 .card:hover .playOverlay {
-  background: rgba(13, 12, 11, 0.38);
+  background: rgba(10, 10, 10, 0.32);
 }
 
 .playIconCircle {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: rgba(13, 12, 11, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--color-ink, #ede8e0);
+  background: rgba(245, 243, 239, 0.9);
+  border: 1px solid rgba(10, 10, 10, 0.16);
+  color: #0a0a0a;
   display: flex;
   align-items: center;
   justify-content: center;
   padding-left: 2px;
-  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease;
   backdrop-filter: blur(8px);
 }
 
 .card:hover .playIconCircle {
   transform: scale(1.08);
-  background: var(--color-ink, #ede8e0);
-  color: var(--color-canvas, #0d0c0b);
+  background: #0a0a0a;
+  color: #f5f3ef;
 }
 
 .levelBadge {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background: rgba(13, 12, 11, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--color-ink, #ede8e0);
-  font-size: 12px;
-  font-weight: 500;
+  background: rgba(245, 243, 239, 0.92);
+  border: 1px solid rgba(10, 10, 10, 0.14);
+  color: #0a0a0a;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   padding: 3px 10px;
   border-radius: 9999px;
   backdrop-filter: blur(8px);
@@ -157,11 +162,11 @@
 }
 
 .cardTitle {
-  font-family: var(--font-display, 'e-Ukraine', sans-serif);
+  font-family: var(--font-display, 'Satoshi', sans-serif);
   font-size: 16px;
-  font-weight: 600;
-  color: var(--color-ink, #ede8e0);
-  letter-spacing: -0.015em;
+  font-weight: 700;
+  color: var(--color-ink, #0a0a0a);
+  letter-spacing: -0.02em;
   margin: 0;
   line-height: 1.35;
   display: -webkit-box;
@@ -171,9 +176,9 @@
 }
 
 .cardDesc {
-  font-family: var(--font-body, 'e-Ukraine', sans-serif);
+  font-family: var(--font-body, 'Satoshi', sans-serif);
   font-size: 13.5px;
-  color: var(--color-body, #9e988f);
+  color: var(--color-body, #4a4a48);
   margin: 0;
   line-height: 1.45;
   display: -webkit-box;
@@ -188,13 +193,13 @@
 }
 
 .cardLoading {
-  border-color: rgba(255, 255, 255, 0.25) !important;
+  border-color: var(--color-ink, #0a0a0a) !important;
   cursor: wait !important;
 }
 
 .playIconCircleActive {
-  background: var(--color-ink, #ede8e0) !important;
-  color: var(--color-canvas, #0d0c0b) !important;
+  background: #0a0a0a !important;
+  color: #f5f3ef !important;
 }
 
 .spinner {

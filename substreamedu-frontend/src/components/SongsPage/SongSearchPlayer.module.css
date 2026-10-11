@@ -1,17 +1,22 @@
-/* === APPLE-MINIMALIST WIDESCREEN SONG SEARCH PLAYER === */
+/* ==========================================================================
+   SUBSTREAMEDU — PIXZEN MONOCHROME EDITORIAL SONG STUDIO (/songs)
+   Warm-White Canvas (#F5F3EF), Soft-Gray Cards (#EAE7E1) & Satoshi Typography
+   ========================================================================== */
 
 .container {
     position: relative;
     width: 100%;
     max-width: 1560px;
     margin: 0 auto;
-    padding: 84px 48px 36px;
-    min-height: 100vh;
+    padding: 92px 48px 44px;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    background: var(--color-canvas, #0d0c0b);
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    background: var(--color-canvas, #f5f3ef);
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    color: var(--color-ink, #0a0a0a);
     box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
 }
 
 .content {
@@ -31,15 +36,17 @@
     justify-content: space-between;
     gap: 16px;
     width: 100%;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
-    font-weight: 600;
-    font-size: clamp(22px, 2.2vw, 28px);
-    line-height: 1.15;
-    color: var(--color-ink, #ede8e0);
-    letter-spacing: -0.025em;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-weight: 700;
+    font-size: clamp(28px, 2.6vw, 38px);
+    line-height: 1.1;
+    color: var(--color-ink, #0a0a0a);
+    letter-spacing: -0.032em;
     margin: 0;
 }
 
@@ -59,11 +66,11 @@
 .trackInfoCard {
     position: sticky;
     top: 88px;
-    background: rgba(255, 255, 255, 0.032);
-    border: 1px solid rgba(255, 255, 255, 0.065);
-    border-radius: 22px;
-    padding: 22px 24px;
-    color: var(--color-ink, #ede8e0);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 24px;
+    padding: 24px 26px;
+    color: var(--color-ink, #0a0a0a);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -86,20 +93,20 @@
 }
 
 .trackTitle {
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
     font-size: 18px;
     line-height: 1.25;
-    font-weight: 600;
+    font-weight: 700;
     margin: 0;
-    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
-    letter-spacing: -0.02em;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    letter-spacing: -0.025em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .trackArtist {
-    color: var(--color-body, #9e988f);
+    color: var(--color-body, #4a4a48);
     font-size: 14px;
     line-height: 1.35;
     font-weight: 400;
@@ -113,15 +120,15 @@
     width: 100%;
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: #141312;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    background: #f5f3ef;
 }
 
 .playerNotice {
     padding: 12px 14px;
     border-radius: 14px;
-    background: rgba(255, 255, 255, 0.028);
-    border: 1px solid rgba(255, 255, 255, 0.055);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .playerNoticeText {
@@ -129,28 +136,28 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: var(--color-body, #9e988f);
+    color: var(--color-body, #4a4a48);
     line-height: 1.45;
     margin: 0;
 }
 
 .noticeIcon {
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
     flex-shrink: 0;
 }
 
 .playerNoticeStrong {
-    font-weight: 600;
-    color: var(--color-ink, #ede8e0);
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
 }
 
 /* === INTERACTIVE LYRICS CARD === */
 .lyricsCard {
-    background: rgba(255, 255, 255, 0.032);
-    border: 1px solid rgba(255, 255, 255, 0.065);
-    border-radius: 22px;
-    padding: 24px 28px;
-    color: var(--color-ink, #ede8e0);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 24px;
+    padding: 28px 36px;
+    color: var(--color-ink, #0a0a0a);
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -162,56 +169,60 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .lyricsTitle {
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--color-ink, #ede8e0);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-ink, #0a0a0a);
     margin: 0;
 }
 
 .lyricsHint {
-    font-size: 13px;
-    color: var(--color-mute, #7e7972);
-    font-weight: 400;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-mute, #8e8e8e);
 }
 
 .lyricsContainer {
-    padding: 8px 12px;
-    color: var(--color-ink, #ede8e0);
+    padding: 6px 4px;
+    color: var(--color-ink, #0a0a0a);
     font-size: 17px;
     line-height: 1.95;
     white-space: pre-wrap;
     text-align: left;
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
-    letter-spacing: 0.005em;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    letter-spacing: 0.002em;
 }
 
 .lyricsContainer ::selection {
-    background: rgba(250, 249, 47, 0.25);
-    color: #ffffff;
+    background: rgba(10, 10, 10, 0.14);
+    color: #0a0a0a;
 }
 
 .lyrics {
     font-size: 17px;
     line-height: 1.95;
     white-space: pre-wrap;
-    color: var(--color-ink, #ede8e0);
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    color: var(--color-ink, #0a0a0a);
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
 }
 
 /* === RECOMMENDED SONGS BENTO SECTION === */
 .recommendedSection {
     flex: 1;
     width: 100%;
-    background: rgba(255, 255, 255, 0.032);
-    border: 1px solid rgba(255, 255, 255, 0.065);
-    border-radius: 22px;
-    padding: 24px;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 24px;
+    padding: 28px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -227,45 +238,51 @@
 }
 
 .recommendedTitle {
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--color-ink, #ede8e0);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-ink, #0a0a0a);
     margin: 0;
 }
 
-/* Apple Segmented CEFR Level Switcher */
+/* Editorial Segmented CEFR Level Switcher */
 .levelSelectorRow {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     padding: 4px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 9999px;
 }
 
 .levelSelectorButton {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-width: 48px;
-    padding: 7px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease;
-    color: var(--color-body, #9e988f);
+    min-width: 46px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.15s ease;
+    color: var(--color-body, #4a4a48);
     border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
     text-align: center;
     white-space: nowrap;
 }
 
 .levelSelectorButton:hover {
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
+    background: rgba(10, 10, 10, 0.05);
 }
 
 .levelSelectorButton:active {
@@ -273,14 +290,14 @@
 }
 
 .levelSelectorButton:focus-visible {
-    outline: 2px solid var(--color-focus-ring, #faf92f);
+    outline: 2px solid #0a0a0a;
     outline-offset: 2px;
 }
 
 .levelSelectorButtonActive {
-    color: var(--color-ink, #ede8e0) !important;
-    background: #242220 !important;
-    border-color: var(--color-hairline-strong, #3d3934) !important;
+    color: #f5f3ef !important;
+    background: #0a0a0a !important;
+    border-color: #0a0a0a !important;
 }
 
 /* 4-Column Widescreen Song Grid */
@@ -298,20 +315,25 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.026);
-    border: 1px solid rgba(255, 255, 255, 0.055);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
     border-radius: 16px;
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
     position: relative;
     box-shadow: none;
 }
 
 .songItemCard:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.13);
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.26);
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(10, 10, 10, 0.06);
 }
 
 .songItemCard:active {
@@ -319,26 +341,42 @@
 }
 
 .songItemCard:focus-visible {
-    outline: 2px solid var(--color-focus-ring, #faf92f);
+    outline: 2px solid #0a0a0a;
     outline-offset: 2px;
 }
 
 .songItemCardActive {
-    background: rgba(255, 255, 255, 0.065);
-    border-color: rgba(237, 232, 224, 0.32);
+    background: #ffffff;
+    border-color: #0a0a0a;
+    box-shadow: 0 8px 20px rgba(10, 10, 10, 0.08);
 }
 
 .songIconBox {
-    width: 38px;
-    height: 38px;
-    border-radius: 11px;
-    background: rgba(255, 255, 255, 0.055);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
     flex-shrink: 0;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s ease;
+}
+
+.trackInfoCard .songIconBox {
+    background: #f5f3ef;
+}
+
+.songItemCard:hover .songIconBox,
+.songItemCardActive .songIconBox {
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-color: #0a0a0a;
 }
 
 .songItemMeta {
@@ -352,9 +390,10 @@
 .recommendedSongTitle {
     font-size: 14px;
     line-height: 1.3;
-    font-weight: 600;
-    color: var(--color-ink, #ede8e0);
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    letter-spacing: -0.01em;
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -365,8 +404,8 @@
     font-size: 12.5px;
     line-height: 1.35;
     font-weight: 400;
-    color: var(--color-body, #9e988f);
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    color: var(--color-body, #4a4a48);
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -379,42 +418,82 @@
     justify-content: center;
     align-items: center;
     min-height: 180px;
-    color: var(--color-body, #9e988f);
+    color: var(--color-body, #4a4a48);
     font-size: 15px;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
 }
 
 .highlightedText {
     text-decoration: none;
     cursor: pointer;
     position: relative;
-    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
-    color: #ffffff;
+    transition:
+        background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease;
+    color: #0a0a0a;
     font-weight: 600;
-    border-bottom: 1.5px dashed rgba(255, 255, 255, 0.35);
-    padding: 0 2px;
+    background: rgba(10, 10, 10, 0.06);
+    border-bottom: 1.5px dashed rgba(10, 10, 10, 0.45);
+    border-radius: 4px;
+    padding: 0 3px;
 }
 
 .highlightedText:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--color-ink, #ede8e0);
-    border-bottom-color: #ffffff;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-bottom-color: #0a0a0a;
     border-radius: 4px;
 }
 
 .wordTooltip {
     position: absolute;
-    background: #1a1917;
-    color: var(--color-ink, #ede8e0);
-    padding: 8px 14px;
-    border-radius: 12px;
-    font-size: 13px;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    padding: 7px 14px;
+    border-radius: 9999px;
+    font-size: 12.5px;
     font-weight: 600;
     z-index: 10000;
     transform: translateX(-50%);
     pointer-events: none;
     white-space: nowrap;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    border: 1px solid rgba(10, 10, 10, 0.2);
+    box-shadow: 0 10px 24px rgba(10, 10, 10, 0.18);
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+}
+
+/* === LANGUAGE OVERLAY MODAL === */
+.languageOverlayBody {
+    text-align: center;
+    padding: 28px 24px 20px;
+}
+
+.languageOverlayText {
+    margin: 0 0 20px;
+    color: var(--color-ink, #0a0a0a);
+    font-size: 15px;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+}
+
+.languageOverlayButton {
+    margin-top: 4px;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border: none;
+    border-radius: 9999px;
+    padding: 10px 28px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.languageOverlayButton:hover {
+    background: #262626;
 }
 
 /* === RESPONSIVE === */

@@ -30,46 +30,34 @@ import { AuthService } from '../../services/AuthService';
 import { GuestLimitService } from '../../services/GuestLimitService';
 import styles from './HomePage.module.css';
 
-interface HeroWordItem {
-  text: string;
-  isAccent?: boolean;
-}
+import { usePixzenTheme } from './pixzen/usePixzenTheme';
+import SmoothScroll from './pixzen/SmoothScroll';
+import TypingHeadline from './pixzen/TypingHeadline';
+import BrandMarquee, { MarqueeItem } from './pixzen/BrandMarquee';
+import ManifestoReveal from './pixzen/ManifestoReveal';
+import MagneticLink from './pixzen/MagneticLink';
 
-const HERO_TITLE_WORDS: HeroWordItem[] = [
-  { text: 'Understand', isAccent: false },
-  { text: 'native', isAccent: false },
-  { text: 'English', isAccent: true },
-  { text: 'without', isAccent: false },
-  { text: 'subtitles.', isAccent: true },
+const HERO_PHRASES: readonly string[] = ['Learn from movies', 'Learn from music', 'Learn from any text'];
+
+const SOURCE_ITEMS: readonly MarqueeItem[] = [
+  { label: 'YouTube', icon: <Play size={16} strokeWidth={1.75} /> },
+  { label: 'Movies & series', icon: <Film size={16} strokeWidth={1.75} /> },
+  { label: 'Song lyrics', icon: <Music size={16} strokeWidth={1.75} /> },
+  { label: 'Podcasts', icon: <Headphones size={16} strokeWidth={1.75} /> },
+  { label: 'AI stories', icon: <Sparkles size={16} strokeWidth={1.75} /> },
+  { label: 'Your own texts', icon: <BookmarkCheck size={16} strokeWidth={1.75} /> },
+  { label: 'Flashcards', icon: <GraduationCap size={16} strokeWidth={1.75} /> },
 ];
 
-const heroTitleContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.075,
-      delayChildren: 0.1,
-    },
-  },
-};
+const VALUE_ITEMS: readonly MarqueeItem[] = [
+  { label: 'Hear first' },
+  { label: 'Select in context' },
+  { label: 'Every word keeps its story' },
+  { label: 'Remember forever' },
+];
 
-const heroWordVariants = {
-  hidden: {
-    opacity: 0,
-    y: 18,
-    filter: 'blur(8px)',
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: {
-      duration: 0.65,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  },
-};
+const MANIFESTO_TEXT =
+  'We believe language is not studied, it is absorbed. Every film you watch, every song you replay and every page you read already holds the lesson. We simply make it visible.';
 
 interface FeatureItem {
   icon: React.ReactNode;
@@ -183,6 +171,7 @@ const FEATURES: FeatureItem[] = [
 
 const HomePage: React.FC = () => {
   const intl = useIntl();
+  usePixzenTheme();
 
   const demoVideoRef = useRef<HTMLVideoElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -207,7 +196,6 @@ const HomePage: React.FC = () => {
 
   const wallY = useTransform(heroScrollProgress, [0, 1], [0, 96]);
   const wallScale = useTransform(heroScrollProgress, [0, 1], [1, 0.93]);
-  const wallOpacity = useTransform(heroScrollProgress, [0, 0.8, 1], [1, 0.65, 0.2]);
 
   const heroContentY = useTransform(heroScrollProgress, [0, 1], [0, 48]);
   const heroContentOpacity = useTransform(heroScrollProgress, [0, 0.75, 1], [1, 0.85, 0.2]);
@@ -440,9 +428,8 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={styles.page} ref={pageRef}>
-      <div className={styles.projectorBeam} aria-hidden="true" />
-      <div className={styles.filmVignette} aria-hidden="true" />
-      <div className={styles.filmGrain} aria-hidden="true" />
+      <SmoothScroll />
+      <div className="pixzenGrain" aria-hidden="true" />
       <motion.div className={styles.scrollProgressBar} style={{ scaleX: scrollProgressSpring }} aria-hidden="true" />
 
       <SEO
@@ -463,22 +450,10 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <motion.h1
-              className={styles.heroTitle}
-              variants={heroTitleContainerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {HERO_TITLE_WORDS.map((item, index) => (
-                <motion.span
-                  key={index}
-                  variants={heroWordVariants}
-                  className={`${styles.heroWord} ${item.isAccent ? styles.heroTitleSerif : ''}`}
-                >
-                  {item.text}
-                </motion.span>
-              ))}
-            </motion.h1>
+            <span className={styles.heroEyebrow}>SubStreamEdu — English through what you love</span>
+            <h1 className={styles.heroTitle} aria-label={HERO_PHRASES.join('. ')}>
+              <TypingHeadline phrases={HERO_PHRASES} />
+            </h1>
 
             <p className={styles.heroSub}>
               Watch your favorite movies, highlight words to translate in context, and memorize them forever with our smart flashcards.
@@ -514,13 +489,28 @@ const HomePage: React.FC = () => {
 
           <motion.div
             className={styles.heroWallContainer}
-            style={{ y: wallY, scale: wallScale, opacity: wallOpacity }}
+            style={{ y: wallY, scale: wallScale }}
             data-cursor="stream"
             data-cursor-text="Cinema Stream"
           >
             <ScrollingTextWall />
           </motion.div>
         </div>
+      </section>
+
+      <section className={styles.sourcesStrip} aria-label="Content sources">
+        <BrandMarquee items={SOURCE_ITEMS} ariaLabel="Learn from" />
+      </section>
+
+      <section className={styles.manifestoSection}>
+        <div className={styles.container}>
+          <span className={styles.manifestoLabel}>Our belief</span>
+          <ManifestoReveal text={MANIFESTO_TEXT} />
+        </div>
+      </section>
+
+      <section className={styles.valuesBand} aria-label="Principles">
+        <BrandMarquee items={VALUE_ITEMS} variant="display" ariaLabel="Principles" />
       </section>
 
       <section className={styles.featureSection}>
@@ -999,10 +989,10 @@ const HomePage: React.FC = () => {
             <h2 className={styles.ctaTitle}>
               Everything you watch, listen to, or read is a lesson.
             </h2>
-            <Link to="/login" className={`${styles.btnPrimary} ${styles.ctaBtn}`}>
+            <MagneticLink to="/login" className={`${styles.btnPrimary} ${styles.ctaBtn} ${styles.ctaMagnet}`}>
               Start free
               <ArrowRight size={14} className={styles.btnIcon} />
-            </Link>
+            </MagneticLink>
           </motion.div>
         </div>
       </section>
@@ -1025,7 +1015,7 @@ const HomePage: React.FC = () => {
             onClick={handleCloseModal}
             aria-label="Close modal"
           >
-            <X size={16} />
+            <X size={18} strokeWidth={1.5} />
           </button>
         </div>
 

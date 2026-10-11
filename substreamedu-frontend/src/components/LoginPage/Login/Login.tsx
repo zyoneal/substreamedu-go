@@ -129,7 +129,7 @@ const Login: React.FC<ILoginProps> = ({ onLogin, loginError, isLoading = false }
 					{emailValid === false && emailError && (
 						<div className={styles.helperContainer}>
 							<div className={styles.validationIcon}>
-								<AlertCircle size={14} color="#f87171" />
+								<AlertCircle size={14} color="var(--color-danger, #dc2626)" />
 							</div>
 							<p className={`${styles.helperText} ${styles.helperTextError}`}>
 								{emailError}

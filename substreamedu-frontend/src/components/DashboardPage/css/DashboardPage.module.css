@@ -1,20 +1,21 @@
 /* ==========================================================================
-   SUBSTREAMEDU — APPLE-MINIMALIST FULL-VIEWPORT BENTO DASHBOARD
-   Wide Widescreen Canvas, Balanced 3-Row Viewport Fill & Scaled Typography
+   SUBSTREAMEDU — PIXZEN MONOCHROME EDITORIAL BENTO DASHBOARD
+   Warm-White Canvas (#F5F3EF), Soft-Gray Bento Cards (#EAE7E1) & Satoshi Type
    ========================================================================== */
 
 .dashboardContainer {
     min-height: 100dvh;
-    padding: 84px 48px 36px;
+    padding: 92px 48px 44px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--color-canvas, #0d0c0b);
-    font-family: var(--font-body, 'e-Ukraine', -apple-system, BlinkMacSystemFont, sans-serif);
-    color: var(--color-ink, #ede8e0);
+    background-color: var(--color-canvas, #f5f3ef);
+    font-family: var(--font-body, 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif);
+    color: var(--color-ink, #0a0a0a);
     -webkit-font-smoothing: antialiased;
     box-sizing: border-box;
+    position: relative;
 }
 
 .contentWrapper {
@@ -25,39 +26,43 @@
     max-width: 1560px;
     width: 100%;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 /* ==========================================================================
-   QUIET HEADER
+   EDITORIAL HEADER
    ========================================================================== */
 
 .headerSection {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
-    font-size: clamp(2rem, 2.6vw, 2.65rem);
-    font-weight: 400;
-    color: var(--color-ink, #ede8e0);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: clamp(2rem, 2.8vw, 2.75rem);
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
     margin: 0;
-    letter-spacing: -0.026em;
-    line-height: 1.14;
+    letter-spacing: -0.032em;
+    line-height: 1.1;
 }
 
 .accent {
-    color: var(--color-ink, #ede8e0);
-    font-weight: 400;
+    color: var(--color-ink, #0a0a0a);
+    font-weight: 700;
 }
 
 /* ==========================================================================
-   APPLE BENTO GRID (FULL-SCREEN PROPORTIONAL FILL)
+   PIXZEN BENTO GRID (FULL-SCREEN PROPORTIONAL FILL)
    ========================================================================== */
 
 .bentoGrid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: minmax(185px, 1fr) minmax(215px, 1.15fr) minmax(195px, 1.05fr);
+    grid-template-rows: minmax(205px, 1.08fr) minmax(195px, 1fr) minmax(195px, 1fr);
     gap: 18px;
     width: 100%;
     flex: 1;
@@ -65,12 +70,12 @@
 }
 
 .bentoCard {
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: 24px;
     padding: 28px 32px;
     text-decoration: none;
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -79,38 +84,47 @@
     overflow: hidden;
     box-sizing: border-box;
     transition:
-        transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
-        background-color 0.2s cubic-bezier(0.32, 0.72, 0, 1),
-        border-color 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bentoCard:hover {
-    background: rgba(255, 255, 255, 0.056);
-    border-color: rgba(255, 255, 255, 0.125);
+    background: #e3dfd8;
+    border-color: rgba(10, 10, 10, 0.28);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(10, 10, 10, 0.06);
 }
 
 .bentoCard:active {
-    transform: scale(0.988);
+    transform: scale(0.99);
     transition-duration: 0.1s;
 }
 
 .bentoCard:focus-visible {
-    outline: 2px solid var(--color-focus-ring, rgba(250, 249, 47, 0.65));
+    outline: 2px solid #0a0a0a;
     outline-offset: 2px;
 }
 
 /* ==========================================================================
-   TOP ROW: 3 METRIC CARDS (SPAN 4 EACH)
+   RIGHT COLUMN: 3 TELEMETRY / DAILY CARDS (COLS 9–12, ROWS 1–3)
    ========================================================================== */
 
-.cardStreak,
-.cardReview,
-.cardVault {
-    grid-column: span 4;
+.cardStreak {
+    grid-column: 9 / 13;
+    grid-row: 1;
+    cursor: pointer;
 }
 
-.cardStreak {
-    cursor: pointer;
+.cardReview {
+    grid-column: 9 / 13;
+    grid-row: 2;
+}
+
+.cardVault {
+    grid-column: 9 / 13;
+    grid-row: 3;
 }
 
 .streakTop {
@@ -128,31 +142,34 @@
 }
 
 .metricValue {
-    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
-    font-size: 42px;
-    font-weight: 400;
-    color: var(--color-ink, #ede8e0);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
     font-variant-numeric: tabular-nums;
 }
 
 .metricValueMuted {
-    color: var(--color-mute, #7e7972);
+    color: var(--color-mute, #8e8e8e);
 }
 
 .metricValueAccent {
-    color: var(--accent, #faf92f);
+    color: var(--color-ink, #0a0a0a);
 }
 
 .metricValueSuccess {
-    color: #4ade80;
+    color: #15803d;
 }
 
 .metricLabel {
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--color-body, #9e988f);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-mute, #8e8e8e);
 }
 
 .sharePill {
@@ -160,17 +177,25 @@
     align-items: center;
     gap: 6px;
     padding: 6px 13px;
-    border-radius: 100px;
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--color-body, #9e988f);
-    font-size: 13px;
-    font-weight: 400;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    border-radius: 9999px;
+    background: rgba(10, 10, 10, 0.05);
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-body, #4a4a48);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cardStreak:hover .sharePill {
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--color-ink, #ede8e0);
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
 }
 
 /* Minimal 7-Day Row */
@@ -179,7 +204,7 @@
     align-items: center;
     justify-content: space-between;
     padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.055);
+    border-top: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .weekDayCol {
@@ -190,36 +215,41 @@
 }
 
 .weekDayLetter {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--color-mute, #7e7972);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--color-mute, #8e8e8e);
     line-height: 1;
 }
 
 .weekDayLetterToday {
-    color: var(--color-ink, #ede8e0);
-    font-weight: 500;
+    color: var(--color-ink, #0a0a0a);
+    font-weight: 700;
 }
 
 .weekDot {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.055);
+    background: rgba(10, 10, 10, 0.05);
+    border: 1px solid rgba(10, 10, 10, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     color: transparent;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .weekDotActive {
-    background: var(--color-ink, #ede8e0);
-    color: var(--color-canvas, #0d0c0b);
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
 }
 
 .weekDotToday {
-    box-shadow: inset 0 0 0 1.5px var(--accent, #faf92f);
+    box-shadow: inset 0 0 0 1.5px #0a0a0a;
 }
 
 /* Metric Cards (Review & Dictionary) */
@@ -230,25 +260,26 @@
 }
 
 .zeroStateHeading {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
     font-size: 22px;
-    font-weight: 400;
-    color: var(--color-ink, #ede8e0);
-    letter-spacing: -0.015em;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    letter-spacing: -0.02em;
 }
 
 .metricSubtext {
-    font-size: 14.5px;
-    font-weight: 300;
-    color: var(--color-body, #9e988f);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-body, #4a4a48);
 }
 
 .metricSubtextSuccess {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 14.5px;
-    font-weight: 400;
-    color: #4ade80;
+    font-size: 14px;
+    font-weight: 600;
+    color: #15803d;
 }
 
 .metricFooter {
@@ -256,41 +287,47 @@
     align-items: center;
     justify-content: space-between;
     padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.055);
+    border-top: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .metricFooterTitle {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 14.5px;
-    font-weight: 400;
-    color: var(--color-body, #9e988f);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--color-mute, #8e8e8e);
 }
 
 .inlineAction {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 14.5px;
-    font-weight: 400;
-    color: var(--color-ink, #ede8e0);
-    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), color 0.2s ease;
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-ink, #0a0a0a);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
 }
 
 .cardReview:hover .inlineAction {
-    color: var(--accent, #faf92f);
-    transform: translateX(2px);
+    color: var(--color-ink, #0a0a0a);
+    transform: translateX(3px);
 }
 
 .quietChevron {
-    color: var(--color-mute, #7e7972);
+    color: var(--color-mute, #8e8e8e);
     flex-shrink: 0;
-    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), color 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
 }
 
 .bentoCard:hover .quietChevron {
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
     transform: translateX(3px);
 }
 
@@ -298,11 +335,12 @@
    LEARNING FORMAT CARDS (SCALED WIDESCREEN SQUIRCLES)
    ========================================================================== */
 
-/* Featured Video Card (Span 8) */
+/* Featured Video Card (Row 1, Cols 1–8) */
 .cardHeroVideo {
-    grid-column: span 8;
+    grid-column: 1 / 9;
+    grid-row: 1;
     padding: 32px 36px;
-    background: rgba(255, 255, 255, 0.045);
+    background: #eae7e1;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -327,20 +365,21 @@
 }
 
 .heroTitle {
-    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
-    font-size: 23px;
-    font-weight: 400;
-    color: var(--color-ink, #ede8e0);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
     margin: 0;
-    line-height: 1.22;
-    letter-spacing: -0.02em;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
 }
 
 .heroDescription {
+    font-family: var(--font-body, 'Satoshi', -apple-system, sans-serif);
     font-size: 15px;
-    font-weight: 300;
-    line-height: 1.55;
-    color: var(--color-body, #9e988f);
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--color-body, #4a4a48);
     margin: 0;
     max-width: 680px;
 }
@@ -355,19 +394,27 @@
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    padding: 12px 24px;
-    background: var(--color-ink, #ede8e0);
-    color: var(--color-canvas, #0d0c0b);
-    border-radius: 100px;
-    font-size: 14.5px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    padding: 13px 26px;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-radius: 9999px;
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
     white-space: nowrap;
-    transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cardHeroVideo:hover .primaryPillBtn {
-    background: var(--accent, #faf92f);
+    background: #262626;
+    color: #f5f3ef;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(10, 10, 10, 0.16);
 }
 
 /* Secondary Format Cards (Span 4 Each) */
@@ -388,34 +435,42 @@
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.062);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
     flex-shrink: 0;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    box-sizing: border-box;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bentoCard:hover .iconSquircle {
-    background: rgba(255, 255, 255, 0.1);
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
 }
 
 .cardTitle {
-    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
     font-size: 20px;
-    font-weight: 400;
-    color: var(--color-ink, #ede8e0);
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
     margin: 0;
     line-height: 1.24;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
 }
 
 .cardDescription {
+    font-family: var(--font-body, 'Satoshi', -apple-system, sans-serif);
     font-size: 14.5px;
-    font-weight: 300;
-    line-height: 1.54;
-    color: var(--color-body, #9e988f);
+    font-weight: 400;
+    line-height: 1.56;
+    color: var(--color-body, #4a4a48);
     margin: 0;
 }
 
@@ -436,11 +491,13 @@
     .cardStreak,
     .cardReview {
         grid-column: span 6;
+        grid-row: auto;
     }
 
     .cardVault,
     .cardHeroVideo {
         grid-column: span 12;
+        grid-row: auto;
     }
 
     .cardFormat {
@@ -471,6 +528,7 @@
     .cardHeroVideo,
     .cardFormat {
         grid-column: span 1;
+        grid-row: auto;
         padding: 20px 22px;
         border-radius: 20px;
     }
@@ -490,6 +548,6 @@
     }
 
     .metricValue {
-        font-size: 32px;
+        font-size: 34px;
     }
 }

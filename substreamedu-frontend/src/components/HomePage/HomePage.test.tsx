@@ -5,6 +5,9 @@ import { MemoryRouter } from 'react-router-dom';
 // Mock direct ESM icon imports for Jest
 jest.mock('lucide-react/dist/esm/icons/x', () => (props: any) => <span data-testid="icon-x" {...props} />);
 
+jest.mock('./pixzen/SmoothScroll', () => () => null);
+jest.mock('./pixzen/ManifestoReveal', () => ({ text }: { text: string }) => <p>{text}</p>);
+
 import HomePage from './HomePage';
 
 // Mock IntersectionObserver for framer-motion whileInView

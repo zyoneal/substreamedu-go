@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
 import { AuthService } from '../../services/AuthService';
 import styles from './css/SubtitlesPage.module.css';
-import { useIntl } from "react-intl";
-import BinButton from "../DictionaryItemsPage/BinButton";
-import Search from 'lucide-react/dist/esm/icons/search';
-import Upload from 'lucide-react/dist/esm/icons/upload';
+import { useIntl } from 'react-intl';
+import BinButton from '../DictionaryItemsPage/BinButton';
+import { Search, Upload, FileText, X } from 'lucide-react';
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 
 interface SubtitleDto {
 	name: string;
 }
 
 const SubtitlesPage: React.FC = () => {
+	usePixzenTheme();
 	const [subtitles, setSubtitles] = useState<SubtitleDto[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState('');
@@ -71,7 +72,7 @@ const SubtitlesPage: React.FC = () => {
 	};
 
 	const deleteSubtitlesByName = async (name: string) => {
-		if (deletingName) return; 
+		if (deletingName) return;
 		setDeletingName(name);
 		setError('');
 		try {
@@ -92,52 +93,81 @@ const SubtitlesPage: React.FC = () => {
 		fetchSubtitles();
 	}, []);
 
-	const filteredResources = Array.isArray(subtitles) ? subtitles.filter((subtitle) =>
-		subtitle.name.toLowerCase().includes(searchQuery.toLowerCase())
-	) : [];
+	const filteredResources = Array.isArray(subtitles)
+		? subtitles.filter((subtitle) =>
+				subtitle.name.toLowerCase().includes(searchQuery.toLowerCase())
+		  )
+		: [];
 
-	const parseDoTags = (message: string): (string | JSX.Element)[] => {
-		const parts = message.split(/(<do>.*?<\/do>)/g);
-		return parts.map((part: string, index: number) => {
-			if (part.startsWith('<do>') && part.endsWith('</do>')) {
-				const content = part.replace(/<\/?do>/g, '');
-                return <span key={index} className={styles.accent}>{content}</span>;
-			}
-			return part;
-		}).filter((part: string | JSX.Element) => part !== '');
+	const stripDoTags = (message: string): string => {
+		return message.replace(/<\/?do>/g, '');
 	};
 
 	return (
 		<div className={styles.container}>
-			<div className={styles.ambientGlow} />
+			<div className="pixzenGrain" aria-hidden="true" />
 			<div className={styles.content}>
-				<div className={styles.headerGroup}>
-					<span className={styles.eyebrow}>06 // SUBTITLES</span>
+				<div className={styles.topBar}>
 					<h1 className={styles.pageTitle}>
-						{parseDoTags(intl.formatMessage({
-							id: 'subtitlesTitle',
-							defaultMessage: 'My <do>Subtitles</do>'
-						}))}
+						{stripDoTags(
+							intl.formatMessage({
+								id: 'subtitlesTitle',
+								defaultMessage: 'My Subtitles',
+							})
+						)}
 					</h1>
+					<div className={styles.countBadge}>
+						<span className={styles.counterDot} aria-hidden="true" />
+						<span>
+							{filteredResources.length}{' '}
+							{filteredResources.length === 1 ? 'file' : 'files'}
+						</span>
+					</div>
 				</div>
 
 				<div className={styles.toolbar}>
 					<div className={styles.searchInputWrapper}>
-						<Search className={styles.searchIcon} size={16} />
+						<Search className={styles.searchIcon} size={18} aria-hidden="true" />
 						<input
 							type="text"
-							placeholder={intl.formatMessage({ id: "searchSubtitle", defaultMessage: "Search subtitle by name" })}
+							placeholder={intl.formatMessage({
+								id: 'searchSubtitle',
+								defaultMessage: 'Search subtitle by name...',
+							})}
+							aria-label={intl.formatMessage({
+								id: 'searchSubtitle',
+								defaultMessage: 'Search subtitle by name',
+							})}
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							className={styles.searchInput}
 						/>
+						{searchQuery && (
+							<button
+								type="button"
+								onClick={() => setSearchQuery('')}
+								className={styles.clearButton}
+								aria-label="Clear search query"
+							>
+								<X size={16} />
+							</button>
+						)}
 					</div>
 					<label className={styles.uploadButton}>
-						<Upload size={16} />
-						{intl.formatMessage({ id: "uploadSubtitles", defaultMessage: "Upload Subtitles" })}
+						<Upload size={15} aria-hidden="true" />
+						<span>
+							{intl.formatMessage({
+								id: 'uploadSubtitles',
+								defaultMessage: 'Upload Subtitles',
+							})}
+						</span>
 						<input
 							type="file"
 							accept=".srt,.vtt"
+							aria-label={intl.formatMessage({
+								id: 'uploadSubtitles',
+								defaultMessage: 'Upload Subtitles',
+							})}
 							onChange={(e) => handleFileUpload(e.target.files)}
 							className={styles.uploadInput}
 						/>
@@ -148,22 +178,30 @@ const SubtitlesPage: React.FC = () => {
 
 				<div className={styles.subtitlesWrapper}>
 					{isLoading ? (
-						<div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
-							<div className={styles.loader}>
-								<p className={styles.loaderText}>Loading</p>
-								<div className={styles.load}></div>
-							</div>
+						<div className={styles.loadingState}>
+							<div className={styles.spinner} aria-hidden="true" />
+							<p className={styles.loadingText}>Loading subtitles...</p>
 						</div>
 					) : filteredResources.length > 0 ? (
 						<div className={styles.subtitlesList}>
 							{filteredResources.map((subtitle, index) => (
 								<div key={index} className={styles.subtitleCard}>
 									<div className={styles.subtitleContent}>
-										<Link to={`/subtitles/${subtitle.name}`} className={styles.subtitleLink}>
-											<h3 className={styles.subtitleName}>{subtitle.name}</h3>
+										<Link
+											to={`/subtitles/${subtitle.name}`}
+											className={styles.subtitleLink}
+										>
+											<div className={styles.subtitleIconBox} aria-hidden="true">
+												<FileText size={18} />
+											</div>
+											<div className={styles.subtitleMeta}>
+												<h3 className={styles.subtitleName}>{subtitle.name}</h3>
+												<span className={styles.subtitleFormat}>SRT · VTT</span>
+											</div>
 										</Link>
 										<BinButton
 											className={styles.deleteButton}
+											ariaLabel={`Delete ${subtitle.name}`}
 											disabled={deletingName === subtitle.name}
 											onClick={(e) => {
 												e.preventDefault();
@@ -176,9 +214,12 @@ const SubtitlesPage: React.FC = () => {
 						</div>
 					) : (
 						<div className={styles.emptyState}>
+							<div className={styles.emptyIconBox} aria-hidden="true">
+								<FileText size={22} />
+							</div>
 							<h3 className={styles.emptyTitle}>No subtitles found</h3>
 							<p className={styles.emptyDescription}>
-								Upload your first subtitle file to begin reading and translating.
+								Upload your first subtitle file (.srt or .vtt) to begin reading and translating.
 							</p>
 						</div>
 					)}

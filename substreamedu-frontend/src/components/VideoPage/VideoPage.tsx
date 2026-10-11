@@ -25,6 +25,7 @@ import Play from 'lucide-react/dist/esm/icons/play';
 
 import { useRecentVideos, RecentVideo } from '../../hooks/useRecentVideos';
 import { ONBOARDING_PRESETS, DEFAULT_ONBOARDING_PRESET } from '../../constants/onboardingPresets';
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 
 type VideoSource = 'youtube' | 'upload' | 'googledrive';
 
@@ -49,6 +50,7 @@ interface VideoPageProps {
 }
 
 const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
+  usePixzenTheme();
   const intl = useIntl();
   const [searchParams] = useSearchParams();
   const { isLoggedIn } = useContext(AuthContext);
@@ -285,6 +287,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
       animate="visible"
       variants={containerVariants}
     >
+      <div className="pixzenGrain" aria-hidden="true" />
       <div className={styles.ambientGlow} />
       <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
       <div className="relative z-10 flex-1 flex flex-col">

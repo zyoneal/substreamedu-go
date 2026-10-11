@@ -7,10 +7,9 @@ import { SubtitleService } from '../../services/SubtitleService';
 import { LanguageContext } from "../LanguageContext";
 import { useIntl } from 'react-intl';
 import { debugLog, debugError } from '../../utils/debug';
-// PERF: Direct imports from lucide-react (bundle-barrel-imports rule)
-import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
-import Music from 'lucide-react/dist/esm/icons/music';
+import { Lightbulb, Music } from 'lucide-react';
 import styles from "./SongSearchPlayer.module.css";
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { createPortal } from 'react-dom';
 import { Modal } from '../ui/modal';
 import { TranslationPopover } from '../shared/TranslationPopover';
@@ -32,8 +31,6 @@ type Track = {
     embedUrl: string;
 };
 
-
-
 interface DictionaryItem {
     id: number;
     resourceName: string;
@@ -42,6 +39,15 @@ interface DictionaryItem {
     context: string;
     definition: string;
     normalizedText?: string;
+}
+
+interface RawSongDictionaryItem {
+    id: number;
+    resourceName?: string;
+    highlightedText?: string;
+    translatedText?: string;
+    context?: string;
+    definition?: string;
 }
 
 interface SelectionPosition {
@@ -56,7 +62,19 @@ interface ErrorResponse {
     localDateTime: string;
 }
 
+interface MutationError {
+    status?: number;
+    message?: string;
+    response?: {
+        status?: number;
+        data?: {
+            message?: string;
+        };
+    };
+}
+
 export default function SongSearchPlayer() {
+    usePixzenTheme();
     const intl = useIntl();
     const { learningLanguage: contextLearningLanguage, fluentLanguage } = useContext(LanguageContext);
 
@@ -169,14 +187,21 @@ export default function SongSearchPlayer() {
         if (!track?.name) return;
 
         if (userDictionaryItems) {
-            const items = userDictionaryItems;
-            const actualItems = Array.isArray(items) ? items : (items && (items as any).items ? (items as any).items : []);
-            const normalizedItems = actualItems.map((item: any) => ({
-                ...item,
+            const rawContainer = userDictionaryItems as unknown as { items?: RawSongDictionaryItem[] } | RawSongDictionaryItem[];
+            const actualItems: RawSongDictionaryItem[] = Array.isArray(rawContainer)
+                ? rawContainer
+                : (rawContainer && Array.isArray(rawContainer.items) ? rawContainer.items : []);
+            const normalizedItems: DictionaryItem[] = actualItems.map((item: RawSongDictionaryItem) => ({
+                id: item.id,
+                resourceName: item.resourceName || '',
+                highlightedText: item.highlightedText || '',
+                translatedText: item.translatedText || '',
+                context: item.context || '',
+                definition: item.definition || '',
                 normalizedText: item.highlightedText?.toLowerCase().trim() || ''
             }));
             setDictionaryItems(normalizedItems);
-            setHighlightedWords(normalizedItems.map((item: any) => item.normalizedText));
+            setHighlightedWords(normalizedItems.map((item: DictionaryItem) => item.normalizedText || ''));
         }
     }, [userDictionaryItems, track?.name]);
 
@@ -947,7 +972,7 @@ export default function SongSearchPlayer() {
 
             return { previousItems, previousHighlightedWords };
         },
-        onError: (err: any, _variables: SaveWordData, context: SaveWordContext | undefined) => {
+        onError: (err: unknown, _variables: SaveWordData, context: SaveWordContext | undefined) => {
             if (context?.previousItems) {
                 setDictionaryItems(context.previousItems);
             }
@@ -955,8 +980,9 @@ export default function SongSearchPlayer() {
                 setHighlightedWords(context.previousHighlightedWords);
             }
             const errorResponse = err as ErrorResponse;
-            const status = err?.status || err?.response?.status;
-            const message = (err?.message || err?.response?.data?.message || '').toLowerCase();
+            const mutErr = err as MutationError;
+            const status = mutErr?.status || mutErr?.response?.status;
+            const message = (mutErr?.message || mutErr?.response?.data?.message || '').toLowerCase();
 
             if (status === 403 || message.includes('save limit') || message.includes('word save')) {
                 window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
@@ -1104,6 +1130,7 @@ export default function SongSearchPlayer() {
 
     return (
         <motion.div className={styles.container} initial="hidden" animate="visible" variants={containerVariants}>
+            <div className="pixzenGrain" aria-hidden="true" />
             <div className={styles.content}>
                 {notification && (
                     <div>
@@ -1348,23 +1375,14 @@ export default function SongSearchPlayer() {
                     onClose={() => setShowLanguageOverlay(false)}
                     size="sm"
                 >
-                    <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
-                        <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                    <Modal.Body className={styles.languageOverlayBody}>
+                        <p className={styles.languageOverlayText}>
                             Select a language in the header to translate
                         </p>
                         <button
                             type="button"
                             onClick={() => setShowLanguageOverlay(false)}
-                            style={{
-                                marginTop: '4px',
-                                background: '#ffffff',
-                                color: '#0d0c0b',
-                                border: 'none',
-                                borderRadius: '8px',
-                                padding: '8px 24px',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                            }}
+                            className={styles.languageOverlayButton}
                             aria-label="Dismiss language overlay"
                         >
                             OK

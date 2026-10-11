@@ -1,11 +1,13 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
 import { cleanSubtitleText, cleanSubtitleSelection } from '../../utils/subtitleCleaner';
 
 import styles from './css/SubtitleViewer.module.css';
 import { LanguageContext } from "../LanguageContext";
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
+import { ArrowLeft } from 'lucide-react';
 
 import { createPortal } from 'react-dom';
 import { AxiosError } from 'axios';
@@ -28,6 +30,35 @@ interface DictionaryItem {
     normalizedText?: string;
 }
 
+interface RawSubtitleDictionaryItem {
+    id: number;
+    resourceName?: string;
+    highlightedText?: string;
+    translatedText?: string;
+    context?: string;
+    definition?: string;
+}
+
+interface CaretPosition {
+    offsetNode: Node;
+    offset: number;
+}
+
+interface DocumentWithCaretPosition extends Document {
+    caretPositionFromPoint?: (x: number, y: number) => CaretPosition | null;
+}
+
+interface MutationError {
+    status?: number;
+    message?: string;
+    response?: {
+        status?: number;
+        data?: {
+            message?: string;
+        };
+    };
+}
+
 interface SelectionPosition {
     x: number;
     y: number;
@@ -35,6 +66,7 @@ interface SelectionPosition {
 }
 
 const SubtitleViewer: React.FC = () => {
+    usePixzenTheme();
     const intl = useIntl();
     const { learningLanguage: contextLearningLanguage, fluentLanguage } = useContext(LanguageContext);
     const learningLanguage = contextLearningLanguage || 'en';
@@ -107,13 +139,18 @@ const SubtitleViewer: React.FC = () => {
 
     useEffect(() => {
         if (userDictionaryItems) {
-            const items = userDictionaryItems;
-            const normalizedItems = (Array.isArray(items) ? items : []).map((item: any) => ({
-                ...item,
-                normalizedText: item.highlightedText.toLowerCase().trim()
+            const rawItems = (Array.isArray(userDictionaryItems) ? userDictionaryItems : []) as RawSubtitleDictionaryItem[];
+            const normalizedItems: DictionaryItem[] = rawItems.map((item: RawSubtitleDictionaryItem) => ({
+                id: item.id,
+                resourceName: item.resourceName || '',
+                highlightedText: item.highlightedText || '',
+                translatedText: item.translatedText || '',
+                context: item.context || '',
+                definition: item.definition || '',
+                normalizedText: (item.highlightedText || '').toLowerCase().trim()
             }));
             setDictionaryItems(normalizedItems);
-            setHighlightedWords(normalizedItems.map(item => item.normalizedText));
+            setHighlightedWords(normalizedItems.map(item => item.normalizedText || ''));
         }
     }, [userDictionaryItems]);
 
@@ -640,7 +677,7 @@ const SubtitleViewer: React.FC = () => {
         const selectedText = selection.toString().trim();
         const range = selection.getRangeAt(0);
 
-        let node = range.commonAncestorContainer;
+        const node = range.commonAncestorContainer;
         let element = node.nodeType === 3 ? node.parentElement : node as HTMLElement;
         while (element && !element.hasAttribute('data-index') && element.tagName !== 'DIV') {
             element = element.parentElement;
@@ -683,10 +720,11 @@ const SubtitleViewer: React.FC = () => {
         }
 
         let range: Range | null = null;
+        const docWithCaret = document as DocumentWithCaretPosition;
         if (document.caretRangeFromPoint) {
             range = document.caretRangeFromPoint(clientX, clientY);
-        } else if ((document as any).caretPositionFromPoint) {
-            const pos = (document as any).caretPositionFromPoint(clientX, clientY);
+        } else if (docWithCaret.caretPositionFromPoint) {
+            const pos = docWithCaret.caretPositionFromPoint(clientX, clientY);
             if (pos) {
                 range = document.createRange();
                 range.setStart(pos.offsetNode, pos.offset);
@@ -758,15 +796,16 @@ const SubtitleViewer: React.FC = () => {
 
             return { previousItems, previousHighlightedWords };
         },
-        onError: (err: any, _variables: SaveWordData, context: SaveWordContext | undefined) => {
+        onError: (err: unknown, _variables: SaveWordData, context: SaveWordContext | undefined) => {
             if (context?.previousItems) {
                 setDictionaryItems(context.previousItems);
             }
             if (context?.previousHighlightedWords) {
                 setHighlightedWords(context.previousHighlightedWords);
             }
-            const status = err?.status || err?.response?.status;
-            const message = (err?.message || err?.response?.data?.message || '').toLowerCase();
+            const mutErr = err as MutationError;
+            const status = mutErr?.status || mutErr?.response?.status;
+            const message = (mutErr?.message || mutErr?.response?.data?.message || '').toLowerCase();
 
             if (status === 403 || message.includes('save limit') || message.includes('word save')) {
                 window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
@@ -936,8 +975,7 @@ const SubtitleViewer: React.FC = () => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.ambientGlow} />
-            <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
+            <div className="pixzenGrain" aria-hidden="true" />
 
             <div className={styles.content}>
                 {tooltipState && createPortal(
@@ -954,17 +992,26 @@ const SubtitleViewer: React.FC = () => {
                     document.body
                 )}
 
-                <div className={styles.headerGroup}>
-                    <span className={styles.eyebrow}>06 // SUBTITLE VIEWER</span>
-                    <h1 className={styles.pageTitle}>{fileId ? decodeURIComponent(fileId) : 'Subtitles'}</h1>
+                <div className={styles.topBar}>
+                    <div className={styles.titleRow}>
+                        <Link to="/subtitles" className={styles.backLink}>
+                            <ArrowLeft size={15} aria-hidden="true" />
+                            <span>Back to Subtitles</span>
+                        </Link>
+                        <h1 className={styles.pageTitle}>{fileId ? decodeURIComponent(fileId) : 'Subtitles'}</h1>
+                    </div>
+                    {!isLoadingSubtitles && subtitles.length > 0 && (
+                        <div className={styles.countBadge}>
+                            <span className={styles.counterDot} aria-hidden="true" />
+                            <span>{subtitles.length} {subtitles.length === 1 ? 'line' : 'lines'}</span>
+                        </div>
+                    )}
                 </div>
 
                 {isLoadingSubtitles ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-                        <div className={styles.loader}>
-                            <p className={styles['loader-text']}>Loading</p>
-                            <div className={styles.load}></div>
-                        </div>
+                    <div className={styles.loadingState}>
+                        <div className={styles.spinner} aria-hidden="true" />
+                        <p className={styles.loadingText}>Loading transcript...</p>
                     </div>
                 ) : error ? (
                     <div className={styles.error}>{error}</div>
@@ -991,8 +1038,8 @@ const SubtitleViewer: React.FC = () => {
                         </div>
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-center py-20 border-t border-white/10 w-full mt-12">
-                        <h3 className="font-medium text-xl text-white mb-2">No subtitles found.</h3>
+                    <div className={styles.emptyState}>
+                        <h3 className={styles.emptyTitle}>No subtitles found.</h3>
                     </div>
                 )}
             </div>
@@ -1032,22 +1079,14 @@ const SubtitleViewer: React.FC = () => {
                 onClose={() => setShowLanguageOverlay(false)}
                 size="sm"
             >
-                <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
-                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #ede8e0)', fontSize: '15px' }}>
+                <Modal.Body className={styles.languageOverlayBody}>
+                    <p className={styles.languageOverlayText}>
                         {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
                     </p>
                     <button
                         type="button"
                         onClick={() => setShowLanguageOverlay(false)}
-                        style={{
-                            background: '#FAF92F',
-                            color: '#000',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 24px',
-                            fontWeight: 700,
-                            cursor: 'pointer'
-                        }}
+                        className={styles.languageOverlayButton}
                     >
                         OK
                     </button>

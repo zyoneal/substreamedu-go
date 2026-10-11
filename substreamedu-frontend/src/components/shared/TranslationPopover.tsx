@@ -172,9 +172,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                                 backdropFilter: 'blur(25px)',
                                 WebkitBackdropFilter: 'blur(25px)',
                             }
-                            : {
-                                background: 'rgba(22, 22, 28, 0.6)',
-                            }),
+                            : {}),
                         zIndex: 10001,
                         ...(selectionPosition.maxHeight ? { maxHeight: `${selectionPosition.maxHeight}px` } : {}),
                     }}
@@ -298,7 +296,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                             <button
                                 type="button"
                                 className={styles.iconButton}
-                                style={{ color: 'var(--accent)', background: 'rgba(250, 249, 47, 0.1)' }}
+                                style={{ color: 'var(--color-ink, #0a0a0a)', background: 'rgba(10, 10, 10, 0.08)' }}
                                 onClick={() => {
                                     window.location.href = "/subscribe";
                                 }}

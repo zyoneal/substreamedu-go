@@ -15,16 +15,16 @@
     height: 56px;
     flex-wrap: nowrap;
     font-family: var(--font-body);
-    background-color: rgba(13, 12, 11, 0.85);
+    background-color: color-mix(in srgb, var(--color-canvas) 85%, transparent);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid #282522;
+    border-bottom: 1px solid var(--color-hairline);
 }
 
 /* Glass background across states */
 .solid,
 .transparent {
-    background-color: rgba(13, 12, 11, 0.85);
+    background-color: color-mix(in srgb, var(--color-canvas) 85%, transparent);
 }
 
 .logo_container {
@@ -45,7 +45,7 @@
 .logoText {
     font-size: 13px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--color-ink);
     letter-spacing: 0.12em;
     text-decoration: none;
     font-family: var(--font-body);
@@ -105,7 +105,7 @@
 
 /* === PRIMARY CTA — Black Pill === */
 .signUpButton {
-    background-color: #faf92f;
+    background-color: var(--accent);
     color: var(--color-canvas, #0d0c0b);
     padding: 8px 20px;
     border-radius: var(--rounded-full);
@@ -113,7 +113,7 @@
     font-size: 14px;
     text-decoration: none;
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease-out;
-    border: 1px solid #faf92f;
+    border: 1px solid var(--accent);
     cursor: pointer;
     height: 36px;
     display: inline-flex;
@@ -123,8 +123,8 @@
 }
 
 .signUpButton:hover {
-    background-color: #e6e52b;
-    border-color: #e6e52b;
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
 }
 
 .signUpButton:active {
@@ -181,7 +181,7 @@
 
 .navItem.active,
 .activeNavItem {
-    color: #faf92f;
+    color: var(--accent);
     font-weight: 400;
 }
 
@@ -332,11 +332,11 @@
     display: none;
     position: absolute;
     z-index: 100;
-    background: #141312;
-    color: #ede8e0;
+    background: var(--color-surface-elevated);
+    color: var(--color-ink);
     padding: 12px 0;
     border-radius: var(--rounded-lg);
-    border: 1px solid #282522;
+    border: 1px solid var(--color-hairline);
     top: 100%;
     left: 0;
     margin-top: 8px;
@@ -357,26 +357,26 @@
     display: flex;
     align-items: center;
     min-height: 44px;
-    color: #a1a1aa;
+    color: var(--color-body);
     transition: color 0.2s ease, background-color 0.2s ease;
     font-size: 14px;
     font-weight: 500;
 }
 
 .dropdownContent a:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
 }
 
 .dropdownContent a:active {
-    background: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--color-ink) 10%, transparent);
     transform: scale(0.985);
 }
 
 .dropdownContent a.active {
-    color: #fbbf24;
+    color: var(--accent);
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.05);
+    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
 }
 
 .logoutLink {
@@ -678,12 +678,12 @@
    UNAUTHENTICATED LANDING OVERRIDES
    ============================================ */
 .unauthenticatedLanding {
-    background-color: rgba(13, 12, 11, 0.85);
-    border-bottom: 1px solid #282522;
+    background-color: color-mix(in srgb, var(--color-canvas) 85%, transparent);
+    border-bottom: 1px solid var(--color-hairline);
 }
 
 .unauthenticatedLanding .logoText {
-    color: #ffffff !important;
+    color: var(--color-ink) !important;
     font-weight: 700;
     letter-spacing: 0.12em;
 }
@@ -718,11 +718,11 @@
 .darkHeader {
     background-color: transparent !important;
     border-bottom: none !important;
-    color: #f4f4f5 !important;
+    color: var(--color-ink) !important;
 }
 
 .darkHeader .logoText {
-    color: #ffffff !important;
+    color: var(--color-ink) !important;
 }
 
 .darkHeader .logoImage {
@@ -730,62 +730,56 @@
 }
 
 .darkHeader .navItem {
-    color: #a1a1aa !important;
+    color: var(--color-body) !important;
 }
 
 .darkHeader .navItem:hover {
-    color: #ffffff !important;
+    color: var(--color-ink) !important;
 }
 
 .darkHeader .navItem.active,
 .darkHeader .activeNavItem {
-    color: #faf92f !important;
+    color: var(--accent) !important;
 }
 
 .darkHeader .logoutIconButton {
-    color: #a1a1aa !important;
+    color: var(--color-body) !important;
 }
 
 .darkHeader .userProfile:hover .logoutIconButton {
-    color: #ffffff !important;
-    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: var(--color-ink) !important;
+    background-color: rgba(10, 10, 10, 0.06) !important;
 }
 
 /* === DARK HEADER & UNAUTHENTICATED MOBILE MENU OVERRIDES === */
 .darkHeader .menu,
 .unauthenticatedLanding .menu {
-    color: #ffffff !important;
+    color: var(--color-ink) !important;
 }
 
 /* === DARK HEADER & UNAUTHENTICATED LANGUAGE SELECTOR OVERRIDES === */
 .darkHeader [class*="currentLang"],
 .unauthenticatedLanding [class*="currentLang"] {
-    color: #888888 !important;
+    color: var(--color-ink) !important;
 }
 
 .darkHeader button:hover [class*="currentLang"],
-.darkHeader button:focus [class*="currentLang"] {
-    color: #ffffff !important;
-}
-
+.darkHeader button:focus [class*="currentLang"],
 .unauthenticatedLanding button:hover [class*="currentLang"],
 .unauthenticatedLanding button:focus [class*="currentLang"] {
-    color: #ffffff !important;
+    color: var(--color-body) !important;
 }
 
 .darkHeader [class*="chevronIcon"],
 .unauthenticatedLanding [class*="chevronIcon"] {
-    color: #888888 !important;
+    color: var(--color-body) !important;
 }
 
 .darkHeader button:hover [class*="chevronIcon"],
-.darkHeader button:focus [class*="chevronIcon"] {
-    color: #ffffff !important;
-}
-
+.darkHeader button:focus [class*="chevronIcon"],
 .unauthenticatedLanding button:hover [class*="chevronIcon"],
 .unauthenticatedLanding button:focus [class*="chevronIcon"] {
-    color: #ffffff !important;
+    color: var(--color-ink) !important;
 }
 
 @media (max-height: 800px) {
@@ -865,23 +859,24 @@
 
 .headerPlayerLangContainer [class*="currentLang"],
 .headerPlayerLangContainerInline [class*="currentLang"] {
-    color: #ede8e0;
+    color: var(--color-ink, #0a0a0a);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: -0.01em;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, opacity 0.15s ease;
 }
 
 .headerPlayerLangContainer button:hover [class*="currentLang"],
 .headerPlayerLangContainer button:focus [class*="currentLang"],
 .headerPlayerLangContainerInline button:hover [class*="currentLang"],
 .headerPlayerLangContainerInline button:focus [class*="currentLang"] {
-    color: #ffffff;
+    color: var(--color-ink, #0a0a0a);
+    opacity: 0.7;
 }
 
 .headerPlayerLangContainer [class*="chevronIcon"],
 .headerPlayerLangContainerInline [class*="chevronIcon"] {
-    color: #a1a1aa;
+    color: var(--color-body, #4a4a48);
     transition: color 0.15s ease;
 }
 
@@ -889,7 +884,7 @@
 .headerPlayerLangContainer button:focus [class*="chevronIcon"],
 .headerPlayerLangContainerInline button:hover [class*="chevronIcon"],
 .headerPlayerLangContainerInline button:focus [class*="chevronIcon"] {
-    color: #ffffff;
+    color: var(--color-ink, #0a0a0a);
 }
 
 @media (max-width: 768px) {

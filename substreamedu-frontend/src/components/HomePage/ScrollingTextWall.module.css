@@ -1,4 +1,4 @@
-/* === SCROLLING TEXT WALL === */
+﻿/* === SCROLLING TEXT WALL === */
 
 .wall {
   position: relative;
@@ -55,7 +55,7 @@
   font-family: var(--font-sans, 'e-Ukraine', system-ui, -apple-system, sans-serif);
   font-size: clamp(0.95rem, 1.4vw, 1.25rem);
   font-weight: 300;
-  color: rgba(237, 232, 224, 0.38);
+  color: rgba(10, 10, 10, 0.38);
   letter-spacing: -0.01em;
   line-height: 2.1;
   text-align: center;

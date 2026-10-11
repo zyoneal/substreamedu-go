@@ -1,5 +1,5 @@
 import React from 'react';
-import Check from 'lucide-react/dist/esm/icons/check';
+import { Check } from 'lucide-react';
 import styles from '../styles/layout.module.css';
 
 interface PlanProps {
@@ -23,7 +23,7 @@ export const PlanCard: React.FC<PlanProps> = ({
     ctaText,
     ctaLink,
     highlight,
-    badge
+    badge,
 }) => {
     return (
         <div className={`${styles.card} ${highlight ? styles.highlight : ''}`}>
@@ -45,7 +45,7 @@ export const PlanCard: React.FC<PlanProps> = ({
             <ul className={styles.features}>
                 {features.map((feat, i) => (
                     <li key={i} className={styles.featureItem}>
-                        <Check size={16} className={styles.check} strokeWidth={2.5} />
+                        <Check size={16} className={styles.check} strokeWidth={2.5} aria-hidden="true" />
                         <span>{feat}</span>
                     </li>
                 ))}

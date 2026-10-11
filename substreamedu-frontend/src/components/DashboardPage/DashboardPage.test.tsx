@@ -58,6 +58,8 @@ describe('DashboardPage Bento Studio Redesign', () => {
             expect(screen.getByText('248')).toBeInTheDocument();
         });
 
+        expect(document.body.classList.contains('pixzen')).toBe(true);
+        expect(document.querySelector('.pixzenGrain')).toBeInTheDocument();
         expect(screen.getByText('24')).toBeInTheDocument();
         expect(screen.getByText(/Video-based learning/i)).toBeInTheDocument();
         expect(screen.getByText(/Learning with songs/i)).toBeInTheDocument();

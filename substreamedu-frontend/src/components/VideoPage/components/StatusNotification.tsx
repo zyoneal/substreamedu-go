@@ -45,8 +45,8 @@ export const StatusNotification: React.FC<StatusNotificationProps> = ({
       case 'info':
       default:
         return {
-          borderColor: 'rgba(255, 255, 255, 0.15)',
-          iconColor: '#888888',
+          borderColor: 'rgba(10, 10, 10, 0.14)',
+          iconColor: '#0a0a0a',
           iconPath: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
         };
     }
@@ -61,13 +61,13 @@ export const StatusNotification: React.FC<StatusNotificationProps> = ({
         alignItems: 'center',
         gap: '12px',
         padding: '14px 20px',
-        background: 'rgba(255, 255, 255, 0.03)',
+        background: 'var(--color-surface-elevated, #eae7e1)',
         border: `1px solid ${styles.borderColor}`,
         borderRadius: '12px',
-        color: '#ffffff',
+        color: 'var(--color-ink, #0a0a0a)',
         fontSize: '14.5px',
         fontWeight: 500,
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+        boxShadow: '0 8px 24px 0 rgba(10, 10, 10, 0.08)',
         animation: 'notificationFadeIn 0.2s ease-out',
         margin: '8px 0',
         width: '100%',
@@ -101,16 +101,22 @@ export const StatusNotification: React.FC<StatusNotificationProps> = ({
           style={{
             background: 'transparent',
             border: 'none',
-            color: '#9CA3AF',
+            color: '#8e8e8e',
             cursor: 'pointer',
             padding: '4px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'color 0.15s ease'
+            transition: 'color 0.2s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
-          onMouseOver={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
-          onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)'}
+          onMouseOver={(e) => {
+            e.currentTarget.style.color = '#0a0a0a';
+            e.currentTarget.style.transform = 'rotate(90deg)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.color = '#8e8e8e';
+            e.currentTarget.style.transform = 'rotate(0deg)';
+          }}
           aria-label="Close notification"
         >
           <svg

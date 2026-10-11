@@ -17,8 +17,13 @@ import { useIntl } from "react-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./css/LoginPage.module.css";
 import { constants } from "../../constants/constants";
+import { usePixzenTheme } from "../HomePage/pixzen/usePixzenTheme";
 
-const getPostLoginDestination = (locationState?: any): string => {
+interface LoginLocationState {
+    returnUrl?: string;
+}
+
+const getPostLoginDestination = (locationState?: unknown): string => {
     const pendingWord = GuestLimitService.getPendingSaveWord();
     if (pendingWord) {
         if (pendingWord.videoUrl) {
@@ -34,8 +39,9 @@ const getPostLoginDestination = (locationState?: any): string => {
             return "/videos";
         }
     }
-    if (locationState?.returnUrl) {
-        return locationState.returnUrl;
+    const state = locationState as LoginLocationState | null | undefined;
+    if (state?.returnUrl) {
+        return state.returnUrl;
     }
     return "/";
 };
@@ -167,6 +173,7 @@ const LoginPage: React.FC = () => {
     const location = useLocation();
     const { setIsLoggedIn } = useContext(AuthContext);
     const intl = useIntl();
+    usePixzenTheme();
 
     useEffect(() => {
         const savedEmail = localStorage.getItem('emailForOtp');
@@ -191,9 +198,10 @@ const LoginPage: React.FC = () => {
             localStorage.setItem('emailForOtp', email);
             localStorage.setItem('waitingForOtp', 'true');
             setOtpSent(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             debugError("Login error:", error);
-            const errorMessage = error?.message || intl.formatMessage({
+            const errMessage = error instanceof Error ? error.message : "";
+            const errorMessage = errMessage || intl.formatMessage({
                 id: "incorrectLogin",
                 defaultMessage: "Failed to send code. Please check your email."
             });
@@ -303,6 +311,7 @@ const LoginPage: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.25 }}
         >
+            <div className="pixzenGrain" aria-hidden="true" />
             <motion.div
                 className={styles.modal}
                 initial={{ opacity: 0, scale: 0.96, y: 12 }}
@@ -316,7 +325,7 @@ const LoginPage: React.FC = () => {
                         className={styles.closeButton}
                         aria-label="Close login"
                     >
-                        <X size={15} />
+                        <X size={18} strokeWidth={1.5} />
                     </button>
                 </div>
                 <div className={styles.content}>
