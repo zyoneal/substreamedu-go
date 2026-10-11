@@ -725,21 +725,24 @@
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .miniBlurArtifact {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  height: 52px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  min-height: 52px;
   box-sizing: border-box;
-  padding: 0 14px;
+  padding: 10px 14px;
   background: var(--gray-100);
   border: 1px solid var(--gray-200);
   border-radius: 8px;
@@ -749,6 +752,7 @@
 
 .miniBlurText {
   color: var(--cream-dim);
+  white-space: nowrap;
 }
 
 .miniBlurTarget {
@@ -756,6 +760,7 @@
   opacity: 0.55;
   color: var(--cream);
   padding: 0 2px;
+  white-space: nowrap;
   transition: filter 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
   user-select: none;
 }
@@ -771,10 +776,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  height: 52px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  min-height: 52px;
   box-sizing: border-box;
-  padding: 0 14px;
+  padding: 10px 14px;
   background: var(--gray-100);
   border: 1px solid var(--gray-200);
   border-radius: 8px;
@@ -784,15 +790,23 @@
 
 .miniSelectionText {
   color: var(--cream-dim);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .miniSelectionHighlight {
-  background: rgba(10, 10, 10, 0.18);
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  background: rgba(10, 10, 10, 0.14);
   color: var(--white);
-  padding: 1px 4px;
+  padding: 2px 5px;
   border-radius: 3px;
   position: relative;
   border-bottom: 1.5px solid var(--accent);
+  line-height: 1.2;
 }
 
 .miniSelectionCursor {
@@ -800,8 +814,8 @@
   width: 2px;
   height: 12px;
   background: var(--accent);
-  vertical-align: -1px;
-  margin-left: 2px;
+  margin-left: 3px;
+  flex-shrink: 0;
   animation: cursorBlink 1s infinite;
 }
 
@@ -1105,21 +1119,25 @@
 }
 
 .selectedPhrase {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
   background: rgba(10, 10, 10, 0.15);
   color: var(--white);
   border-bottom: 2px solid var(--accent);
-  padding: 2px 4px;
-  border-radius: 2px;
+  padding: 2px 5px;
+  border-radius: 3px;
   position: relative;
+  line-height: 1.25;
 }
 
 .selectionCursor {
   display: inline-block;
   width: 2px;
-  height: 18px;
+  height: 16px;
   background: var(--accent);
-  vertical-align: text-bottom;
-  margin-left: 2px;
+  margin-left: 3px;
+  flex-shrink: 0;
   animation: cursorBlink 1s infinite;
 }
 
