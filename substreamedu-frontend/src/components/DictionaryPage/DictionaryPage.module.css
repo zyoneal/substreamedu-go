@@ -1,20 +1,20 @@
 /* ==========================================================================
-   SUBSTREAMEDU — DICTIONARY PAGE (APPLE-MINIMALIST WIDESCREEN DESIGN)
+   SUBSTREAMEDU — DICTIONARY PAGE (PIXZEN MONOCHROME EDITORIAL DESIGN)
    ========================================================================== */
 
 .dictionaryContainer {
-    --bg-page: var(--color-canvas, #0d0c0b);
-    --card-bg: rgba(255, 255, 255, 0.032);
-    --card-border: rgba(255, 255, 255, 0.065);
-    --card-border-hover: rgba(255, 255, 255, 0.14);
-    --text-primary: var(--color-ink, #ede8e0);
-    --text-secondary: var(--color-body, #9e988f);
-    --text-meta: var(--color-mute, #7e7972);
-    --accent-indigo: var(--accent, #faf92f);
-    --accent-yellow: var(--accent, #faf92f);
-    --radius-lg: 22px;
+    --bg-page: #f5f3ef;
+    --card-bg: #eae7e1;
+    --card-border: rgba(10, 10, 10, 0.12);
+    --card-border-hover: rgba(10, 10, 10, 0.25);
+    --text-primary: #0a0a0a;
+    --text-secondary: #4a4a48;
+    --text-meta: #8e8e8e;
+    --accent-indigo: #0a0a0a;
+    --accent-yellow: #0a0a0a;
+    --radius-lg: 20px;
     --radius-md: 12px;
-    --radius-sm: 10px;
+    --radius-sm: 8px;
 
     min-height: 100vh;
     padding: 84px 48px 36px;
@@ -24,7 +24,7 @@
     position: relative;
     overflow-x: hidden;
     color: var(--text-primary);
-    background-color: var(--color-canvas, #0d0c0b);
+    background-color: #f5f3ef;
     font-family: var(--font-body);
     box-sizing: border-box;
 }
@@ -52,12 +52,6 @@
     }
 }
 
-/* Ambient Background Lights (Disabled for pure Apple minimalism) */
-.ambientGlow,
-.ambientGlowSecond {
-    display: none;
-}
-
 .contentWrapper {
     display: flex;
     flex-direction: column;
@@ -70,7 +64,7 @@
 }
 
 /* ==========================================================================
-   APPLE-MINIMALIST TOP BAR
+   EDITORIAL TOP BAR
    ========================================================================== */
 
 .topBar {
@@ -84,17 +78,17 @@
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
-    font-size: clamp(1.5rem, 2.2vw, 1.85rem);
-    font-weight: 600;
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    font-weight: 700;
     color: var(--text-primary);
     margin: 0;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
+    letter-spacing: -0.032em;
+    line-height: 1.15;
 }
 
 .accent {
-    font-weight: 600;
+    font-weight: 700;
     font-style: normal;
     color: var(--text-primary);
 }
@@ -109,8 +103,8 @@
 /* Segmented Toggle */
 .segmentedControl {
     display: inline-flex;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     padding: 4px;
     border-radius: 9999px;
     gap: 4px;
@@ -123,8 +117,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13.5px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--text-secondary);
     transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     background: transparent;
@@ -137,9 +131,9 @@
 }
 
 .segmentedButtonActive {
-    background: rgba(255, 255, 255, 0.09) !important;
-    color: var(--text-primary) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: #0a0a0a !important;
+    color: #f5f3ef !important;
+    border-color: #0a0a0a !important;
 }
 
 /* Export Button */
@@ -148,37 +142,34 @@
     align-items: center;
     gap: 8px;
     padding: 9px 18px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-primary);
-    font-size: 13.5px;
-    font-weight: 500;
     border-radius: 9999px;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #f5f3ef;
+    background: #0a0a0a;
+    border: 1px solid #0a0a0a;
     cursor: pointer;
-    white-space: nowrap;
+    transition: transform 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .exportButton:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
-}
-
-.exportButton:active:not(:disabled) {
-    transform: scale(0.97);
+    background: #222222;
+    transform: translateY(-1px);
 }
 
 .exportButton:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
 .spinner {
     width: 14px;
     height: 14px;
+    border: 2px solid rgba(245, 243, 239, 0.3);
+    border-top-color: #f5f3ef;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-top-color: var(--text-primary);
     animation: spin 0.8s linear infinite;
 }
 
@@ -187,15 +178,15 @@
 }
 
 /* ==========================================================================
-   TOP STATS HERO BENTO (3 APPLE-MINIMALIST TELEMETRY CARDS)
+   TELEMETRY CARDS (HERO BAR)
    ========================================================================== */
 
 .statsGrid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 16px;
     width: 100%;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
 }
 
 @media (max-width: 768px) {
@@ -206,20 +197,20 @@
 }
 
 .statCard {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: var(--radius-lg);
-    padding: 24px 30px;
+    padding: 24px 28px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 16px;
+    gap: 14px;
     transition: background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .statCard:hover {
-    background: rgba(255, 255, 255, 0.048);
-    border-color: var(--card-border-hover);
+    background: #e3dfd8;
+    border-color: rgba(10, 10, 10, 0.25);
 }
 
 .statHeader {
@@ -230,15 +221,16 @@
 }
 
 .statLabel {
-    font-size: 14.5px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    letter-spacing: -0.01em;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-meta);
 }
 
 .statIcon {
-    color: var(--text-meta);
-    opacity: 0.75;
+    color: var(--text-primary);
+    opacity: 0.85;
     flex-shrink: 0;
 }
 
@@ -250,18 +242,18 @@
 }
 
 .statValue {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
-    font-size: 40px;
-    font-weight: 600;
-    letter-spacing: -0.04em;
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
     color: var(--text-primary);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
 .statSubtext {
-    font-size: 14px;
-    color: var(--text-meta);
+    font-size: 13.5px;
+    color: var(--text-secondary);
     font-weight: 400;
 }
 
@@ -271,11 +263,11 @@
 
 .controlsContainer {
     width: 100%;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: var(--radius-lg);
-    padding: 14px 22px;
-    margin-bottom: 18px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -296,7 +288,7 @@
     gap: 7px;
     padding: 7px 14px;
     border-radius: 9999px;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-secondary);
     background: transparent;
@@ -308,16 +300,15 @@
 
 .categoryFilterBtn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(10, 10, 10, 0.05);
 }
 
 .categoryFilterBtnActive {
-    background: rgba(255, 255, 255, 0.085) !important;
-    color: var(--text-primary) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: #0a0a0a !important;
+    color: #f5f3ef !important;
+    border-color: #0a0a0a !important;
 }
 
-/* Right Actions (Search + Layout Toggle) */
 .rightActionsGroup {
     display: flex;
     align-items: center;
@@ -332,10 +323,9 @@
     }
 }
 
-/* Search Bar */
 .searchWrapper {
     position: relative;
-    width: 320px;
+    width: 300px;
     max-width: 100%;
 }
 
@@ -369,10 +359,10 @@
     padding-top: 8px !important;
     padding-bottom: 8px !important;
     height: 38px !important;
-    background: rgba(255, 255, 255, 0.035) !important;
-    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    background: #f5f3ef !important;
+    border: 1px solid rgba(10, 10, 10, 0.12) !important;
     border-radius: 9999px !important;
-    color: var(--text-primary) !important;
+    color: #0a0a0a !important;
     font-size: 13.5px !important;
     font-weight: 400 !important;
     transition: background-color 0.2s ease, border-color 0.2s ease !important;
@@ -384,13 +374,13 @@
 }
 
 .dictionarySearch:focus {
-    background: rgba(255, 255, 255, 0.055) !important;
-    border-color: rgba(255, 255, 255, 0.18) !important;
+    background: #ffffff !important;
+    border-color: #0a0a0a !important;
     box-shadow: none !important;
 }
 
 .dictionarySearch:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
+    outline: 2px solid rgba(10, 10, 10, 0.4);
 }
 
 .searchClearBtn {
@@ -400,25 +390,25 @@
     transform: translateY(-50%);
     background: transparent;
     border: none;
-    color: var(--text-meta);
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 4px;
     border-radius: 50%;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: color 0.15s ease, transform 0.2s ease;
 }
 
 .searchClearBtn:hover {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.08);
+    color: #0a0a0a;
+    transform: translateY(-50%) rotate(90deg);
 }
 
 .layoutToggle {
     display: inline-flex;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
     border-radius: 9999px;
     padding: 3px;
     gap: 2px;
@@ -442,13 +432,13 @@
 }
 
 .layoutButtonActive {
-    background: rgba(255, 255, 255, 0.09) !important;
-    color: var(--text-primary) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: #0a0a0a !important;
+    color: #f5f3ef !important;
+    border-color: #0a0a0a !important;
 }
 
 /* ==========================================================================
-   MAIN CONTENT AREA & COLLECTION CARDS (GRID VIEW)
+   MAIN CONTENT AREA & COLLECTION CARDS
    ========================================================================== */
 
 .mainContentArea {
@@ -478,19 +468,20 @@
 }
 
 .groupCard {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
-    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
 }
 
 .groupCard:hover {
-    background: rgba(255, 255, 255, 0.048);
-    border-color: var(--card-border-hover);
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.25);
+    box-shadow: 0 12px 30px rgba(10, 10, 10, 0.06);
 }
 
 .groupCard:active {
@@ -533,32 +524,41 @@
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.055);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-primary);
+    color: #0a0a0a;
     flex-shrink: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.groupCard:hover .sourceIconBox {
+    background: #0a0a0a;
+    color: #f5f3ef;
 }
 
 .sourceIconBoxSmall {
     width: 34px;
     height: 34px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.055);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-primary);
+    color: #0a0a0a;
     flex-shrink: 0;
 }
 
 .groupWordCountPill {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    color: var(--text-meta);
-    background: rgba(255, 255, 255, 0.04);
-    padding: 4px 11px;
+    color: var(--text-secondary);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
+    padding: 3px 10px;
     border-radius: 9999px;
     white-space: nowrap;
     flex-shrink: 0;
@@ -566,8 +566,8 @@
 }
 
 .groupTitle {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
-    font-size: 18.5px;
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.02em;
@@ -592,18 +592,18 @@
 }
 
 .wordChip {
-    padding: 4px 11px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 4px 10px;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     border-radius: 9999px;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 400;
     color: var(--text-secondary);
 }
 
 .moreWordsChip {
     padding: 4px 8px;
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--text-meta);
     display: flex;
     align-items: center;
@@ -617,8 +617,8 @@
     width: 32px;
     height: 32px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     color: var(--text-secondary);
     display: flex;
     align-items: center;
@@ -640,8 +640,8 @@
 }
 
 .deleteGroupBtn:hover {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border-color: rgba(239, 68, 68, 0.35) !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
     color: #ef4444 !important;
     transform: scale(1.05);
 }
@@ -658,8 +658,8 @@
 }
 
 .groupListItem {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: 16px;
     transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
@@ -667,8 +667,8 @@
 }
 
 .groupListItem:hover {
-    background: rgba(255, 255, 255, 0.048);
-    border-color: var(--card-border-hover);
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.25);
 }
 
 .groupListItemLink {
@@ -719,11 +719,11 @@
 }
 
 .wordCard {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: var(--radius-lg);
-    padding: 24px 30px;
-    transition: background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: 24px 28px;
+    transition: background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     display: grid;
     grid-template-columns: 320px 1fr auto;
@@ -741,11 +741,11 @@
 }
 
 .wordCard:hover {
-    background: rgba(255, 255, 255, 0.048);
-    border-color: var(--card-border-hover);
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.25);
+    box-shadow: 0 12px 30px rgba(10, 10, 10, 0.06);
 }
 
-/* Left Column: Word & Meaning */
 .wordPrimaryCol {
     display: flex;
     flex-direction: column;
@@ -761,9 +761,9 @@
 }
 
 .wordClickableTitle {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
+    font-family: var(--font-display, 'Satoshi', sans-serif);
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.02em;
     background: transparent;
@@ -778,7 +778,7 @@
 }
 
 .wordClickableTitle:hover {
-    color: var(--accent-yellow);
+    color: #4a4a48;
 }
 
 .soundWaveIcon {
@@ -819,7 +819,6 @@
     line-height: 1.4;
 }
 
-/* Middle Column: Context Sentence & Tags */
 .wordContextCol {
     display: flex;
     flex-direction: column;
@@ -828,21 +827,23 @@
 }
 
 .contextQuoteBox {
-    background: rgba(255, 255, 255, 0.028);
-    border: 1px solid rgba(255, 255, 255, 0.055);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
+    border-left: 3px solid #0a0a0a;
     padding: 12px 16px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 14px;
     color: var(--text-secondary);
     line-height: 1.5;
 }
 
 .contextHighlight {
-    color: var(--text-primary);
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: rgba(250, 249, 47, 0.55);
-    text-underline-offset: 3px;
+    color: #0a0a0a;
+    font-weight: 700;
+    background: rgba(10, 10, 10, 0.08);
+    padding: 2px 4px;
+    border-radius: 4px;
+    text-decoration: none;
 }
 
 .wordTagsRow {
@@ -854,14 +855,13 @@
 .tagPill {
     font-size: 12px;
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     padding: 2px 10px;
     border-radius: 9999px;
     font-weight: 500;
 }
 
-/* Right Column: Mastery & Actions */
 .wordActionsCol {
     display: flex;
     align-items: center;
@@ -874,40 +874,48 @@
         justify-content: space-between;
         width: 100%;
         padding-top: 12px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-top: 1px solid rgba(10, 10, 10, 0.08);
     }
 }
 
 .masteryBadge {
-    font-size: 12.5px;
-    font-weight: 500;
-    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 11px;
     border-radius: 9999px;
 }
 
 .masteredBadge {
-    background: rgba(34, 197, 94, 0.1);
-    color: #4ade80;
+    background: rgba(21, 128, 61, 0.1);
+    color: #15803d;
+    border: 1px solid rgba(21, 128, 61, 0.2);
 }
 
 .advancedBadge {
-    background: rgba(255, 255, 255, 0.07);
-    color: var(--text-primary);
+    background: rgba(3, 105, 161, 0.1);
+    color: #0369a1;
+    border: 1px solid rgba(3, 105, 161, 0.2);
 }
 
 .intermediateBadge {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-secondary);
+    background: rgba(202, 138, 4, 0.1);
+    color: #ca8a04;
+    border: 1px solid rgba(202, 138, 4, 0.2);
 }
 
 .beginnerBadge {
-    background: rgba(255, 255, 255, 0.035);
-    color: var(--text-meta);
+    background: #f5f3ef;
+    color: #4a4a48;
+    border: 1px solid rgba(10, 10, 10, 0.08);
 }
 
 .sourcePill {
-    font-size: 13px;
-    color: var(--text-meta);
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
+    padding: 3px 10px;
+    border-radius: 9999px;
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -923,8 +931,8 @@
     width: 34px;
     height: 34px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     color: var(--text-secondary);
     display: flex;
     align-items: center;
@@ -936,13 +944,13 @@
 
 .actionIconBtn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
+    background: #eae7e1;
+    border-color: rgba(10, 10, 10, 0.2);
 }
 
 .actionIconBtnDelete:hover {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border-color: rgba(239, 68, 68, 0.35) !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
     color: #ef4444 !important;
 }
 
@@ -963,8 +971,8 @@
     min-width: 38px;
     padding: 0 14px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
     color: var(--text-secondary);
     font-size: 13px;
     font-weight: 500;
@@ -977,8 +985,8 @@
 }
 
 .paginationBtn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.16);
+    background: #eae7e1;
+    border-color: rgba(10, 10, 10, 0.2);
     color: var(--text-primary);
 }
 
@@ -988,9 +996,9 @@
 }
 
 .paginationBtnActive {
-    background: var(--text-primary) !important;
-    border-color: var(--text-primary) !important;
-    color: var(--color-canvas, #0d0c0b) !important;
+    background: #0a0a0a !important;
+    border-color: #0a0a0a !important;
+    color: #f5f3ef !important;
 }
 
 .paginationEllipsis {
@@ -1015,8 +1023,8 @@
 }
 
 .modalInput {
-    background: rgba(255, 255, 255, 0.035) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(10, 10, 10, 0.15) !important;
     border-radius: 12px !important;
     color: var(--text-primary) !important;
     font-size: 14px !important;
@@ -1025,20 +1033,20 @@
 }
 
 .modalInput:focus {
-    border-color: rgba(255, 255, 255, 0.24) !important;
-    background: rgba(255, 255, 255, 0.055) !important;
+    border-color: #0a0a0a !important;
+    background: #ffffff !important;
 }
 
 .modalInput:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
+    outline: 2px solid rgba(10, 10, 10, 0.4);
 }
 
 .modalCancelBtn {
     padding: 9px 18px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--text-primary);
     font-size: 13.5px;
     font-weight: 500;
     cursor: pointer;
@@ -1046,24 +1054,23 @@
 }
 
 .modalCancelBtn:hover {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.08);
+    background: #e3dfd8;
 }
 
 .modalSaveBtn {
     padding: 9px 20px;
     border-radius: 9999px;
-    background: var(--text-primary);
+    background: #0a0a0a;
     border: none;
-    color: var(--color-canvas, #0d0c0b);
+    color: #f5f3ef;
     font-size: 13.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
 }
 
 .modalSaveBtn:hover {
-    opacity: 0.92;
+    background: #222222;
 }
 
 .modalSaveBtn:active {
@@ -1071,15 +1078,15 @@
 }
 
 /* ==========================================================================
-   EMPTY STATE (PROPORTIONAL VIEWPORT FILL)
+   EMPTY STATE
    ========================================================================== */
 
 .emptyState {
     width: 100%;
     flex: 1;
     min-height: 380px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: var(--radius-lg);
     padding: 56px 32px;
     display: flex;
@@ -1094,18 +1101,19 @@
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.045);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
+    color: #0a0a0a;
     margin-bottom: 18px;
 }
 
 .emptyStateTitle {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
+    font-family: var(--font-display, 'Satoshi', sans-serif);
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 8px 0;
     letter-spacing: -0.02em;
@@ -1133,18 +1141,18 @@
     gap: 8px;
     padding: 11px 24px;
     border-radius: 9999px;
-    background: var(--text-primary);
-    color: var(--color-canvas, #0d0c0b);
+    background: #0a0a0a;
+    color: #f5f3ef;
     font-weight: 600;
     font-size: 14px;
     border: none;
     cursor: pointer;
     text-decoration: none;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
 }
 
 .emptyStateActionPrimary:hover {
-    opacity: 0.92;
+    background: #222222;
 }
 
 .emptyStateActionPrimary:active {
@@ -1157,8 +1165,8 @@
     gap: 8px;
     padding: 10px 22px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     color: var(--text-primary);
     font-weight: 500;
     font-size: 14px;
@@ -1167,8 +1175,8 @@
 }
 
 .emptyStateActionSecondary:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.25);
 }
 
 /* ==========================================================================
@@ -1190,8 +1198,8 @@
     width: 100%;
     padding: 24px 30px;
     border-radius: var(--radius-lg);
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
     margin-bottom: 18px;
 }
 
@@ -1211,9 +1219,9 @@
 }
 
 .categorizeBannerTitle {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
+    font-family: var(--font-display, 'Satoshi', sans-serif);
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.02em;
     margin: 0;
@@ -1229,7 +1237,7 @@
 .categorizeProgressBar {
     width: 100%;
     height: 4px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 10, 0.08);
     border-radius: 9999px;
     overflow: hidden;
     margin-top: 8px;
@@ -1237,7 +1245,7 @@
 
 .categorizeProgressFill {
     height: 100%;
-    background: var(--text-primary);
+    background: #0a0a0a;
     transition: width 0.3s ease;
 }
 
@@ -1253,19 +1261,19 @@
     align-items: center;
     gap: 8px;
     padding: 11px 22px;
-    background: var(--text-primary);
-    color: var(--color-canvas, #0d0c0b);
+    background: #0a0a0a;
+    color: #f5f3ef;
     font-weight: 600;
     font-size: 14px;
     border-radius: 9999px;
     border: none;
     cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    transition: transform 0.15s ease, background-color 0.15s ease;
     white-space: nowrap;
 }
 
 .categorizeBtn:hover:not(:disabled) {
-    opacity: 0.92;
+    background: #222222;
 }
 
 .categorizeBtn:active:not(:disabled) {
@@ -1283,9 +1291,9 @@
     gap: 8px;
     padding: 8px 16px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--text-primary);
     font-size: 13.5px;
     font-weight: 500;
     cursor: pointer;
@@ -1296,14 +1304,14 @@
 
 .backToCategoriesBtn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.25);
 }
 
 .categoryHeading {
-    font-family: var(--font-display, 'e-Ukraine', sans-serif);
+    font-family: var(--font-display, 'Satoshi', sans-serif);
     font-size: 22px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
     display: flex;
     align-items: center;
@@ -1312,11 +1320,12 @@
 }
 
 .categoryCountBadge {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 500;
-    padding: 4px 12px;
+    padding: 3px 11px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.05);
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
 }

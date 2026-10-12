@@ -325,7 +325,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
 
         let nextSessionWords = sessionWords;
         const wordText = word.highlightedText || '';
-        if (!sessionWords.find((i: any) => i.word === wordText)) {
+        if (!sessionWords.find((i) => i.word === wordText)) {
             nextSessionWords = [...sessionWords, {
                 word: wordText,
                 translation: word.translatedText || '',
@@ -342,7 +342,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         const newAnsweredIds = new Set(answeredIds);
         newAnsweredIds.add(word.id);
 
-        let updatedList = [...reviewWords];
+        const updatedList = [...reviewWords];
         const currentRef = updatedList[currentIndex];
 
         // Remove current from list
@@ -432,7 +432,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         setGenerationError(null);
 
         try {
-            const apiWords = sessionWords.map((w: any) => ({
+            const apiWords = sessionWords.map((w) => ({
                 word: w.word,
                 meaning: w.definition
                     ? (w.translation && w.translation !== w.definition
@@ -456,9 +456,10 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
             } else {
                 setGenerationError('empty_response');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to generate session content:', error);
-            setGenerationError(error?.message || 'Failed to generate session content');
+            const message = error instanceof Error ? error.message : 'Failed to generate session content';
+            setGenerationError(message);
         } finally {
             setIsGeneratingText(false);
         }

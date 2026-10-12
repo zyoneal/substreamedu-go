@@ -31,6 +31,7 @@ import { debugError } from '../../utils/debug';
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Modal } from "../ui/modal";
+import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import styles from './DictionaryPage.module.css';
 
 interface DictionaryResource {
@@ -87,7 +88,7 @@ const getHighlightedParts = (text: string, term: string): (string | JSX.Element)
 interface SourceCategory {
     type: 'youtube' | 'movies' | 'songs' | 'text' | 'other';
     name: string;
-    icon: React.ComponentType<any>;
+    icon: React.ElementType;
     tag: string;
     color: string;
     resources: DictionaryResource[];
@@ -112,7 +113,7 @@ const getSourceType = (resourceName: string): 'youtube' | 'movies' | 'songs' | '
     return 'songs';
 };
 
-const getSourceIcon = (sourceType: string): React.ComponentType<any> => {
+const getSourceIcon = (sourceType: string): React.ElementType => {
     switch (sourceType) {
         case 'youtube': return Play;
         case 'movies': return Film;
@@ -123,6 +124,7 @@ const getSourceIcon = (sourceType: string): React.ComponentType<any> => {
 };
 
 const DictionaryPage: React.FC = () => {
+    usePixzenTheme();
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -268,8 +270,9 @@ const DictionaryPage: React.FC = () => {
         setIsLoadingCategoryWords(true);
         try {
             const resp = await DictionaryService.fetchDictionaryItemsByCategory(catName, 0, 100);
-            const normalizedItems: DictionaryItem[] = (resp.items || []).map((item: any) => ({
-                id: item.id,
+            const rawItems = (resp.items || []) as Array<Partial<DictionaryItem> & { source?: string; word?: string; translation?: string; repetitionLevel?: number; nextRepetitionDate?: string; status?: string }>;
+            const normalizedItems: DictionaryItem[] = rawItems.map((item) => ({
+                id: item.id ?? 0,
                 resourceName: item.resourceName || item.source || 'vault',
                 highlightedText: item.highlightedText || item.word || 'Untitled Word',
                 translatedText: item.translatedText || item.translation || null,
@@ -1027,8 +1030,7 @@ const DictionaryPage: React.FC = () => {
             animate="visible"
             variants={containerVariants}
         >
-            <div className={styles.ambientGlow} />
-            <div className={`${styles.ambientGlow} ${styles.ambientGlowSecond}`} />
+            <div className="pixzenGrain" aria-hidden="true" />
 
             <div className={styles.contentWrapper}>
                 {/* Apple-Minimalist Top Bar */}
