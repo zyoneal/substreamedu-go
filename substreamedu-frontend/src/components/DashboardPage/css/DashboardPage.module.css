@@ -474,80 +474,279 @@
     margin: 0;
 }
 
+.cardSongs,
+.cardTexts,
+.cardSubtitles,
+.cardTelegram {
+    /* Semantic format identifiers */
+}
+
 /* ==========================================================================
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE BREAKPOINTS (HABIT-FIRST LAYOUT)
    ========================================================================== */
 
 @media (max-width: 1180px) {
     .dashboardContainer {
-        padding: 88px 28px 48px;
+        padding: 88px 24px 48px;
     }
 
     .bentoGrid {
+        grid-template-columns: repeat(12, 1fr);
         grid-template-rows: auto;
         max-height: none;
+        gap: 16px;
     }
 
-    .cardStreak,
-    .cardReview {
+    /* Habit & Daily Telemetry First */
+    .cardStreak {
+        order: 1;
         grid-column: span 6;
         grid-row: auto;
     }
 
-    .cardVault,
+    .cardReview {
+        order: 2;
+        grid-column: span 6;
+        grid-row: auto;
+    }
+
+    /* Hero Video */
     .cardHeroVideo {
+        order: 3;
         grid-column: span 12;
         grid-row: auto;
     }
 
-    .cardFormat {
+    /* Learning Studio Formats (2x2 on Tablet) */
+    .cardSongs {
+        order: 4;
         grid-column: span 6;
+    }
+
+    .cardTexts {
+        order: 5;
+        grid-column: span 6;
+    }
+
+    .cardSubtitles {
+        order: 6;
+        grid-column: span 6;
+    }
+
+    .cardTelegram {
+        order: 7;
+        grid-column: span 6;
+    }
+
+    /* Vault Summary */
+    .cardVault {
+        order: 8;
+        grid-column: span 12;
+        grid-row: auto;
     }
 }
 
 @media (max-width: 768px) {
     .dashboardContainer {
-        padding: 84px 16px 64px;
+        padding: 76px 14px 56px;
         justify-content: flex-start;
     }
 
     .headerSection {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
+    }
+
+    .pageTitle {
+        font-size: 26px;
+        letter-spacing: -0.025em;
+        line-height: 1.18;
     }
 
     .bentoGrid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         grid-template-rows: auto;
-        gap: 12px;
+        gap: 10px;
         max-height: none;
     }
 
-    .cardStreak,
-    .cardReview,
-    .cardVault,
-    .cardHeroVideo,
-    .cardFormat {
-        grid-column: span 1;
+    /* Habit-First Order: Daily retention at the top */
+    .cardStreak {
+        order: 1;
+        grid-column: span 2;
         grid-row: auto;
-        padding: 20px 22px;
+        padding: 18px 20px;
         border-radius: 20px;
     }
 
+    .cardReview {
+        order: 2;
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    /* Prominent Hero CTA for Start Review on mobile */
+    .cardReview .inlineAction {
+        background: #0a0a0a;
+        color: #f5f3ef;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        box-shadow: 0 4px 14px rgba(10, 10, 10, 0.12);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cardReview:hover .inlineAction {
+        background: #262626;
+        color: #f5f3ef;
+    }
+
+    /* Featured / Resume Video format */
     .cardHeroVideo {
+        order: 3;
+        grid-column: span 2;
+        grid-row: auto;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 16px;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .heroCardBody {
+        gap: 10px;
     }
 
     .heroTitle {
         font-size: 20px;
     }
 
+    .heroDescription {
+        font-size: 13.5px;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .heroFooter {
+        width: 100%;
+    }
+
+    .primaryPillBtn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 11.5px;
+    }
+
+    /* Compact 2x2 Format Grid */
+    .cardFormat {
+        grid-column: span 1;
+        grid-row: auto;
+        padding: 14px;
+        border-radius: 18px;
+        min-height: 108px;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .cardSongs {
+        order: 4;
+    }
+
+    .cardTexts {
+        order: 5;
+    }
+
+    .cardSubtitles {
+        order: 6;
+    }
+
+    .cardTelegram {
+        order: 7;
+    }
+
+    .formatTop {
+        position: relative;
+        width: 100%;
+    }
+
+    .formatHeaderLeft {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .iconSquircle {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+
+    .iconSquircle svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .quietChevron {
+        position: absolute;
+        top: 2px;
+        right: 0;
+        opacity: 0.45;
+        width: 15px;
+        height: 15px;
+    }
+
     .cardTitle {
-        font-size: 18px;
+        font-size: 14.5px;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
+        word-break: break-word;
+    }
+
+    /* Hide verbose 3-line essays on mobile tiles to prevent massive vertical bloat */
+    .cardDescription {
+        display: none;
+    }
+
+    /* Vocabulary Vault at bottom */
+    .cardVault {
+        order: 8;
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 18px 20px;
+        border-radius: 20px;
     }
 
     .metricValue {
         font-size: 34px;
+    }
+}
+
+@media (max-width: 360px) {
+    .bentoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .cardFormat {
+        grid-column: span 1;
+        min-height: auto;
+    }
+
+    .formatHeaderLeft {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .quietChevron {
+        position: static;
     }
 }

@@ -240,7 +240,7 @@ const DashboardPage: React.FC = () => {
                     {/* ROW 2, COLS 1–4: SONGS & LYRICS (SPAN 4) */}
                     <MotionLink
                         to="/songs"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardSongs}`}
                         variants={itemVariants}
                     >
                         <div className={styles.formatTop}>
@@ -266,7 +266,7 @@ const DashboardPage: React.FC = () => {
                     {/* ROW 2, COLS 5–8: TEXTS & AI (SPAN 4) */}
                     <MotionLink
                         to="/text-paste"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardTexts}`}
                         variants={itemVariants}
                     >
                         <div className={styles.formatTop}>
@@ -360,7 +360,7 @@ const DashboardPage: React.FC = () => {
                     {/* ROW 3, COLS 1–4: SUBTITLES (SPAN 4) */}
                     <MotionLink
                         to="/subtitles"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardSubtitles}`}
                         variants={itemVariants}
                     >
                         <div className={styles.formatTop}>
@@ -386,7 +386,7 @@ const DashboardPage: React.FC = () => {
                     {/* ROW 3, COLS 5–8: TELEGRAM BOT (SPAN 4) */}
                     <MotionLink
                         to="/telegramBot"
-                        className={`${styles.bentoCard} ${styles.cardFormat}`}
+                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardTelegram}`}
                         variants={itemVariants}
                     >
                         <div className={styles.formatTop}>
