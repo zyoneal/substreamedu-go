@@ -8,7 +8,7 @@ interface SEOProps {
   type?: 'website' | 'article' | 'profile';
   image?: string;
   author?: string;
-  jsonLd?: Record<string, any>;
+  jsonLd?: Record<string, unknown>;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -21,7 +21,7 @@ export const SEO: React.FC<SEOProps> = ({
   jsonLd,
 }) => {
   const siteName = 'SubStreamEdu';
-  const fullTitle = `${title} | ${siteName}`;
+  const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
   return (
     <Helmet>

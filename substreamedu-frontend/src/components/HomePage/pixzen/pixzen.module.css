@@ -1,4 +1,19 @@
-/* Typing headline */
+/* Headline cycler (zero-CLS compositor animation) */
+.headlineCycler {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.15em;
+  position: relative;
+  vertical-align: middle;
+}
+
+.headlineItem {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Typing headline legacy classes */
 .typing {
   display: inline-flex;
   align-items: baseline;

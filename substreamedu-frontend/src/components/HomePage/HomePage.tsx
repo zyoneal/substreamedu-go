@@ -18,7 +18,6 @@ import {
   BookmarkCheck,
   GraduationCap,
   CreditCard,
-  Laptop,
   Send,
   Sliders,
   Volume2,
@@ -433,8 +432,8 @@ const HomePage: React.FC = () => {
       <motion.div className={styles.scrollProgressBar} style={{ scaleX: scrollProgressSpring }} aria-hidden="true" />
 
       <SEO
-        title="SubStreamEdu | Learn English with Movies, Music & Interactive Texts"
-        description="Learn English through movies, synchronized song lyrics, subtitle transcripts, and custom or AI texts. Highlight any word or phrase with your cursor to save directly to your dictionary."
+        title="Learn English with Movies & Music | SubStreamEdu"
+        description="Learn English with movies, music, and interactive subtitles. Highlight any phrase to build your smart spaced-repetition dictionary."
         canonicalUrl="https://substreamedu.com/"
         jsonLd={organizationJsonLd}
       />

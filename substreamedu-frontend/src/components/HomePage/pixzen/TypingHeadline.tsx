@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './pixzen.module.css';
 
 interface TypingHeadlineProps {
@@ -10,41 +11,38 @@ interface TypingHeadlineProps {
 
 const TypingHeadline: React.FC<TypingHeadlineProps> = ({
   phrases,
-  typeMs = 85,
-  deleteMs = 45,
-  holdMs = 1800,
+  holdMs = 2800,
 }) => {
   const reduced =
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [length, setLength] = useState(reduced ? phrases[0].length : 0);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (reduced) return undefined;
-    const phrase = phrases[phraseIndex];
-    let delay = deleting ? deleteMs : typeMs;
-    if (!deleting && length === phrase.length) delay = holdMs;
+    if (reduced || phrases.length <= 1) return undefined;
+    const interval = window.setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % phrases.length);
+    }, holdMs);
+    return () => window.clearInterval(interval);
+  }, [reduced, phrases, holdMs]);
 
-    const timer = window.setTimeout(() => {
-      if (!deleting && length === phrase.length) {
-        setDeleting(true);
-      } else if (deleting && length === 0) {
-        setDeleting(false);
-        setPhraseIndex((i) => (i + 1) % phrases.length);
-      } else {
-        setLength((l) => l + (deleting ? -1 : 1));
-      }
-    }, delay);
-    return () => window.clearTimeout(timer);
-  }, [reduced, phrases, phraseIndex, length, deleting, typeMs, deleteMs, holdMs]);
-
+  // Initial render displays phrases[0] immediately — zero CLS, instant FCP/LCP
   return (
-    <span className={styles.typing}>
-      <span aria-hidden="true">{phrases[phraseIndex].slice(0, length)}</span>
-      <span className={styles.cursor} aria-hidden="true" />
+    <span className={styles.headlineCycler}>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={phrases[phraseIndex]}
+          className={styles.headlineItem}
+          initial={reduced ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduced ? undefined : { opacity: 0, y: -14 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {phrases[phraseIndex]}
+        </motion.span>
+      </AnimatePresence>
     </span>
   );
 };

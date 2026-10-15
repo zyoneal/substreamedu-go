@@ -258,7 +258,11 @@
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 7.6vw, 7.5rem);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.1;
+  min-height: 1.15em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   letter-spacing: -0.045em;
   color: var(--cream);
   margin: 0 auto 36px;
@@ -2114,11 +2118,14 @@
 
   .hero {
     padding: 100px 20px 48px;
-    min-height: auto;
+    min-height: calc(100svh - 56px);
   }
 
   .heroTitle {
-    font-size: clamp(1.9rem, 9vw, 3.4rem);
+    font-size: clamp(1.85rem, 8.5vw, 3.2rem);
+    min-height: 1.2em;
+    white-space: normal;
+    text-wrap: balance;
     margin-bottom: 20px;
   }
 
