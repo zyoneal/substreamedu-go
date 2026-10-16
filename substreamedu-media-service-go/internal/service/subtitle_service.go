@@ -2,18 +2,19 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/substreamedu/substreamedu-media-service/internal/dto"
 	"github.com/substreamedu/substreamedu-media-service/internal/model"
 	"github.com/substreamedu/substreamedu-media-service/internal/parser"
 	"github.com/substreamedu/substreamedu-media-service/internal/repository"
 	"github.com/substreamedu/substreamedu-media-service/internal/staticsubtitles"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
-	"time"
 )
 
 type TranscriptFetcher interface {
@@ -68,7 +69,7 @@ func (s *SubtitleService) UploadSubtitles(ctx context.Context, userID uuid.UUID,
 
 	err = s.repo.SaveAll(ctx, subtitles)
 	if err == nil {
-		s.invalidateCache(ctx, userID)
+		s.invalidateCache(ctx, userID, fileName)
 	}
 	return err
 }
@@ -97,7 +98,6 @@ func (s *SubtitleService) GetAll(ctx context.Context, userID uuid.UUID) ([]dto.S
 	}
 
 	if s.redis != nil && len(names) > 0 {
-
 		interfaces := make([]interface{}, len(names))
 		for i, n := range names {
 			interfaces[i] = n
@@ -114,6 +114,18 @@ func (s *SubtitleService) GetAll(ctx context.Context, userID uuid.UUID) ([]dto.S
 }
 
 func (s *SubtitleService) GetSubtitlesForVideo(ctx context.Context, userID uuid.UUID, name string) ([]dto.SubtitleResponseDto, error) {
+	cacheKey := fmt.Sprintf("subtitles:video:%s:%s", userID, name)
+
+	if s.redis != nil {
+		cached, err := s.redis.Get(ctx, cacheKey).Bytes()
+		if err == nil && len(cached) > 0 {
+			var res []dto.SubtitleResponseDto
+			if err := json.Unmarshal(cached, &res); err == nil {
+				return res, nil
+			}
+		}
+	}
+
 	subs, err := s.repo.FindByUserIdAndNameOrderByStartTimeMs(ctx, userID, name)
 	if err != nil {
 		return nil, err
@@ -129,21 +141,33 @@ func (s *SubtitleService) GetSubtitlesForVideo(ctx context.Context, userID uuid.
 			Text:		sub.Text,
 		})
 	}
+
+	if s.redis != nil && len(res) > 0 {
+		if data, err := json.Marshal(res); err == nil {
+			s.redis.Set(ctx, cacheKey, data, 24*time.Hour)
+		}
+	}
+
 	return res, nil
 }
 
 func (s *SubtitleService) DeleteByUserIdAndName(ctx context.Context, userID uuid.UUID, name string) error {
 	err := s.repo.DeleteByUserIdAndName(ctx, userID, name)
 	if err == nil {
-		s.invalidateCache(ctx, userID)
+		s.invalidateCache(ctx, userID, name)
 	}
 	return err
 }
 
-func (s *SubtitleService) invalidateCache(ctx context.Context, userID uuid.UUID) {
+func (s *SubtitleService) invalidateCache(ctx context.Context, userID uuid.UUID, names ...string) {
 	if s.redis != nil {
 		cacheKey := fmt.Sprintf("subtitles:%s", userID)
 		s.redis.Del(ctx, cacheKey)
+		for _, n := range names {
+			if n != "" {
+				s.redis.Del(ctx, fmt.Sprintf("subtitles:video:%s:%s", userID, n))
+			}
+		}
 	}
 }
 

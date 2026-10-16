@@ -527,7 +527,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         try {
             sessionStorage.setItem('subtitleName', subtitleName);
 
-            const data = await SubtitleService.fetchSubtitlesForVideo(subtitleName);
+            // Fast-path: reuse cached subtitles if exact file is already in sessionStorage
+            let data: unknown[] | null = null;
+            const cachedName = sessionStorage.getItem('cachedSubtitleName');
+            const cachedRaw = sessionStorage.getItem('videoSubtitles');
+            if (cachedName === subtitleName && cachedRaw) {
+                try {
+                    const parsed = JSON.parse(cachedRaw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        data = parsed;
+                    }
+                } catch {
+                    // ignore JSON parse error and fallback to network fetch
+                }
+            }
+
+            if (!data) {
+                data = await SubtitleService.fetchSubtitlesForVideo(subtitleName);
+                sessionStorage.setItem('cachedSubtitleName', subtitleName);
+            }
+
             const sanitized = sanitizeSubtitles(data);
             setSubtitlesForVideo(sanitized);
 

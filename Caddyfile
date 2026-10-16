@@ -12,6 +12,7 @@ substreamedu.com, www.substreamedu.com {
 
     # API Gateway Routing
     handle /api* {
+        encode gzip zstd
         reverse_proxy gateway:8080 {
             transport http {
                 read_timeout 100s
@@ -29,6 +30,7 @@ substreamedu.com, www.substreamedu.com {
 
     # Auth Service Routing
     handle /auth* {
+        encode gzip zstd
         reverse_proxy gateway:8080
     }
 
