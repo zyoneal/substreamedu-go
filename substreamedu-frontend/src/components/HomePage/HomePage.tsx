@@ -455,7 +455,7 @@ const HomePage: React.FC = () => {
             </h1>
 
             <p className={styles.heroSub}>
-              Watch your favorite movies, highlight words to translate in context, and memorize them forever with our smart flashcards.
+              Train your ears, not just your eyes. Blur subtitles, set an ear-first delay to catch native speech, and highlight phrases to translate and memorize in context.
             </p>
 
             <div className={styles.heroActions}>
