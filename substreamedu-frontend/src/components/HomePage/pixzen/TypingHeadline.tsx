@@ -11,7 +11,7 @@ interface TypingHeadlineProps {
 
 const TypingHeadline: React.FC<TypingHeadlineProps> = ({
   phrases,
-  holdMs = 2800,
+  holdMs = 1600,
 }) => {
   const reduced =
     typeof window !== 'undefined' &&
@@ -35,10 +35,10 @@ const TypingHeadline: React.FC<TypingHeadlineProps> = ({
         <motion.span
           key={phrases[phraseIndex]}
           className={styles.headlineItem}
-          initial={reduced ? false : { opacity: 0, y: 14 }}
+          initial={reduced ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={reduced ? undefined : { opacity: 0, y: -14 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          exit={reduced ? undefined : { opacity: 0, y: -12 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
           {phrases[phraseIndex]}
         </motion.span>
