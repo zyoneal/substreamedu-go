@@ -34,6 +34,11 @@ const Flashcard: React.FC<FlashcardProps> = ({
   onWordClick,
 }) => {
   const intl = useIntl();
+  const [imageFailed, setImageFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageFailed(false);
+  }, [imageUrl]);
 
 
 
@@ -191,9 +196,14 @@ const Flashcard: React.FC<FlashcardProps> = ({
 
         {isProduction && contextContent}
 
-        {imageUrl && (
+        {Boolean(imageUrl && imageUrl.trim() && !imageFailed) && (
           <div className={styles.imageSection}>
-            <img src={imageUrl} alt={word} className={styles.image} />
+            <img
+              src={imageUrl}
+              alt=""
+              className={styles.image}
+              onError={() => setImageFailed(true)}
+            />
           </div>
         )}
       </div>
