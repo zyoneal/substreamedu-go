@@ -977,53 +977,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     <div
                         className={styles.syncCheckBanner}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1', minWidth: '300px' }}>
-                            <Zap className="w-5 h-5" style={{ color: '#EAB308', flexShrink: 0 }} />
+                        <div className={styles.syncCheckBannerContent}>
+                            <div className={styles.syncCheckBannerIconWrapper}>
+                                <Zap className="w-4 h-4" style={{ color: '#EAB308', flexShrink: 0 }} />
+                            </div>
                             <div>
-                                <p style={{ color: 'white', fontWeight: '600', margin: 0, fontSize: '14px' }}>
+                                <p className={styles.syncCheckBannerTitle}>
                                     Testing: {temporarySubtitleInfo.releaseName || temporarySubtitleInfo.name}
                                 </p>
-                                <p style={{ color: 'rgba(255, 255, 255, 0.7)', margin: 0, fontSize: '12px' }}>
+                                <p className={styles.syncCheckBannerSubtext}>
                                     Watch video to check sync. Keep if good or discard to try another.
                                 </p>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                        <div className={styles.syncCheckBannerActions}>
                             <button
                                 onClick={handleKeepTemporarySubtitles}
                                 aria-label="Keep temporary subtitles"
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#22C55E',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#16A34A'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#22C55E'}
+                                className={styles.syncCheckKeepButton}
                             >
                                 Keep
                             </button>
                             <button
                                 onClick={handleDiscardTemporarySubtitles}
                                 aria-label="Discard and try another subtitle"
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#EF4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#DC2626'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF4444'}
+                                className={styles.syncCheckDiscardButton}
                             >
                                 Try Another
                             </button>
