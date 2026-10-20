@@ -63,4 +63,42 @@ describe('SubtitlesPage (Pixzen Monochrome Editorial)', () => {
         expect(searchInput.value).toBe('');
         expect(screen.getByText('2 files')).toBeInTheDocument();
     });
+
+    it('renders editorial delete button without binButton leakage and triggers deletion with loading state', async () => {
+        (AuthService.getUserEmail as jest.Mock).mockReturnValue('learner@substreamedu.com');
+        (SubtitleService.fetchAllSubtitles as jest.Mock).mockResolvedValue([
+            { name: 'Inception_2010.srt' },
+        ]);
+        let resolveDelete: () => void = () => {};
+        (SubtitleService.deleteSubtitlesByName as jest.Mock).mockImplementation(
+            () => new Promise<void>((resolve) => { resolveDelete = resolve; })
+        );
+
+        render(
+            <MemoryRouter>
+                <IntlProvider locale="en" messages={{}}>
+                    <SubtitlesPage />
+                </IntlProvider>
+            </MemoryRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Inception_2010.srt')).toBeInTheDocument();
+        });
+
+        const deleteBtn = screen.getByRole('button', { name: /delete inception_2010\.srt/i });
+        expect(deleteBtn).toBeInTheDocument();
+        expect(deleteBtn.className).toContain('deleteButton');
+        expect(deleteBtn.className).not.toContain('binButton');
+
+        fireEvent.click(deleteBtn);
+        expect(SubtitleService.deleteSubtitlesByName).toHaveBeenCalledWith('Inception_2010.srt');
+        expect(deleteBtn).toBeDisabled();
+        expect(deleteBtn.querySelector('.deleteSpinner')).toBeInTheDocument();
+
+        resolveDelete();
+        await waitFor(() => {
+            expect(screen.queryByText('Inception_2010.srt')).not.toBeInTheDocument();
+        });
+    });
 });

@@ -311,22 +311,61 @@
 .deleteButton {
     width: 36px;
     height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    margin: 0;
     background: #eae7e1;
     border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: 9999px;
-    color: var(--color-body, #4a4a48);
+    color: var(--color-mute, #666360);
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-    display: flex;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease,
+                box-shadow 0.18s ease;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    outline: none;
+    position: relative;
+}
+
+.subtitleCard:hover .deleteButton {
+    border-color: rgba(10, 10, 10, 0.18);
+    color: var(--color-ink, #0a0a0a);
 }
 
 .deleteButton:hover {
-    background: rgba(185, 28, 28, 0.08);
-    border-color: rgba(185, 28, 28, 0.28);
-    color: #b91c1c;
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-color: rgba(220, 38, 38, 0.28) !important;
+    color: #dc2626 !important;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+}
+
+.deleteButton:active {
+    transform: scale(0.94);
+    background: rgba(220, 38, 38, 0.16) !important;
+}
+
+.deleteButton:focus-visible {
+    border-color: #0a0a0a;
+    box-shadow: 0 0 0 2px rgba(10, 10, 10, 0.18);
+}
+
+.deleteButton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
+}
+
+.deleteSpinner {
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
 }
 
 .loadingState,

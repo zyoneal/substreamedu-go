@@ -4,8 +4,7 @@ import { SubtitleService } from '../../services/SubtitleService';
 import { AuthService } from '../../services/AuthService';
 import styles from './css/SubtitlesPage.module.css';
 import { useIntl } from 'react-intl';
-import BinButton from '../DictionaryItemsPage/BinButton';
-import { Search, Upload, FileText, X } from 'lucide-react';
+import { Search, Upload, FileText, X, Trash2, Loader2 } from 'lucide-react';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 
 interface SubtitleDto {
@@ -199,15 +198,24 @@ const SubtitlesPage: React.FC = () => {
 												<span className={styles.subtitleFormat}>SRT · VTT</span>
 											</div>
 										</Link>
-										<BinButton
+										<button
+											type="button"
 											className={styles.deleteButton}
-											ariaLabel={`Delete ${subtitle.name}`}
+											aria-label={`Delete ${subtitle.name}`}
+											title={`Delete ${subtitle.name}`}
 											disabled={deletingName === subtitle.name}
 											onClick={(e) => {
 												e.preventDefault();
+												e.stopPropagation();
 												deleteSubtitlesByName(subtitle.name);
 											}}
-										/>
+										>
+											{deletingName === subtitle.name ? (
+												<Loader2 size={15} className={styles.deleteSpinner} aria-hidden="true" />
+											) : (
+												<Trash2 size={15} aria-hidden="true" />
+											)}
+										</button>
 									</div>
 								</div>
 							))}
