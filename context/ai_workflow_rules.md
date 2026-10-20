@@ -161,4 +161,36 @@ Before authoring any new feature spec in `/context/feature_specs/`, the agent MU
    - Database migrations and rollback strategy.
 4. **Specification Freezing**: Record all architectural decisions, seams, and verification checklists in the spec file BEFORE writing any implementation code.
 
+---
+
+## 5. SDLC Integrity & Workflow Specialization
+
+### Rule 20: Tooling Config Immutability & Anti-Tamper Guard
+Under no circumstances may an AI agent modify compiler, linter, or project tooling configurations to force a failing implementation or broken tests to pass:
+- **Strictly Immutable during Feature & Bugfix Tasks**:
+  - `tsconfig.json`, `tsconfig.*.json`
+  - `.eslintrc*`, `eslint.config.*`, `.prettierrc*`, `biome.json*`
+  - `.golangci.yml`, `.golangci.yaml`, `golangci.json`
+  - `go.mod`, `go.sum` (unless explicitly adding a newly approved library in an approved spec)
+  - `package.json` lint/build scripts and core compiler dependencies
+- **Forbidden Git Commands**: Never pass `--no-verify` to `git commit` or `git push` to bypass local pre-commit hooks or verification tests.
+- **Permitted Exception**: Tooling configuration edits are allowed ONLY under an explicitly planned, isolated task of type `chore: tooling / linter configuration upgrade`.
+
+### Rule 21: Report-Only Security Review & Separation of Duties
+Any task or agent execution classified as a **Security Audit** or **Vulnerability Review** must operate strictly in **Report-Only Mode**:
+1. **Zero Direct Code Mutations**: The security reviewer must never modify production code or test files during the audit pass. Modifying code during an audit creates a conflict of interest ("grading one's own homework") and introduces untested regressions.
+2. **Standardized Finding Output**: Every security finding must specify exact `file:line`, severity (Critical, High, Medium, Low), attack vector proof, and the exact prescribed code diff for remediation.
+3. **Execution Handoff**:
+   - The responsible module architect/developer implements the prescribed fix in a separate surgical pass.
+   - QA re-executes unit, integration, and linter suites to confirm the fix is safe.
+
+### Rule 22: Fast-Path Workflow for Micro-Fixes & Hotfixes (≤ 100 LOC)
+While non-trivial features require a full specification in `/context/feature_specs/`, micro-fixes, typo corrections, and urgent production hotfixes ($\le 100$ lines of code touched) may follow the **Fast-Path Workflow**:
+1. **Classification Gate**: Verify the task touches $\le 100$ LOC and alters zero tooling configs or service boundaries.
+2. **Deterministic Feedback Loop (Rule 7)**: Build a 1-command reproducible test or verification script that turns **RED** before touching source code.
+3. **Surgical Fix**: Apply the minimal necessary patch to transition the feedback loop from **RED to GREEN**.
+4. **Mandatory Verification (Rule 4)**: Execute the relevant local test suite (`go test` or `npm test`) and typecheck (`npx tsc --noEmit`).
+5. **Synchronize Progress Tracker**: Log the change directly in `/context/progress_tracker.md` under `Status Board` and `Architectural Decisions Log` with ADR number, root cause, and verification output. Full spec document creation is waived for fast-path tasks.
+
+
 
