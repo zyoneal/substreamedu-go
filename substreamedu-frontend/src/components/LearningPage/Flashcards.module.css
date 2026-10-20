@@ -198,6 +198,144 @@
     padding: 24px;
 }
 
+.completionContent {
+    text-align: center;
+    max-width: 32rem;
+    margin: 2rem auto;
+    padding: 3rem 2rem;
+    background: #eae7e1;
+    border-radius: 24px;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    box-shadow: 0 16px 40px rgba(10, 10, 10, 0.04);
+    box-sizing: border-box;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.completionIcon {
+    width: 5rem;
+    height: 5rem;
+    margin: 0 auto 1.5rem;
+    background: #f5f3ef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(10, 10, 10, 0.1);
+    color: #0a0a0a;
+}
+
+.checkIcon {
+    width: 2.25rem;
+    height: 2.25rem;
+    color: #0a0a0a;
+}
+
+.completionTitle {
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #0a0a0a;
+    margin-bottom: 0.75rem;
+    text-align: center;
+    letter-spacing: -0.02em;
+}
+
+.completionDescription {
+    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 400;
+    color: #4a4a48;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.completionActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+}
+
+.activePracticeButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.75rem;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-radius: 9999px;
+    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    width: 100%;
+    max-width: 340px;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+}
+
+.activePracticeButton:hover {
+    background: #222222;
+    transform: translateY(-1px);
+}
+
+.refreshButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.75rem;
+    background: #f5f3ef;
+    color: #0a0a0a;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 9999px;
+    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    width: 100%;
+    max-width: 340px;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.refreshButton:hover:not(:disabled) {
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.25);
+    transform: translateY(-1px);
+}
+
+.refreshButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.refreshIcon {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .storyContent {
     width: 100%;
 }

@@ -1,4 +1,6 @@
 import React from 'react';
+import fs from 'fs';
+import path from 'path';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
@@ -272,5 +274,26 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     await waitFor(() => {
       expect(screen.getByText('Story text')).toBeInTheDocument();
     });
+  });
+
+  it('defines all required CSS classes for completion stage in Flashcards.module.css', () => {
+    const cssContent = fs.readFileSync(path.resolve(__dirname, 'Flashcards.module.css'), 'utf-8');
+
+    const requiredClasses = [
+      'completionContent',
+      'completionIcon',
+      'checkIcon',
+      'completionTitle',
+      'completionDescription',
+      'completionActions',
+      'activePracticeButton',
+      'refreshButton',
+      'refreshIcon',
+      'spinning',
+    ];
+
+    for (const className of requiredClasses) {
+      expect(cssContent).toMatch(new RegExp(`\\.${className}\\b`));
+    }
   });
 });
