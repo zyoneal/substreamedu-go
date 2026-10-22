@@ -263,19 +263,19 @@ const DashboardPage: React.FC = () => {
                         </p>
                     </MotionLink>
 
-                    {/* ROW 2, COLS 5–8: TEXTS & AI (SPAN 4) */}
+                    {/* ROW 2, COLS 5–8: BOOKS & READING (SPAN 4) */}
                     <MotionLink
-                        to="/text-paste"
-                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardTexts}`}
+                        to="/books"
+                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardBooks}`}
                         variants={itemVariants}
                     >
                         <div className={styles.formatTop}>
                             <div className={styles.formatHeaderLeft}>
                                 <div className={styles.iconSquircle}>
-                                    <FileText size={20} strokeWidth={1.8} />
+                                    <BookOpen size={20} strokeWidth={1.8} />
                                 </div>
                                 <h3 className={styles.cardTitle}>
-                                    <FormattedMessage id="dashboard.learnWithText" defaultMessage="Learning with texts" />
+                                    <FormattedMessage id="dashboard.learnWithBooks" defaultMessage="Learning with books" />
                                 </h3>
                             </div>
                             <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
@@ -283,8 +283,8 @@ const DashboardPage: React.FC = () => {
 
                         <p className={styles.cardDescription}>
                             <FormattedMessage
-                                id="dashboard.learnWithText.desc"
-                                defaultMessage="Write or paste any text, highlight individual words or entire phrases, and add them to your dictionary."
+                                id="dashboard.learnWithBooks.desc"
+                                defaultMessage="Read graded books by CEFR levels or upload EPUB/TXT files, highlight words, and save them to your deck."
                             />
                         </p>
                     </MotionLink>
@@ -357,7 +357,33 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </MotionLink>
 
-                    {/* ROW 3, COLS 1–4: SUBTITLES (SPAN 4) */}
+                    {/* ROW 3, COLS 1–4: TEXTS & AI (SPAN 4) */}
+                    <MotionLink
+                        to="/text-paste"
+                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardTexts}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.formatTop}>
+                            <div className={styles.formatHeaderLeft}>
+                                <div className={styles.iconSquircle}>
+                                    <FileText size={20} strokeWidth={1.8} />
+                                </div>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.learnWithText" defaultMessage="Learning with texts" />
+                                </h3>
+                            </div>
+                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
+                        </div>
+
+                        <p className={styles.cardDescription}>
+                            <FormattedMessage
+                                id="dashboard.learnWithText.desc"
+                                defaultMessage="Write or paste any text, highlight individual words or entire phrases, and add them to your dictionary."
+                            />
+                        </p>
+                    </MotionLink>
+
+                    {/* ROW 3, COLS 5–8: SUBTITLES (SPAN 4) */}
                     <MotionLink
                         to="/subtitles"
                         className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardSubtitles}`}
@@ -379,32 +405,6 @@ const DashboardPage: React.FC = () => {
                             <FormattedMessage
                                 id="dashboard.uploadSubtitles.desc"
                                 defaultMessage="Upload a subtitle file and save any words or phrases to learn."
-                            />
-                        </p>
-                    </MotionLink>
-
-                    {/* ROW 3, COLS 5–8: TELEGRAM BOT (SPAN 4) */}
-                    <MotionLink
-                        to="/telegramBot"
-                        className={`${styles.bentoCard} ${styles.cardFormat} ${styles.cardTelegram}`}
-                        variants={itemVariants}
-                    >
-                        <div className={styles.formatTop}>
-                            <div className={styles.formatHeaderLeft}>
-                                <div className={styles.iconSquircle}>
-                                    <Send size={20} strokeWidth={1.8} />
-                                </div>
-                                <h3 className={styles.cardTitle}>
-                                    <FormattedMessage id="dashboard.telegramBot" defaultMessage="Telegram bot practice" />
-                                </h3>
-                            </div>
-                            <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
-                        </div>
-
-                        <p className={styles.cardDescription}>
-                            <FormattedMessage
-                                id="dashboard.telegramBot.desc"
-                                defaultMessage="Review saved words and phrases daily in a convenient format right in Telegram."
                             />
                         </p>
                     </MotionLink>
@@ -450,6 +450,32 @@ const DashboardPage: React.FC = () => {
                             </span>
                             <ArrowRight size={15} strokeWidth={2} className={styles.quietChevron} />
                         </div>
+                    </MotionLink>
+
+                    {/* ROW 4, COLS 1–12: TELEGRAM BOT (FULL-WIDTH ACCENT) */}
+                    <MotionLink
+                        to="/telegramBot"
+                        className={`${styles.bentoCard} ${styles.cardTelegram}`}
+                        variants={itemVariants}
+                    >
+                        <div className={styles.telegramBody}>
+                            <div className={styles.iconSquircle}>
+                                <Send size={20} strokeWidth={1.8} />
+                            </div>
+                            <div className={styles.telegramTextGroup}>
+                                <h3 className={styles.cardTitle}>
+                                    <FormattedMessage id="dashboard.telegramBot" defaultMessage="Telegram bot practice" />
+                                </h3>
+                                <p className={styles.cardDescription}>
+                                    <FormattedMessage
+                                        id="dashboard.telegramBot.desc"
+                                        defaultMessage="Review saved words and phrases daily in a convenient format right in Telegram."
+                                    />
+                                </p>
+                            </div>
+                        </div>
+
+                        <ArrowRight size={18} strokeWidth={2} className={styles.quietChevron} />
                     </MotionLink>
                 </motion.div>
             </div>

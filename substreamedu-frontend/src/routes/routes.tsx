@@ -23,6 +23,8 @@ import AdminDashboard from '../components/AdminDashboard/AdminDashboard';
 import ProtectedRoute from './ProtectedRoute';
 import { UserRole } from '../constants/roles';
 import StudentLessonPage from '../components/LessonPage/StudentLessonPage';
+import BooksCatalogPage from '../components/BooksPage/BooksCatalogPage';
+import BookReaderPage from '../components/BooksPage/BookReaderPage';
 
 const AppRoutes = () => {
     const { isLoggedIn } = useContext(AuthContext);
@@ -45,6 +47,8 @@ const AppRoutes = () => {
             <Route path="/subtitles/:fileId" element={<SubtitleViewer />} />
             <Route path="/dictionary/resources/:resourceName" element={<DictionaryItemsPage />} />
             <Route path="/text-paste" element={<TextPasteHighlighter />} />
+            <Route path="/books" element={<BooksCatalogPage />} />
+            <Route path="/books/:bookId" element={<BookReaderPage />} />
             <Route path="/lesson/:shareToken" element={<StudentLessonPage />} />
 
             {}

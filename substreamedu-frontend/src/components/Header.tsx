@@ -148,6 +148,14 @@ const Header = () => {
                                 </li>
                                 <li>
                                     <Link
+                                        to="/books"
+                                        className={`${styles.navItem} ${location.pathname.startsWith("/books") ? styles.active : ""}`}
+                                    >
+                                        <FormattedMessage id="booksMenu" defaultMessage="Books" />
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
                                         to="/text-paste"
                                         className={`${styles.navItem} ${location.pathname.startsWith("/text-paste") ? styles.active : ""}`}
                                     >
@@ -233,6 +241,13 @@ const Header = () => {
                                             <FormattedMessage id="songs" defaultMessage="Songs" />
                                         </Link>
                                         <Link
+                                            to="/books"
+                                            className={`${styles.navItem} ${location.pathname.startsWith("/books") ? styles.active : ""}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <FormattedMessage id="booksMenu" defaultMessage="Books" />
+                                        </Link>
+                                        <Link
                                             to="/text-paste"
                                             className={`${styles.navItem} ${location.pathname.startsWith("/text-paste") ? styles.active : ""}`}
                                             onClick={() => setIsMobileMenuOpen(false)}
@@ -309,7 +324,7 @@ const Header = () => {
             )}
 
             <div className={styles.rightControlsContainer}>
-                {(location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles')) && (
+                {(location.pathname.startsWith('/text-paste') || location.pathname.startsWith('/texts-demo') || location.pathname.startsWith('/songs') || location.pathname.startsWith('/subtitles') || location.pathname.startsWith('/books')) && (
                     <div className={styles.headerPlayerLangContainerInline}>
                         <LanguageSelector
                             currentLanguage={fluentLanguage}
@@ -395,6 +410,13 @@ const Header = () => {
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     <FormattedMessage id="songs" defaultMessage="Songs" />
+                                </Link>
+                                <Link
+                                    to="/books"
+                                    className={`${styles.bottomSheetLink} ${location.pathname.startsWith("/books") ? styles.active : ""}`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <FormattedMessage id="booksMenu" defaultMessage="Books" />
                                 </Link>
                                 <Link
                                     to="/text-paste"
