@@ -1,0 +1,48 @@
+# Devin Blueprint for Java (Gradle)
+# Place in .devin/blueprint.yaml or register in Devin settings.
+
+initialize:
+  - name: "Install Java 21 (Eclipse Temurin)"
+    uses: actions/setup-java@v4
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+
+maintenance:
+  - name: "Pre-fetch Gradle dependencies & warm cache"
+    run: |
+      chmod +x gradlew
+      ./gradlew --no-daemon testClasses
+
+knowledge:
+  - name: lint
+    contents: |
+      Check formatting:
+      ./gradlew spotlessCheck
+
+      Auto-format code:
+      ./gradlew spotlessApply
+
+      Run static analysis:
+      ./gradlew checkstyleMain checkstyleTest
+
+  - name: test
+    contents: |
+      Run full test suite:
+      ./gradlew test
+
+      Run a single test class:
+      ./gradlew test --tests "com.example.package.MyTestClass"
+
+      Run a single test method:
+      ./gradlew test --tests "com.example.package.MyTestClass.myTestMethod"
+
+  - name: build
+    contents: |
+      Assemble application binary without running tests:
+      ./gradlew assemble -x test
+
+  - name: verify
+    contents: |
+      Run complete harness Definition of Done:
+      .harness/verify.sh

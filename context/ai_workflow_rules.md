@@ -26,18 +26,15 @@ Before writing or altering ANY code in this repository, the agent MUST:
 - Never modify service boundaries or database schemas without a corresponding spec update and migration file.
 - If working on `substreamedu-gateway-go`, do not touch `substreamedu-frontend` unless explicitly stated in the spec.
 
-### Rule 4: Mandatory Verification Pipeline
-Before declaring any task or spec closed, the agent MUST execute and verify all relevant checks:
-1. **Go Services**:
-   - `go test -v ./...` in the modified service directory.
-   - `golangci-lint run` (or static analysis).
-   - Ensure clean binary build: `go build -o /dev/null ./cmd/...`.
-2. **Frontend Service**:
-   - TypeScript compilation check: `npm run build` or `npx tsc --noEmit`.
-   - Linter pass: `npm run lint`.
-   - Unit tests: `npm test -- --watchAll=false`.
-3. **Container Orchestration**:
-   - Ensure `docker compose config` is syntactically valid when compose files are touched.
+### Rule 4: Mandatory Verification Pipeline (Definition of Done)
+Before declaring any task or spec closed, the agent MUST execute the unified verification pipeline:
+- Run `./verify.sh` (or `make verify`).
+- This script automatically runs:
+  1. **Anti-Tamper Check**: `.harness/scripts/check-protected-files.sh` (verifies zero unauthorized changes to compiler/linter configs).
+  2. **Spec Scope Boundary Check**: `.harness/scripts/check-spec-scope.sh` (verifies all modified files strictly match the active spec's `## Allowed files`, or $\le 100$ LOC for Fast-path).
+  3. **Go Microservices Suite**: `golangci-lint run ./...` and `go test -race -count=1 ./...` across all Go services.
+  4. **Frontend Client Suite**: `npx tsc --noEmit`, `npm run lint`, and `npm test -- --watchAll=false` in `substreamedu-frontend`.
+
 
 ### Rule 5: Progress Tracker Update Protocol
 Every agent invocation that modifies repository state MUST update `/context/progress_tracker.md`:

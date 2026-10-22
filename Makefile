@@ -1,4 +1,8 @@
-.PHONY: build test lint clean docker-up docker-down
+.PHONY: build test lint clean docker-up docker-down verify
+
+verify:
+	./verify.sh
+
 
 GO_SERVICES = substreamedu-iam-service-go substreamedu-dictionary-service-go substreamedu-media-service-go substreamedu-notification-service-go substreamedu-gateway-go
 

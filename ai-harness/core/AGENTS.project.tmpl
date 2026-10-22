@@ -1,0 +1,32 @@
+# {{SERVICE_NAME}}: agent guide
+
+<!-- Project-owned section: edit freely, keep it under ~3 KB.
+     Devin auto-loads only the first 16 KiB of this file; the harness block below must fit too. -->
+
+## What this service does
+
+<!-- 3–5 lines: business capability, main entities, what it explicitly does NOT own. -->
+TODO
+
+## Commands
+
+| Purpose | Command |
+|---|---|
+| Full verification (Definition of Done) | `.harness/verify.sh` |
+| Compile + unit tests (fast loop) | `{{CMD_FAST}}` |
+| Single test | `{{CMD_SINGLE_TEST}}` |
+| Format | `{{CMD_FORMAT}}` |
+| Run locally | `{{CMD_RUN}}` |
+
+## Neighbours
+
+<!-- Who calls us and whom we call. Contract files live in docs/contracts/. -->
+| Service | Direction | Protocol | Contract |
+|---|---|---|---|
+| TODO | inbound / outbound | REST / Kafka topic | `docs/contracts/...` |
+
+## Gotchas
+
+<!-- Non-obvious facts that cost someone an hour. Delete this comment when filled. -->
+- TODO
+
