@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { SubtitleService, TranslationProdResponse } from '../../../services/SubtitleService';
@@ -38,21 +39,36 @@ export const BookContent: React.FC<BookContentProps> = ({
     const [translationData, setTranslationData] = useState<TranslationData | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
 
-    const [optimisticSavedWords, setOptimisticSavedWords] = useState<Set<string>>(new Set());
+    // Map of word -> translation for optimistic instant feedback on save
+    const [optimisticSavedWords, setOptimisticSavedWords] = useState<Map<string, string>>(new Map());
+
+    // Floating hover tooltip for underlined words
+    const [tooltipState, setTooltipState] = useState<{
+        text: string;
+        x: number;
+        y: number;
+    } | null>(null);
+
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Build lookup set of saved words
-    const savedWordsSet = useMemo(() => {
-        const set = new Set<string>();
+    // Build lookup dictionary map: normalized word -> translatedText or definition
+    const dictionaryMap = useMemo(() => {
+        const map = new Map<string, string>();
         if (Array.isArray(userDictionaryItems)) {
-            userDictionaryItems.forEach((item: { highlightedText?: string }) => {
+            userDictionaryItems.forEach((item: { highlightedText?: string; translatedText?: string; definition?: string }) => {
                 if (item.highlightedText) {
-                    set.add(item.highlightedText.toLowerCase().trim());
+                    const key = item.highlightedText.toLowerCase().trim();
+                    const trans = item.translatedText?.trim() || item.definition?.trim() || '';
+                    if (!map.has(key)) {
+                        map.set(key, trans || item.highlightedText);
+                    }
                 }
             });
         }
-        optimisticSavedWords.forEach(w => set.add(w));
-        return set;
+        optimisticSavedWords.forEach((val, key) => {
+            map.set(key, val);
+        });
+        return map;
     }, [userDictionaryItems, optimisticSavedWords]);
 
     const showNotification = (msg: string) => {
@@ -152,11 +168,13 @@ export const BookContent: React.FC<BookContentProps> = ({
         }
     };
 
+    // Translation triggers strictly upon text selection (onMouseUp / onTouchEnd)
     const handleTextSelection = () => {
         const selection = window.getSelection();
         if (!selection || selection.isCollapsed) return;
 
         const rawSelected = selection.toString().trim();
+        // Ignore single character or empty accidental clicks
         if (rawSelected.length < 2) return;
 
         const range = selection.getRangeAt(0);
@@ -172,34 +190,35 @@ export const BookContent: React.FC<BookContentProps> = ({
         fetchTranslation(rawSelected, sentence);
     };
 
-    const handleWordClick = (e: React.MouseEvent, word: string, paraText: string) => {
-        e.stopPropagation();
-        const cleanWord = word.replace(/^[^\w']+|[^\w']+$/g, '');
-        if (cleanWord.length < 2) return;
+    // Tooltip mouse handlers for underlined dictionary items
+    const handleWordMouseEnter = (e: React.MouseEvent, word: string) => {
+        const clean = word.toLowerCase().trim();
+        const translation = dictionaryMap.get(clean);
 
-        const target = e.currentTarget as HTMLElement;
-        const rect = target.getBoundingClientRect();
-        const position: SelectionPosition = {
-            x: rect.left + rect.width / 2 + window.pageXOffset,
-            y: rect.top < window.innerHeight / 2
-                ? rect.bottom + 8 + window.pageYOffset
-                : rect.top - 8 + window.pageYOffset,
-            showBelow: rect.top < window.innerHeight / 2
-        };
+        if (translation) {
+            const target = e.currentTarget as HTMLElement;
+            const rect = target.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-        const sentence = findSentenceForText(paraText, cleanWord);
-        setSelectedText(cleanWord);
-        setSelectedSentence(sentence);
-        setSelectionPosition(position);
-        setIsPopoverOpen(true);
+            setTooltipState({
+                text: translation,
+                x: rect.left + scrollLeft + rect.width / 2,
+                y: rect.top + scrollTop - 34
+            });
+        }
+    };
 
-        fetchTranslation(cleanWord, sentence);
+    const handleWordMouseLeave = () => {
+        setTooltipState(null);
     };
 
     const saveWordMutation = useSaveWord({
         onSuccess: () => {
             if (selectedText) {
-                setOptimisticSavedWords(prev => new Set(prev).add(selectedText.toLowerCase().trim()));
+                const norm = selectedText.toLowerCase().trim();
+                const trans = translationData?.translation || '';
+                setOptimisticSavedWords(prev => new Map(prev).set(norm, trans));
                 onWordSaved?.(selectedText);
             }
             queryClient.invalidateQueries({ queryKey: ['dictionaryItems', 'user'] });
@@ -251,6 +270,21 @@ export const BookContent: React.FC<BookContentProps> = ({
 
     return (
         <main className={styles.stageWrapper}>
+            {/* Tooltip Portal for Underlined Words */}
+            {tooltipState && createPortal(
+                <div
+                    className={styles.wordTooltip}
+                    style={{
+                        left: tooltipState.x,
+                        top: tooltipState.y
+                    }}
+                    role="tooltip"
+                >
+                    {tooltipState.text}
+                </div>,
+                document.body
+            )}
+
             <h2 className={styles.chapterTitle}>{chapterTitle}</h2>
 
             <div
@@ -258,52 +292,40 @@ export const BookContent: React.FC<BookContentProps> = ({
                 className={styles.textContent}
                 style={{ fontSize: `${fontSize}px` }}
                 onMouseUp={handleTextSelection}
+                onTouchEnd={handleTextSelection}
             >
                 {paragraphs.map((para, pIdx) => {
-                    // Tokenize paragraph words and punctuation
+                    // Split paragraph by punctuation and spaces while preserving tokens
                     const tokens = para.split(/(\s+|[.,!?;:—“”"()]+)/);
 
                     return (
                         <p key={pIdx} className={styles.paragraph}>
                             {tokens.map((token, tIdx) => {
                                 const clean = token.toLowerCase().trim();
-                                const isSaved = clean.length >= 2 && savedWordsSet.has(clean);
-                                const isWord = /^[a-zA-Z0-9']+$/.test(token);
+                                const hasTranslation = clean.length >= 2 && dictionaryMap.has(clean);
 
-                                if (isSaved) {
+                                if (hasTranslation) {
                                     return (
                                         <span
                                             key={tIdx}
                                             className={styles.highlightedText}
-                                            onClick={e => handleWordClick(e, token, para)}
-                                            role="button"
-                                            tabIndex={0}
+                                            data-translation={dictionaryMap.get(clean)}
+                                            onMouseEnter={e => handleWordMouseEnter(e, clean)}
+                                            onMouseLeave={handleWordMouseLeave}
                                         >
                                             {token}
                                         </span>
                                     );
                                 }
 
-                                if (isWord && token.length >= 2) {
-                                    return (
-                                        <span
-                                            key={tIdx}
-                                            className="hover:text-blue-400 cursor-pointer transition-colors"
-                                            onClick={e => handleWordClick(e, token, para)}
-                                        >
-                                            {token}
-                                        </span>
-                                    );
-                                }
-
-                                return <React.Fragment key={tIdx}>{token}</React.Fragment>;
+                                return <span key={tIdx}>{token}</span>;
                             })}
                         </p>
                     );
                 })}
             </div>
 
-            {/* Translation Popover */}
+            {/* Translation Popover on Text Selection */}
             {isPopoverOpen && selectionPosition && (
                 <TranslationPopover
                     selectionPosition={selectionPosition}

@@ -27,6 +27,20 @@ jest.mock('../../services/SubtitleService', () => ({
     }
 }));
 
+jest.mock('../../hooks/useDictionary', () => ({
+    ...jest.requireActual('../../hooks/useDictionary'),
+    useUserDictionaryItemsLight: () => ({
+        data: [
+            {
+                id: 101,
+                highlightedText: 'Sahara',
+                translatedText: 'Сахара',
+                definition: 'The largest hot desert'
+            }
+        ]
+    })
+}));
+
 describe('BookReaderPage', () => {
     let queryClient: QueryClient;
 
@@ -121,5 +135,25 @@ describe('BookReaderPage', () => {
         await waitFor(() => {
             expect(screen.getByRole('heading', { level: 2, name: /Chapter 1: The Sahara Desert/i })).toBeInTheDocument();
         });
+    });
+
+    it('shows floating tooltip above underlined dictionary words on hover and hides on leave', async () => {
+        renderReader();
+
+        await waitFor(() => {
+            expect(screen.getByText('Sahara')).toBeInTheDocument();
+        });
+
+        const saharaWord = screen.getByText('Sahara');
+        expect(saharaWord.classList.contains('highlightedText')).toBe(true);
+
+        // Hover over underlined word
+        fireEvent.mouseEnter(saharaWord);
+
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('Сахара');
+
+        // Mouse leave hides tooltip
+        fireEvent.mouseLeave(saharaWord);
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     });
 });

@@ -1,10 +1,16 @@
+/* ==========================================================================
+   SUBSTREAMEDU — PIXZEN WARM EDITORIAL BOOK READER (/books/:bookId)
+   Monochrome paper reading surface (#F5F3EF), Satoshi typography, and SubtitleViewer-parity tooltips
+   ========================================================================== */
+
 .readerContainer {
     min-height: 100vh;
-    background-color: var(--color-canvas, #0d0c0b);
-    color: var(--color-ink, #ede8e0);
+    background-color: var(--color-canvas, #f5f3ef);
+    color: var(--color-ink, #0a0a0a);
     position: relative;
     display: flex;
     flex-direction: column;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
 }
 
 /* Sticky Header */
@@ -12,10 +18,11 @@
     position: sticky;
     top: 0;
     z-index: 40;
-    backdrop-filter: blur(12px);
-    background-color: rgba(13, 12, 11, 0.85);
-    border-bottom: 1px solid var(--color-hairline, #282522);
-    padding: 0.75rem 1.5rem;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background-color: rgba(245, 243, 239, 0.9);
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
+    padding: 0.85rem 1.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -25,7 +32,7 @@
 .headerLeft {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.85rem;
     min-width: 0;
 }
 
@@ -33,21 +40,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    background-color: var(--color-surface, #141312);
-    border: 1px solid var(--color-hairline, #282522);
-    color: var(--color-body, #9e988f);
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition:
+        background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease,
+        transform 0.15s ease;
     flex-shrink: 0;
 }
 
 .backLink:hover {
-    color: var(--color-ink, #ede8e0);
-    border-color: var(--color-hairline-strong, #3d3934);
-    background-color: var(--color-surface-elevated, #1a1917);
+    color: #f5f3ef;
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    transform: translateX(-2px);
 }
 
 .headerTitleGroup {
@@ -55,19 +66,22 @@
 }
 
 .bookHeaderTitle {
-    font-size: 0.9375rem;
-    font-weight: 500;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 15px;
+    font-weight: 700;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
+    letter-spacing: -0.015em;
 }
 
 .chapterHeaderSubtitle {
-    font-size: 0.75rem;
-    color: var(--color-mute, #666360);
-    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-mute, #8e8e8e);
+    margin: 1px 0 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -76,112 +90,142 @@
 .headerRight {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.65rem;
     flex-shrink: 0;
 }
 
 .fontControlBtn {
-    padding: 0.35rem 0.65rem;
-    border-radius: 6px;
-    background-color: var(--color-surface, #141312);
-    border: 1px solid var(--color-hairline, #282522);
-    color: var(--color-body, #9e988f);
-    font-size: 0.75rem;
-    font-weight: 500;
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
-.fontControlBtn:hover {
-    color: var(--color-ink, #ede8e0);
-    border-color: var(--color-hairline-strong, #3d3934);
+.fontControlBtn:hover:not(:disabled) {
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.fontControlBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
 }
 
 .headerPillBtn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    background-color: var(--color-surface, #141312);
-    border: 1px solid var(--color-hairline, #282522);
-    color: var(--color-body, #9e988f);
-    font-size: 0.8125rem;
+    gap: 6px;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 12.5px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .headerPillBtn:hover {
-    color: var(--color-ink, #ede8e0);
-    border-color: var(--color-hairline-strong, #3d3934);
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
 }
 
+/* Thin Top Progress Bar */
 .progressBarTop {
     position: absolute;
     bottom: -1px;
     left: 0;
     height: 2px;
-    background-color: var(--color-primary, #0045e6);
-    transition: width 0.2s ease;
+    background-color: #0a0a0a;
+    transition: width 0.3s ease;
 }
 
 /* Reading Stage */
 .stageWrapper {
-    flex: 1;
-    max-width: 760px;
-    width: 100%;
+    max-width: 740px;
     margin: 0 auto;
-    padding: 3rem 1.5rem 6rem;
+    width: 100%;
+    padding: 3.5rem 1.5rem 5rem;
+    box-sizing: border-box;
 }
 
 .chapterTitle {
-    font-size: 1.875rem;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-    margin: 0 0 1.75rem;
-    color: var(--color-ink, #ede8e0);
-    border-bottom: 1px solid var(--color-hairline, #282522);
-    padding-bottom: 1rem;
-}
-
-.chapterMetaRow {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
-    color: var(--color-mute, #666360);
-    margin-bottom: 2rem;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0 0 2.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .textContent {
     user-select: text;
     -webkit-user-select: text;
+    cursor: text;
 }
 
 .paragraph {
-    margin: 0 0 1.6rem;
-    line-height: 1.8;
-    color: var(--color-ink, #ede8e0);
-    text-align: justify;
-    text-justify: inter-word;
-    letter-spacing: 0.01em;
+    margin: 0 0 1.65rem;
+    line-height: 1.88;
+    color: #1a1a19;
+    letter-spacing: 0.005em;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
 }
 
 /* Existing vocabulary highlight (from user's dictionary) */
 .highlightedText {
-    border-bottom: 2px solid #3b82f6;
-    background-color: rgba(59, 130, 246, 0.12);
-    color: #60a5fa;
-    border-radius: 2px;
-    padding: 0 2px;
+    text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    position: relative;
+    transition:
+        background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease;
+    color: #0a0a0a;
+    font-weight: 600;
+    background: rgba(10, 10, 10, 0.06);
+    border-bottom: 1.5px dashed rgba(10, 10, 10, 0.45);
+    border-radius: 4px;
+    padding: 0 3px;
 }
 
 .highlightedText:hover {
-    background-color: rgba(59, 130, 246, 0.24);
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-bottom-color: #0a0a0a;
+}
+
+/* Hover Tooltip (Identical to SubtitleViewer) */
+.wordTooltip {
+    position: absolute;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    z-index: 10000;
+    transform: translateX(-50%);
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px rgba(10, 10, 10, 0.18);
+    border: 1px solid rgba(10, 10, 10, 0.2);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    letter-spacing: 0.01em;
 }
 
 /* Reader Footer Navigation */
@@ -191,47 +235,51 @@
     justify-content: space-between;
     gap: 1rem;
     margin-top: 3.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--color-hairline, #282522);
+    padding-top: 1.75rem;
+    border-top: 1px solid rgba(10, 10, 10, 0.12);
 }
 
 .navChapterBtn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.65rem 1.25rem;
-    border-radius: 8px;
-    background-color: var(--color-surface, #141312);
-    border: 1px solid var(--color-hairline, #282522);
-    color: var(--color-ink, #ede8e0);
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: 0.6rem 1.25rem;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navChapterBtn:hover:not(:disabled) {
-    background-color: var(--color-surface-elevated, #1a1917);
-    border-color: var(--color-hairline-strong, #3d3934);
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
 }
 
 .navChapterBtn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
 }
 
 .progressLabelCenter {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
-    color: var(--color-mute, #666360);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-mute, #8e8e8e);
 }
 
 /* Chapter Drawer / Modal */
 .drawerOverlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    background-color: rgba(10, 10, 10, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 50;
     display: flex;
     justify-content: flex-end;
@@ -239,14 +287,15 @@
 
 .drawerContent {
     width: 100%;
-    max-width: 360px;
+    max-width: 380px;
     height: 100%;
-    background-color: var(--color-surface, #141312);
-    border-left: 1px solid var(--color-hairline, #282522);
-    padding: 1.5rem;
+    background-color: #f5f3ef;
+    border-left: 1px solid rgba(10, 10, 10, 0.12);
+    padding: 2rem 1.75rem;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    box-shadow: -10px 0 30px rgba(10, 10, 10, 0.08);
 }
 
 .drawerHeader {
@@ -254,28 +303,36 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--color-hairline, #282522);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .drawerTitle {
-    font-size: 1.125rem;
-    font-weight: 500;
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 18px;
+    font-weight: 700;
     margin: 0;
-    color: var(--color-ink, #ede8e0);
+    color: var(--color-ink, #0a0a0a);
 }
 
 .closeBtn {
-    background: none;
-    border: none;
-    color: var(--color-mute, #666360);
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
     cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
 }
 
 .closeBtn:hover {
-    color: var(--color-ink, #ede8e0);
+    background-color: #0a0a0a;
+    color: #f5f3ef;
+    border-color: #0a0a0a;
 }
 
 .chapterList {
@@ -284,40 +341,51 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.65rem;
 }
 
 .chapterItem {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    background-color: var(--color-surface-elevated, #1a1917);
-    border: 1px solid transparent;
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.08);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
     width: 100%;
 }
 
 .chapterItem:hover {
-    border-color: var(--color-hairline-strong, #3d3934);
+    background-color: #e3dfd8;
+    border-color: rgba(10, 10, 10, 0.2);
 }
 
 .chapterItemActive {
-    border-color: var(--color-primary, #0045e6);
-    background-color: rgba(0, 69, 230, 0.1);
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.chapterItemActive .chapterItemTitle {
+    color: #f5f3ef;
+}
+
+.chapterItemActive .chapterItemWords {
+    color: rgba(245, 243, 239, 0.7);
 }
 
 .chapterItemTitle {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--color-ink, #ede8e0);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-ink, #0a0a0a);
     margin: 0 0 0.25rem;
 }
 
 .chapterItemWords {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--color-mute, #666360);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 11.5px;
+    color: var(--color-mute, #8e8e8e);
     margin: 0;
 }
 
@@ -327,13 +395,14 @@
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    background-color: var(--color-surface-elevated, #1a1917);
-    border: 1px solid var(--color-hairline-strong, #3d3934);
-    color: var(--color-ink, #ede8e0);
-    padding: 0.65rem 1.25rem;
+    background-color: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f5f3ef;
+    padding: 0.7rem 1.5rem;
     border-radius: 9999px;
-    font-size: 0.875rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    font-size: 13.5px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(10, 10, 10, 0.25);
     z-index: 100;
     display: flex;
     align-items: center;

@@ -21,6 +21,7 @@ export const BooksCatalogPage: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<FilterTab>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [isDragging, setIsDragging] = useState(false);
+    const [isUploadExpanded, setIsUploadExpanded] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -28,6 +29,18 @@ export const BooksCatalogPage: React.FC = () => {
 
     useEffect(() => {
         loadBooksAndProgress();
+    }, []);
+
+    // Global drag-and-drop listener to reveal dropzone
+    useEffect(() => {
+        const handleDragEnter = (e: DragEvent) => {
+            if (e.dataTransfer?.types.includes('Files')) {
+                setIsDragging(true);
+            }
+        };
+
+        window.addEventListener('dragenter', handleDragEnter);
+        return () => window.removeEventListener('dragenter', handleDragEnter);
     }, []);
 
     const loadBooksAndProgress = async () => {
@@ -93,11 +106,13 @@ export const BooksCatalogPage: React.FC = () => {
             await BookStorage.saveCustomBook(parsedBook);
             setCustomBooks(prev => [parsedBook, ...prev]);
             setActiveFilter('MY_BOOKS');
+            setIsUploadExpanded(false);
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Failed to parse book file.';
             setErrorMessage(message);
         } finally {
             setIsUploading(false);
+            setIsDragging(false);
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -117,18 +132,37 @@ export const BooksCatalogPage: React.FC = () => {
         }
     };
 
-    const getLevelClass = (level: CEFRLevel) => {
-        if (level === 'A1' || level === 'A2') return styles.levelA1;
-        if (level === 'B1' || level === 'B2') return styles.levelB1;
-        return styles.levelC1;
+    const getBannerClass = (level: CEFRLevel, isCustom?: boolean) => {
+        if (isCustom) return styles.bannerCustom;
+        switch (level) {
+            case 'A1': return styles.bannerA1;
+            case 'A2': return styles.bannerA2;
+            case 'B1': return styles.bannerB1;
+            case 'B2': return styles.bannerB2;
+            case 'C1': return styles.bannerC1;
+            default: return styles.bannerCustom;
+        }
+    };
+
+    const getLevelSubtitle = (level: CEFRLevel): string => {
+        switch (level) {
+            case 'A1': return 'Elementary';
+            case 'A2': return 'Pre-Int';
+            case 'B1': return 'Intermediate';
+            case 'B2': return 'Upper-Int';
+            case 'C1': return 'Advanced';
+            default: return '';
+        }
     };
 
     return (
         <div className={styles.catalogContainer}>
+            <div className="pixzenGrain" aria-hidden="true" />
+
             <div className={styles.contentWrapper}>
                 <header className={styles.headerSection}>
                     <div className={styles.badgeRow}>
-                        <Sparkles size={13} strokeWidth={2.5} />
+                        <Sparkles size={12} strokeWidth={2.5} />
                         <span>GRADED EXTENSIVE READING</span>
                     </div>
                     <h1 className={styles.pageTitle}>
@@ -145,48 +179,66 @@ export const BooksCatalogPage: React.FC = () => {
                     </p>
                 </header>
 
-                {/* Drag & Drop Upload Zone */}
-                <div
-                    className={`${styles.dropzoneBanner} ${isDragging ? styles.dropzoneBannerActive : ''}`}
-                    onDragOver={e => {
-                        e.preventDefault();
-                        setIsDragging(true);
-                    }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={e => {
-                        e.preventDefault();
-                        setIsDragging(false);
-                        handleFileUpload(e.dataTransfer.files);
-                    }}
-                    onClick={() => fileInputRef.current?.click()}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
-                    }}
-                >
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".epub,.txt"
-                        className={styles.uploadInputHidden}
-                        onChange={e => handleFileUpload(e.target.files)}
-                    />
-                    <Upload size={22} className="mx-auto text-blue-500 mb-2" />
-                    <h3 className={styles.dropzoneTitle}>
-                        {isUploading ? (
-                            <FormattedMessage id="books.uploading" defaultMessage="Parsing and importing book..." />
-                        ) : (
-                            <FormattedMessage id="books.dropzonePrompt" defaultMessage="Drop your EPUB or TXT file here, or click to browse" />
+                {/* Collapsible / Drag-triggered Warm Dropzone */}
+                {(isDragging || isUploadExpanded) && (
+                    <div
+                        className={`${styles.dropzoneBanner} ${isDragging ? styles.dropzoneBannerActive : ''}`}
+                        onDragOver={e => {
+                            e.preventDefault();
+                            setIsDragging(true);
+                        }}
+                        onDragLeave={e => {
+                            // Only reset if leaving the dropzone container itself
+                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                setIsDragging(false);
+                            }
+                        }}
+                        onDrop={e => {
+                            e.preventDefault();
+                            setIsDragging(false);
+                            handleFileUpload(e.dataTransfer.files);
+                        }}
+                        onClick={() => fileInputRef.current?.click()}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+                        }}
+                    >
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".epub,.txt"
+                            className={styles.uploadInputHidden}
+                            onChange={e => handleFileUpload(e.target.files)}
+                        />
+                        <div className={styles.dropzoneIconSquircle}>
+                            <Upload size={20} strokeWidth={2} />
+                        </div>
+                        <h3 className={styles.dropzoneTitle}>
+                            {isUploading ? (
+                                <FormattedMessage id="books.uploading" defaultMessage="Parsing and importing book..." />
+                            ) : (
+                                <FormattedMessage id="books.dropzonePrompt" defaultMessage="Drop your EPUB or TXT file here, or click to browse" />
+                            )}
+                        </h3>
+                        <p className={styles.dropzoneHint}>
+                            <FormattedMessage id="books.dropzoneSupported" defaultMessage="Supports .epub and .txt with automatic chapter separation" />
+                        </p>
+                        {errorMessage && (
+                            <p className="text-red-600 text-xs mt-2 font-mono">{errorMessage}</p>
                         )}
-                    </h3>
-                    <p className={styles.dropzoneHint}>
-                        <FormattedMessage id="books.dropzoneSupported" defaultMessage="Supports .epub and .txt with automatic chapter separation" />
-                    </p>
-                    {errorMessage && (
-                        <p className="text-red-400 text-xs mt-2 font-mono">{errorMessage}</p>
-                    )}
-                </div>
+                    </div>
+                )}
+
+                {/* Hidden input for action button when banner is collapsed */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".epub,.txt"
+                    className={styles.uploadInputHidden}
+                    onChange={e => handleFileUpload(e.target.files)}
+                />
 
                 {/* Filter and Search Bar */}
                 <div className={styles.controlBar}>
@@ -211,7 +263,7 @@ export const BooksCatalogPage: React.FC = () => {
 
                     <div className={styles.actionRow}>
                         <div className={styles.searchBox}>
-                            <Search size={15} className={styles.searchIcon} />
+                            <Search size={14} className={styles.searchIcon} />
                             <input
                                 type="text"
                                 placeholder={intl.formatMessage({ id: 'books.searchPlaceholder', defaultMessage: 'Search by title or author...' })}
@@ -223,9 +275,9 @@ export const BooksCatalogPage: React.FC = () => {
 
                         <button
                             className={styles.uploadButton}
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => setIsUploadExpanded(prev => !prev)}
                         >
-                            <Upload size={14} />
+                            <Upload size={14} strokeWidth={2.2} />
                             <FormattedMessage id="books.uploadBtn" defaultMessage="Upload Book" />
                         </button>
                     </div>
@@ -256,28 +308,34 @@ export const BooksCatalogPage: React.FC = () => {
 
                             return (
                                 <article key={book.id} className={styles.bookCard}>
-                                    <div>
-                                        <div className={styles.cardHeader}>
-                                            <span className={`${styles.bookLevelPill} ${getLevelClass(book.level)}`}>
-                                                {book.isCustom ? 'CUSTOM' : book.level}
+                                    {/* Tailored Cover Banner Jacket */}
+                                    <div className={`${styles.bookCoverBanner} ${getBannerClass(book.level, book.isCustom)}`}>
+                                        <BookOpen size={64} className={styles.coverWatermark} aria-hidden="true" />
+                                        <div className={styles.bannerTopRow}>
+                                            <span className={styles.bookLevelPill}>
+                                                {book.isCustom ? 'CUSTOM' : `${book.level} · ${getLevelSubtitle(book.level)}`}
                                             </span>
                                             <div className={styles.cardMeta}>
-                                                <span className="flex items-center gap-1">
-                                                    <Clock size={12} />
+                                                <span>
+                                                    <Clock size={11} />
                                                     {book.estimatedMinutes}m
                                                 </span>
-                                                <span className="flex items-center gap-1">
-                                                    <FileText size={12} />
+                                                <span>
+                                                    <FileText size={11} />
                                                     {book.chapters.length} ch
                                                 </span>
                                             </div>
                                         </div>
+                                    </div>
 
+                                    {/* Card Body */}
+                                    <div className={styles.cardBody}>
                                         <h2 className={styles.bookTitle}>{book.title}</h2>
                                         <p className={styles.bookAuthor}>{book.author}</p>
                                         <p className={styles.bookDescription}>{book.description}</p>
                                     </div>
 
+                                    {/* Card Footer */}
                                     <div className={styles.cardFooter}>
                                         <div className={styles.progressContainer}>
                                             <div className={styles.progressBarBg}>
@@ -299,14 +357,14 @@ export const BooksCatalogPage: React.FC = () => {
                                                     title={intl.formatMessage({ id: 'books.deleteTitle', defaultMessage: 'Delete book' })}
                                                     aria-label="Delete book"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={15} />
                                                 </button>
                                             )}
                                             <Link
                                                 to={`/books/${book.id}`}
                                                 className={styles.readButton}
                                             >
-                                                <BookOpen size={14} />
+                                                <BookOpen size={13} />
                                                 <span>
                                                     {percentage > 0 ? (
                                                         <FormattedMessage id="books.continue" defaultMessage="Continue" />
