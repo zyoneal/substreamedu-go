@@ -74,50 +74,91 @@
     transform: scale(1.1);
 }
 
-/* ========== Start Overlay ========== */
-.startOverlay {
+/* ========== Session Progress ========== */
+.progressWrap {
+    margin-bottom: 12px;
+}
+
+.progressTrack {
+    position: relative;
+    height: 6px;
+    border-radius: 9999px;
+    background: rgba(10, 10, 10, 0.1);
+    overflow: hidden;
+}
+
+.progressFill {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(245, 243, 239, 0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 20px;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.startOverlayContent {
-    text-align: center;
-    max-width: 440px;
-    padding: 32px;
-}
-
-.startButton {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 32px;
+    inset: 0 auto 0 0;
     border-radius: 9999px;
     background: #0a0a0a;
-    color: #f5f3ef;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.startButton:hover {
-    background: #222222;
-    transform: translateY(-1px);
+.progressSpark {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+    transform: translateX(-100%);
+    animation: progressSpark 0.5s ease-out;
+    pointer-events: none;
+}
+
+@keyframes progressSpark {
+    to {
+        transform: translateX(100%);
+    }
+}
+
+.milestone {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(10, 10, 10, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .progressFill {
+        transition: none;
+    }
+
+    .progressSpark {
+        animation: none;
+        display: none;
+    }
+}
+
+/* ========== Checkpoint ========== */
+.checkpointContent {
+    text-align: center;
+    max-width: 32rem;
+    margin: 2rem auto;
+    padding: 3rem 2rem;
+}
+
+.checkpointTitle {
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0a0a0a;
+    margin: 0 0 0.75rem;
+}
+
+.checkpointDescription {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: rgba(10, 10, 10, 0.65);
+    margin: 0 0 1.75rem;
+}
+
+.checkpointActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
 }
 
 /* ========== Rating Buttons ========== */

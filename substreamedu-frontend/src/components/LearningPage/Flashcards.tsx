@@ -6,7 +6,6 @@ import { LanguageContext } from '../LanguageContext';
 import styles from './Flashcards.module.css';
 
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
-import Play from 'lucide-react/dist/esm/icons/play';
 import BookOpen from 'lucide-react/dist/esm/icons/book-open';
 import Layout from 'lucide-react/dist/esm/icons/layout';
 import Languages from 'lucide-react/dist/esm/icons/languages';
@@ -42,12 +41,15 @@ type Rating = 'again' | 'good';
 
 
 const SESSION_STORAGE_KEY = 'srs_session_state';
+// After this many ratings the user is offered a natural stopping point (Spec 56 R3).
+const SESSION_CHECKPOINT = 20;
 
 interface SessionState {
     sessionId: string;
     wordIds: number[];
     currentIndex: number;
     answeredIds: number[];
+    goodIds?: number[];
     startTime: number;
 }
 
@@ -64,8 +66,12 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
     const [loading, setLoading] = useState(true);
     const [totalDictionarySize, setTotalDictionarySize] = useState<number | null>(null);
     const initialCardsCount = useRef<number>(0);
-    const [waveIndex, setWaveIndex] = useState(1);
-    const [waveSize, setWaveSize] = useState(0);
+    // Monotonic progress: cards rated Good at least once / unique cards in this session.
+    const [goodIds, setGoodIds] = useState<Set<number>>(new Set());
+    const [sessionTotal, setSessionTotal] = useState(0);
+    const [ratingsCount, setRatingsCount] = useState(0);
+    const [showCheckpoint, setShowCheckpoint] = useState(false);
+    const checkpointShown = useRef(false);
     const [direction, setDirection] = useState(0);
     const [sessionId] = useState(() => Date.now().toString());
     const [answeredIds, setAnsweredIds] = useState<Set<number>>(new Set());
@@ -88,6 +94,19 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
     const [tooltipState, setTooltipState] = useState<{ text: string; x: number; y: number } | null>(null);
     const [hasStarted, setHasStarted] = useState(false);
     const currentWord = reviewWords[currentIndex];
+
+    // Browsers block audio autoplay until a user gesture; unlock TTS on the first interaction
+    // instead of forcing a separate "Start" click.
+    useEffect(() => {
+        if (hasStarted) return;
+        const start = () => setHasStarted(true);
+        window.addEventListener('pointerdown', start, { once: true });
+        window.addEventListener('keydown', start, { once: true });
+        return () => {
+            window.removeEventListener('pointerdown', start);
+            window.removeEventListener('keydown', start);
+        };
+    }, [hasStarted]);
 
     const decodeHtmlEntities = (str: string) => {
         const txt = document.createElement("textarea");
@@ -215,12 +234,13 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
     }, []);
 
     
-    const saveSessionState = useCallback((words: DictionaryItem[], index: number, answered: Set<number>) => {
+    const saveSessionState = useCallback((words: DictionaryItem[], index: number, answered: Set<number>, good: Set<number>) => {
         const state: SessionState = {
             sessionId,
             wordIds: words.map(w => w.id),
             currentIndex: index,
             answeredIds: Array.from(answered),
+            goodIds: Array.from(good),
             startTime: cardStartTime
         };
         localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
@@ -250,8 +270,12 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                     if (restoredWords.length > 0) {
                         setReviewWords(restoredWords);
                         initialCardsCount.current = Math.max(state.wordIds.length, restoredWords.length);
-                        setWaveIndex(1);
-                        setWaveSize(restoredWords.length);
+                        const restoredGood = (state.goodIds || []).filter(id => Number.isFinite(id));
+                        setGoodIds(new Set(restoredGood));
+                        setSessionTotal(new Set([...restoredWords.map(w => w.id), ...restoredGood]).size);
+                        setRatingsCount(0);
+                        setShowCheckpoint(false);
+                        checkpointShown.current = false;
                         setCurrentIndex(Math.min(state.currentIndex, restoredWords.length - 1));
                         setAnsweredIds(new Set(state.answeredIds));
                         setCardStartTime(Date.now());
@@ -277,8 +301,11 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
             const data = await DictionaryService.fetchSRSToday();
             setReviewWords(data.cards || []);
             initialCardsCount.current = data.cards ? data.cards.length : 0;
-            setWaveIndex(1);
-            setWaveSize(data.cards ? data.cards.length : 0);
+            setGoodIds(new Set());
+            setSessionTotal(data.cards ? data.cards.length : 0);
+            setRatingsCount(0);
+            setShowCheckpoint(false);
+            checkpointShown.current = false;
             setTotalDictionarySize(data.totalDictionarySize);
             setAnsweredIds(new Set());
             setCurrentIndex(0);
@@ -304,6 +331,15 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
 
     const handleRefresh = () => {
         fetchReviewWords(true);
+    };
+
+    // Ends the session early. Unrated cards are never sent to the API, so they stay due.
+    const handleFinishEarly = () => {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        setShowCheckpoint(false);
+        setReviewWords([]);
+        setRevealLevel(0);
+        setCompletionStage(sessionWords.length > 0 ? 'story' : 'finished');
     };
 
     const changeCard = useCallback((newIndex: number) => {
@@ -341,6 +377,8 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         // 2. Prepare next state OPTIMISTICALLY and update UI immediately
         const newAnsweredIds = new Set(answeredIds);
         newAnsweredIds.add(word.id);
+        const newGoodIds = new Set(goodIds);
+        if (rating === 'good') newGoodIds.add(word.id);
 
         const updatedList = [...reviewWords];
         const currentRef = updatedList[currentIndex];
@@ -354,6 +392,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         }
 
         setAnsweredIds(newAnsweredIds);
+        setGoodIds(newGoodIds);
         setReviewWords(updatedList);
         setRevealLevel(0);
         setAnswerShownTime(null);
@@ -365,16 +404,14 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
             : currentIndex;
         setCurrentIndex(nextIdx);
 
-        let nextWaveIndex = waveIndex + 1;
-        let nextWaveSize = waveSize;
-        if (nextWaveIndex > waveSize) {
-            nextWaveIndex = 1;
-            nextWaveSize = updatedList.length;
+        const nextRatingsCount = ratingsCount + 1;
+        setRatingsCount(nextRatingsCount);
+        if (nextRatingsCount >= SESSION_CHECKPOINT && !checkpointShown.current && updatedList.length > 0) {
+            checkpointShown.current = true;
+            setShowCheckpoint(true);
         }
-        setWaveIndex(nextWaveIndex);
-        setWaveSize(nextWaveSize);
 
-        saveSessionState(updatedList, nextIdx, newAnsweredIds);
+        saveSessionState(updatedList, nextIdx, newAnsweredIds, newGoodIds);
 
         if (updatedList.length === 0) {
             localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -393,7 +430,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                 if (rating === 'good' && result && result.repeatInSession) {
                     setReviewWords((prev) => {
                         const next = [...prev, result.card || currentRef];
-                        saveSessionState(next, nextIdx, newAnsweredIds);
+                        saveSessionState(next, nextIdx, newAnsweredIds, newGoodIds);
                         return next;
                     });
                     setCompletionStage((prev) => (prev !== 'learning' ? 'learning' : prev));
@@ -405,7 +442,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
             .finally(() => {
                 inFlightCardIds.current.delete(word.id);
             });
-    }, [reviewWords, currentIndex, answerShownTime, answeredIds, saveSessionState, sessionWords, waveIndex, waveSize]);
+    }, [reviewWords, currentIndex, answerShownTime, answeredIds, goodIds, ratingsCount, saveSessionState, sessionWords]);
 
     const nextCard = useCallback(() => {
         if (currentIndex < reviewWords.length - 1) {
@@ -502,7 +539,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
             const currentCard = reviewWords[currentIndex];
-            if (loading || event.repeat || (currentCard && inFlightCardIds.current.has(currentCard.id))) return;
+            if (loading || showCheckpoint || event.repeat || (currentCard && inFlightCardIds.current.has(currentCard.id))) return;
 
             switch (event.key) {
                 case 'ArrowLeft':
@@ -555,7 +592,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [currentIndex, reviewWords.length, revealLevel, loading, handleRating, nextCard, prevCard, reviewWords]);
+    }, [currentIndex, reviewWords.length, revealLevel, loading, showCheckpoint, handleRating, nextCard, prevCard, reviewWords]);
 
     if (loading) {
         return (
@@ -571,28 +608,24 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         );
     }
 
+    // Short fade + slide. Enter and exit overlap (no mode="wait") so each card feels instant.
     const variants = {
         enter: (direction: number) => ({
-            x: direction > 0 ? 300 : -300,
+            x: direction > 0 ? 40 : -40,
             opacity: 0,
-            scale: 0.9,
-            rotateY: direction > 0 ? 20 : -20,
         }),
         center: {
             zIndex: 1,
             x: 0,
             opacity: 1,
-            scale: 1,
-            rotateY: 0,
         },
         exit: (direction: number) => ({
             zIndex: 0,
-            x: direction < 0 ? 300 : -300,
+            x: direction < 0 ? 40 : -40,
             opacity: 0,
-            scale: 0.9,
-            rotateY: direction < 0 ? 20 : -20,
         })
     };
+    const progressPercent = sessionTotal > 0 ? Math.min(100, (goodIds.size / sessionTotal) * 100) : 0;
     return (
         <div className={styles.pageContainer}>
             <div className={styles.ambientGlow} />
@@ -601,10 +634,54 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
             <div className={styles.content}>
         <div className="flex flex-col flex-1 items-center justify-start pt-28 pb-4" >
             {
-                currentWord ? (
+                showCheckpoint ? (
+                    <div className={styles.completionContainer}>
+                        <div className={styles.checkpointContent}>
+                            <h2 className={styles.checkpointTitle}>
+                                {intl.formatMessage({ id: 'flashcards.checkpointTitle', defaultMessage: '{count} cards done' }, { count: ratingsCount })}
+                            </h2>
+                            <p className={styles.checkpointDescription}>
+                                {intl.formatMessage({ id: 'flashcards.checkpointDescription', defaultMessage: 'Nice work. You can stop here and the rest will wait for you, or keep going.' })}
+                            </p>
+                            <div className={styles.checkpointActions}>
+                                <button
+                                    onClick={() => setShowCheckpoint(false)}
+                                    className={styles.primaryButton}
+                                >
+                                    <span>{intl.formatMessage({ id: 'flashcards.checkpointContinue', defaultMessage: 'Keep going' })}</span>
+                                </button>
+                                <button
+                                    onClick={handleFinishEarly}
+                                    className={styles.refreshButton}
+                                >
+                                    <span>{intl.formatMessage({ id: 'flashcards.checkpointFinish', defaultMessage: 'Finish for today' })}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : currentWord ? (
                     <div className="w-full max-w-2xl mx-auto px-6 relative perspective-1000 z-0">
+                        <div className={styles.progressWrap}>
+                            <div
+                                className={styles.progressTrack}
+                                role="progressbar"
+                                aria-label={intl.formatMessage({ id: 'flashcards.progressLabel', defaultMessage: 'Session progress' })}
+                                aria-valuemin={0}
+                                aria-valuemax={sessionTotal}
+                                aria-valuenow={goodIds.size}
+                            >
+                                <div className={styles.progressFill} style={{ width: `${progressPercent}%` }}>
+                                    {goodIds.size > 0 && <span key={goodIds.size} className={styles.progressSpark} />}
+                                </div>
+                            </div>
+                            {progressPercent >= 50 && progressPercent < 100 && (
+                                <p className={styles.milestone}>
+                                    {intl.formatMessage({ id: 'flashcards.halfway', defaultMessage: 'Halfway there. Keep it up!' })}
+                                </p>
+                            )}
+                        </div>
                         <div className="grid place-items-center">
-                            <AnimatePresence initial={false} custom={direction} mode="wait">
+                            <AnimatePresence initial={false} custom={direction}>
                                 <motion.div
                                     key={currentWord.id}
                                     custom={direction}
@@ -612,36 +689,10 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                     initial="enter"
                                     animate="center"
                                     exit="exit"
-                                    transition={{
-                                        x: { type: "spring", stiffness: 300, damping: 30 },
-                                        opacity: { duration: 0.2 },
-                                        scale: { duration: 0.2 },
-                                        rotateY: { duration: 0.4 }
-                                    }}
+                                    transition={{ duration: 0.15, ease: 'easeOut' }}
                                     className="w-full col-start-1 row-start-1"
-                                    style={{ perspective: 1000 }}
                                 >
                                     <div className="relative w-full h-full">
-                                        <AnimatePresence>
-                                            {!hasStarted && (
-                                                <motion.div
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className={styles.startOverlay}
-                                                >
-                                                    <div className={styles.startOverlayContent}>
-                                                        <button
-                                                            className={styles.startButton}
-                                                            onClick={() => setHasStarted(true)}
-                                                        >
-                                                            <Play className={styles.startIcon} />
-                                                            {intl.formatMessage({ id: 'srs.start_learning', defaultMessage: 'Start Learning' })}
-                                                        </button>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
                                         <Flashcard
                                             word={currentWord.highlightedText || ''}
                                             transcription={currentWord.transcription || ''}
@@ -713,9 +764,9 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                     className={styles.cardCounter}
                                     role="status"
                                     aria-live="polite"
-                                    aria-label={`Card ${waveSize > 0 ? waveIndex : 0} of ${waveSize}`}
+                                    aria-label={`${goodIds.size} of ${sessionTotal}`}
                                 >
-                                    {waveSize > 0 ? waveIndex : 0} / {waveSize}
+                                    {goodIds.size} / {sessionTotal}
                                 </span>
 
                                 <button
@@ -883,7 +934,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                 className={styles.primaryButton}
                                 style={{ marginTop: '1rem' }}
                             >
-                                <span>{intl.formatMessage({ id: 'flashcards.iNotedIt' })}</span>
+                                <span>{generatedText ? intl.formatMessage({ id: 'flashcards.iNotedIt' }) : intl.formatMessage({ id: 'flashcards.skip', defaultMessage: 'Skip' })}</span>
                             </button>
                         </div>
                     </div>
@@ -900,7 +951,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                             </h2>
                             <p className={styles.completionDescription}>
                                 {Math.max(initialCardsCount.current, answeredIds.size) > 0 && sessionWords.length > 0
-                                    ? `Great job today! You've reviewed ${Math.max(initialCardsCount.current, answeredIds.size)} cards across ${sessionWords.length} unique words.`
+                                    ? intl.formatMessage({ id: 'flashcards.sessionSummary', defaultMessage: "Great job today! You've reviewed {cards} cards across {words} unique words." }, { cards: Math.max(initialCardsCount.current, answeredIds.size), words: sessionWords.length })
                                     : intl.formatMessage({ id: 'flashcards.greatJob' })}
                             </p>
 
@@ -911,7 +962,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                         className={styles.activePracticeButton}
                                     >
                                         <Sparkles size={16} />
-                                        <span>Practice these {sessionWords.length} words actively</span>
+                                        <span>{intl.formatMessage({ id: 'flashcards.practiceActively', defaultMessage: 'Practice these {count} words actively' }, { count: sessionWords.length })}</span>
                                     </button>
                                 )}
 

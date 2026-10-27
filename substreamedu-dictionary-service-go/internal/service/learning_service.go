@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,6 +58,61 @@ func ComputeTargetNewCards(reviewCount, sessionLimit, maxNewWords int) int {
 	return remainingSlots
 }
 
+// SplitNewCardQuota returns how many of the targetNew new cards may be recognition (non-production)
+// cards. It is capped at maxNewWords so a new word's production card cannot double the number of
+// new words introduced per day; unlocked production cards fill whatever budget remains.
+func SplitNewCardQuota(targetNew, maxNewWords int) int {
+	if targetNew <= 0 {
+		return 0
+	}
+	if targetNew > maxNewWords {
+		return maxNewWords
+	}
+	return targetNew
+}
+
+// productionGateEnabled reports whether production cards are held back until their recognition
+// sibling has graduated. Set SRS_GATE_PRODUCTION_CARDS=false to restore the legacy selection
+// without a deploy of data or schema changes (Spec 57 R3).
+func productionGateEnabled() bool {
+	return os.Getenv("SRS_GATE_PRODUCTION_CARDS") != "false"
+}
+
+// selectNewCards picks up to targetNew new cards. With the gate on, day one of a new word is
+// recognition only; its production card appears once recognition reaches 'review'.
+// Any query failure degrades to the legacy selection so a session never fails because of the gate.
+func (s *LearningService) selectNewCards(ctx context.Context, userID uuid.UUID, targetNew int) []model.Dictionary {
+	legacy := func() []model.Dictionary {
+		newWords, err := s.repo.FindRandomNewWords(ctx, userID, targetNew)
+		if err != nil {
+			s.logger.Warn("Failed to fetch new words, proceeding with reviews only", zap.Error(err))
+			return nil
+		}
+		return newWords
+	}
+
+	if !productionGateEnabled() {
+		return legacy()
+	}
+
+	recognition, err := s.repo.FindNewRecognitionCards(ctx, userID, SplitNewCardQuota(targetNew, DefaultMaxNewWords))
+	if err != nil {
+		s.logger.Warn("Gated new-card selection failed, falling back to legacy selection", zap.Error(err))
+		return legacy()
+	}
+
+	selected := recognition
+	if remaining := targetNew - len(recognition); remaining > 0 {
+		production, err := s.repo.FindUnlockedNewProductionCards(ctx, userID, remaining)
+		if err != nil {
+			s.logger.Warn("Failed to fetch unlocked production cards, continuing without them", zap.Error(err))
+		} else {
+			selected = append(selected, production...)
+		}
+	}
+	return selected
+}
+
 func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, loc *time.Location) (*dto.DailySessionDto, error) {
 	if loc == nil {
 		loc = time.UTC
@@ -76,11 +132,7 @@ func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, l
 
 	var newWords []model.Dictionary
 	if targetNew > 0 {
-		var err error
-		newWords, err = s.repo.FindRandomNewWords(ctx, userID, targetNew)
-		if err != nil {
-			s.logger.Warn("Failed to fetch new words, proceeding with reviews only", zap.Error(err))
-		}
+		newWords = s.selectNewCards(ctx, userID, targetNew)
 	}
 
 	finalBatch := append(reviewBatch, newWords...)

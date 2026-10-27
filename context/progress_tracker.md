@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 56: Learning Session Motivation & Workload Reduction (ADR-129, ADR-130): removed the Start Learning gate (audio unlocks on first gesture), monotonic Good-based progress bar, checkpoint after 20 ratings (Finish for today / Keep going), progress spark and halfway milestone with reduced-motion support, fade+slide card transition without `mode="wait"`, skippable story stage, localized finish copy; gated new production cards behind recognition mastery in `GetDailyCards` with fallback and flag `SRS_GATE_PRODUCTION_CARDS` (Frontend 59/59 suites 307/307 tests passing, Go suites clean).
   - Spec 55: Book-Based Language Learning & Interactive Reader (ADR-128): Curated CEFR graded readers (A1–C1), client-side IndexedDB storage engine (`substreamedu_books_db`) with memory fallback for custom books & reading progress, browser-based EPUB (JSZip + DOMParser) & TXT parsers, Warm Cinematic Espresso styling tokens, tokenized interactive reader with `TranslationPopover` & `useSaveWord` integration identical to `SubtitleViewer`, table of contents drawer, font scale toolbar, `/books` & `/books/:bookId` routes, desktop/mobile navigation header link, and dashboard bento grid integration (Frontend 59/59 suites 300/300 tests passing).
   - Spec 54: AI Harness & SDD Workflow Modernization (ADR-127): purged 39 MB stale `ai_agent_setup/` directory; archived 202 KB `progress_tracker.md` to `context/archive/progress_tracker_history.md`; added machine-enforced `.harness/` scripts (`check-protected-files.sh`, `check-spec-scope.sh`, `devin-pre-exec.sh`); curated `.agents/skills/` (added `spec-writer`, `fast-fix`, `scout`, `cross-service-change`); unified Definition of Done via `./verify.sh` and `make verify`; updated `AGENTS.md` to progressive disclosure model (< 5 KB) (Go suites clean, Frontend 54/54 suites 288/288 tests passing).
   - Subtitle Card Trash Button Editorial Redesign & Cross-Boundary Isolation (ADR-126)
@@ -21,6 +22,18 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-130: Production Card Gating by Recognition Mastery (Spec 57)
+- **Status**: Accepted
+- **Context**: `AddWord` creates recognition and production cards together, so a new word put both into its first session (25 words = 50 cards). Production (recall from meaning) is the hardest type.
+- **Decision**: Gate in the selection query, not at creation: `FindNewRecognitionCards` (non-production, capped at `DefaultMaxNewWords`) plus `FindUnlockedNewProductionCards` (sibling recognition not `<> 'review'`, orphans stay eligible) fill the unchanged `ComputeTargetNewCards` budget. Env flag `SRS_GATE_PRODUCTION_CARDS=false` rolls back; query errors fall back to `FindRandomNewWords`. Rejected: creation-time gating (new write path, backfill) and a plain quota cut (slows vocabulary growth).
+- **Consequences**: Day one of a new word is recognition only, roughly halving first-day load. No schema change; sibling check is an anti-join on `idx_dictionary_user_id` (add `(user_id, highlighted_text)` index if profiling requires). Needs retention and completion-rate monitoring. Telegram bot selection path is unchanged.
+
+### ADR-129: Client-Side Session Shaping for /learning (Spec 56)
+- **Status**: Accepted
+- **Context**: Users reported no desire to study. Root cause: every word creates 2 cards (recognition + production), so 25 words become 50 cards in one session (cap 50). The wave counter reset, the start gate added a click, and there was no reward feedback.
+- **Decision**: Phase 1 is frontend-only and reversible: monotonic progress (`goodIds / sessionTotal`, persisted as optional `goodIds` in `srs_session_state`), checkpoint at `SESSION_CHECKPOINT = 20` (unrated cards stay due, no FSRS/API change), no start gate, faster transition, skippable story.
+- **Consequences**: Perceived effort drops without touching FSRS. Does not fix the workload root cause. Phase 2 (Spec 57) should gate production cards behind recognition mastery in `GetDailyCards` and consider in-session streak. Success metrics (completion rate, time-to-first-rating) are not yet measured.
 
 ### ADR-128: Client-Side Graded Readers & EPUB/TXT Interactive Vocabulary Learning (Spec 55)
 - **Status**: Accepted

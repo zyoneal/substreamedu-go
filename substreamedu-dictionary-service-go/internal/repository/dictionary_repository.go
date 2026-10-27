@@ -228,6 +228,86 @@ func (r *DictionaryRepository) FindRandomNewWords(ctx context.Context, userID uu
 	return result, nil
 }
 
+const newCardColumns = `id, user_id, highlighted_text, translated_text, transcription, context, resource_name, status,
+		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date,
+		       created_on, difficulty_score, lapses, consecutive_success,
+		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type`
+
+// findNewRecognitionCardsSQL selects new non-production cards (recognition and any legacy type).
+// Production cards (card_type = 1) are deliberately excluded: they enter a session only
+// through findUnlockedNewProductionCardsSQL once their recognition sibling has graduated.
+const findNewRecognitionCardsSQL = `
+		SELECT ` + newCardColumns + `
+		FROM dictionary
+		WHERE user_id = $1 AND status = 'new' AND card_type <> 1
+		ORDER BY created_on DESC
+		LIMIT $2`
+
+// findUnlockedNewProductionCardsSQL selects new production cards whose recognition sibling
+// (same user and highlighted_text) is in 'review'. A production card without any recognition
+// sibling stays eligible so orphaned or legacy cards cannot get stuck.
+const findUnlockedNewProductionCardsSQL = `
+		SELECT d.id, d.user_id, d.highlighted_text, d.translated_text, d.transcription, d.context, d.resource_name, d.status,
+		       d.ease_factor, d.interval, d.repetition_level, d.last_reviewed, d.next_repetition_date,
+		       d.created_on, d.difficulty_score, d.lapses, d.consecutive_success,
+		       d.total_reviews, d.correct_reviews, d.hard_count, d.learning_step, d.learning_due,
+		       COALESCE(d.definition, ''), COALESCE(d.image_url, ''), d.is_leech, d.stability, d.retrievability, d.rolling_retention, d.card_type
+		FROM dictionary d
+		WHERE d.user_id = $1 AND d.status = 'new' AND d.card_type = 1
+		  AND NOT EXISTS (
+		      SELECT 1 FROM dictionary s
+		      WHERE s.user_id = d.user_id
+		        AND s.highlighted_text = d.highlighted_text
+		        AND s.card_type = 0
+		        AND s.status <> 'review'
+		  )
+		ORDER BY d.created_on DESC
+		LIMIT $2`
+
+// FindNewRecognitionCards returns up to limit new non-production cards, newest first.
+func (r *DictionaryRepository) FindNewRecognitionCards(ctx context.Context, userID uuid.UUID, limit int) ([]model.Dictionary, error) {
+	rows, err := r.db.Query(ctx, findNewRecognitionCardsSQL, userID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query new recognition cards: %w", err)
+	}
+	return scanNewCardRows(rows)
+}
+
+// FindUnlockedNewProductionCards returns up to limit new production cards whose recognition
+// sibling has graduated to 'review', newest first.
+func (r *DictionaryRepository) FindUnlockedNewProductionCards(ctx context.Context, userID uuid.UUID, limit int) ([]model.Dictionary, error) {
+	rows, err := r.db.Query(ctx, findUnlockedNewProductionCardsSQL, userID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query unlocked new production cards: %w", err)
+	}
+	return scanNewCardRows(rows)
+}
+
+func scanNewCardRows(rows pgx.Rows) ([]model.Dictionary, error) {
+	defer rows.Close()
+
+	var result []model.Dictionary
+	for rows.Next() {
+		var d model.Dictionary
+		err := rows.Scan(
+			&d.ID, &d.UserID, &d.Word, &d.Translation, &d.Transcription, &d.Context, &d.Source, &d.Status,
+			&d.EaseFactor, &d.Interval, &d.RepetitionLevel, &d.LastReviewed, &d.NextRepetitionDate,
+			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
+			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
+			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
+		)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, d)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (r *DictionaryRepository) FindRandomWord(ctx context.Context, userID uuid.UUID) (*model.Dictionary, error) {
 	var d model.Dictionary
 	err := r.db.QueryRow(ctx, `

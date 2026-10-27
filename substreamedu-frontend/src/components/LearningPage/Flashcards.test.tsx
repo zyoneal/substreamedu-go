@@ -135,9 +135,8 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     renderComponent();
 
-    // Start learning session
-    const startButton = await screen.findByRole('button', { name: /start learning/i });
-    fireEvent.click(startButton);
+    // No start gate: the first card is interactive immediately
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
 
     // --- ROUND 1 ---
     // Card 1: 'tenure'
@@ -217,9 +216,8 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     renderComponent();
 
-    // Start learning session
-    const startButton = await screen.findByRole('button', { name: /start learning/i });
-    fireEvent.click(startButton);
+    // No start gate: the first card is interactive immediately
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
 
     // --- ROUND 1 ---
     // Card 1 ('tenure'): Rate "Again" (Don't know)
@@ -276,6 +274,104 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     });
   });
 
+  it('shows the first card without a "Start learning" gate', async () => {
+    renderComponent();
+
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
+    expect(screen.queryByRole('button', { name: /start learning/i })).not.toBeInTheDocument();
+  });
+
+  it('progress only advances on Good and never decreases', async () => {
+    renderComponent();
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
+
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-valuenow', '0');
+    expect(bar).toHaveAttribute('aria-valuemax', '2');
+
+    // Again on card 1: no progress
+    fireEvent.click(screen.getByText(/tap to reveal/i));
+    fireEvent.click(screen.getByRole('button', { name: /again/i }));
+    await screen.findByRole('heading', { level: 1, name: 'serendipity' });
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+
+    // Good on card 2: progress 1
+    fireEvent.click(screen.getByText(/tap to reveal/i));
+    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2');
+
+    // No checkpoint for short sessions
+    expect(screen.queryByText(/cards done/i)).not.toBeInTheDocument();
+  });
+
+  describe('checkpoint', () => {
+    const manyCards = Array.from({ length: 25 }, (_, i) => ({
+      ...mockCards[0],
+      id: 1000 + i,
+      highlightedText: `word${i}`,
+      context: '',
+    }));
+
+    const rateGood = async (index: number) => {
+      await screen.findByRole('heading', { level: 1, name: `word${index}` });
+      fireEvent.click(screen.getByText(/tap to reveal/i));
+      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    };
+
+    beforeEach(() => {
+      (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValue({
+        cards: manyCards,
+        totalDictionarySize: 25,
+      });
+    });
+
+    it('appears after 20 ratings and "Keep going" resumes the session', async () => {
+      renderComponent();
+      for (let i = 0; i < 20; i++) {
+        await rateGood(i);
+      }
+
+      expect(await screen.findByText('20 cards done')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /keep going/i }));
+
+      expect(await screen.findByRole('heading', { level: 1, name: 'word20' })).toBeInTheDocument();
+      expect(screen.queryByText('20 cards done')).not.toBeInTheDocument();
+    });
+
+    it('"Finish for today" ends the session without reviewing remaining cards', async () => {
+      renderComponent();
+      for (let i = 0; i < 20; i++) {
+        await rateGood(i);
+      }
+
+      await screen.findByText('20 cards done');
+      fireEvent.click(screen.getByRole('button', { name: /finish for today/i }));
+
+      expect(await screen.findByText('Story text')).toBeInTheDocument();
+      expect(DictionaryService.reviewCard2Button).toHaveBeenCalledTimes(20);
+      expect(localStorage.getItem('srs_session_state')).toBeNull();
+    });
+  });
+
+  it('lets the user skip the story stage and shows localized finish copy', async () => {
+    (DictionaryService.generateSessionSummary as jest.Mock).mockReturnValue(new Promise(() => {}));
+    renderComponent();
+
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
+    fireEvent.click(screen.getByText(/tap to reveal/i));
+    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    await screen.findByRole('heading', { level: 1, name: 'serendipity' });
+    fireEvent.click(screen.getByText(/tap to reveal/i));
+    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+
+    fireEvent.click(await screen.findByRole('button', { name: /skip/i }));
+
+    expect(await screen.findByText('All cards have been studied!')).toBeInTheDocument();
+    expect(screen.getByText("Great job today! You've reviewed 2 cards across 2 unique words.")).toBeInTheDocument();
+  });
+
   it('defines all required CSS classes for completion stage in Flashcards.module.css', () => {
     const cssContent = fs.readFileSync(path.resolve(__dirname, 'Flashcards.module.css'), 'utf-8');
 
@@ -290,10 +386,18 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       'refreshButton',
       'refreshIcon',
       'spinning',
+      'progressTrack',
+      'progressFill',
+      'checkpointContent',
     ];
 
     for (const className of requiredClasses) {
       expect(cssContent).toMatch(new RegExp(`\\.${className}\\b`));
     }
+  });
+
+  it('disables progress animation for prefers-reduced-motion', () => {
+    const cssContent = fs.readFileSync(path.resolve(__dirname, 'Flashcards.module.css'), 'utf-8');
+    expect(cssContent).toMatch(/prefers-reduced-motion:\s*reduce/);
   });
 });
