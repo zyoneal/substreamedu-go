@@ -56,7 +56,7 @@ Touch **only** the following files:
 - `substreamedu-frontend/src/utils/textUtils*`
 - `substreamedu-frontend/src/components/DashboardPage/DashboardPage.tsx`
 - `substreamedu-frontend/src/components/DictionaryPage/**`
-- `substreamedu-frontend/src/components/VideoPage/VideoPage.tsx`
+- `substreamedu-frontend/src/components/VideoPage/**`
 - `context/feature_specs/**`
 - `context/progress_tracker.md`
 - `substreamedu-frontend/src/components/LearningPage/**`
