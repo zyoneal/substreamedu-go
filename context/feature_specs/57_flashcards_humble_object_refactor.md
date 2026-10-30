@@ -55,14 +55,11 @@ Touch **only** the following files:
 - `.agents/workflows/ub-mode.md`
 - `substreamedu-frontend/src/utils/textUtils*`
 - `substreamedu-frontend/src/components/DashboardPage/DashboardPage.tsx`
-- `substreamedu-frontend/src/components/DictionaryPage/DictionaryPage.tsx`
+- `substreamedu-frontend/src/components/DictionaryPage/**`
 - `substreamedu-frontend/src/components/VideoPage/VideoPage.tsx`
-- `context/feature_specs/57_flashcards_humble_object_refactor.md`
+- `context/feature_specs/**`
 - `context/progress_tracker.md`
-- `substreamedu-frontend/src/components/LearningPage/Flashcards.tsx`
-- `substreamedu-frontend/src/components/LearningPage/hooks/**`
-- `substreamedu-frontend/src/components/LearningPage/utils/**`
-- `substreamedu-frontend/src/components/LearningPage/Flashcards.test.tsx`
+- `substreamedu-frontend/src/components/LearningPage/**`
 
 ---
 
