@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 61: VocabularyService Clean Architecture & SRP Refactoring (ADR-136): Decomposed 1212-line monolithic `vocabulary_service.go` into domain modules `vocabulary_export.go` (Anki packaging & CSV streaming), `vocabulary_image_downloader.go` (safe async image downloading & SSRF protection), and `vocabulary_stats.go` (streak & SRS calculation), reducing `vocabulary_service.go` to 474 lines (>60% reduction) with zero regressions across all services.
   - Spec 60: AIService Clean Architecture & SRP Refactoring (ADR-135): Decomposed 3055-line God Object `ai_service.go` into focused domain modules (`ai_provider_client.go`, `ai_grammar_fallback.go`, `ai_exercise_generator.go`, `ai_lesson_generator.go`, `ai_categorizer.go`, `ai_prompts.go`) backed by characterization unit tests (`ai_grammar_fallback_test.go`, `ai_lesson_generator_test.go`, `ai_prompts_test.go`), reducing `ai_service.go` to 1216 lines (>60% reduction) with zero breaking changes or regressions across all services.
   - Spec 59: VideoPlayer Humble Object & SRP Refactoring (ADR-134): Decomposed 1523-line monolithic `VideoPlayer.tsx` into domain hooks `useVideoSubtitles.ts`, `useVideoOnboarding.ts`, `useVideoModalsState.ts`, and `useWordTooltip.ts` with comprehensive unit tests (Frontend 66/66 suites 339/339 tests passing, Go suites clean).
   - Spec 58: Dictionary Page Humble Object & SRP Refactoring (ADR-133): Decomposed 1355-line monolithic `DictionaryPage.tsx` into domain hook `useDictionaryData.ts`, search/pagination hook `useDictionarySearchPagination.ts`, pure utility `dictionaryUtils.tsx` with unit tests, and isolated subcomponents `DictionaryWordCard`, `DictionaryResourceCard`, `DictionaryPagination`, and `DictionaryEditModal` (Frontend 62/62 suites 325/325 tests passing, Go suites clean).
@@ -27,6 +28,17 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-136: VocabularyService Clean Architecture & SRP Refactoring (Spec 61)
+- **Status**: Accepted
+- **Context**: `vocabulary_service.go` in `substreamedu-dictionary-service-go` was 1212 lines long, combining Anki dual-model generation and CSV streaming, asynchronous image downloading with custom SSRF-safe dialer/transport, streak/SRS statistics calculation, and dictionary CRUD into a single monolithic service.
+- **Decision**:
+  1. Extracted Anki packaging (`genanki`), TTS/human audio fetching, and CSV streaming into `internal/service/vocabulary_export.go`.
+  2. Extracted SSRF validation and safe asynchronous image disk downloader into `internal/service/vocabulary_image_downloader.go`.
+  3. Extracted streak calculation, weekly arrays, and SRS stats into `internal/service/vocabulary_stats.go`.
+  4. Preserved all method signatures on `*VocabularyService` to ensure 100% ABI compatibility with `DictionaryHandler` and other callers.
+  5. Reduced `vocabulary_service.go` to 474 lines of clean CRUD orchestration.
+- **Consequences**: Strict separation of concerns, high maintainability and testability in isolation, zero regressions across tests.
 
 ### ADR-135: AIService Clean Architecture & SRP Refactoring (Spec 60)
 - **Status**: Accepted
