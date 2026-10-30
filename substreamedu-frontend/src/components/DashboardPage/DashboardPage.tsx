@@ -21,18 +21,8 @@ import { useRecentVideos } from '../../hooks/useRecentVideos';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { StreakShareModal, VectorFlameIcon } from './components/StreakShareModal';
 import { WelcomeModal } from './components/WelcomeModal';
+import { parseDoTags } from '../../utils/textUtils';
 import styles from './css/DashboardPage.module.css';
-
-const parseDoTags = (message: string): (string | JSX.Element)[] => {
-    const parts = message.split(/(<do>.*?<\/do>)/g);
-    return parts.map((part: string, index: number) => {
-        if (part.startsWith('<do>') && part.endsWith('</do>')) {
-            const content = part.replace(/<\/?do>/g, '');
-            return <span key={index} className={styles.accent}>{content}</span>;
-        }
-        return part;
-    }).filter((part: string | JSX.Element) => part !== '');
-};
 
 const MotionLink = motion(Link);
 
@@ -129,7 +119,7 @@ const DashboardPage: React.FC = () => {
                         {parseDoTags(intl.formatMessage({
                             id: 'dashboard.chooseAction',
                             defaultMessage: 'Choose your <do>learning</do> format'
-                        }))}
+                        }), styles.accent)}
                     </h1>
                 </motion.header>
 

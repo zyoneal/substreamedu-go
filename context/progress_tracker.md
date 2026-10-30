@@ -3,9 +3,10 @@
 ## Status Board
 
 - **Current Phase**: Phase 2: Product Feature Expansion & Engineering Excellence
-- **In Progress**: None
+- **In Progress**: Spec 57: Flashcards Humble Object & SRP Refactoring
 - **Backlog**: None
 - **Recent Completed**:
+  - Uncle Bob `ub-mode` Adoption & `parseDoTags` Dryer Refactoring (ADR-131): Integrated Uncle Bob's `ub-mode` skill and workflow into `.agents/`; extracted duplicated `parseDoTags` string parser across `DashboardPage`, `VideoPage`, and `DictionaryPage` into pure utility `src/utils/textUtils.tsx` backed by seam tests in `textUtils.test.tsx` (60/60 suites 312/312 tests passing).
   - Spec 56: Learning Session Motivation & Workload Reduction (ADR-129, ADR-130): removed the Start Learning gate (audio unlocks on first gesture), monotonic Good-based progress bar, checkpoint after 20 ratings (Finish for today / Keep going), progress spark and halfway milestone with reduced-motion support, fade+slide card transition without `mode="wait"`, skippable story stage, localized finish copy; gated new production cards behind recognition mastery in `GetDailyCards` with fallback and flag `SRS_GATE_PRODUCTION_CARDS` (Frontend 59/59 suites 307/307 tests passing, Go suites clean).
   - Spec 55: Book-Based Language Learning & Interactive Reader (ADR-128): Curated CEFR graded readers (A1–C1), client-side IndexedDB storage engine (`substreamedu_books_db`) with memory fallback for custom books & reading progress, browser-based EPUB (JSZip + DOMParser) & TXT parsers, Warm Cinematic Espresso styling tokens, tokenized interactive reader with `TranslationPopover` & `useSaveWord` integration identical to `SubtitleViewer`, table of contents drawer, font scale toolbar, `/books` & `/books/:bookId` routes, desktop/mobile navigation header link, and dashboard bento grid integration (Frontend 59/59 suites 300/300 tests passing).
   - Spec 54: AI Harness & SDD Workflow Modernization (ADR-127): purged 39 MB stale `ai_agent_setup/` directory; archived 202 KB `progress_tracker.md` to `context/archive/progress_tracker_history.md`; added machine-enforced `.harness/` scripts (`check-protected-files.sh`, `check-spec-scope.sh`, `devin-pre-exec.sh`); curated `.agents/skills/` (added `spec-writer`, `fast-fix`, `scout`, `cross-service-change`); unified Definition of Done via `./verify.sh` and `make verify`; updated `AGENTS.md` to progressive disclosure model (< 5 KB) (Go suites clean, Frontend 54/54 suites 288/288 tests passing).
@@ -22,6 +23,16 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-131: Uncle Bob `ub-mode` Integration & Dryer Clean Code Refactoring
+- **Status**: Accepted
+- **Context**: The `unclebob/ub-mode` repository provides disciplined software engineering guidelines (First Make It Work, Then Make It Right, Follow Practice). In the frontend, string parsing for `<do>...</do>` tags in localized strings (`parseDoTags`) was copy-pasted identically across three major pages (`DashboardPage`, `VideoPage`, and `DictionaryPage`) without unit test coverage.
+- **Decision**:
+  1. Integrated `ub-mode` into `.agents/skills/ub-mode/SKILL.md` and `.agents/workflows/ub-mode.md`.
+  2. Applied TDD: wrote deterministic characterization tests first in `src/utils/textUtils.test.tsx`.
+  3. Applied Dryer & Boundary Discipline: extracted pure, single-responsibility `parseDoTags` into `src/utils/textUtils.tsx` supporting custom accent classes.
+  4. Refactored callers in `DashboardPage.tsx`, `VideoPage.tsx`, and `DictionaryPage.tsx` to use the shared abstraction, eliminating 30 lines of duplicate code.
+- **Consequences**: Zero duplication of tag parsing logic, 100% test coverage for the parsing seam, verified cleanly against `./verify.sh`.
 
 ### ADR-130: Production Card Gating by Recognition Mastery (Spec 57)
 - **Status**: Accepted

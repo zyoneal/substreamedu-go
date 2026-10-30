@@ -16,6 +16,7 @@ import { QuickStartVideoPicks } from './components/QuickStartVideoPicks';
 import styles from './css/VideoPage.module.css';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import { motion } from 'framer-motion';
+import { parseDoTags } from '../../utils/textUtils';
 
 import Youtube from 'lucide-react/dist/esm/icons/youtube';
 import Upload from 'lucide-react/dist/esm/icons/upload';
@@ -219,17 +220,6 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     }
   };
 
-  const parseDoTags = (message: string): (string | JSX.Element)[] => {
-    const parts = message.split(/(<do>.*?<\/do>)/g);
-    return parts.map((part: string, index: number) => {
-      if (part.startsWith('<do>') && part.endsWith('</do>')) {
-        const content = part.replace(/<\/?do>/g, '');
-        return <span key={index} className={styles.accent}>{content}</span>;
-      }
-      return part;
-    }).filter((part: string | JSX.Element) => part !== '');
-  };
-
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -305,7 +295,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                 {parseDoTags(intl.formatMessage({
                   id: 'videoPage.uploadContent',
                   defaultMessage: 'Learn with <do>video</do>'
-                }))}
+                }), styles.accent)}
               </h1>
 
               <nav className={styles.tabNav} role="tablist">

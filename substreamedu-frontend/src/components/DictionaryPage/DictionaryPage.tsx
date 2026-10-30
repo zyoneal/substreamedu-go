@@ -32,6 +32,7 @@ import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Modal } from "../ui/modal";
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
+import { parseDoTags } from '../../utils/textUtils';
 import styles from './DictionaryPage.module.css';
 
 interface DictionaryResource {
@@ -533,17 +534,6 @@ const DictionaryPage: React.FC = () => {
         window.open(`https://youglish.com/pronounce/${encodedText}/english`, '_blank');
     };
 
-    const parseDoTags = (message: string): (string | JSX.Element)[] => {
-        const parts = message.split(/(<do>.*?<\/do>)/g);
-        return parts.map((part: string, index: number) => {
-            if (part.startsWith('<do>') && part.endsWith('</do>')) {
-                const content = part.replace(/<\/?do>/g, '');
-                return <span key={index} className={styles.accent}>{content}</span>;
-            }
-            return part;
-        }).filter((part: string | JSX.Element) => part !== '');
-    };
-
     const renderSearchBar = () => (
         <div className={styles.searchWrapper} role="search">
             <Search className={styles.searchIcon} />
@@ -1039,7 +1029,7 @@ const DictionaryPage: React.FC = () => {
                         {parseDoTags(intl.formatMessage({
                             id: 'dictionaryTitle',
                             defaultMessage: 'My <do>dictionary</do>'
-                        }))}
+                        }), styles.accent)}
                     </h1>
 
                     <div className={styles.topBarActions}>
