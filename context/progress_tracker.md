@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 59: VideoPlayer Humble Object & SRP Refactoring (ADR-134): Decomposed 1523-line monolithic `VideoPlayer.tsx` into domain hooks `useVideoSubtitles.ts`, `useVideoOnboarding.ts`, `useVideoModalsState.ts`, and `useWordTooltip.ts` with comprehensive unit tests (Frontend 66/66 suites 339/339 tests passing, Go suites clean).
   - Spec 58: Dictionary Page Humble Object & SRP Refactoring (ADR-133): Decomposed 1355-line monolithic `DictionaryPage.tsx` into domain hook `useDictionaryData.ts`, search/pagination hook `useDictionarySearchPagination.ts`, pure utility `dictionaryUtils.tsx` with unit tests, and isolated subcomponents `DictionaryWordCard`, `DictionaryResourceCard`, `DictionaryPagination`, and `DictionaryEditModal` (Frontend 62/62 suites 325/325 tests passing, Go suites clean).
   - Spec 57: Flashcards Humble Object & SRP Refactoring (ADR-132): Decomposed 999-line monolithic `Flashcards.tsx` into focused domain hook `useFlashcardsSession.ts`, keyboard event seam `useFlashcardsKeyboard.ts`, and pure string highlighting utility `storyHighlightUtils.ts` with comprehensive unit tests (Frontend 61/61 suites 318/318 tests passing, Go suites clean).
   - Uncle Bob `ub-mode` Adoption & `parseDoTags` Dryer Refactoring (ADR-131): Integrated Uncle Bob's `ub-mode` skill and workflow into `.agents/`; extracted duplicated `parseDoTags` string parser across `DashboardPage`, `VideoPage`, and `DictionaryPage` into pure utility `src/utils/textUtils.tsx` backed by seam tests in `textUtils.test.tsx` (60/60 suites 312/312 tests passing).
@@ -25,6 +26,17 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-134: VideoPlayer Humble Object & SRP Architectural Seam (Spec 59)
+- **Status**: Accepted
+- **Context**: `VideoPlayer.tsx` was the largest and most complex component in the codebase (1523 lines), bundling YouTube & HTML5 video sync, time intervals, subtitle track switching, DOM hover event listeners for tooltips, interactive onboarding state, and multiple large modal dialog states into one component.
+- **Decision**:
+  1. Extracted subtitle lifecycle, 100ms time synchronization, and track switching into `hooks/useVideoSubtitles.ts` with unit tests.
+  2. Extracted dictionary word hover tooltip tracking (`mouseover`, `mouseout`, `mousemove`) into `hooks/useWordTooltip.ts` with unit tests.
+  3. Extracted onboarding tour and guest route state into `hooks/useVideoOnboarding.ts` with unit tests.
+  4. Extracted reel generator, grammar exploration, lesson studio, and language modal states into `hooks/useVideoModalsState.ts` with unit tests.
+  5. Refactored `VideoPlayer.tsx` into a clean, declarative Humble Object coordinator.
+- **Consequences**: Strict separation of concerns, high testability in isolation (14 new unit tests added across 4 hooks), zero regression across all 25 VideoPage suites and 66 repository suites.
 
 ### ADR-133: Dictionary Page Humble Object & SRP Architectural Seam (Spec 58)
 - **Status**: Accepted
