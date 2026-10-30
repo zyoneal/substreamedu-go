@@ -3,9 +3,10 @@
 ## Status Board
 
 - **Current Phase**: Phase 2: Product Feature Expansion & Engineering Excellence
-- **In Progress**: Spec 57: Flashcards Humble Object & SRP Refactoring
+- **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 57: Flashcards Humble Object & SRP Refactoring (ADR-132): Decomposed 999-line monolithic `Flashcards.tsx` into focused domain hook `useFlashcardsSession.ts`, keyboard event seam `useFlashcardsKeyboard.ts`, and pure string highlighting utility `storyHighlightUtils.ts` with comprehensive unit tests (Frontend 61/61 suites 318/318 tests passing, Go suites clean).
   - Uncle Bob `ub-mode` Adoption & `parseDoTags` Dryer Refactoring (ADR-131): Integrated Uncle Bob's `ub-mode` skill and workflow into `.agents/`; extracted duplicated `parseDoTags` string parser across `DashboardPage`, `VideoPage`, and `DictionaryPage` into pure utility `src/utils/textUtils.tsx` backed by seam tests in `textUtils.test.tsx` (60/60 suites 312/312 tests passing).
   - Spec 56: Learning Session Motivation & Workload Reduction (ADR-129, ADR-130): removed the Start Learning gate (audio unlocks on first gesture), monotonic Good-based progress bar, checkpoint after 20 ratings (Finish for today / Keep going), progress spark and halfway milestone with reduced-motion support, fade+slide card transition without `mode="wait"`, skippable story stage, localized finish copy; gated new production cards behind recognition mastery in `GetDailyCards` with fallback and flag `SRS_GATE_PRODUCTION_CARDS` (Frontend 59/59 suites 307/307 tests passing, Go suites clean).
   - Spec 55: Book-Based Language Learning & Interactive Reader (ADR-128): Curated CEFR graded readers (A1–C1), client-side IndexedDB storage engine (`substreamedu_books_db`) with memory fallback for custom books & reading progress, browser-based EPUB (JSZip + DOMParser) & TXT parsers, Warm Cinematic Espresso styling tokens, tokenized interactive reader with `TranslationPopover` & `useSaveWord` integration identical to `SubtitleViewer`, table of contents drawer, font scale toolbar, `/books` & `/books/:bookId` routes, desktop/mobile navigation header link, and dashboard bento grid integration (Frontend 59/59 suites 300/300 tests passing).
@@ -23,6 +24,16 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-132: Flashcards Humble Object & SRP Architectural Seam (Spec 57)
+- **Status**: Accepted
+- **Context**: `Flashcards.tsx` grew into a 999-line monolithic God Component containing session persistence, optimistic queue mutations, audio gesture listeners, global keyboard shortcut bindings, AI story generation, and tooltip DOM tracking mixed with JSX rendering.
+- **Decision**:
+  1. Extracted session domain lifecycle and optimistic queue mutations into `hooks/useFlashcardsSession.ts`.
+  2. Extracted keyboard shortcuts into `hooks/useFlashcardsKeyboard.ts`.
+  3. Extracted story text token highlighting into pure unit-tested utility `utils/storyHighlightUtils.ts`.
+  4. Reduced `Flashcards.tsx` to a thin Humble Object presentation component (<450 lines).
+- **Consequences**: Pure separation of concerns, high testability, zero regression across all 24 Learning Page tests and 318 overall repository tests.
 
 ### ADR-131: Uncle Bob `ub-mode` Integration & Dryer Clean Code Refactoring
 - **Status**: Accepted
