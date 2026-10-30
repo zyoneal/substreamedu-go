@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 62: DictionaryHandler Clean Architecture & SRP Refactoring (ADR-137): Decomposed 1156-line monolithic `dictionary_handler.go` into domain modules `dictionary_ai_handler.go` (AI generation & timeouts), `dictionary_translation_handler.go` (translation, field mapping & visual icon fetch), `dictionary_lesson_handler.go` (teacher lesson plan builder & sharing), `dictionary_export_handler.go` (CSV & Anki export streaming), and `dictionary_categorization_handler.go` (micro-batch categorization & categories), reducing `dictionary_handler.go` to 466 lines (>60% reduction) with zero breaking changes or regressions across all routes.
   - Spec 61: VocabularyService Clean Architecture & SRP Refactoring (ADR-136): Decomposed 1212-line monolithic `vocabulary_service.go` into domain modules `vocabulary_export.go` (Anki packaging & CSV streaming), `vocabulary_image_downloader.go` (safe async image downloading & SSRF protection), and `vocabulary_stats.go` (streak & SRS calculation), reducing `vocabulary_service.go` to 474 lines (>60% reduction) with zero regressions across all services.
   - Spec 60: AIService Clean Architecture & SRP Refactoring (ADR-135): Decomposed 3055-line God Object `ai_service.go` into focused domain modules (`ai_provider_client.go`, `ai_grammar_fallback.go`, `ai_exercise_generator.go`, `ai_lesson_generator.go`, `ai_categorizer.go`, `ai_prompts.go`) backed by characterization unit tests (`ai_grammar_fallback_test.go`, `ai_lesson_generator_test.go`, `ai_prompts_test.go`), reducing `ai_service.go` to 1216 lines (>60% reduction) with zero breaking changes or regressions across all services.
   - Spec 59: VideoPlayer Humble Object & SRP Refactoring (ADR-134): Decomposed 1523-line monolithic `VideoPlayer.tsx` into domain hooks `useVideoSubtitles.ts`, `useVideoOnboarding.ts`, `useVideoModalsState.ts`, and `useWordTooltip.ts` with comprehensive unit tests (Frontend 66/66 suites 339/339 tests passing, Go suites clean).
@@ -28,6 +29,18 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-137: DictionaryHandler Clean Architecture & SRP Refactoring (Spec 62)
+- **Status**: Accepted
+- **Context**: `dictionary_handler.go` in `substreamedu-dictionary-service-go` was 1156 lines long, combining translation/visual keyword fetching, AI content and grammar generation with timeout wrappers, teacher lesson plan management, CSV/Anki export streaming, and user vocabulary categorization into a single handler.
+- **Decision**:
+  1. Extracted AI text, question, summary, practice, and grammar analysis handlers with 15s deadline context into `internal/handler/dictionary_ai_handler.go`.
+  2. Extracted translation and NounProject visual icon fetching into `internal/handler/dictionary_translation_handler.go`.
+  3. Extracted teacher lesson plan generation, saving, sharing, and deletion into `internal/handler/dictionary_lesson_handler.go`.
+  4. Extracted CSV and Anki export streaming into `internal/handler/dictionary_export_handler.go`.
+  5. Extracted batch categorization and category lexeme querying into `internal/handler/dictionary_categorization_handler.go`.
+  6. Kept `DictionaryHandler` struct definition and core dictionary CRUD/auth methods in `internal/handler/dictionary_handler.go` (466 lines).
+- **Consequences**: Strict SRP separation, 100% ABI and route compatibility with `router.Setup` and `main.go`, zero regressions across all 13 test suites.
 
 ### ADR-136: VocabularyService Clean Architecture & SRP Refactoring (Spec 61)
 - **Status**: Accepted
