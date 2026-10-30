@@ -1,131 +1,41 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import { motion } from 'framer-motion';
 
 import Download from 'lucide-react/dist/esm/icons/download';
 import Search from 'lucide-react/dist/esm/icons/search';
-import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import BookOpen from 'lucide-react/dist/esm/icons/book-open';
 import Grid3X3 from 'lucide-react/dist/esm/icons/grid-3x3';
 import List from 'lucide-react/dist/esm/icons/list';
-import ChevronLeft from 'lucide-react/dist/esm/icons/chevron-left';
-import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right';
 import Play from 'lucide-react/dist/esm/icons/play';
 import Film from 'lucide-react/dist/esm/icons/film';
 import Music from 'lucide-react/dist/esm/icons/music';
 import Folder from 'lucide-react/dist/esm/icons/folder';
 import Type from 'lucide-react/dist/esm/icons/type';
-import Edit from 'lucide-react/dist/esm/icons/edit';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
-import Volume2 from 'lucide-react/dist/esm/icons/volume-2';
 import Layers from 'lucide-react/dist/esm/icons/layers';
 import X from 'lucide-react/dist/esm/icons/x';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Tag from 'lucide-react/dist/esm/icons/tag';
 
-import { DictionaryService } from '../../services/DictionaryService';
-import { AuthService } from '../../services/AuthService';
-import { debugError } from '../../utils/debug';
-import { Card, CardContent } from "../ui/card";
-import { Input } from "../ui/input";
-import { Modal } from "../ui/modal";
+import { Card, CardContent } from '../ui/card';
+import { Input } from '../ui/input';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { parseDoTags } from '../../utils/textUtils';
+import { useDictionaryData } from './hooks/useDictionaryData';
+import { useDictionarySearchPagination } from './hooks/useDictionarySearchPagination';
+import { DictionaryResourceCard } from './components/DictionaryResourceCard';
+import { DictionaryWordCard } from './components/DictionaryWordCard';
+import { DictionaryPagination } from './components/DictionaryPagination';
+import { DictionaryEditModal } from './components/DictionaryEditModal';
 import styles from './DictionaryPage.module.css';
-
-interface DictionaryResource {
-    groupName: string;
-    numberOfWords: number;
-    createdAt?: string;
-    lastModified?: string;
-    sampleWords?: string[];
-}
-
-interface DictionaryItem {
-    id: number;
-    resourceName: string;
-    highlightedText: string | null;
-    translatedText: string | null;
-    context: string | null;
-    note: string | null;
-    definition: string | null;
-    imageUrl: string | null;
-    transcription: string | null;
-    tags?: string[];
-    difficulty?: 'easy' | 'medium' | 'hard';
-    lastReviewed?: string;
-    reviewCount?: number;
-    nextReview?: string;
-    mastered?: boolean;
-}
-
-const escapeRegExp = (value: string): string => {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
-
-const getHighlightedParts = (text: string, term: string): (string | JSX.Element)[] => {
-    const normalizedTerm = term.trim();
-    if (!text || !normalizedTerm) return [text];
-    try {
-        const pattern = new RegExp(`(${escapeRegExp(normalizedTerm)})`, 'gi');
-        const segments = text.split(pattern);
-        return segments.map((segment, index) => {
-            if (segment.toLowerCase() === normalizedTerm.toLowerCase()) {
-                return (
-                    <span key={index} className={styles.contextHighlight}>
-                        {segment}
-                    </span>
-                );
-            }
-            return segment;
-        });
-    } catch {
-        return [text];
-    }
-};
-
-interface SourceCategory {
-    type: 'youtube' | 'movies' | 'songs' | 'text' | 'other';
-    name: string;
-    icon: React.ElementType;
-    tag: string;
-    color: string;
-    resources: DictionaryResource[];
-}
-
-const ITEMS_PER_PAGE = 20;
-const SEARCH_DEBOUNCE_MS = 300;
-
-const getSourceType = (resourceName: string): 'youtube' | 'movies' | 'songs' | 'text' | 'other' => {
-    const name = resourceName.trim().toLowerCase();
-
-    if (name === 'youtube' || name === 'video subtitle' || name.startsWith('yt:')) {
-        return 'youtube';
-    }
-    if (name.endsWith('.srt')) {
-        return 'movies';
-    }
-    if (name === 'pasted text') {
-        return 'text';
-    }
-
-    return 'songs';
-};
-
-const getSourceIcon = (sourceType: string): React.ElementType => {
-    switch (sourceType) {
-        case 'youtube': return Play;
-        case 'movies': return Film;
-        case 'text': return Type;
-        case 'songs': return Music;
-        default: return Folder;
-    }
-};
 
 const DictionaryPage: React.FC = () => {
     usePixzenTheme();
+    const intl = useIntl();
+
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -146,872 +56,100 @@ const DictionaryPage: React.FC = () => {
         }
     };
 
-    const [resources, setResources] = useState<DictionaryResource[]>([]);
-    const [allWords, setAllWords] = useState<DictionaryItem[]>([]);
-    const [search, setSearch] = useState<{ query: string; debouncedQuery: string }>({
-        query: '',
-        debouncedQuery: ''
+    // 1. Data & Server Mutations Hook
+    const [viewModeState, setViewModeState] = React.useState<'groups' | 'categories' | 'words'>('groups');
+    const {
+        resources,
+        allWords,
+        categories,
+        categoryWords,
+        selectedCategoryName,
+        status,
+        isLoadingWords,
+        isLoadingCategoryWords,
+        isExporting,
+        isCategorizing,
+        categorizeProgress,
+        categorizeMessage,
+        editingWord,
+        handleDelete,
+        handleDeleteWord,
+        handleSaveWord,
+        handleSelectCategory,
+        handleRunCategorize,
+        handleQuickEdit,
+        handleCancelEdit,
+        handleExport,
+    } = useDictionaryData({ viewMode: viewModeState });
+
+    // 2. Search, Layout & Pagination Hook
+    const {
+        search,
+        setSearchQuery,
+        clearSearch,
+        view,
+        setViewMode,
+        setLayout,
+        handlePageChange,
+        selectedCategory,
+        setSelectedCategory,
+        displayedResources,
+        sortedFilteredWords,
+        displayedWords,
+        totalPages,
+        filteredCategoryList,
+        filteredCategoryWords,
+        totalWordsCount,
+        masteredCount,
+        activeGroupsCount,
+    } = useDictionarySearchPagination({
+        resources,
+        allWords,
+        categories,
+        categoryWords,
+        intl,
     });
-    const [view, setView] = useState<{
-        mode: 'groups' | 'categories' | 'words';
-        layout: 'grid' | 'list';
-        currentPage: number;
-    }>({
-        mode: 'groups',
-        layout: 'grid',
-        currentPage: 1
-    });
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
-    const [isLoadingWords, setIsLoadingWords] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
-    const [editingWord, setEditingWord] = useState<DictionaryItem | null>(null);
 
-    // AI Semantic Categorization state
-    const [categories, setCategories] = useState<{ categoryName: string; numberOfWords: number }[]>([]);
-    const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
-    const [categoryWords, setCategoryWords] = useState<DictionaryItem[]>([]);
-    const [isLoadingCategoryWords, setIsLoadingCategoryWords] = useState(false);
-    const [isCategorizing, setIsCategorizing] = useState(false);
-    const [categorizeProgress, setCategorizeProgress] = useState<{ processed: number; total: number; remaining: number } | null>(null);
-    const [categorizeMessage, setCategorizeMessage] = useState<string | null>(null);
-
-    const searchTimeoutRef = useRef<NodeJS.Timeout>();
-    const intl = useIntl();
-
-    useEffect(() => {
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
-        }
-
-        searchTimeoutRef.current = setTimeout(() => {
-            setSearch(prev => ({ ...prev, debouncedQuery: search.query }));
-            setView(prev => ({ ...prev, currentPage: 1 }));
-        }, SEARCH_DEBOUNCE_MS);
-
-        return () => {
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
-            }
-        };
-    }, [search.query]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!AuthService.getUserEmail()) {
-                setResources([]);
-                setCategories([]);
-                setAllWords([]);
-                setStatus('success');
-                setIsLoadingWords(false);
-                return;
-            }
-            setStatus('loading');
-            try {
-                if (view.mode === 'groups') {
-                    const data = await DictionaryService.fetchDictionaryResources();
-                    setResources(Array.isArray(data) ? data : []);
-                } else if (view.mode === 'categories') {
-                    const data = await DictionaryService.fetchDictionaryCategories();
-                    setCategories(Array.isArray(data) ? data : []);
-                } else if (view.mode === 'words') {
-                    setIsLoadingWords(true);
-                    const words = await DictionaryService.fetchDictionaryItemsByUser();
-                    setAllWords(Array.isArray(words) ? words : []);
-                }
-                setStatus('success');
-            } catch (error) {
-                debugError('Failed to fetch data', error);
-                setResources([]);
-                setCategories([]);
-                setAllWords([]);
-                setStatus('error');
-            } finally {
-                setIsLoadingWords(false);
-            }
-        };
-        fetchData();
-    }, [view.mode]);
-
-    const handleDelete = useCallback(async (groupName: string) => {
-        try {
-            await DictionaryService.deleteDictionaryResource(groupName);
-            setResources(prev => prev.filter(r => (r.groupName || '') !== groupName));
-        } catch (error) {
-            debugError('Failed to delete resource', error);
-        }
-    }, []);
-
-    const handleDeleteWord = useCallback(async (resourceName: string, itemId: number) => {
-        try {
-            await DictionaryService.deleteDictionaryItem(resourceName, itemId);
-            setAllWords(prev => prev.filter(word => word.id !== itemId));
-            setCategoryWords(prev => prev.filter(word => word.id !== itemId));
-        } catch (error) {
-            debugError('Failed to delete word', error);
-        }
-    }, []);
-
-    const handleSaveWord = useCallback(async (updatedWord: DictionaryItem) => {
-        try {
-            setAllWords(prev => prev.map(word =>
-                word.id === updatedWord.id ? updatedWord : word
-            ));
-            setCategoryWords(prev => prev.map(word =>
-                word.id === updatedWord.id ? updatedWord : word
-            ));
-            setEditingWord(null);
-        } catch (error) {
-            debugError('Failed to update word', error);
-        }
-    }, []);
-
-    const handleSelectCategory = useCallback(async (catName: string) => {
-        setSelectedCategoryName(catName);
-        setIsLoadingCategoryWords(true);
-        try {
-            const resp = await DictionaryService.fetchDictionaryItemsByCategory(catName, 0, 100);
-            const rawItems = (resp.items || []) as Array<Partial<DictionaryItem> & { source?: string; word?: string; translation?: string; repetitionLevel?: number; nextRepetitionDate?: string; status?: string }>;
-            const normalizedItems: DictionaryItem[] = rawItems.map((item) => ({
-                id: item.id ?? 0,
-                resourceName: item.resourceName || item.source || 'vault',
-                highlightedText: item.highlightedText || item.word || 'Untitled Word',
-                translatedText: item.translatedText || item.translation || null,
-                context: item.context || null,
-                note: item.note || null,
-                definition: item.definition || null,
-                imageUrl: item.imageUrl || null,
-                transcription: item.transcription || null,
-                tags: item.tags || [],
-                difficulty: item.difficulty,
-                lastReviewed: item.lastReviewed,
-                reviewCount: item.reviewCount || item.repetitionLevel || 0,
-                nextReview: item.nextReview || item.nextRepetitionDate,
-                mastered: item.mastered || item.status === 'mastered',
-            }));
-            setCategoryWords(normalizedItems);
-        } catch (err) {
-            debugError('Failed to fetch category items', err);
-            setCategoryWords([]);
-        } finally {
-            setIsLoadingCategoryWords(false);
-        }
-    }, []);
-
-    const handleRunCategorize = useCallback(async () => {
-        if (isCategorizing) return;
-        setIsCategorizing(true);
-        setCategorizeMessage('Categorizing vocabulary into semantic themes...');
-        try {
-            let remaining = 1;
-            let totalProcessed = 0;
-            while (remaining > 0) {
-                const res = await DictionaryService.categorizeUserVocabulary(100);
-                totalProcessed += res.categorized;
-                remaining = res.remaining;
-                setCategorizeProgress({
-                    processed: totalProcessed,
-                    total: res.total,
-                    remaining: res.remaining,
-                });
-                if (res.categorized === 0 && res.remaining === 0) {
-                    break;
-                }
-                if (res.remaining > 0) {
-                    await new Promise(r => setTimeout(r, 200));
-                }
-            }
-            setCategorizeMessage(`Successfully categorized ${totalProcessed} words!`);
-            const updatedCats = await DictionaryService.fetchDictionaryCategories();
-            setCategories(Array.isArray(updatedCats) ? updatedCats : []);
-        } catch (err) {
-            debugError('Failed to categorize dictionary', err);
-            setCategorizeMessage('Categorization failed. Please try again.');
-        } finally {
-            setIsCategorizing(false);
-        }
-    }, [isCategorizing]);
-
-    const handleCancelEdit = useCallback(() => {
-        setEditingWord(null);
-    }, []);
-
-    const handleQuickEdit = useCallback((word: DictionaryItem) => {
-        setEditingWord(word);
-    }, []);
-
-    const handleExport = useCallback(async () => {
-        let url: string | null = null;
-        setIsExporting(true);
-        try {
-            const blob = await DictionaryService.exportAllDictionaryAsAnki();
-            url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", "full_dictionary.apkg");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            debugError('Export failed', error);
-        } finally {
-            if (url) {
-                setTimeout(() => URL.revokeObjectURL(url!), 100);
-            }
-            setIsExporting(false);
-        }
-    }, []);
-
-    const filteredResources = useMemo(() => {
-        if (!Array.isArray(resources)) return [];
-        return resources.filter(r =>
-            (r.groupName || '').toLowerCase().includes(search.debouncedQuery.toLowerCase())
-        );
-    }, [resources, search.debouncedQuery]);
-
-    const categorizedResources = useMemo(() => {
-        const categories: SourceCategory[] = [
-            {
-                type: 'youtube',
-                name: intl.formatMessage({ id: 'dictionary.categories.youtube', defaultMessage: 'YouTube' }),
-                icon: Play,
-                tag: '[YOUTUBE]',
-                color: '#ef4444',
-                resources: []
-            },
-            {
-                type: 'movies',
-                name: intl.formatMessage({ id: 'dictionary.categories.movies', defaultMessage: 'Movies & Series' }),
-                icon: Film,
-                tag: '[MOVIES]',
-                color: '#a855f7',
-                resources: []
-            },
-            {
-                type: 'text',
-                name: intl.formatMessage({ id: 'dictionary.categories.text', defaultMessage: 'Texts & Articles' }),
-                icon: Type,
-                tag: '[TEXTS]',
-                color: '#38bdf8',
-                resources: []
-            },
-            {
-                type: 'songs',
-                name: intl.formatMessage({ id: 'dictionary.categories.songs', defaultMessage: 'Songs & Lyrics' }),
-                icon: Music,
-                tag: '[LYRICS]',
-                color: '#10b981',
-                resources: []
-            }
-        ];
-
-        filteredResources.forEach(resource => {
-            const sourceType = getSourceType(resource.groupName || '');
-            const category = categories.find(cat => cat.type === sourceType);
-            if (category) {
-                category.resources.push(resource);
-            }
-        });
-
-        return categories;
-    }, [filteredResources, intl]);
-
-    const displayedResources = useMemo(() => {
-        if (selectedCategory === null) {
-            return filteredResources;
-        }
-
-        const category = categorizedResources.find(cat => cat.type === selectedCategory);
-        return category ? category.resources : [];
-    }, [selectedCategory, categorizedResources, filteredResources]);
-
-    const filteredWords = useMemo(() => {
-        if (!Array.isArray(allWords)) return [];
-        let filtered = allWords;
-
-        if (search.debouncedQuery.trim()) {
-            const query = search.debouncedQuery.toLowerCase();
-            filtered = filtered.filter(word =>
-                (word.highlightedText?.toLowerCase() || '').includes(query) ||
-                (word.translatedText?.toLowerCase() || '').includes(query) ||
-                (word.definition?.toLowerCase() || '').includes(query)
-            );
-        }
-
-        return filtered;
-    }, [allWords, search.debouncedQuery]);
-
-    const filteredWordsByCategory = useMemo(() => {
-        if (selectedCategory === null) {
-            return filteredWords;
-        }
-
-        return filteredWords.filter(word => {
-            if (!word.resourceName) return false;
-            const sourceType = getSourceType(word.resourceName);
-            return sourceType === selectedCategory;
-        });
-    }, [filteredWords, selectedCategory]);
-
-    const sortedFilteredWords = useMemo(() => {
-        const groups = new Map<string, DictionaryItem[]>();
-        for (const item of filteredWordsByCategory) {
-            const key = (item.highlightedText || '').trim().toLowerCase();
-            const list = groups.get(key) || [];
-            list.push(item);
-            groups.set(key, list);
-        }
-
-        const groupEntries = Array.from(groups.entries());
-        groupEntries.sort((a, b) => {
-            const countDiff = b[1].length - a[1].length;
-            if (countDiff !== 0) return countDiff;
-            return a[0].localeCompare(b[0]);
-        });
-
-        const result: DictionaryItem[] = [];
-        for (const [, items] of groupEntries) {
-            items.sort((a, b) => a.id - b.id);
-            result.push(...items);
-        }
-        return result;
-    }, [filteredWordsByCategory]);
-
-    const displayedWords = useMemo(() => {
-        const startIndex = (view.currentPage - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        return sortedFilteredWords.slice(startIndex, endIndex);
-    }, [sortedFilteredWords, view.currentPage]);
-
-    const totalPages = Math.ceil(sortedFilteredWords.length / ITEMS_PER_PAGE);
-
-    const handlePageChange = useCallback((newPage: number) => {
-        setView(prev => ({ ...prev, currentPage: newPage }));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, []);
-
-    const filteredCategoryList = useMemo(() => {
-        if (!Array.isArray(categories)) return [];
-        if (!search.debouncedQuery.trim()) return categories;
-        const q = search.debouncedQuery.toLowerCase();
-        return categories.filter(c => c.categoryName.toLowerCase().includes(q));
-    }, [categories, search.debouncedQuery]);
-
-    const filteredCategoryWords = useMemo(() => {
-        if (!Array.isArray(categoryWords)) return [];
-        if (!search.debouncedQuery.trim()) return categoryWords;
-        const q = search.debouncedQuery.toLowerCase();
-        return categoryWords.filter(word =>
-            (word.highlightedText?.toLowerCase() || '').includes(q) ||
-            (word.translatedText?.toLowerCase() || '').includes(q) ||
-            (word.definition?.toLowerCase() || '').includes(q)
-        );
-    }, [categoryWords, search.debouncedQuery]);
-
-    // Summary Statistics for Hero Bar
-    const totalWordsCount = useMemo(() => {
-        if (Array.isArray(allWords) && allWords.length > 0) return allWords.length;
-        if (Array.isArray(resources) && resources.length > 0) {
-            return resources.reduce((acc, r) => acc + (r?.numberOfWords || 0), 0);
-        }
-        if (Array.isArray(categories) && categories.length > 0) {
-            return categories.reduce((acc, c) => acc + (c?.numberOfWords || 0), 0);
-        }
-        return 0;
-    }, [allWords, resources, categories]);
-
-    const masteredCount = useMemo(() => {
-        if (!Array.isArray(allWords)) return 0;
-        return allWords.filter(w => w && (w.mastered || (w.reviewCount && w.reviewCount >= 5))).length;
-    }, [allWords]);
-
-    const activeGroupsCount = useMemo(() => {
-        return Array.isArray(resources) ? resources.length : 0;
-    }, [resources]);
+    const handleSwitchViewMode = (mode: 'groups' | 'categories' | 'words') => {
+        setViewModeState(mode);
+        setViewMode(mode);
+        clearSearch();
+        setSelectedCategory(null);
+        handleSelectCategory(null);
+    };
 
     const handleYouGlishClick = (text: string) => {
         const encodedText = encodeURIComponent(text);
         window.open(`https://youglish.com/pronounce/${encodedText}/english`, '_blank');
     };
 
-    const renderSearchBar = () => (
-        <div className={styles.searchWrapper} role="search">
-            <Search className={styles.searchIcon} />
-            <Input
-                type="text"
-                placeholder={
-                    view.mode === 'groups'
-                        ? intl.formatMessage({ id: 'searchGroupsPlaceholder', defaultMessage: 'Search collections...' })
-                        : view.mode === 'categories'
-                        ? 'Search themes or words...'
-                        : intl.formatMessage({ id: 'searchWordsPlaceholder', defaultMessage: 'Search words or context...' })
-                }
-                value={search.query}
-                onChange={(e) => setSearch(prev => ({ ...prev, query: e.target.value }))}
-                className={styles.dictionarySearch}
-                aria-label="Search dictionary"
-            />
-            {search.query && (
-                <button
-                    type="button"
-                    onClick={() => setSearch(prev => ({ ...prev, query: '' }))}
-                    className={styles.searchClearBtn}
-                    aria-label="Clear search"
-                >
-                    <X size={14} />
-                </button>
-            )}
-        </div>
-    );
-
-    const renderViewModeToggle = () => (
-        <div className={styles.segmentedControl} role="tablist" aria-label="View mode">
-            <button
-                onClick={() => {
-                    setView(prev => ({ ...prev, mode: 'groups', currentPage: 1 }));
-                    setSearch(prev => ({ ...prev, query: '' }));
-                    setSelectedCategory(null);
-                    setSelectedCategoryName(null);
-                }}
-                className={`${styles.segmentedButton} ${view.mode === 'groups' ? styles.segmentedButtonActive : ''}`}
-                role="tab"
-                aria-selected={view.mode === 'groups'}
-            >
-                <Folder size={15} />
-                <span>{intl.formatMessage({ id: 'groups', defaultMessage: 'Collections' })}</span>
-            </button>
-            <button
-                onClick={() => {
-                    setView(prev => ({ ...prev, mode: 'categories', currentPage: 1 }));
-                    setSearch(prev => ({ ...prev, query: '' }));
-                    setSelectedCategory(null);
-                    setSelectedCategoryName(null);
-                }}
-                className={`${styles.segmentedButton} ${view.mode === 'categories' ? styles.segmentedButtonActive : ''}`}
-                role="tab"
-                aria-selected={view.mode === 'categories'}
-            >
-                <Sparkles size={15} />
-                <span>{intl.formatMessage({ id: 'categories', defaultMessage: 'Themes' })}</span>
-            </button>
-            <button
-                onClick={() => {
-                    setView(prev => ({ ...prev, mode: 'words', currentPage: 1 }));
-                    setSearch(prev => ({ ...prev, query: '' }));
-                    setSelectedCategory(null);
-                    setSelectedCategoryName(null);
-                }}
-                className={`${styles.segmentedButton} ${view.mode === 'words' ? styles.segmentedButtonActive : ''}`}
-                role="tab"
-                aria-selected={view.mode === 'words'}
-            >
-                <BookOpen size={15} />
-                <span>{intl.formatMessage({ id: 'allWords', defaultMessage: 'All Words' })}</span>
-            </button>
-        </div>
-    );
-
-    const renderCategoryFilters = () => {
-        const filterCategories = [
-            {
-                key: null,
-                label: intl.formatMessage({ id: 'dictionary.categories.all', defaultMessage: 'All' }),
-                icon: Layers
-            },
-            {
-                key: 'youtube',
-                label: intl.formatMessage({ id: 'dictionary.categories.youtube', defaultMessage: 'YouTube' }),
-                icon: Play
-            },
-            {
-                key: 'movies',
-                label: intl.formatMessage({ id: 'dictionary.categories.movies', defaultMessage: 'Movies' }),
-                icon: Film
-            },
-            {
-                key: 'text',
-                label: intl.formatMessage({ id: 'dictionary.categories.text', defaultMessage: 'Texts' }),
-                icon: Type
-            },
-            {
-                key: 'songs',
-                label: intl.formatMessage({ id: 'dictionary.categories.songs', defaultMessage: 'Lyrics' }),
-                icon: Music
-            }
-        ];
-
-        return (
-            <div className={styles.categoryFilterList} role="tablist" aria-label="Content filters">
-                {filterCategories.map((cat) => {
-                    const isActive = selectedCategory === cat.key;
-                    const Icon = cat.icon;
-                    return (
-                        <button
-                            key={cat.key || 'all'}
-                            onClick={() => setSelectedCategory(cat.key)}
-                            className={`${styles.categoryFilterBtn} ${isActive ? styles.categoryFilterBtnActive : ''}`}
-                            role="tab"
-                            aria-selected={isActive}
-                        >
-                            <Icon size={14} />
-                            <span>{cat.label}</span>
-                        </button>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    const renderResourceCard = (res: DictionaryResource, index: number) => {
-        const sourceType = getSourceType(res.groupName || '');
-        const SourceIcon = getSourceIcon(sourceType);
-
-        return (
-            <div
-                key={res.groupName || `resource-${index}`}
-                className={styles.groupCard}
-            >
-                <button
-                    className={styles.deleteGroupBtn}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleDelete(res.groupName || '');
-                    }}
-                    title="Delete collection"
-                    aria-label="Delete collection"
-                >
-                    <Trash2 size={14} />
-                </button>
-
-                <Link
-                    to={`/dictionary/resources/${res.groupName || 'unknown'}`}
-                    className={styles.groupCardLink}
-                >
-                    <div className={styles.groupCardHeader}>
-                        <div className={styles.groupHeaderLeft}>
-                            <div className={styles.sourceIconBox}>
-                                <SourceIcon size={18} />
-                            </div>
-                            <h3 className={styles.groupTitle}>
-                                {res.groupName || 'Untitled Group'}
-                            </h3>
-                        </div>
-                        <span className={styles.groupWordCountPill}>
-                            {res.numberOfWords} {res.numberOfWords === 1 ? 'word' : 'words'}
-                        </span>
-                    </div>
-
-                    {res.sampleWords && res.sampleWords.length > 0 && (
-                        <div className={styles.sampleWordsBox}>
-                            <div className={styles.sampleWordsChips}>
-                                {res.sampleWords.slice(0, 4).map((word, idx) => (
-                                    <span key={idx} className={styles.wordChip}>
-                                        {word}
-                                    </span>
-                                ))}
-                                {res.sampleWords.length > 4 && (
-                                    <span className={styles.moreWordsChip}>
-                                        +{res.sampleWords.length - 4}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </Link>
-            </div>
-        );
-    };
-
-    const renderResourceListItem = (res: DictionaryResource, index: number) => {
-        const sourceType = getSourceType(res.groupName || '');
-        const SourceIcon = getSourceIcon(sourceType);
-
-        return (
-            <div
-                key={res.groupName || `list-item-${index}`}
-                className={styles.groupListItem}
-            >
-                <Link
-                    to={`/dictionary/resources/${res.groupName || 'unknown'}`}
-                    className={styles.groupListItemLink}
-                >
-                    <div className={styles.listItemLeft}>
-                        <div className={styles.sourceIconBoxSmall}>
-                            <SourceIcon size={15} />
-                        </div>
-                        <h3 className={styles.listItemTitle}>
-                            {res.groupName || 'Untitled Group'}
-                        </h3>
-                    </div>
-
-                    <div className={styles.listItemRight}>
-                        <span className={styles.groupWordCountPill}>
-                            {res.numberOfWords} {res.numberOfWords === 1 ? 'word' : 'words'}
-                        </span>
-                        <button
-                            className={styles.actionIconBtn}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDelete(res.groupName || '');
-                            }}
-                            title="Delete collection"
-                            aria-label="Delete collection"
-                        >
-                            <Trash2 size={13} />
-                        </button>
-                    </div>
-                </Link>
-            </div>
-        );
-    };
-
-    const renderWordCard = (word: DictionaryItem, index: number) => {
-        const getMasteryBadge = () => {
-            if (word.mastered) {
-                return <span className={`${styles.masteryBadge} ${styles.masteredBadge}`}>Mastered</span>;
-            }
-            if (word.reviewCount && word.reviewCount > 5) {
-                return <span className={`${styles.masteryBadge} ${styles.advancedBadge}`}>Advanced</span>;
-            }
-            if (word.reviewCount && word.reviewCount > 2) {
-                return <span className={`${styles.masteryBadge} ${styles.intermediateBadge}`}>Reviewing</span>;
-            }
-            return <span className={`${styles.masteryBadge} ${styles.beginnerBadge}`}>New</span>;
-        };
-
-        const definition = word.definition?.trim();
-        const translation = word.translatedText?.trim();
-        const rawTranscription = word.transcription?.trim();
-        const cleanTranscription = rawTranscription
-            ? rawTranscription.replace(/^[/\[\s]+|[/\]\s]+$/g, '').trim()
-            : '';
-
-        return (
-            <div
-                key={word.id || `word-${index}`}
-                className={styles.wordCard}
-            >
-                {/* Column 1: Word, Audio, Meaning */}
-                <div className={styles.wordPrimaryCol}>
-                    <div className={styles.wordTitleRow}>
-                        <button
-                            onClick={() => handleYouGlishClick(word.highlightedText || '')}
-                            className={styles.wordClickableTitle}
-                            title="Listen to pronunciation on YouGlish"
-                            aria-label="Listen to pronunciation on YouGlish"
-                        >
-                            <span>{word.highlightedText || 'Untitled Word'}</span>
-                            <Volume2 className={styles.soundWaveIcon} />
-                        </button>
-                        {cleanTranscription && (
-                            <span className={styles.wordTranscription}>
-                                [{cleanTranscription}]
-                            </span>
-                        )}
-                    </div>
-
-                    <div className={styles.wordDefinitionBox}>
-                        <div className="flex flex-col gap-1 min-w-0">
-                            {definition && (
-                                <p className={styles.wordDefinitionText}>
-                                    {definition}
-                                </p>
-                            )}
-                            {translation && translation !== definition && (
-                                <p className={styles.wordTranslationText}>
-                                    {translation}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Column 2: Context Quote & Tags */}
-                <div className={styles.wordContextCol}>
-                    {word.context && word.context.trim().toLowerCase() !== (word.highlightedText || '').trim().toLowerCase() && (
-                        <div className={styles.contextQuoteBox}>
-                            {getHighlightedParts(word.context, word.highlightedText || '')}
-                        </div>
-                    )}
-
-                    {word.tags && word.tags.length > 0 && (
-                        <div className={styles.wordTagsRow}>
-                            {word.tags.slice(0, 4).map((tag, tagIdx) => (
-                                <span key={tagIdx} className={styles.tagPill}>
-                                    #{tag}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Column 3: Mastery & Actions */}
-                <div className={styles.wordActionsCol}>
-                    <div className="flex items-center gap-2">
-                        {getMasteryBadge()}
-                    </div>
-
-                    <span className={styles.sourcePill}>
-                        <Folder size={11} />
-                        <span>{word.resourceName || 'vault'}</span>
-                    </span>
-
-                    <div className={styles.actionButtonsGroup}>
-                        <button
-                            className={styles.actionIconBtn}
-                            onClick={() => handleQuickEdit(word)}
-                            title="Edit word"
-                            aria-label="Edit word"
-                        >
-                            <Edit size={13} />
-                        </button>
-                        <button
-                            className={`${styles.actionIconBtn} ${styles.actionIconBtnDelete}`}
-                            onClick={() => handleDeleteWord(word.resourceName, word.id)}
-                            title="Delete word"
-                            aria-label="Delete word"
-                        >
-                            <Trash2 size={13} />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderEditWordModal = () => {
-        if (!editingWord) return null;
-
-        return (
-            <Modal isOpen={!!editingWord} onClose={handleCancelEdit} size="md">
-                <Modal.Header
-                    title={`Edit: ${editingWord.highlightedText}`}
-                    icon={<Edit size={18} />}
-                    onClose={handleCancelEdit}
-                />
-                <Modal.Body>
-                    <div className={styles.modalFieldGroup}>
-                        <label htmlFor="edit-word-input" className={styles.modalLabel}>Translation</label>
-                        <Input
-                            id="edit-word-input"
-                            value={editingWord.translatedText || ''}
-                            onChange={(e) => setEditingWord({ ...editingWord, translatedText: e.target.value })}
-                            className={styles.modalInput}
-                            placeholder="Enter translation..."
-                        />
-                    </div>
-
-                    <div className={styles.modalFieldGroup}>
-                        <label htmlFor="edit-translation-input" className={styles.modalLabel}>Definition</label>
-                        <Input
-                            id="edit-translation-input"
-                            value={editingWord.definition || ''}
-                            onChange={(e) => setEditingWord({ ...editingWord, definition: e.target.value })}
-                            className={styles.modalInput}
-                            placeholder="Enter English definition..."
-                        />
-                    </div>
-
-                    <div className={styles.modalFieldGroup}>
-                        <label htmlFor="edit-context-input" className={styles.modalLabel}>Context Sentence</label>
-                        <Input
-                            id="edit-context-input"
-                            value={editingWord.context || ''}
-                            onChange={(e) => setEditingWord({ ...editingWord, context: e.target.value })}
-                            className={styles.modalInput}
-                            placeholder="Enter context sentence..."
-                        />
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        onClick={handleCancelEdit}
-                        className={styles.modalCancelBtn}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleSaveWord(editingWord)}
-                        className={styles.modalSaveBtn}
-                    >
-                        Save Changes
-                    </button>
-                </Modal.Footer>
-            </Modal>
-        );
-    };
-
-    const renderPagination = () => {
-        if (totalPages <= 1) return null;
-
-        const getPageNumbers = () => {
-            const pages: (number | string)[] = [];
-            const maxVisiblePages = 5;
-
-            if (totalPages <= maxVisiblePages) {
-                for (let i = 1; i <= totalPages; i++) pages.push(i);
-            } else {
-                if (view.currentPage <= 3) {
-                    for (let i = 1; i <= 3; i++) pages.push(i);
-                    pages.push('...');
-                    pages.push(totalPages);
-                } else if (view.currentPage >= totalPages - 2) {
-                    pages.push(1);
-                    pages.push('...');
-                    for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
-                } else {
-                    pages.push(1);
-                    pages.push('...');
-                    pages.push(view.currentPage);
-                    pages.push('...');
-                    pages.push(totalPages);
-                }
-            }
-            return pages;
-        };
-
-        return (
-            <nav className={styles.paginationNav} aria-label="Pagination">
-                <button
-                    onClick={() => handlePageChange(view.currentPage - 1)}
-                    disabled={view.currentPage === 1}
-                    className={styles.paginationBtn}
-                    aria-label="Previous page"
-                >
-                    <ChevronLeft size={16} />
-                </button>
-
-                {getPageNumbers().map((page, index) => (
-                    <React.Fragment key={index}>
-                        {page === '...' ? (
-                            <span className={styles.paginationEllipsis}>⋯</span>
-                        ) : (
-                            <button
-                                onClick={() => handlePageChange(page as number)}
-                                className={`${styles.paginationBtn} ${view.currentPage === page ? styles.paginationBtnActive : ''}`}
-                                aria-current={view.currentPage === page ? 'page' : undefined}
-                            >
-                                {page}
-                            </button>
-                        )}
-                    </React.Fragment>
-                ))}
-
-                <button
-                    onClick={() => handlePageChange(view.currentPage + 1)}
-                    disabled={view.currentPage === totalPages}
-                    className={styles.paginationBtn}
-                    aria-label="Next page"
-                >
-                    <ChevronRight size={16} />
-                </button>
-            </nav>
-        );
-    };
+    const filterCategories = [
+        {
+            key: null,
+            label: intl.formatMessage({ id: 'dictionary.categories.all', defaultMessage: 'All' }),
+            icon: Layers
+        },
+        {
+            key: 'youtube',
+            label: intl.formatMessage({ id: 'dictionary.categories.youtube', defaultMessage: 'YouTube' }),
+            icon: Play
+        },
+        {
+            key: 'movies',
+            label: intl.formatMessage({ id: 'dictionary.categories.movies', defaultMessage: 'Movies' }),
+            icon: Film
+        },
+        {
+            key: 'text',
+            label: intl.formatMessage({ id: 'dictionary.categories.text', defaultMessage: 'Texts' }),
+            icon: Type
+        },
+        {
+            key: 'songs',
+            label: intl.formatMessage({ id: 'dictionary.categories.songs', defaultMessage: 'Lyrics' }),
+            icon: Music
+        }
+    ];
 
     return (
         <motion.div
@@ -1033,84 +171,116 @@ const DictionaryPage: React.FC = () => {
                     </h1>
 
                     <div className={styles.topBarActions}>
-                        {renderViewModeToggle()}
+                        {/* Segmented View Mode Toggle */}
+                        <div className={styles.segmentedControl} role="tablist" aria-label="View mode">
+                            <button
+                                onClick={() => handleSwitchViewMode('groups')}
+                                className={`${styles.segmentedButton} ${view.mode === 'groups' ? styles.segmentedButtonActive : ''}`}
+                                role="tab"
+                                aria-selected={view.mode === 'groups'}
+                            >
+                                <Folder size={15} />
+                                <span>{intl.formatMessage({ id: 'groups', defaultMessage: 'Collections' })}</span>
+                            </button>
+                            <button
+                                onClick={() => handleSwitchViewMode('categories')}
+                                className={`${styles.segmentedButton} ${view.mode === 'categories' ? styles.segmentedButtonActive : ''}`}
+                                role="tab"
+                                aria-selected={view.mode === 'categories'}
+                            >
+                                <Sparkles size={15} />
+                                <span>{intl.formatMessage({ id: 'categories', defaultMessage: 'Themes' })}</span>
+                            </button>
+                            <button
+                                onClick={() => handleSwitchViewMode('words')}
+                                className={`${styles.segmentedButton} ${view.mode === 'words' ? styles.segmentedButtonActive : ''}`}
+                                role="tab"
+                                aria-selected={view.mode === 'words'}
+                            >
+                                <BookOpen size={15} />
+                                <span>{intl.formatMessage({ id: 'allWords', defaultMessage: 'All Words' })}</span>
+                            </button>
+                        </div>
 
                         <button
                             onClick={handleExport}
                             className={styles.exportButton}
-                            aria-label="Export dictionary to Anki (.apkg)"
-                            disabled={isExporting || totalWordsCount === 0}
+                            disabled={isExporting}
+                            title="Export entire dictionary to Anki (.apkg)"
+                            aria-label="Export entire dictionary to Anki (.apkg)"
                         >
-                            {isExporting ? (
-                                <div className={styles.spinner} />
-                            ) : (
-                                <Download size={14} />
-                            )}
-                            <span>{isExporting ? 'Exporting…' : 'Export Anki'}</span>
+                            <Download size={14} className={isExporting ? 'animate-spin' : ''} />
+                            <span>{isExporting ? 'Exporting...' : 'Export Anki'}</span>
                         </button>
                     </div>
                 </motion.div>
 
-                {/* Top Stats Hero Bar (3 Apple-Minimalist Telemetry Cards) */}
-                <motion.div className={styles.statsGrid} variants={itemVariants}>
-                    <div className={styles.statCard}>
-                        <div className={styles.statHeader}>
-                            <span className={styles.statLabel}>Total Vocabulary Words</span>
-                            <BookOpen size={16} className={styles.statIcon} />
-                        </div>
-                        <div className={styles.statBottomRow}>
-                            <span className={styles.statValue}>{totalWordsCount}</span>
-                            <span className={styles.statSubtext}>words saved</span>
-                        </div>
+                {/* Hero Summary Metrics */}
+                <motion.div className={styles.statsOverview} variants={itemVariants}>
+                    <div className={styles.statMetric}>
+                        <span className={styles.statNumber}>{totalWordsCount}</span>
+                        <span className={styles.statLabel}>Total Vocabulary Words</span>
                     </div>
-
-                    <div className={styles.statCard}>
-                        <div className={styles.statHeader}>
-                            <span className={styles.statLabel}>Mastered in Memory</span>
-                            <Sparkles size={16} className={styles.statIcon} />
-                        </div>
-                        <div className={styles.statBottomRow}>
-                            <span className={styles.statValue}>{masteredCount}</span>
-                            <span className={styles.statSubtext}>
-                                {totalWordsCount > 0 ? `${Math.round((masteredCount / totalWordsCount) * 100)}% retention` : '0% retention'}
-                            </span>
-                        </div>
+                    <div className={styles.statMetric}>
+                        <span className={styles.statNumber}>{masteredCount}</span>
+                        <span className={styles.statLabel}>Mastered Words</span>
                     </div>
-
-                    <div className={styles.statCard}>
-                        <div className={styles.statHeader}>
-                            <span className={styles.statLabel}>Active Collections</span>
-                            <Layers size={16} className={styles.statIcon} />
-                        </div>
-                        <div className={styles.statBottomRow}>
-                            <span className={styles.statValue}>{activeGroupsCount}</span>
-                            <span className={styles.statSubtext}>media sources</span>
-                        </div>
+                    <div className={styles.statMetric}>
+                        <span className={styles.statNumber}>{activeGroupsCount}</span>
+                        <span className={styles.statLabel}>Collections & Sources</span>
                     </div>
                 </motion.div>
 
-                {/* Single-Row Filter & Search Toolbar */}
-                <motion.div className={styles.controlsContainer} variants={itemVariants}>
-                    {view.mode !== 'categories' ? renderCategoryFilters() : <div />}
+                {/* Controls Bar: Search & Layout Toggle */}
+                <motion.div className={styles.controlsBar} variants={itemVariants}>
+                    <div className={styles.searchWrapper} role="search">
+                        <Search className={styles.searchIcon} />
+                        <Input
+                            type="text"
+                            placeholder={
+                                view.mode === 'groups'
+                                    ? intl.formatMessage({ id: 'searchGroupsPlaceholder', defaultMessage: 'Search collections...' })
+                                    : view.mode === 'categories'
+                                    ? 'Search themes or words...'
+                                    : intl.formatMessage({ id: 'searchWordsPlaceholder', defaultMessage: 'Search words or context...' })
+                            }
+                            value={search.query}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className={styles.dictionarySearch}
+                            aria-label="Search dictionary"
+                        />
+                        {search.query && (
+                            <button
+                                type="button"
+                                onClick={clearSearch}
+                                className={styles.searchClearBtn}
+                                aria-label="Clear search"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
 
-                    <div className={styles.rightActionsGroup}>
-                        {renderSearchBar()}
-
+                    <div className={styles.viewLayoutControls}>
                         {view.mode === 'groups' && (
-                            <div className={styles.layoutToggle} role="tablist" aria-label="Layout mode">
+                            <div className={styles.layoutToggle} role="radiogroup" aria-label="Layout mode">
                                 <button
-                                    onClick={() => setView(prev => ({ ...prev, layout: 'grid' }))}
+                                    onClick={() => setLayout('grid')}
                                     className={`${styles.layoutButton} ${view.layout === 'grid' ? styles.layoutButtonActive : ''}`}
-                                    title="Grid view"
-                                    aria-label="Grid view"
+                                    role="radio"
+                                    aria-checked={view.layout === 'grid'}
+                                    title="Grid layout"
+                                    aria-label="Grid layout"
                                 >
                                     <Grid3X3 size={15} />
                                 </button>
                                 <button
-                                    onClick={() => setView(prev => ({ ...prev, layout: 'list' }))}
+                                    onClick={() => setLayout('list')}
                                     className={`${styles.layoutButton} ${view.layout === 'list' ? styles.layoutButtonActive : ''}`}
-                                    title="List view"
-                                    aria-label="List view"
+                                    role="radio"
+                                    aria-checked={view.layout === 'list'}
+                                    title="List layout"
+                                    aria-label="List layout"
                                 >
                                     <List size={15} />
                                 </button>
@@ -1119,12 +289,12 @@ const DictionaryPage: React.FC = () => {
                     </div>
                 </motion.div>
 
-                {/* Main Content Area */}
-                <motion.div className={styles.mainContentArea} variants={itemVariants}>
+                {/* Content Area */}
+                <motion.div className={styles.viewContainer} variants={itemVariants}>
                     {status === 'loading' || (view.mode === 'words' && isLoadingWords) ? (
                         <div className={styles.groupsGrid}>
                             {[...Array(6)].map((_, i) => (
-                                <Card key={i} className="bg-white/[0.02] border border-white/[0.07] h-40 animate-pulse rounded-2xl">
+                                <Card key={i} className="bg-white/[0.02] border border-white/[0.07] h-36 animate-pulse rounded-2xl">
                                     <CardContent className="p-0" />
                                 </Card>
                             ))}
@@ -1133,39 +303,55 @@ const DictionaryPage: React.FC = () => {
                         displayedResources.length > 0 ? (
                             view.layout === 'grid' ? (
                                 <div className={styles.groupsGrid}>
-                                    {displayedResources.map((res, i) => renderResourceCard(res, i))}
+                                    {displayedResources.map((res, i) => (
+                                        <DictionaryResourceCard
+                                            key={res.groupName || `res-${i}`}
+                                            resource={res}
+                                            index={i}
+                                            layout="grid"
+                                            onDelete={handleDelete}
+                                        />
+                                    ))}
                                 </div>
                             ) : (
-                                <div className={styles.groupsListWrapper}>
-                                    {displayedResources.map((res, i) => renderResourceListItem(res, i))}
+                                <div className={styles.groupsList}>
+                                    {displayedResources.map((res, i) => (
+                                        <DictionaryResourceCard
+                                            key={res.groupName || `res-${i}`}
+                                            resource={res}
+                                            index={i}
+                                            layout="list"
+                                            onDelete={handleDelete}
+                                        />
+                                    ))}
                                 </div>
                             )
                         ) : (
                             <div className={styles.emptyState}>
                                 <div className={styles.emptyStateIcon}>
-                                    <Folder size={26} />
+                                    <BookOpen size={26} />
                                 </div>
                                 <h3 className={styles.emptyStateTitle}>
                                     {search.debouncedQuery
                                         ? `No collections found for "${search.debouncedQuery}"`
-                                        : intl.formatMessage({ id: 'noResourcesFound', defaultMessage: 'No collections yet' })}
+                                        : intl.formatMessage({ id: 'noGroupsFound', defaultMessage: 'No collections yet' })}
                                 </h3>
                                 <p className={styles.emptyStateText}>
                                     {search.debouncedQuery
-                                        ? 'Try clearing your search query or switching categories.'
-                                        : 'Save new words while watching videos, reading texts, or exploring lyrics to build your collections.'}
+                                        ? 'Try searching with a different term.'
+                                        : 'Save new words while watching videos, reading subtitles, or exploring songs.'}
                                 </p>
                                 <div className={styles.emptyStateActions}>
                                     {search.debouncedQuery ? (
                                         <button
-                                            onClick={() => setSearch(prev => ({ ...prev, query: '' }))}
+                                            onClick={clearSearch}
                                             className={styles.emptyStateActionSecondary}
                                         >
                                             <Search size={14} />
                                             <span>Clear Search</span>
                                         </button>
                                     ) : (
-                                        <Link to="/videos" className={styles.emptyStateActionPrimary}>
+                                        <Link to="/videos" className={styles.emptyStateAction}>
                                             <Play size={14} />
                                             <span>Explore Videos</span>
                                         </Link>
@@ -1178,8 +364,8 @@ const DictionaryPage: React.FC = () => {
                             <div className={styles.wordsListContainer}>
                                 <button
                                     onClick={() => {
-                                        setSelectedCategoryName(null);
-                                        setSearch(prev => ({ ...prev, query: '' }));
+                                        handleSelectCategory(null);
+                                        clearSearch();
                                     }}
                                     className={styles.backToCategoriesBtn}
                                 >
@@ -1201,7 +387,16 @@ const DictionaryPage: React.FC = () => {
                                         ))}
                                     </div>
                                 ) : filteredCategoryWords.length > 0 ? (
-                                    filteredCategoryWords.map((word, i) => renderWordCard(word, i))
+                                    filteredCategoryWords.map((word, i) => (
+                                        <DictionaryWordCard
+                                            key={word.id || `cat-word-${i}`}
+                                            word={word}
+                                            index={i}
+                                            onEdit={handleQuickEdit}
+                                            onDelete={handleDeleteWord}
+                                            onListen={handleYouGlishClick}
+                                        />
+                                    ))
                                 ) : (
                                     <div className={styles.emptyState}>
                                         <div className={styles.emptyStateIcon}>
@@ -1311,8 +506,21 @@ const DictionaryPage: React.FC = () => {
                     ) : (
                         sortedFilteredWords.length > 0 ? (
                             <div className={styles.wordsListContainer}>
-                                {displayedWords.map((word, i) => renderWordCard(word, i))}
-                                {renderPagination()}
+                                {displayedWords.map((word, i) => (
+                                    <DictionaryWordCard
+                                        key={word.id || `word-${i}`}
+                                        word={word}
+                                        index={i}
+                                        onEdit={handleQuickEdit}
+                                        onDelete={handleDeleteWord}
+                                        onListen={handleYouGlishClick}
+                                    />
+                                ))}
+                                <DictionaryPagination
+                                    currentPage={view.currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                />
                             </div>
                         ) : (
                             <div className={styles.emptyState}>
@@ -1332,7 +540,7 @@ const DictionaryPage: React.FC = () => {
                                 <div className={styles.emptyStateActions}>
                                     {search.debouncedQuery && (
                                         <button
-                                            onClick={() => setSearch(prev => ({ ...prev, query: '' }))}
+                                            onClick={clearSearch}
                                             className={styles.emptyStateActionSecondary}
                                         >
                                             <Search size={14} />
@@ -1346,7 +554,12 @@ const DictionaryPage: React.FC = () => {
                 </motion.div>
 
                 {/* Edit Word Modal */}
-                {renderEditWordModal()}
+                <DictionaryEditModal
+                    word={editingWord}
+                    isOpen={Boolean(editingWord)}
+                    onClose={handleCancelEdit}
+                    onSave={handleSaveWord}
+                />
             </div>
         </motion.div>
     );

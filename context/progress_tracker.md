@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 58: Dictionary Page Humble Object & SRP Refactoring (ADR-133): Decomposed 1355-line monolithic `DictionaryPage.tsx` into domain hook `useDictionaryData.ts`, search/pagination hook `useDictionarySearchPagination.ts`, pure utility `dictionaryUtils.tsx` with unit tests, and isolated subcomponents `DictionaryWordCard`, `DictionaryResourceCard`, `DictionaryPagination`, and `DictionaryEditModal` (Frontend 62/62 suites 325/325 tests passing, Go suites clean).
   - Spec 57: Flashcards Humble Object & SRP Refactoring (ADR-132): Decomposed 999-line monolithic `Flashcards.tsx` into focused domain hook `useFlashcardsSession.ts`, keyboard event seam `useFlashcardsKeyboard.ts`, and pure string highlighting utility `storyHighlightUtils.ts` with comprehensive unit tests (Frontend 61/61 suites 318/318 tests passing, Go suites clean).
   - Uncle Bob `ub-mode` Adoption & `parseDoTags` Dryer Refactoring (ADR-131): Integrated Uncle Bob's `ub-mode` skill and workflow into `.agents/`; extracted duplicated `parseDoTags` string parser across `DashboardPage`, `VideoPage`, and `DictionaryPage` into pure utility `src/utils/textUtils.tsx` backed by seam tests in `textUtils.test.tsx` (60/60 suites 312/312 tests passing).
   - Spec 56: Learning Session Motivation & Workload Reduction (ADR-129, ADR-130): removed the Start Learning gate (audio unlocks on first gesture), monotonic Good-based progress bar, checkpoint after 20 ratings (Finish for today / Keep going), progress spark and halfway milestone with reduced-motion support, fade+slide card transition without `mode="wait"`, skippable story stage, localized finish copy; gated new production cards behind recognition mastery in `GetDailyCards` with fallback and flag `SRS_GATE_PRODUCTION_CARDS` (Frontend 59/59 suites 307/307 tests passing, Go suites clean).
@@ -24,6 +25,17 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-133: Dictionary Page Humble Object & SRP Architectural Seam (Spec 58)
+- **Status**: Accepted
+- **Context**: `DictionaryPage.tsx` grew into a 1355-line God Component managing resources, categories, all words, debounced search, source classification, modal dialogs, and table pagination all in one component.
+- **Decision**:
+  1. Extracted server state and mutations into `hooks/useDictionaryData.ts`.
+  2. Extracted debounced query, layout, active view mode, and pagination calculations into `hooks/useDictionarySearchPagination.ts`.
+  3. Extracted pure string parsing, icon mappings, and regex utilities into `utils/dictionaryUtils.tsx` with dedicated unit tests.
+  4. Extracted presentation cards and dialogs into `components/DictionaryResourceCard.tsx`, `components/DictionaryWordCard.tsx`, `components/DictionaryPagination.tsx`, and `components/DictionaryEditModal.tsx`.
+  5. Reduced `DictionaryPage.tsx` from 1355 lines to ~445 lines of clean, readable layout.
+- **Consequences**: Complete separation of concerns, high maintainability, zero regressions across all dictionary tests and full test suite.
 
 ### ADR-132: Flashcards Humble Object & SRP Architectural Seam (Spec 57)
 - **Status**: Accepted
