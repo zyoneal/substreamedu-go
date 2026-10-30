@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 60: AIService Clean Architecture & SRP Refactoring (ADR-135): Decomposed 3055-line God Object `ai_service.go` into focused domain modules (`ai_provider_client.go`, `ai_grammar_fallback.go`, `ai_exercise_generator.go`, `ai_lesson_generator.go`, `ai_categorizer.go`, `ai_prompts.go`) backed by characterization unit tests (`ai_grammar_fallback_test.go`, `ai_lesson_generator_test.go`, `ai_prompts_test.go`), reducing `ai_service.go` to 1216 lines (>60% reduction) with zero breaking changes or regressions across all services.
   - Spec 59: VideoPlayer Humble Object & SRP Refactoring (ADR-134): Decomposed 1523-line monolithic `VideoPlayer.tsx` into domain hooks `useVideoSubtitles.ts`, `useVideoOnboarding.ts`, `useVideoModalsState.ts`, and `useWordTooltip.ts` with comprehensive unit tests (Frontend 66/66 suites 339/339 tests passing, Go suites clean).
   - Spec 58: Dictionary Page Humble Object & SRP Refactoring (ADR-133): Decomposed 1355-line monolithic `DictionaryPage.tsx` into domain hook `useDictionaryData.ts`, search/pagination hook `useDictionarySearchPagination.ts`, pure utility `dictionaryUtils.tsx` with unit tests, and isolated subcomponents `DictionaryWordCard`, `DictionaryResourceCard`, `DictionaryPagination`, and `DictionaryEditModal` (Frontend 62/62 suites 325/325 tests passing, Go suites clean).
   - Spec 57: Flashcards Humble Object & SRP Refactoring (ADR-132): Decomposed 999-line monolithic `Flashcards.tsx` into focused domain hook `useFlashcardsSession.ts`, keyboard event seam `useFlashcardsKeyboard.ts`, and pure string highlighting utility `storyHighlightUtils.ts` with comprehensive unit tests (Frontend 61/61 suites 318/318 tests passing, Go suites clean).
@@ -26,6 +27,19 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-135: AIService Clean Architecture & SRP Refactoring (Spec 60)
+- **Status**: Accepted
+- **Context**: `ai_service.go` in `substreamedu-dictionary-service-go` was 3055 lines long, violating SRP by combining low-level HTTP LLM providers (DeepSeek, Groq, Gemini), offline algorithmic exercise/story generators, a 470-line static grammar fallback rules catalog, lesson plan templating, heuristic categorization, and complex prompt engineering in a single monolithic file.
+- **Decision**:
+  1. Extracted low-level LLM provider clients with circuit-breaker protection into `internal/service/ai_provider_client.go`.
+  2. Extracted pure algorithmic exercises and session story generators into `internal/service/ai_exercise_generator.go`.
+  3. Extracted grammar rules catalog and resolver into `internal/service/ai_grammar_fallback.go` with characterization tests in `ai_grammar_fallback_test.go`.
+  4. Extracted algorithmic lesson plan generator into `internal/service/ai_lesson_generator.go` with unit tests in `ai_lesson_generator_test.go`.
+  5. Extracted regex phrase categorizer into `internal/service/ai_categorizer.go`.
+  6. Extracted prompt templates and response parsing helpers into `internal/service/ai_prompts.go` with characterization tests in `ai_prompts_test.go`.
+  7. Reduced `ai_service.go` to a clean 1216-line coordinator without changing public signatures or breaking callers.
+- **Consequences**: High modularity and testability; isolated network I/O from offline heuristic fallbacks; 100% backward compatibility preserved.
 
 ### ADR-134: VideoPlayer Humble Object & SRP Architectural Seam (Spec 59)
 - **Status**: Accepted
