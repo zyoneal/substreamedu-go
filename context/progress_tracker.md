@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 63: DictionaryRepository Clean Architecture & SRP Refactoring (ADR-138): Decomposed 973-line monolithic `dictionary_repository.go` into domain modules `dictionary_categorization_repository.go` (uncategorized lexemes, phrase categories, batch update, category pagination) and `dictionary_stats_repository.go` (SRS review logging, review dates timezone projection, dictionary stats, and resets), reducing `dictionary_repository.go` to 602 lines (~38% reduction) with zero breaking changes and 100% ABI compatibility.
   - Spec 62: DictionaryHandler Clean Architecture & SRP Refactoring (ADR-137): Decomposed 1156-line monolithic `dictionary_handler.go` into domain modules `dictionary_ai_handler.go` (AI generation & timeouts), `dictionary_translation_handler.go` (translation, field mapping & visual icon fetch), `dictionary_lesson_handler.go` (teacher lesson plan builder & sharing), `dictionary_export_handler.go` (CSV & Anki export streaming), and `dictionary_categorization_handler.go` (micro-batch categorization & categories), reducing `dictionary_handler.go` to 466 lines (>60% reduction) with zero breaking changes or regressions across all routes.
   - Spec 61: VocabularyService Clean Architecture & SRP Refactoring (ADR-136): Decomposed 1212-line monolithic `vocabulary_service.go` into domain modules `vocabulary_export.go` (Anki packaging & CSV streaming), `vocabulary_image_downloader.go` (safe async image downloading & SSRF protection), and `vocabulary_stats.go` (streak & SRS calculation), reducing `vocabulary_service.go` to 474 lines (>60% reduction) with zero regressions across all services.
   - Spec 60: AIService Clean Architecture & SRP Refactoring (ADR-135): Decomposed 3055-line God Object `ai_service.go` into focused domain modules (`ai_provider_client.go`, `ai_grammar_fallback.go`, `ai_exercise_generator.go`, `ai_lesson_generator.go`, `ai_categorizer.go`, `ai_prompts.go`) backed by characterization unit tests (`ai_grammar_fallback_test.go`, `ai_lesson_generator_test.go`, `ai_prompts_test.go`), reducing `ai_service.go` to 1216 lines (>60% reduction) with zero breaking changes or regressions across all services.
@@ -29,6 +30,16 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-138: DictionaryRepository Clean Architecture & SRP Refactoring (Spec 63)
+- **Status**: Accepted
+- **Context**: `dictionary_repository.go` in `substreamedu-dictionary-service-go` was 973 lines long, combining word CRUD, optimistic locking, SRS review logging, SQL stats calculations with session limits, uncategorized word queries, phrase categories, and category pagination into a single file.
+- **Decision**:
+  1. Extracted vocabulary categorization methods (`FindUncategorizedLexemes`, `CountCategorizationStats`, `FindGlobalPhraseCategories`, `SaveGlobalPhraseCategories`, `BatchUpdateCategories`, `FindVocabularyCategories`, `FindLexemesByCategoryPaginated`) into `internal/repository/dictionary_categorization_repository.go`.
+  2. Extracted SRS review logging, review dates timezone projection, dictionary stats, and user/global resets into `internal/repository/dictionary_stats_repository.go`.
+  3. Kept core CRUD (`FindByID`, `Save`, `SaveTx`, `SaveTxOptimistic`, `DeleteWord`, `DeleteByResource`, `UpdateImageUrl`), card selection (`FindDueWordsSorted`, `FindRandomNewWords`, `FindNewRecognitionCards`, `FindUnlockedNewProductionCards`), and resource lexeme queries in `internal/repository/dictionary_repository.go` (602 lines).
+  4. Preserved all method signatures on `*DictionaryRepository` ensuring 100% ABI compatibility with `VocabularyService`, `CategorizationService`, and `LearningService`.
+- **Consequences**: Strict SRP separation, high readability and maintainability, zero regressions across tests.
 
 ### ADR-137: DictionaryHandler Clean Architecture & SRP Refactoring (Spec 62)
 - **Status**: Accepted
