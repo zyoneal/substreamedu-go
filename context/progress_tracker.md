@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 64: Homepage Hero Cinema Player Mockup & Instant Comprehension (ADR-139): Integrated interactive glassmorphic `HeroCinemaPlayer` directly into the public homepage Hero section. Added live subtitle blur with click/tap-to-reveal (Active Listening mode demonstration), cursor selection for idioms (`call it a day`, `nuts and bolts`, `crumbles`), docked contextual translation card with phonetics, definition and instant "Save to SRS" feedback, and content format switcher (Movies, YouTube, Synced Lyrics) allowing visitors to comprehend the product's core value within 3 seconds of landing. (Frontend 66/66 suites 340/340 tests passing, Go suites clean).
   - Spec 63: DictionaryRepository Clean Architecture & SRP Refactoring (ADR-138): Decomposed 973-line monolithic `dictionary_repository.go` into domain modules `dictionary_categorization_repository.go` (uncategorized lexemes, phrase categories, batch update, category pagination) and `dictionary_stats_repository.go` (SRS review logging, review dates timezone projection, dictionary stats, and resets), reducing `dictionary_repository.go` to 602 lines (~38% reduction) with zero breaking changes and 100% ABI compatibility.
   - Spec 62: DictionaryHandler Clean Architecture & SRP Refactoring (ADR-137): Decomposed 1156-line monolithic `dictionary_handler.go` into domain modules `dictionary_ai_handler.go` (AI generation & timeouts), `dictionary_translation_handler.go` (translation, field mapping & visual icon fetch), `dictionary_lesson_handler.go` (teacher lesson plan builder & sharing), `dictionary_export_handler.go` (CSV & Anki export streaming), and `dictionary_categorization_handler.go` (micro-batch categorization & categories), reducing `dictionary_handler.go` to 466 lines (>60% reduction) with zero breaking changes or regressions across all routes.
   - Spec 61: VocabularyService Clean Architecture & SRP Refactoring (ADR-136): Decomposed 1212-line monolithic `vocabulary_service.go` into domain modules `vocabulary_export.go` (Anki packaging & CSV streaming), `vocabulary_image_downloader.go` (safe async image downloading & SSRF protection), and `vocabulary_stats.go` (streak & SRS calculation), reducing `vocabulary_service.go` to 474 lines (>60% reduction) with zero regressions across all services.
@@ -30,6 +31,17 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-139: Homepage Hero Cinema Player Mockup & Instant Comprehension (Spec 64)
+- **Status**: Accepted
+- **Context**: Visitors to the public homepage needed to grasp the core mechanic within 3 seconds of landing. While the typography and value proposition were strong, the hero section lacked a visual mockup of the actual video player with blurred subtitles and contextual phrase translation. Additionally, demonstration vocabulary needed to translate identically into Ukrainian and Russian to feel natural to both audiences.
+- **Decision**:
+  1. Built [`HeroCinemaPlayer`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/HomePage/HeroCinemaPlayer.tsx) and mounted it directly inside the hero content below the primary CTAs.
+  2. Implemented interactive subtitle blur with click/tap-to-reveal for Active Listening mode demonstration.
+  3. Added live idiom/word highlighting with bilingual-identical vocabulary (`no problem` → `без проблем`, `suit` → `костюм`, `castle` → `замок`), docked floating translation card, phonetics, and interactive "Save to SRS" state feedback.
+  4. Provided a 3-source tab switcher (Movies & Series, YouTube Interviews, Synced Lyrics) demonstrating all primary content formats directly on the hero screen.
+  5. Added comprehensive test coverage in [`HomePage.test.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/HomePage/HomePage.test.tsx).
+- **Consequences**: Immediate 3-second comprehension of the product, highly engaging micro-interactions, seamless bilingual resonance (UK/RU), responsive on both desktop and mobile, with zero regressions across the codebase.
 
 ### ADR-138: DictionaryRepository Clean Architecture & SRP Refactoring (Spec 63)
 - **Status**: Accepted

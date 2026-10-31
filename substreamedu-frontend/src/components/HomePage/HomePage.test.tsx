@@ -111,4 +111,43 @@ describe('HomePage Demo Modal', () => {
     expect(textDemoLink).toBeInTheDocument();
     expect(textDemoLink).toHaveAttribute('href', '/texts-demo');
   });
+
+  it('renders interactive HeroCinemaPlayer with subtitle blur and contextual translation card', () => {
+    renderHomePage();
+    const heroPlayer = screen.getByTestId('hero-cinema-player');
+    expect(heroPlayer).toBeInTheDocument();
+
+    // Verify real player quick action controls (Blur pill & Repeat pill)
+    expect(within(heroPlayer).getByRole('button', { name: /subtitle blurred/i })).toBeInTheDocument();
+    expect(within(heroPlayer).getByRole('button', { name: /repeat subtitle 3 times/i })).toBeInTheDocument();
+
+    // Verify initial scene (Interstellar)
+    expect(within(heroPlayer).getByText(/interstellar/i)).toBeInTheDocument();
+    expect(within(heroPlayer).getAllByText(/no problem/i).length).toBeGreaterThanOrEqual(1);
+
+    // Verify subtitle reveal toggle
+    const blurButton = within(heroPlayer).getByRole('button', { name: /subtitle blurred/i });
+    expect(blurButton).toBeInTheDocument();
+    act(() => {
+      fireEvent.click(blurButton);
+    });
+    expect(within(heroPlayer).getByRole('button', { name: /subtitle revealed/i })).toBeInTheDocument();
+
+    // Verify contextual translation popover and save button
+    const saveBtn = within(heroPlayer).getByRole('button', { name: /add word to dictionary/i });
+    expect(saveBtn).toBeInTheDocument();
+    act(() => {
+      fireEvent.click(saveBtn);
+    });
+    expect(within(heroPlayer).getByRole('button', { name: /word saved to dictionary/i })).toBeInTheDocument();
+
+    // Verify tab switching to YouTube interviews
+    const youtubeTab = within(heroPlayer).getByRole('tab', { name: /youtube interviews/i });
+    act(() => {
+      fireEvent.click(youtubeTab);
+    });
+    expect(within(heroPlayer).getByText(/suits & style/i)).toBeInTheDocument();
+    expect(within(heroPlayer).getAllByText(/suit/i).length).toBeGreaterThanOrEqual(1);
+  });
 });
+

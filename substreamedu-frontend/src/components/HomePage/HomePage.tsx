@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { SEO } from '../SEO/SEO';
 import ScrollingTextWall from './ScrollingTextWall';
+import HeroCinemaPlayer from './HeroCinemaPlayer';
 import { Modal } from '../ui/modal';
 import { AuthService } from '../../services/AuthService';
 import { GuestLimitService } from '../../services/GuestLimitService';
@@ -484,6 +485,8 @@ const HomePage: React.FC = () => {
               <span className={styles.heroSocialDot} />
               <span>Free · 100 translations · No credit card</span>
             </div>
+
+            <HeroCinemaPlayer />
           </motion.div>
 
           <motion.div
@@ -636,7 +639,7 @@ const HomePage: React.FC = () => {
                   </span>
                 </div>
                 <span className={styles.translationMeaning}>
-                  <FormattedMessage id="homePage.demo.phraseMeaning" defaultMessage="no problem / you're welcome" />
+                  <FormattedMessage id="homePage.demo.phraseMeaning" defaultMessage="без проблем" />
                 </span>
                 <button
                   className={`${styles.addToDictBtn} ${isDemoWordAdded ? styles.addToDictBtnSaved : ''}`}
@@ -694,7 +697,7 @@ const HomePage: React.FC = () => {
                         values={{
                           meaning: intl.formatMessage({
                             id: 'homePage.demo.phraseMeaning',
-                            defaultMessage: "no problem / you're welcome",
+                            defaultMessage: "без проблем",
                           }),
                         }}
                       />

@@ -1,0 +1,657 @@
+/* ==========================================================================
+   HeroCinemaPlayer — Authentic Live VideoPlayer with movies_example.mp4
+   Clean layout: Live video + compact popover floating ABOVE subtitle
+   ========================================================================== */
+
+.playerWrapper {
+  width: 100%;
+  max-width: 980px;
+  margin: 36px auto 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.playerAmbientGlow {
+  position: absolute;
+  inset: -12px;
+  background: radial-gradient(circle at 50% 50%, rgba(10, 10, 10, 0.12), transparent 70%);
+  filter: blur(32px);
+  border-radius: 28px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   Main Cinema Video Container (16:9 aspect)
+   ───────────────────────────────────────────── */
+.videoContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 420px;
+  max-height: 540px;
+  background: #08080a;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 64px -12px rgba(0, 0, 0, 0.65),
+    0 8px 24px -6px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+}
+
+/* Authentic Cinematic Backdrop Wrapper */
+.sceneBackdropWrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.sceneBackdropImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 14s cubic-bezier(0.25, 1, 0.5, 1), filter 0.5s ease;
+  transform: scale(1.0);
+  filter: contrast(1.03) brightness(0.96);
+  user-select: none;
+  pointer-events: none;
+}
+
+.sceneImagePlaying {
+  transform: scale(1.05);
+}
+
+.sceneImagePaused {
+  transform: scale(1.0);
+  filter: contrast(1.03) brightness(0.9);
+}
+
+/* Cinematic film vignette overlay */
+.videoVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.15) 25%,
+    rgba(0, 0, 0, 0.15) 55%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+}
+
+/* ─────────────────────────────────────────────
+   1. TOP CONTROLS (Matches VideoControlsOverlay.tsx)
+   ───────────────────────────────────────────── */
+.topControls {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 20px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.topControlsLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.videoTitleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.videoTitleDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f0c674;
+  box-shadow: 0 0 6px rgba(240, 198, 116, 0.6);
+}
+
+.topControlsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.iconControlBtn {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.iconControlBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Quick Pill Buttons */
+.quickPillButton {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 9999px;
+  padding: 0 12px;
+  height: 30px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  user-select: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.quickPillButton:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.activePill {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.activePill::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   2. SUBTITLES OVERLAY (Positioned at bottom, fully visible)
+   ───────────────────────────────────────────── */
+.subtitlesStage {
+  position: absolute;
+  bottom: 58px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.currentSubtitleContainer {
+  pointer-events: auto;
+  position: relative;
+  background: rgba(15, 15, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px 22px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  max-width: 85%;
+  text-align: center;
+}
+
+/* Grammar Spotlight Badge */
+.grammarBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2.5px 7px 2.5px 5px;
+  border-radius: 5px;
+  background: rgba(36, 32, 24, 0.95);
+  border: 1px solid rgba(240, 198, 116, 0.35);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.grammarBadgeIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(240, 198, 116, 0.2);
+}
+
+.grammarBadgeIcon {
+  color: #f0c674;
+}
+
+.grammarBadgeLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #f3efe6;
+}
+
+.grammarBadgeCefr {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(240, 198, 116, 0.18);
+  border: 1px solid rgba(240, 198, 116, 0.3);
+  color: #f5d082;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Subtitle text */
+.currentSubtitle {
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  color: #e8e8e8;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+  font-size: 17px;
+  text-align: center;
+  position: relative;
+  transition: filter 0.25s ease;
+  user-select: none;
+}
+
+.isBlurred {
+  filter: blur(5px);
+  cursor: pointer;
+}
+
+.isBlurred:hover {
+  filter: blur(0);
+}
+
+.selectionHighlight {
+  background: rgba(255, 255, 255, 0.25);
+  border-bottom: 2px solid #ffffff;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0 4px;
+  border-radius: 2px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Signature SubStreamEdu cursor */
+.selectionCursor {
+  position: absolute;
+  right: -12px;
+  bottom: -18px;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* ─────────────────────────────────────────────
+   3. TRANSLATION POPOVER (Compact, elegant, floating ABOVE subtitle)
+   ───────────────────────────────────────────── */
+.popover {
+  position: absolute;
+  bottom: 112px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 35;
+  width: 270px;
+  background: #f5f3ef;
+  color: #0a0a0a;
+  border-radius: 16px;
+  border: 1px solid rgba(10, 10, 10, 0.16);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.38),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px;
+  text-align: left;
+  font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+  animation: popoverEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.popoverArrow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 11px;
+  height: 11px;
+  background: #f5f3ef;
+  border-right: 1px solid rgba(10, 10, 10, 0.16);
+  border-bottom: 1px solid rgba(10, 10, 10, 0.16);
+  z-index: 36;
+}
+
+.selectedTextRow {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+
+.selectedText {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a0a0a;
+  letter-spacing: -0.01em;
+}
+
+.transcription {
+  font-size: 11px;
+  color: #8e8e8e;
+  font-weight: 500;
+}
+
+.mainTranslationRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.mainTranslationText {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a0a0a;
+}
+
+.posTagSm {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(10, 10, 10, 0.08);
+  color: #4a4a48;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Real SubStreamEdu .saveButton */
+.popoverActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid rgba(10, 10, 10, 0.08);
+}
+
+.saveButton {
+  background: #0a0a0a;
+  color: #f5f3ef;
+  border: none;
+  border-radius: 9999px;
+  padding: 7px 16px;
+  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover {
+  background: #262626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(10, 10, 10, 0.2);
+}
+
+.saveButtonSaved {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.saveButtonSaved:hover {
+  background: #166534;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #8e8e8e;
+  font-size: 17px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: #0a0a0a;
+}
+
+/* ─────────────────────────────────────────────
+   4. BOTTOM CONTROLS OVERLAY (Matches VideoControlsOverlay.tsx)
+   ───────────────────────────────────────────── */
+.bottomControls {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 14px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.controlButton {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: transform 0.15s ease;
+}
+
+.controlButton:hover {
+  transform: scale(1.1);
+}
+
+.timeCurrent,
+.timeDuration {
+  color: #e2e8f0;
+  font-size: 12px;
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.seekBarWrapper {
+  flex: 1;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.seekBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.seekBarProgress {
+  height: 100%;
+  background: #f0c674;
+  border-radius: 2px;
+}
+
+/* ─────────────────────────────────────────────
+   5. FORMAT SWITCHER PILLS (Under Video)
+   ───────────────────────────────────────────── */
+.formatSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.formatTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(10, 10, 10, 0.05);
+  border: 1px solid rgba(10, 10, 10, 0.1);
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-body, #4a4a48);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.formatTab:hover {
+  background: rgba(10, 10, 10, 0.09);
+  color: var(--color-ink, #0a0a0a);
+}
+
+.formatTabActive {
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+  color: #f5f3ef;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.formatTabActive:hover {
+  background: #2a2a28;
+  color: #f5f3ef;
+}
+
+/* ─────────────────────────────────────────────
+   Responsive Tweaks
+   ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .videoContainer {
+    aspect-ratio: auto;
+    min-height: 380px;
+  }
+
+  .topControls {
+    padding: 12px 14px 16px 14px;
+  }
+
+  .videoTitleBadge {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .subtitlesStage {
+    bottom: 52px;
+    padding: 0 14px;
+  }
+
+  .currentSubtitleContainer {
+    padding: 8px 14px;
+    max-width: 95%;
+  }
+
+  .currentSubtitle {
+    font-size: 14px;
+  }
+
+  .popover {
+    width: calc(100% - 32px);
+    bottom: 112px;
+    padding: 10px 12px;
+  }
+
+  .bottomControls {
+    padding: 14px 14px 10px 14px;
+    gap: 10px;
+  }
+
+  .formatSwitcher {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .formatTab {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
