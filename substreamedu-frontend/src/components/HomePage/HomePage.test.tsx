@@ -154,9 +154,13 @@ describe('HomePage Demo Modal', () => {
     expect(within(heroPlayer).getByRole('button', { name: /subtitle blurred/i })).toBeInTheDocument();
     expect(within(heroPlayer).getByRole('button', { name: /repeat subtitle 3 times/i })).toBeInTheDocument();
 
-    // Verify initial scene (Interstellar)
+    // Verify initial scene (Interstellar) and that highlightWord stays unblurred while context is blurred
     expect(within(heroPlayer).getByText(/interstellar/i)).toBeInTheDocument();
     expect(within(heroPlayer).getAllByText(/no problem/i).length).toBeGreaterThanOrEqual(1);
+    const subtitleLine = within(heroPlayer).getByRole('button', { name: /toggle subtitle blur/i });
+    expect(within(subtitleLine).getByText(/Hey relax/i).className).toMatch(/blurredContext/);
+    expect(within(subtitleLine).getByText('no problem').className).toMatch(/selectionHighlight/);
+    expect(within(subtitleLine).getByText('no problem').className).not.toMatch(/blurredContext/);
 
     // Verify subtitle reveal toggle
     const blurButton = within(heroPlayer).getByRole('button', { name: /subtitle blurred/i });

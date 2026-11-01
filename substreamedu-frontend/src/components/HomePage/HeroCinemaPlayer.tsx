@@ -18,6 +18,7 @@ interface DemoScene {
   label: string;
   icon: React.ReactNode;
   title: string;
+  shortTitle: string;
   timestamp: string;
   duration: string;
   progressPercent: number;
@@ -38,6 +39,7 @@ const DEMO_SCENES: readonly DemoScene[] = [
     label: 'Movies & Series',
     icon: <Film size={13} strokeWidth={2} />,
     title: 'Interstellar (2014) · English Subtitles',
+    shortTitle: 'Interstellar (2014)',
     timestamp: '01:14:28',
     duration: '02:49:00',
     progressPercent: 44,
@@ -56,6 +58,7 @@ const DEMO_SCENES: readonly DemoScene[] = [
     label: 'YouTube Interviews',
     icon: <Play size={13} strokeWidth={2} />,
     title: 'Suits & Style · Podcast Interview',
+    shortTitle: 'Suits & Style',
     timestamp: '18:42',
     duration: '01:45:10',
     progressPercent: 22,
@@ -74,6 +77,7 @@ const DEMO_SCENES: readonly DemoScene[] = [
     label: 'Synced Lyrics',
     icon: <Music size={13} strokeWidth={2} />,
     title: 'Ed Sheeran - Castle on the Hill',
+    shortTitle: 'Castle on the Hill',
     timestamp: '01:25',
     duration: '04:46',
     progressPercent: 32,
@@ -148,7 +152,7 @@ export const HeroCinemaPlayer: React.FC = () => {
           <div className={styles.topControlsLeft}>
             <div className={styles.videoTitleBadge}>
               <span className={styles.videoTitleDot} aria-hidden="true" />
-              <span>{scene.title}</span>
+              <span className={styles.videoTitleText}>{scene.title}</span>
             </div>
           </div>
 
@@ -297,7 +301,7 @@ export const HeroCinemaPlayer: React.FC = () => {
                 aria-label="Toggle subtitle blur"
                 title={blurSubtitles ? 'Click or hover to reveal' : ''}
               >
-                <span>{scene.spokenPrefix}</span>
+                <span className={styles.blurredContext}>{scene.spokenPrefix}</span>
                 <span className={styles.selectionHighlight}>
                   {scene.highlightWord}
                   <svg
@@ -316,7 +320,7 @@ export const HeroCinemaPlayer: React.FC = () => {
                     />
                   </svg>
                 </span>
-                <span>{scene.spokenSuffix}</span>
+                <span className={styles.blurredContext}>{scene.spokenSuffix}</span>
               </p>
             </div>
           </div>
