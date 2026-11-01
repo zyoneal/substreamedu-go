@@ -93,6 +93,8 @@ export const HeroCinemaPlayer: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'movies' | 'youtube' | 'music'>('movies');
   const [blurSubtitles, setBlurSubtitles] = useState<boolean>(true);
   const [delayActive, setDelayActive] = useState<boolean>(true);
+  const [repeatActive, setRepeatActive] = useState<boolean>(false);
+  const [showGrammar, setShowGrammar] = useState<boolean>(false);
   const [showSubtitles, setShowSubtitles] = useState<boolean>(true);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -112,6 +114,11 @@ export const HeroCinemaPlayer: React.FC = () => {
 
   const togglePlayPause = () => {
     setIsPlaying((prev) => !prev);
+  };
+
+  const toggleSubtitleBlur = () => {
+    setBlurSubtitles((prev) => !prev);
+    setIsPopoverOpen(true);
   };
 
   return (
@@ -148,9 +155,11 @@ export const HeroCinemaPlayer: React.FC = () => {
           <div className={styles.topControlsRight}>
             <button
               type="button"
-              className={styles.iconControlBtn}
+              className={`${styles.iconControlBtn} ${showGrammar ? styles.iconControlBtnActive : ''}`}
+              onClick={() => setShowGrammar((prev) => !prev)}
               title="Grammar in this Video"
               aria-label="Grammar in this Video"
+              aria-pressed={showGrammar}
             >
               <Sparkles size={15} />
             </button>
@@ -161,6 +170,7 @@ export const HeroCinemaPlayer: React.FC = () => {
               onClick={() => setShowSubtitles((prev) => !prev)}
               title={showSubtitles ? 'Hide subtitles' : 'Show subtitles'}
               aria-label={showSubtitles ? 'Hide subtitles' : 'Show subtitles'}
+              aria-pressed={!showSubtitles}
             >
               {showSubtitles ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
@@ -171,6 +181,7 @@ export const HeroCinemaPlayer: React.FC = () => {
               className={`${styles.quickPillButton} ${blurSubtitles ? styles.activePill : ''}`}
               onClick={() => setBlurSubtitles((prev) => !prev)}
               aria-label={blurSubtitles ? 'Subtitle blurred' : 'Subtitle revealed'}
+              aria-pressed={blurSubtitles}
               title={blurSubtitles ? 'Subtitles blurred (Listening practice active)' : 'Blur subtitles'}
             >
               Blur
@@ -183,6 +194,7 @@ export const HeroCinemaPlayer: React.FC = () => {
               onClick={() => setDelayActive((prev) => !prev)}
               title="Delay subtitles by 2s (Listening practice)"
               aria-label="Toggle subtitle delay"
+              aria-pressed={delayActive}
             >
               {delayActive ? '-2s' : 'Delay'}
             </button>
@@ -190,9 +202,11 @@ export const HeroCinemaPlayer: React.FC = () => {
             {/* Quick Pill: 3x Repeat */}
             <button
               type="button"
-              className={styles.quickPillButton}
+              className={`${styles.quickPillButton} ${repeatActive ? styles.activePill : ''}`}
+              onClick={() => setRepeatActive((prev) => !prev)}
               title="Repeat current subtitle 3 times"
               aria-label="Repeat subtitle 3 times"
+              aria-pressed={repeatActive}
             >
               <RotateCcw size={11} />
               <span>3x</span>
@@ -258,13 +272,29 @@ export const HeroCinemaPlayer: React.FC = () => {
         {showSubtitles && (
           <div className={styles.subtitlesStage}>
             <div className={styles.currentSubtitleContainer}>
-              {/* Subtitle text with real hover unblur and signature selection cursor */}
+              {showGrammar && (
+                <div className={styles.grammarBadge} role="status" aria-label="Grammar Spotlight">
+                  <span className={styles.grammarBadgeIconWrapper}>
+                    <Sparkles size={9} className={styles.grammarBadgeIcon} />
+                  </span>
+                  <span className={styles.grammarBadgeLabel}>{scene.grammarLabel}</span>
+                  <span className={styles.grammarBadgeCefr}>{scene.cefr}</span>
+                </div>
+              )}
+
+              {/* Subtitle text with real hover unblur, keyboard support, and signature selection cursor */}
               <p
                 className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''}`}
-                onClick={() => {
-                  setBlurSubtitles((prev) => !prev);
-                  setIsPopoverOpen(true);
+                onClick={toggleSubtitleBlur}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleSubtitleBlur();
+                  }
                 }}
+                role="button"
+                tabIndex={0}
+                aria-label="Toggle subtitle blur"
                 title={blurSubtitles ? 'Click or hover to reveal' : ''}
               >
                 <span>{scene.spokenPrefix}</span>

@@ -57,3 +57,88 @@ Do not ingest unnecessary files. Load context strictly based on your task domain
 10. **Progress Tracker Synchronization**:
     - **Start**: Update `In Progress` in `/context/progress_tracker.md`.
     - **Finish**: Move to `Recent Completed` and log ADR.
+
+---
+
+<!-- autopilot:start -->
+# SubStreamEdu — Память проекта (Autopilot)
+
+AI-платформа изучения языков по стриминговому медиа (YouTube, фильмы, субтитры SRT/VTT, книги EPUB/TXT) с интервальным повторением FSRS и Telegram-ботом.
+
+## Команды
+
+| Команда | Что делает |
+|---------|------------|
+| `cd substreamedu-frontend && npm ci` | Установить зависимости фронтенда |
+| `cd substreamedu-frontend && npm start` | Запустить фронтенд локально (`:3000`) |
+| `./verify.sh` | Полная проверка: anti-tamper, spec-scope, Go vet/tests, Frontend tsc/tests |
+| `cd substreamedu-frontend && npm test -- --watchAll=false <путь>` | Запустить один тестовый файл фронтенда |
+| `cd substreamedu-dictionary-service-go && go test ./...` | Запустить тесты микросервиса словаря |
+
+## Где что
+
+- `substreamedu-gateway-go/` — единая точка входа (`:8080`), маршрутизация, rate-limit, проверка отозванных JWT в Redis.
+- `substreamedu-iam-service-go/` — пользователи, Google OAuth2, выдача JWT, квоты и промокоды (`:3002`, БД `sse_iam`).
+- `substreamedu-dictionary-service-go/` — словарь, карточки FSRS (Recognition/Production), экспорт Anki/CSV, AI-перевод и генерация упражнений (`:3003`, БД `substreamedu_dictionary`).
+- `substreamedu-media-service-go/` — парсинг SRT/VTT, метаданные YouTube, поиск субтитров SubDL (`:3004`, БД `substreamedu_media`).
+- `substreamedu-notification-service-go/` — Telegram-бот, ежедневные карточки, Kafka-консьюмер (`:3005`).
+- `substreamedu-frontend/src/` — React 18 + TypeScript SPA (Cinematic Espresso UI, интерактивный плеер, карточки `/learning`, книги `/books`).
+- `context/feature_specs/` — спецификации SDD с обязательным списком `## Allowed files`.
+
+## Подводные камни
+
+- `.harness/scripts/check-spec-scope.sh` блокирует сборку, если изменено >100 строк без активной спецификации в `context/feature_specs/` или если затронут файл вне `## Allowed files`.
+- `.harness/scripts/check-protected-files.sh` запрещает менять конфиги компиляторов, линтеров и `package.json` / `go.mod` без `ALLOW_PROTECTED_CHANGES=true`.
+- Во всех мутирующих маршрутах (`POST`, `PUT`, `PATCH`, `DELETE`) `userId` берётся строго из проверенного JWT-контекста (`c.Get("userId")`), никогда из query/headers.
+- Во фронтенде запрещены сырые hex-цвета вне токенов темы Cinematic Espresso (`#0d0c0b`) и UI-эмодзи.
+
+## Окружение
+
+- `JWT_SECRET`, `INTERNAL_SERVICE_KEY` — подпись JWT и ключ межсервисных вызовов.
+- `DEEPSEEK_API_KEY`, `GROQ_API_KEY`, `GEMINI_API_KEY` — провайдеры LLM в `substreamedu-dictionary-service-go`.
+- `SUBDL_API_KEY`, `YOUTUBE_API_KEY` — внешние источники субтитров и метаданных в `substreamedu-media-service-go`.
+- `TELEGRAM_BOT_TOKEN` — токен бота в `substreamedu-notification-service-go`.
+- `SRS_GATE_PRODUCTION_CARDS` — флаг гейтинга Production-карточек до освоения Recognition.
+
+## Как здесь работает Autopilot
+
+Сборка ведётся навыком `/autopilot` (`.agents/skills/autopilot/SKILL.md`). Требования, спецификация и таски — в `.autopilot/`.
+Прогресс — `.autopilot/dashboard.html`. Требование из `manifest.md` может снять
+только пользователь. Прерванную сборку продолжает «продолжи автопилот».
+
+### Правка без автопилота
+
+Мелкий баг или доводка после сборки — обычная сессия, без прогона.
+
+Сначала прочитай:
+1. `.autopilot/PROGRESS.md` — что не доделано, известные баги, о чём договорились с пользователем.
+2. Что правили после последней сборки — первая строка таблицы в «История git».
+3. Только если правка их касается: почему сделано так — `context/progress_tracker.md`; что значат слова — `CONTEXT.md`;
+   что именно просили — `manifest.md` в папке сборки (указана в начале `PROGRESS.md`).
+
+После правки:
+- коммит — по правилам из «История git»;
+- строка в «Правки без автопилота» в `PROGRESS.md`: дата — что — почему;
+- починенный пункт из «Не доделано» или «Известные баги» — удали;
+- договорились с пользователем о том, что следующая сборка не должна пересматривать, —
+  строка в «Договорились», его словами.
+
+### История git
+
+Целиком не читай — бери срез под вопрос:
+
+| Вопрос | Команда |
+|---|---|
+| что правили после последней сборки | `git log --oneline "$(git log -1 --format=%h --grep='^Autopilot: сборка сдана')"..HEAD -- . ':(exclude).autopilot'` |
+| всё, что делали ради требования | `git log --oneline --grep="R02"` |
+| история файла | `git log --oneline -10 -- <файл>` |
+| когда появился или исчез код | `git log --oneline -S "<фрагмент>"` |
+| почему строка такая | `git blame -L <с>,<по> <файл>`, затем `git show <sha>` |
+| что внутри коммита | `git show --stat <sha>` |
+
+Срез длиннее ~30 коммитов — отдай его субагенту и возьми выжимку в десять строк.
+
+Коммит: заголовок — что (`fix: даты в одном формате`), тело — почему, трейлер
+`--trailer "Requirements: R02"`, если правка касается требования из `manifest.md`.
+Заголовок `Autopilot: сборка сдана` пишет только автопилот — по нему находят последнюю сборку.
+<!-- autopilot:end -->

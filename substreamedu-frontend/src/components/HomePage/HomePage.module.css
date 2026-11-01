@@ -322,8 +322,8 @@
   gap: 10px;
   height: 52px;
   padding: 0 36px;
-  background: var(--accent, var(--accent));
-  color: var(--color-canvas, #0d0c0b);
+  background: var(--accent, #0a0a0a);
+  color: var(--black, #f5f3ef);
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
@@ -331,7 +331,7 @@
   text-transform: uppercase;
   text-decoration: none;
   border-radius: 100px;
-  border: 1px solid var(--accent, var(--accent));
+  border: 1px solid var(--accent, #0a0a0a);
   transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
@@ -342,9 +342,9 @@
 }
 
 .btnPrimary:hover {
-  background: var(--accent-hover, #e6e52b);
-  border-color: var(--accent-hover, #e6e52b);
-  color: var(--color-canvas, #0d0c0b);
+  background: var(--accent-hover, #2a2a28);
+  border-color: var(--accent-hover, #2a2a28);
+  color: var(--black, #f5f3ef);
   box-shadow: 0 0 24px rgba(10, 10, 10, 0.22);
 }
 
@@ -1282,7 +1282,7 @@
 
 .demoCtaButton:hover {
   background: var(--color-accent, var(--cream));
-  color: var(--color-canvas, #0d0c0b);
+  color: var(--black, #f5f3ef);
   border-color: var(--color-accent, var(--cream));
   transform: translateY(-1px);
 }

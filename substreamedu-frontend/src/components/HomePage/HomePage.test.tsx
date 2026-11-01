@@ -110,6 +110,39 @@ describe('HomePage Demo Modal', () => {
     const textDemoLink = within(demoDock).getByRole('link', { name: /ai stories/i });
     expect(textDemoLink).toBeInTheDocument();
     expect(textDemoLink).toHaveAttribute('href', '/texts-demo');
+
+    const booksDemoLink = within(demoDock).getByRole('link', { name: /graded books/i });
+    expect(booksDemoLink).toBeInTheDocument();
+    expect(booksDemoLink).toHaveAttribute('href', '/books');
+  });
+
+  it('toggles Grammar Spotlight badge, 3x repeat state, and keyboard subtitle reveal in HeroCinemaPlayer', () => {
+    renderHomePage();
+    const heroPlayer = screen.getByTestId('hero-cinema-player');
+
+    // Grammar Spotlight button toggles grammar badge
+    const grammarBtn = within(heroPlayer).getByRole('button', { name: /grammar in this video/i });
+    expect(grammarBtn).toHaveAttribute('aria-pressed', 'false');
+    act(() => {
+      fireEvent.click(grammarBtn);
+    });
+    expect(grammarBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(within(heroPlayer).getByText(/idiom \/ phrase/i)).toBeInTheDocument();
+
+    // 3x Repeat pill toggles active state
+    const repeatBtn = within(heroPlayer).getByRole('button', { name: /repeat subtitle 3 times/i });
+    expect(repeatBtn).toHaveAttribute('aria-pressed', 'false');
+    act(() => {
+      fireEvent.click(repeatBtn);
+    });
+    expect(repeatBtn).toHaveAttribute('aria-pressed', 'true');
+
+    // Keyboard accessibility on blurred subtitle line
+    const subtitleLine = within(heroPlayer).getByRole('button', { name: /toggle subtitle blur/i });
+    act(() => {
+      fireEvent.keyDown(subtitleLine, { key: 'Enter' });
+    });
+    expect(within(heroPlayer).getByRole('button', { name: /subtitle revealed/i })).toBeInTheDocument();
   });
 
   it('renders interactive HeroCinemaPlayer with subtitle blur and contextual translation card', () => {

@@ -1,6 +1,8 @@
 /* ==========================================================================
    HeroCinemaPlayer — Authentic Live VideoPlayer with movies_example.mp4
    Clean layout: Live video + compact popover floating ABOVE subtitle
+   Polished per emil-design-eng: explicit transitions, active scale(0.97),
+   bottom-center popover origin, hover media queries, tabular mono timecodes.
    ========================================================================== */
 
 .playerWrapper {
@@ -156,13 +158,40 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.iconControlBtn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.4);
+.iconControlBtnActive {
+  background: rgba(240, 198, 116, 0.22);
+  color: #f5d082;
+  border-color: rgba(240, 198, 116, 0.65);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .iconControlBtn:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.iconControlBtn:active {
+  transform: scale(0.95);
+}
+
+.iconControlBtn:focus-visible,
+.quickPillButton:focus-visible,
+.saveButton:focus-visible,
+.closeButton:focus-visible,
+.controlButton:focus-visible,
+.formatTab:focus-visible,
+.currentSubtitle:focus-visible {
+  outline: 2px solid #f0c674;
+  outline-offset: 2px;
 }
 
 /* Quick Pill Buttons */
@@ -181,7 +210,11 @@
   font-family: inherit;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -191,11 +224,17 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-.quickPillButton:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.45);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .quickPillButton:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+  }
+}
+
+.quickPillButton:active {
+  transform: scale(0.96);
 }
 
 .activePill {
@@ -259,7 +298,6 @@
   background: rgba(36, 32, 24, 0.95);
   border: 1px solid rgba(240, 198, 116, 0.35);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
   margin-bottom: 2px;
 }
 
@@ -311,8 +349,9 @@
   font-size: 17px;
   text-align: center;
   position: relative;
-  transition: filter 0.25s ease;
+  transition: filter 220ms cubic-bezier(0.23, 1, 0.32, 1), opacity 220ms cubic-bezier(0.23, 1, 0.32, 1);
   user-select: none;
+  border-radius: 4px;
 }
 
 .isBlurred {
@@ -320,8 +359,10 @@
   cursor: pointer;
 }
 
-.isBlurred:hover {
-  filter: blur(0);
+@media (hover: hover) and (pointer: fine) {
+  .isBlurred:hover {
+    filter: blur(0);
+  }
 }
 
 .selectionHighlight {
@@ -346,13 +387,14 @@
 }
 
 /* ─────────────────────────────────────────────
-   3. TRANSLATION POPOVER (Compact, elegant, floating ABOVE subtitle)
+   3. TRANSLATION POPOVER (Origin-aware, floating ABOVE subtitle)
    ───────────────────────────────────────────── */
 .popover {
   position: absolute;
   bottom: 112px;
   left: 50%;
   transform: translateX(-50%);
+  transform-origin: bottom center;
   z-index: 35;
   width: 270px;
   background: #f5f3ef;
@@ -365,7 +407,7 @@
   padding: 12px 14px;
   text-align: left;
   font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
-  animation: popoverEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: popoverEnter 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @keyframes popoverEnter {
@@ -411,6 +453,7 @@
   font-size: 11px;
   color: #8e8e8e;
   font-weight: 500;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
 }
 
 .mainTranslationRow {
@@ -461,13 +504,22 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition:
+    background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.saveButton:hover {
-  background: #262626;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(10, 10, 10, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .saveButton:hover {
+    background: #262626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(10, 10, 10, 0.2);
+  }
+}
+
+.saveButton:active {
+  transform: scale(0.96);
 }
 
 .saveButtonSaved {
@@ -475,8 +527,10 @@
   color: #ffffff;
 }
 
-.saveButtonSaved:hover {
-  background: #166534;
+@media (hover: hover) and (pointer: fine) {
+  .saveButtonSaved:hover {
+    background: #166534;
+  }
 }
 
 .closeButton {
@@ -487,13 +541,23 @@
   cursor: pointer;
   line-height: 1;
   padding: 4px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.closeButton:hover {
-  color: #0a0a0a;
+@media (hover: hover) and (pointer: fine) {
+  .closeButton:hover {
+    color: #0a0a0a;
+  }
+}
+
+.closeButton:active {
+  transform: scale(0.92);
 }
 
 /* ─────────────────────────────────────────────
@@ -519,18 +583,26 @@
   align-items: center;
   justify-content: center;
   padding: 4px;
-  transition: transform 0.15s ease;
+  border-radius: 6px;
+  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.controlButton:hover {
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .controlButton:hover {
+    transform: scale(1.08);
+  }
+}
+
+.controlButton:active {
+  transform: scale(0.95);
 }
 
 .timeCurrent,
 .timeDuration {
   color: #e2e8f0;
   font-size: 12px;
-  font-family: monospace;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
 
@@ -581,12 +653,22 @@
   font-weight: 500;
   color: var(--color-body, #4a4a48);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.formatTab:hover {
-  background: rgba(10, 10, 10, 0.09);
-  color: var(--color-ink, #0a0a0a);
+@media (hover: hover) and (pointer: fine) {
+  .formatTab:hover {
+    background: rgba(10, 10, 10, 0.09);
+    color: var(--color-ink, #0a0a0a);
+  }
+}
+
+.formatTab:active {
+  transform: scale(0.97);
 }
 
 .formatTabActive {
@@ -597,9 +679,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.formatTabActive:hover {
-  background: #2a2a28;
-  color: #f5f3ef;
+@media (hover: hover) and (pointer: fine) {
+  .formatTabActive:hover {
+    background: #2a2a28;
+    color: #f5f3ef;
+  }
 }
 
 /* ─────────────────────────────────────────────

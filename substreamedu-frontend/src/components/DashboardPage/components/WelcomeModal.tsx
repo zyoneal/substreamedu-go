@@ -1,12 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FormattedMessage } from 'react-intl';
-import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
-import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
-import Play from 'lucide-react/dist/esm/icons/play';
-import MousePointer2 from 'lucide-react/dist/esm/icons/mouse-pointer-2';
-import Bookmark from 'lucide-react/dist/esm/icons/bookmark';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Sparkles, ArrowRight, Play, MousePointer2, Bookmark, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import styles from '../css/DashboardPage.module.css';
 
 interface WelcomeModalProps {
     isOpen: boolean;
@@ -15,6 +12,18 @@ interface WelcomeModalProps {
 
 export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
+    const intl = useIntl();
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     const handleStart = () => {
         onClose();
@@ -24,123 +33,85 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
     return (
         <AnimatePresence>
             {isOpen && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+                <div className={styles.welcomeModalOverlay}>
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(10, 10, 10, 0.45)', backdropFilter: 'blur(12px)' }}
+                        className={styles.welcomeModalBackdrop}
                         onClick={onClose}
                     />
-                    
+
                     <motion.div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="welcome-modal-title"
                         initial={{ opacity: 0, scale: 0.96, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.96, y: 16 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        style={{
-                            position: 'relative',
-                            width: '100%',
-                            maxWidth: '480px',
-                            background: '#f5f3ef',
-                            border: '1px solid rgba(10, 10, 10, 0.12)',
-                            borderRadius: '24px',
-                            padding: '36px 32px',
-                            boxShadow: '0 28px 72px rgba(10, 10, 10, 0.16)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            textAlign: 'center',
-                            fontFamily: '"Satoshi", -apple-system, BlinkMacSystemFont, sans-serif'
-                        }}
+                        className={styles.welcomeModalCard}
                     >
-                        <div style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '14px',
-                            background: '#eae7e1',
-                            border: '1px solid rgba(10, 10, 10, 0.12)',
-                            color: '#0a0a0a',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginBottom: '24px'
-                        }}>
+                        <button
+                            type="button"
+                            className={styles.welcomeModalCloseBtn}
+                            onClick={onClose}
+                            aria-label={intl.formatMessage({
+                                id: 'common.close',
+                                defaultMessage: 'Close',
+                            })}
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className={styles.welcomeModalIconBadge}>
                             <Sparkles size={22} />
                         </div>
-                        
-                        <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#0a0a0a', marginBottom: '10px', letterSpacing: '-0.025em', fontFamily: '"Satoshi", sans-serif' }}>
+
+                        <h2 id="welcome-modal-title" className={styles.welcomeModalTitle}>
                             <FormattedMessage id="onboarding.welcome.title" defaultMessage="Welcome to SubStreamEdu" />
                         </h2>
-                        
-                        <p style={{ fontSize: '15px', color: '#4a4a48', lineHeight: 1.6, marginBottom: '24px' }}>
-                            <FormattedMessage 
-                                id="onboarding.welcome.desc" 
-                                defaultMessage="Learn how to use the app in 3 simple steps:" 
+
+                        <p className={styles.welcomeModalDesc}>
+                            <FormattedMessage
+                                id="onboarding.welcome.desc"
+                                defaultMessage="Learn how to use the app in 3 simple steps:"
                             />
                         </p>
 
-                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left', background: '#eae7e1', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(10, 10, 10, 0.1)' }}>
-                                <div style={{ background: '#f5f3ef', border: '1px solid rgba(10, 10, 10, 0.12)', color: '#0a0a0a', width: '34px', height: '34px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div className={styles.welcomeModalSteps}>
+                            <div className={styles.welcomeModalStepItem}>
+                                <div className={styles.welcomeModalStepIcon}>
                                     <Play size={15} />
                                 </div>
-                                <span style={{ color: '#0a0a0a', fontSize: '14px', fontWeight: 600 }}>
+                                <span className={styles.welcomeModalStepText}>
                                     <FormattedMessage id="onboarding.welcome.step1" defaultMessage="1. Watch the demo video" />
                                 </span>
                             </div>
-                            
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left', background: '#eae7e1', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(10, 10, 10, 0.1)' }}>
-                                <div style={{ background: '#f5f3ef', border: '1px solid rgba(10, 10, 10, 0.12)', color: '#0a0a0a', width: '34px', height: '34px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+
+                            <div className={styles.welcomeModalStepItem}>
+                                <div className={styles.welcomeModalStepIcon}>
                                     <MousePointer2 size={15} />
                                 </div>
-                                <span style={{ color: '#0a0a0a', fontSize: '14px', fontWeight: 600 }}>
+                                <span className={styles.welcomeModalStepText}>
                                     <FormattedMessage id="onboarding.welcome.step2" defaultMessage="2. Highlight an unknown word" />
                                 </span>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left', background: '#eae7e1', padding: '14px 16px', borderRadius: '14px', border: '1px solid rgba(10, 10, 10, 0.1)' }}>
-                                <div style={{ background: '#f5f3ef', border: '1px solid rgba(10, 10, 10, 0.12)', color: '#0a0a0a', width: '34px', height: '34px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div className={styles.welcomeModalStepItem}>
+                                <div className={styles.welcomeModalStepIcon}>
                                     <Bookmark size={15} />
                                 </div>
-                                <span style={{ color: '#0a0a0a', fontSize: '14px', fontWeight: 600 }}>
+                                <span className={styles.welcomeModalStepText}>
                                     <FormattedMessage id="onboarding.welcome.step3" defaultMessage="3. Save it to your dictionary" />
                                 </span>
                             </div>
                         </div>
 
                         <button
+                            type="button"
                             onClick={handleStart}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                background: '#0a0a0a',
-                                color: '#f5f3ef',
-                                border: 'none',
-                                padding: '15px 28px',
-                                borderRadius: '9999px',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                letterSpacing: '0.14em',
-                                textTransform: 'uppercase',
-                                cursor: 'pointer',
-                                transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease',
-                                width: '100%',
-                                justifyContent: 'center',
-                                fontFamily: '"Satoshi", sans-serif'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = '#262626';
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = '#0a0a0a';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                            }}
-                            onMouseDown={(e) => {
-                                e.currentTarget.style.transform = 'scale(0.98)';
-                            }}
+                            className={styles.welcomeModalPrimaryBtn}
                         >
                             <FormattedMessage id="onboarding.welcome.startInteractive" defaultMessage="Start Interactive Demo" />
                             <ArrowRight size={15} />
