@@ -52,12 +52,12 @@ const SOURCE_ITEMS: readonly MarqueeItem[] = [
 const VALUE_ITEMS: readonly MarqueeItem[] = [
   { label: 'Hear first' },
   { label: 'Select in context' },
-  { label: 'Every word keeps its story' },
-  { label: 'Remember forever' },
+  { label: 'Save scene timestamps' },
+  { label: 'Spaced repetition reviews' },
 ];
 
 const MANIFESTO_TEXT =
-  'We believe language is not studied, it is absorbed. Every film you watch, every song you replay and every page you read already holds the lesson. We simply make it visible.';
+  'Language sticks when you hear it in context. SubStreamEdu turns dialogues, songs, and books into active listening exercises with instant translations.';
 
 interface FeatureItem {
   icon: React.ReactNode;
@@ -70,7 +70,7 @@ const FEATURES: FeatureItem[] = [
   {
     icon: <Headphones size={20} strokeWidth={1.75} />,
     title: 'Hear first, read second.',
-    desc: 'Subtitles blur by default. Hover to reveal. Optional 2\u2011second delay gives your ears a head start.',
+    desc: 'Subtitles blur by default. Hover to reveal. An optional 2\u2011second delay lets you listen before reading.',
     artifact: (
       <div className={styles.miniBlurArtifact} data-cursor="reveal" data-cursor-text="Hover to reveal">
         <div className={styles.miniBlurText}>
@@ -103,8 +103,8 @@ const FEATURES: FeatureItem[] = [
   },
   {
     icon: <BookmarkCheck size={20} strokeWidth={1.75} />,
-    title: 'Every word keeps its story.',
-    desc: 'Save words or phrases with audio, phonetics, and the exact scene.',
+    title: 'Save words with scene context.',
+    desc: 'Save words or phrases with audio, phonetics, and the exact scene timestamp.',
     artifact: (
       <div className={styles.miniDictArtifact} data-cursor="action" data-cursor-text="Scene Dictionary">
         <div className={styles.miniDictHeader}>
@@ -120,8 +120,8 @@ const FEATURES: FeatureItem[] = [
   },
   {
     icon: <Cpu size={20} strokeWidth={1.75} />,
-    title: 'Science does the scheduling.',
-    desc: 'FSRS spaces reviews at the exact interval your memory needs.',
+    title: 'FSRS spaced repetition.',
+    desc: 'The FSRS algorithm calculates review intervals from your recall history to maintain retention.',
     artifact: (
       <div className={styles.miniSrsArtifact} data-cursor="action" data-cursor-text="FSRS Spaced Repetition">
         <div className={styles.miniSrsTrack}>
@@ -142,8 +142,8 @@ const FEATURES: FeatureItem[] = [
   },
   {
     icon: <Send size={20} strokeWidth={1.75} />,
-    title: 'Morning reviews, zero effort.',
-    desc: 'Flashcards and quizzes delivered to Telegram before your first coffee.',
+    title: 'Morning reviews in Telegram.',
+    desc: 'Flashcards and quizzes arrive in Telegram every morning at 9:00 AM.',
     artifact: (
       <div className={styles.miniTgArtifact} data-cursor="action" data-cursor-text="Telegram Delivery">
         <div className={styles.miniTgHeader}>
@@ -288,13 +288,13 @@ const HomePage: React.FC = () => {
     },
     {
       q: intl.formatMessage({ id: 'homePage.faq.q3', defaultMessage: 'Is it free?' }),
-      a: intl.formatMessage({ id: 'homePage.faq.a3', defaultMessage: 'Yes. Up to 100 translations and 50 saved words. If the service really boosts your English, get a subscription and learn without limits.' }),
+      a: intl.formatMessage({ id: 'homePage.faq.a3', defaultMessage: 'Yes. You get 100 translations and 50 saved words for free. Subscriptions unlock unlimited translations and full features.' }),
     },
     {
       q: intl.formatMessage({ id: 'homePage.faq.q4', defaultMessage: 'What is Active Listening Mode and default subtitle blur?' }),
       a: (
         <>
-          {intl.formatMessage({ id: 'homePage.faq.a4', defaultMessage: 'By default, subtitles are blurred so your brain is forced to understand native speech by ear instead of passively reading ahead. Whenever you want to verify what you heard or look up words, simply hover your cursor over the subtitle (or tap on mobile) to unblur it instantly. In player settings, you can also enable a 2-second subtitle delay (-2s).' })}
+          {intl.formatMessage({ id: 'homePage.faq.a4', defaultMessage: 'Subtitles blur by default so you listen to native speech before reading. Hover over the subtitle or tap on mobile to reveal it. You can also turn on a 2-second subtitle delay in the player settings.' })}
           {' '}<a href="https://www.youtube.com/watch?v=uH1aDCjypKg" target="_blank" rel="noopener noreferrer">YouTube demo</a>
         </>
       ),
@@ -303,14 +303,14 @@ const HomePage: React.FC = () => {
       q: intl.formatMessage({ id: 'homePage.faq.q5', defaultMessage: 'What makes the Smart Dictionary special?' }),
       a: (
         <>
-          {intl.formatMessage({ id: 'homePage.faq.a5', defaultMessage: 'Unlike generic translators, SubStreamEdu analyzes the full sentence context to translate idioms and slang accurately. Every word is saved with audio, phonetics, and context sentence, scheduled via the scientific FSRS algorithm.' })}
+          {intl.formatMessage({ id: 'homePage.faq.a5', defaultMessage: 'SubStreamEdu analyzes sentence context to translate idioms and phrasal verbs accurately. Every saved word includes pronunciation audio, phonetics, and the video timestamp, scheduled for review with the FSRS algorithm.' })}
           {' '}<a href="https://youglish.com/" target="_blank" rel="noopener noreferrer">YouGlish</a>
         </>
       ),
     },
     {
-      q: intl.formatMessage({ id: 'homePage.faq.q6', defaultMessage: 'Repetition via Telegram bot' }),
-      a: intl.formatMessage({ id: 'homePage.faq.a6', defaultMessage: 'Your dictionary is integrated with the bot. Every morning the bot sends you words to repeat using spaced repetition. Plus quizzes, statistics, and gamification.' }),
+      q: intl.formatMessage({ id: 'homePage.faq.q6', defaultMessage: 'How do reviews work in Telegram?' }),
+      a: intl.formatMessage({ id: 'homePage.faq.a6', defaultMessage: 'Your dictionary connects directly to the Telegram bot. Each morning the bot sends review flashcards, quick quizzes, and progress stats.' }),
     },
   ];
 
@@ -365,7 +365,7 @@ const HomePage: React.FC = () => {
         name: 'Is it free?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes. Up to 100 translations and 50 saved words. If the service really boosts your English, get a subscription and learn without limits.',
+          text: 'Yes. You get 100 translations and 50 saved words for free. Subscriptions unlock unlimited translations and full features.',
         },
       },
       {
@@ -373,7 +373,7 @@ const HomePage: React.FC = () => {
         name: 'What is Active Listening Mode and default subtitle blur?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'By default, subtitles are blurred so your brain is forced to understand native speech by ear instead of passively reading ahead. Whenever you want to verify what you heard or look up words, simply hover your cursor over the subtitle (or tap on mobile) to unblur it instantly. In player settings, you can also enable a 2-second subtitle delay (-2s).',
+          text: 'Subtitles blur by default so you listen to native speech before reading. Hover over the subtitle or tap on mobile to reveal it. You can also turn on a 2-second subtitle delay in the player settings.',
         },
       },
       {
@@ -381,15 +381,15 @@ const HomePage: React.FC = () => {
         name: 'What makes the Smart Dictionary special?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Unlike generic translators, SubStreamEdu analyzes the full sentence context to translate idioms and slang accurately. Every word is saved with audio, phonetics, and context sentence, scheduled via the scientific FSRS algorithm.',
+          text: 'SubStreamEdu analyzes sentence context to translate idioms and phrasal verbs accurately. Every saved word includes pronunciation audio, phonetics, and the video timestamp, scheduled for review with the FSRS algorithm.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Repetition via Telegram bot',
+        name: 'How do reviews work in Telegram?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Your dictionary is integrated with the bot. Every morning the bot sends you words to repeat using spaced repetition. Plus quizzes, statistics, and gamification.',
+          text: 'Your dictionary connects directly to the Telegram bot. Each morning the bot sends review flashcards, quick quizzes, and progress stats.',
         },
       },
     ],
@@ -450,13 +450,13 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className={styles.heroEyebrow}>SubStreamEdu — English through what you love</span>
+            <span className={styles.heroEyebrow}>English immersion</span>
             <h1 className={styles.heroTitle} aria-label={HERO_PHRASES.join('. ')}>
               <TypingHeadline phrases={HERO_PHRASES} />
             </h1>
 
             <p className={styles.heroSub}>
-              Train your ears, not just your eyes. Blur subtitles, set an ear-first delay to catch native speech, and highlight phrases to translate and memorize in context.
+              Listen to native speech before reading. Blur subtitles, delay text by two seconds, and highlight any phrase to translate in context.
             </p>
 
             <div className={styles.heroActions}>
@@ -506,7 +506,7 @@ const HomePage: React.FC = () => {
 
       <section className={styles.manifestoSection}>
         <div className={styles.container}>
-          <span className={styles.manifestoLabel}>Our belief</span>
+          <span className={styles.manifestoLabel}>Method</span>
           <ManifestoReveal text={MANIFESTO_TEXT} />
         </div>
       </section>
@@ -876,7 +876,7 @@ const HomePage: React.FC = () => {
       <section className={styles.reviewsSection}>
         <div className={styles.container}>
           <motion.div className={styles.pricingSectionHeader} {...fadeUp}>
-            <span className={styles.sectionEyebrow}>Wall of Love</span>
+            <span className={styles.sectionEyebrow}>User reviews</span>
             <h2 className={styles.sectionTitle}>
               People learning English with us.
             </h2>
@@ -897,7 +897,7 @@ const HomePage: React.FC = () => {
 
             <motion.div className={styles.reviewCard} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 }}>
               <p className={styles.reviewContent}>
-                "The spaced repetition system is magic. I save a word from a movie, and the next day it appears in my Telegram bot. I've built a vocabulary of 500+ real words that I actually use in my daily job."
+                "The spaced repetition system works reliably. I save a word from a movie, and the next morning it appears in my Telegram bot. I built a vocabulary of 500 words that I use at work."
               </p>
               <div className={styles.reviewAuthor}>
                 <div className={styles.reviewAvatar}>A</div>
@@ -910,7 +910,7 @@ const HomePage: React.FC = () => {
 
             <motion.div className={styles.reviewCard} {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.2 }}>
               <p className={styles.reviewContent}>
-                "Blurred subtitles changed everything for me. It forces me to listen carefully first, but the safety net is right there if I need it. My listening comprehension has improved more in 2 months than in 2 years of traditional classes."
+                "Blurred subtitles helped my listening comprehension immediately. I listen first instead of glancing at the text. My comprehension improved faster in two months than in two years of textbooks."
               </p>
               <div className={styles.reviewAuthor}>
                 <div className={styles.reviewAvatar}>S</div>
@@ -989,7 +989,7 @@ const HomePage: React.FC = () => {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <h2 className={styles.ctaTitle}>
-              Everything you watch, listen to, or read is a lesson.
+              Learn English from the content you already enjoy.
             </h2>
             <MagneticLink to="/login" className={`${styles.btnPrimary} ${styles.ctaBtn} ${styles.ctaMagnet}`}>
               Start free

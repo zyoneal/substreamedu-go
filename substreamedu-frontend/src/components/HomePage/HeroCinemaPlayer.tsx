@@ -73,7 +73,7 @@ const DEMO_SCENES: readonly DemoScene[] = [
     id: 'music',
     label: 'Synced Lyrics',
     icon: <Music size={13} strokeWidth={2} />,
-    title: 'Ed Sheeran — Castle on the Hill',
+    title: 'Ed Sheeran - Castle on the Hill',
     timestamp: '01:25',
     duration: '04:46',
     progressPercent: 32,
