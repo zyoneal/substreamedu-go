@@ -1,58 +1,93 @@
+/* ==========================================================================
+   SUBSTREAMEDU — DICTIONARY ITEMS PAGE (PIXZEN MONOCHROME EDITORIAL DESIGN)
+   Matches HomePage.module.css & DictionaryPage.module.css:
+   - Canvas: #f5f3ef
+   - Card surface: #eae7e1
+   - Ink: #0a0a0a
+   - Secondary: #4a4a48
+   - Meta / Mono: #8e8e8e
+   ========================================================================== */
+
 .pageContainer {
+    --bg-page: #f5f3ef;
+    --card-bg: #eae7e1;
+    --card-border: rgba(10, 10, 10, 0.12);
+    --card-border-hover: rgba(10, 10, 10, 0.25);
+    --text-primary: #0a0a0a;
+    --text-secondary: #4a4a48;
+    --text-meta: #8e8e8e;
+    --font-display: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    --font-body: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     width: 100%;
-    background: transparent;
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #e8e8e8;
-    padding-top: 56px;
+    background-color: #f5f3ef;
+    font-family: var(--font-body);
+    color: #0a0a0a;
+    padding-top: 64px;
     box-sizing: border-box;
     overflow-x: hidden;
+    position: relative;
 }
 
 /* ============================================================
-   HEADER
+   EDITORIAL SUB-HEADER
    ============================================================ */
 
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 24px;
+    padding: 20px 48px 18px;
     width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     box-sizing: border-box;
     position: relative;
-    z-index: 100;
-    background: #0a0a0a;
-    border-bottom: 1px solid #2a2a2a;
-    min-height: 56px;
+    z-index: 10;
+    background: transparent;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
+    min-height: 64px;
 }
 
 .headerLeft {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .backButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    color: #888888;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: #0a0a0a;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease;
+    flex-shrink: 0;
 }
 
-.backButton:hover {
-    background: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
+@media (hover: hover) and (pointer: fine) {
+    .backButton:hover {
+        background: #0a0a0a;
+        color: #f5f3ef;
+        border-color: #0a0a0a;
+        transform: scale(1.04);
+    }
+}
+
+.backButton:active {
+    transform: scale(0.95);
 }
 
 .titleSection {
@@ -62,48 +97,75 @@
 }
 
 .pageTitle {
-    font-size: 16px;
-    font-weight: 500;
-    color: #e8e8e8;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    font-weight: 700;
+    color: #0a0a0a;
     margin: 0;
     text-transform: capitalize;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.025em;
     line-height: 1.2;
 }
 
 .itemCount {
+    font-family: var(--font-mono);
     font-size: 12px;
-    color: #888888;
-    font-weight: 400;
+    color: #8e8e8e;
+    font-weight: 500;
     line-height: 1.4;
+    font-variant-numeric: tabular-nums;
 }
 
 .headerActions {
     display: flex;
-    gap: 6px;
+    gap: 8px;
 }
 
 .actionButton {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 6px;
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    color: #e8e8e8;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 9999px;
+    background: #0a0a0a;
+    border: 1px solid #0a0a0a;
+    color: #f5f3ef;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.15s ease;
-    height: 34px;
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                opacity 0.2s ease;
 }
 
-.actionButton:hover {
-    background: #ffffff;
-    color: #000000;
-    border-color: #ffffff;
+@media (hover: hover) and (pointer: fine) {
+    .actionButton:hover:not(:disabled) {
+        background: #222222;
+        border-color: #222222;
+        transform: translateY(-1px);
+    }
+}
+
+.actionButton:active:not(:disabled) {
+    transform: scale(0.975);
+}
+
+.actionButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.buttonSpinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(245, 243, 239, 0.3);
+    border-top-color: #f5f3ef;
+    animation: rotate 0.8s linear infinite;
 }
 
 /* ============================================================
@@ -117,19 +179,22 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 8px 20px 56px;
-    gap: 12px;
+    padding: 24px 48px 64px;
+    gap: 24px;
     flex: 1;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 }
 
 .errorMessage {
     margin: 16px auto;
-    padding: 10px 16px;
+    padding: 12px 18px;
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.25);
-    border-radius: 6px;
+    border-radius: 12px;
     color: #ef4444;
-    font-size: 13px;
+    font-size: 13.5px;
     line-height: 1.5;
 }
 
@@ -138,8 +203,8 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-    color: #888888;
-    font-size: 14px;
+    color: #8e8e8e;
+    font-size: 15px;
     font-weight: 400;
 }
 
@@ -150,27 +215,27 @@
     justify-content: center;
     flex: 1;
     padding: 60px;
-    gap: 12px;
+    gap: 14px;
 }
 
 .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.05);
-    border-top-color: #888888;
+    width: 36px;
+    height: 36px;
+    border: 2.5px solid rgba(10, 10, 10, 0.12);
+    border-top-color: #0a0a0a;
     border-radius: 50%;
-    animation: rotate 1s linear infinite;
+    animation: rotate 0.9s linear infinite;
 }
 
 .loaderText {
     font-size: 14px;
-    color: #888888;
-    font-weight: 400;
+    color: #8e8e8e;
+    font-weight: 500;
     letter-spacing: -0.01em;
 }
 
 /* ============================================================
-   FLASHCARD SECTION
+   FLASHCARD SECTION (SOFT STONE 3D FLIP STAGE)
    ============================================================ */
 
 .flashcardSection {
@@ -178,7 +243,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 16px;
 }
 
 .cardWrapper {
@@ -189,8 +254,8 @@
 .card {
     width: 100%;
     aspect-ratio: 5/2;
-    min-height: 280px;
-    max-height: 360px;
+    min-height: 290px;
+    max-height: 370px;
     cursor: pointer;
     position: relative;
     will-change: transform;
@@ -202,7 +267,7 @@
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     transform-style: preserve-3d;
 }
 
@@ -217,17 +282,26 @@
     height: 100%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 12px;
-    background: #111111;
-    border: 1px solid #2a2a2a;
+    border-radius: 24px;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    box-shadow: 0 16px 40px rgba(10, 10, 10, 0.04);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 32px;
+    padding: 36px;
     box-sizing: border-box;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .card:hover .cardFront,
+    .card:hover .cardBack {
+        border-color: rgba(10, 10, 10, 0.24);
+        box-shadow: 0 20px 48px rgba(10, 10, 10, 0.06);
+    }
 }
 
 .cardFront {
@@ -247,31 +321,36 @@
     height: 100%;
     z-index: 2;
     position: relative;
-    gap: 6px;
+    gap: 8px;
 }
 
 .wordTitle {
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    font-weight: 500;
-    color: #e8e8e8;
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4.2vw, 3.5rem);
+    font-weight: 700;
+    color: #0a0a0a;
     margin: 0;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    line-height: 1.12;
+    letter-spacing: -0.032em;
     text-align: center;
     max-width: 100%;
     word-break: break-word;
+    cursor: pointer;
     transition: color 0.2s ease;
 }
 
-.wordTitle:hover {
-    color: #ffffff;
+@media (hover: hover) and (pointer: fine) {
+    .wordTitle:hover {
+        color: #4a4a48;
+    }
 }
 
 .transcription {
     display: block;
-    font-size: clamp(0.8rem, 1vw, 0.9rem);
-    font-weight: 400;
-    color: #888888;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #8e8e8e;
     margin-top: 2px;
     letter-spacing: 0.02em;
     text-align: center;
@@ -279,9 +358,9 @@
 }
 
 .contextFlashcard {
-    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    font-size: clamp(0.95rem, 1.2vw, 1.05rem);
     font-weight: 400;
-    color: #888888;
+    color: #4a4a48;
     margin-top: 12px;
     line-height: 1.6;
     max-width: 85%;
@@ -290,14 +369,15 @@
 
 .flipHint {
     position: absolute;
-    bottom: 12px;
-    font-size: 9px;
-    font-weight: 500;
-    color: #555555;
+    bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: #8e8e8e;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.16em;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    transition: color 0.2s ease;
 }
 
 .desktopHint {
@@ -315,16 +395,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 12px;
     overflow: hidden;
     background: transparent;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .cardImage {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    border-radius: 10px;
 }
 
 .definitionSection {
@@ -334,24 +415,25 @@
     padding: 0 12px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
     align-items: center;
 }
 
 .definitionText {
-    font-size: clamp(1.2rem, 2vw, 1.6rem);
-    font-weight: 500;
-    color: #e8e8e8;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.1vw, 1.65rem);
+    font-weight: 600;
+    color: #0a0a0a;
     margin: 0;
-    letter-spacing: -0.01em;
-    line-height: 1.2;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
     text-align: center;
 }
 
 .translationText {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 400;
-    color: #888888;
+    color: #4a4a48;
     margin: 0;
     line-height: 1.5;
     text-align: center;
@@ -367,14 +449,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 8px;
+    padding: 0 4px;
 }
 
 .controlsLeft,
 .controlsRight {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex: 1;
 }
 
@@ -389,31 +471,44 @@
 }
 
 .iconButton {
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    background: transparent;
-    border: 1px solid transparent;
-    color: #888888;
+    border-radius: 50%;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: #4a4a48;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease;
 }
 
-.iconButton:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: #ffffff;
+@media (hover: hover) and (pointer: fine) {
+    .iconButton:hover:not(:disabled) {
+        background: #0a0a0a;
+        border-color: #0a0a0a;
+        color: #f5f3ef;
+        transform: scale(1.05);
+    }
+}
+
+.iconButton:active:not(:disabled) {
+    transform: scale(0.95);
 }
 
 .iconButton.active {
-    color: #000000;
-    background: #ffffff;
+    color: #f5f3ef;
+    background: #0a0a0a;
+    border-color: #0a0a0a;
 }
 
 .iconButton.loading {
-    color: #888888;
+    color: #8e8e8e;
+    opacity: 0.6;
 }
 
 .navButton {
@@ -423,33 +518,45 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    color: #888888;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: #0a0a0a;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease;
     min-width: 44px;
     min-height: 44px;
 }
 
-.navButton:hover {
-    background: #ffffff;
-    border-color: #ffffff;
-    color: #000000;
+@media (hover: hover) and (pointer: fine) {
+    .navButton:hover {
+        background: #0a0a0a;
+        border-color: #0a0a0a;
+        color: #f5f3ef;
+        transform: scale(1.05);
+    }
+}
+
+.navButton:active {
+    transform: scale(0.95);
 }
 
 .counter {
-    font-size: 12px;
-    color: #888888;
-    font-weight: 400;
-    min-width: 50px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #0a0a0a;
+    font-weight: 600;
+    min-width: 64px;
     text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 
 .loadingInfo {
     font-size: 12px;
-    color: #888888;
-    font-weight: 400;
+    color: #8e8e8e;
+    font-weight: 500;
     margin-left: 6px;
     animation: pulse 1.5s infinite ease-in-out;
 }
@@ -470,7 +577,7 @@
 }
 
 /* ============================================================
-   LIST SECTION
+   LIST SECTION (EDITORIAL TERM CARDS)
    ============================================================ */
 
 .listSection {
@@ -478,191 +585,301 @@
     max-width: 900px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 8px;
+    gap: 14px;
+    margin-top: 12px;
 }
 
 .listHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
 }
 
 .listHeader h3 {
-    font-size: 14px;
-    font-weight: 500;
-    color: #e8e8e8;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: #0a0a0a;
     margin: 0;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 .listGrid {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
 }
 
 .listItem {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    padding: 16px 20px;
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 24px;
+    padding: 20px 24px;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 16px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                border-color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                box-shadow 0.2s cubic-bezier(0.23, 1, 0.32, 1);
     align-items: start;
     position: relative;
     overflow: hidden;
 }
 
-.listItem:hover {
-    background: #1a1a1a;
-    border-color: #444444;
+@media (hover: hover) and (pointer: fine) {
+    .listItem:hover {
+        background: #ffffff;
+        border-color: rgba(10, 10, 10, 0.25);
+        box-shadow: 0 10px 28px rgba(10, 10, 10, 0.05);
+    }
 }
 
 .activeItem {
-    border-left: 3px solid #ffffff;
-    background: #1a1a1a;
+    border-left: 3px solid #0a0a0a;
+    background: #ffffff;
+    border-color: rgba(10, 10, 10, 0.22);
+    box-shadow: 0 8px 24px rgba(10, 10, 10, 0.04);
 }
 
 .termColumn {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    border-right: 1px solid #2a2a2a;
+    gap: 10px;
+    border-right: 1px solid rgba(10, 10, 10, 0.1);
     padding-right: 20px;
 }
 
 .termActions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .termText {
-    font-size: 14px;
-    font-weight: 500;
-    color: #e8e8e8;
-    transition: all 0.15s ease;
-    line-height: 1.4;
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: #0a0a0a;
+    transition: color 0.15s ease;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .termText:hover {
+        color: #4a4a48;
+    }
 }
 
 .transcriptionList {
-    font-size: 12px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
     font-weight: 400;
-    color: #888888;
+    color: #8e8e8e;
     letter-spacing: 0.02em;
     line-height: 1.5;
+    margin-top: 2px;
 }
 
 .listPlayButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.03);
-    border: none;
-    color: #888888;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
+    color: #0a0a0a;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease;
 }
 
-.listPlayButton:hover {
-    background: #ffffff;
-    color: #000000;
+@media (hover: hover) and (pointer: fine) {
+    .listPlayButton:hover {
+        background: #0a0a0a;
+        border-color: #0a0a0a;
+        color: #f5f3ef;
+        transform: scale(1.05);
+    }
+}
+
+.listPlayButton:active {
+    transform: scale(0.95);
 }
 
 .termActions .binButton {
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.03);
-    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
 }
 
 .termActions .binButton .binSvg {
-    color: #888888;
+    color: #4a4a48;
+    opacity: 0.85;
 }
 
-.termActions .binButton:hover {
-    background: #ef4444;
-}
+@media (hover: hover) and (pointer: fine) {
+    .termActions .binButton:hover {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.28);
+    }
 
-.termActions .binButton:hover .binSvg {
-    color: #ffffff;
+    .termActions .binButton:hover .binSvg {
+        color: #ef4444;
+    }
 }
 
 .termActions .binIconWrapper {
-    width: 13px;
-    height: 13px;
-}
-
-.miniIcon {
-    width: 11px;
-    height: 11px;
-    fill: currentColor;
+    width: 14px;
+    height: 14px;
 }
 
 .definitionColumn {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .definitionTextList {
-    font-size: 13px;
-    color: #e8e8e8;
+    font-size: 14.5px;
+    color: #0a0a0a;
+    font-weight: 500;
     line-height: 1.5;
 }
 
 .contextTextList {
-    font-size: 12px;
-    color: #888888;
+    font-size: 13.5px;
+    color: #4a4a48;
     margin: 0;
     line-height: 1.6;
 }
 
 .highlight {
-    color: #ffffff;
-    font-weight: 500;
+    color: #0a0a0a;
+    font-weight: 700;
     font-style: normal;
-}
-
-.listDeleteButton {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 1px solid transparent;
+    background: rgba(10, 10, 10, 0.07);
+    padding: 1px 5px;
     border-radius: 4px;
-    color: rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.15s ease;
 }
 
-.listDeleteButton:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+.sentinel {
+    height: 20px;
+    margin: 32px 0;
+}
+
+.loadingMoreText {
+    text-align: center;
+    padding: 16px;
+    color: #4a4a48;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 /* ============================================================
-   ICONS & ANIMATIONS
+   BIN BUTTON STYLES
    ============================================================ */
 
-.icon {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
+.binButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
+
+.binIconWrapper {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.binSvg {
+    width: 100%;
+    height: 100%;
+    color: #4a4a48;
+    opacity: 0.85;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.binLidLine,
+.binLidHandle {
+    transform-origin: 50% 6px;
+    transition: transform 0.3s ease;
+}
+
+.binBody {
+    transition: transform 0.2s ease;
+}
+
+.binLines {
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .binButton:hover {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.28);
+    }
+
+    .binButton:hover .binSvg {
+        color: #ef4444;
+        opacity: 1;
+    }
+
+    .binButton:hover .binLidLine,
+    .binButton:hover .binLidHandle {
+        transform: translateY(-2px) rotate(-15deg) translateX(1px);
+    }
+
+    .binButton:hover .binBody {
+        transform: translateY(1px);
+    }
+
+    .binButton:hover .binLines {
+        opacity: 1;
+    }
+}
+
+.binButton:active {
+    transform: scale(0.95);
+}
+
+.binParticles span {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #ef4444;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ============================================================
+   CARD SLIDE ANIMATIONS
+   ============================================================ */
 
 .exiting-left {
     animation: slideOutLeft 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -682,22 +899,33 @@
 
 @keyframes slideOutLeft {
     from { opacity: 1; transform: translateX(0) scale(1); }
-    to { opacity: 0; transform: translateX(-60px) scale(0.95); }
+    to { opacity: 0; transform: translateX(-60px) scale(0.96); }
 }
 
 @keyframes slideOutRight {
     from { opacity: 1; transform: translateX(0) scale(1); }
-    to { opacity: 0; transform: translateX(60px) scale(0.95); }
+    to { opacity: 0; transform: translateX(60px) scale(0.96); }
 }
 
 @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(60px) scale(0.95); }
+    from { opacity: 0; transform: translateX(60px) scale(0.96); }
     to { opacity: 1; transform: translateX(0) scale(1); }
 }
 
 @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-60px) scale(0.95); }
+    from { opacity: 0; transform: translateX(-60px) scale(0.96); }
     to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cardInner,
+    .exiting-left,
+    .exiting-right,
+    .entering-left,
+    .entering-right {
+        animation: none !important;
+        transition: none !important;
+    }
 }
 
 /* ============================================================
@@ -706,663 +934,65 @@
 
 @media (max-width: 768px) {
     .header {
-        padding: 12px 16px;
+        padding: 14px 16px;
         position: sticky;
-        top: 0;
-        background: #0a0a0a;
-        border-bottom: 1px solid #2a2a2a;
-        z-index: 1001;
+        top: 60px;
+        background: rgba(245, 243, 239, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(10, 10, 10, 0.1);
+        z-index: 40;
     }
 
-    .headerLeft {
-        pointer-events: auto;
+    .desktopHint {
+        display: none !important;
     }
 
-    .titleSection {
-        display: none;
-    }
-
-    .headerActions {
-        display: flex;
-    }
-
-    .actionButton {
-        padding: 6px 10px;
-        font-size: 12px;
+    .mobileHint {
+        display: block !important;
     }
 
     .contentWrapper {
-        padding: 0 16px 40px;
+        padding: 16px 16px 48px;
         gap: 20px;
     }
 
     .card {
         aspect-ratio: unset;
-        height: 60dvh;
-        min-height: 500px;
-        max-height: 70vh;
+        height: 46dvh;
+        min-height: 320px;
+        max-height: 440px;
+    }
+
+    .cardFront,
+    .cardBack {
+        padding: 24px 20px;
+        border-radius: 20px;
     }
 
     .wordTitle {
-        font-size: clamp(2.25rem, 8vw, 3.5rem);
-        line-height: 1.15;
-    }
-
-    .contextFlashcard {
-        font-size: clamp(0.85rem, 2.2vw, 1rem);
-        margin-top: 20px;
-        max-width: 95%;
-    }
-
-    .controlsBar {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        padding: 0 12px;
-        margin-top: 12px;
-    }
-
-    .controlsCenter {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-    }
-
-    .controlsCenter .navButton {
-        display: none;
-    }
-
-    .controlsLeft,
-    .controlsRight {
-        display: flex;
-        flex: 0 0 auto;
+        font-size: clamp(2rem, 7vw, 3rem);
     }
 
     .listItem {
         grid-template-columns: 1fr;
         gap: 12px;
+        padding: 18px;
     }
 
     .termColumn {
         border-right: none;
-        border-bottom: 1px solid #2a2a2a;
+        border-bottom: 1px solid rgba(10, 10, 10, 0.1);
         padding-right: 0;
-        padding-bottom: 10px;
+        padding-bottom: 12px;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
     }
 
-    .listPlayButton {
-        margin-top: 0;
-        width: 40px;
-        height: 40px;
-        background: #111111;
-        border: 1px solid #2a2a2a;
-        border-radius: 6px;
-        color: #e8e8e8;
-    }
-
-    .listPlayButton .miniIcon {
-        width: 14px;
-        height: 14px;
-    }
-
+    .listPlayButton,
     .termActions .binButton {
-        width: 40px;
-        height: 40px;
-        background: #111111;
-        border: 1px solid #2a2a2a;
-        border-radius: 6px;
-    }
-
-    .termActions .binIconWrapper {
-        width: 14px;
-        height: 14px;
-    }
-}
-
-/* ============================================================
-   BIN BUTTON STYLES
-   ============================================================ */
-
-.binButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.binIconWrapper {
-    position: relative;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.binSvg {
-    width: 100%;
-    height: 100%;
-    color: #666666;
-    opacity: 0.6;
-    transition: all 0.2s ease;
-}
-
-.binLidLine,
-.binLidHandle {
-    transform-origin: 50% 6px;
-    transition: transform 0.3s ease;
-}
-
-.binBody {
-    transition: transform 0.2s ease;
-}
-
-.binLines {
-    opacity: 0.5;
-    transition: opacity 0.2s ease;
-}
-
-.binButton:hover {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.binButton:hover .binSvg {
-    color: #ef4444;
-}
-
-.binButton:hover .binLidLine,
-.binButton:hover .binLidHandle {
-    transform: translateY(-2px) rotate(-15deg) translateX(1px);
-}
-
-.binButton:hover .binBody {
-    transform: translateY(1px);
-}
-
-.binButton:hover .binLines {
-    opacity: 1;
-}
-
-.binButton:active {
-    transform: scale(0.95);
-    background: rgba(239, 68, 68, 0.2);
-}
-
-.binParticles span {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: #ef4444;
-    border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.binButton:hover .binParticles span:nth-child(1) {
-    animation: particle1 0.6s ease forwards;
-}
-
-.binButton:hover .binParticles span:nth-child(2) {
-    animation: particle2 0.6s ease 0.1s forwards;
-}
-
-.binButton:hover .binParticles span:nth-child(3) {
-    animation: particle3 0.6s ease 0.05s forwards;
-}
-
-@keyframes particle1 {
-    0% { transform: translate(0, 0); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translate(-8px, -10px); opacity: 0; }
-}
-
-@keyframes particle2 {
-    0% { transform: translate(0, 0); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translate(8px, -12px); opacity: 0; }
-}
-
-@keyframes particle3 {
-    0% { transform: translate(0, 0); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translate(0, -15px); opacity: 0; }
-}
-
-@media (max-width: 768px) {
-    .desktopHint {
-        display: none !important;
-    }
-    .mobileHint {
-        display: block !important;
-    }
-}
-
-/* ============================================================
-   SETTINGS OVERLAY
-   ============================================================ */
-
-.settingsOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.15s ease-out;
-}
-
-.settingsPanel {
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 400px;
-    overflow: hidden;
-    animation: scaleUp 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.settingsHeader {
-    padding: 14px 18px;
-    border-bottom: 1px solid #2a2a2a;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.settingsHeader h3 {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 500;
-    color: #e8e8e8;
-}
-
-.closeButton {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-}
-
-.closeButton:hover {
-    color: #ffffff;
-}
-
-.settingsContent {
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.settingItem {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.settingItem label {
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.4);
-}
-
-.speedToggleGroup {
-    display: flex;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 3px;
-    border-radius: 6px;
-}
-
-.speedButton {
-    flex: 1;
-    padding: 6px;
-    border: none;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 13px;
-    font-weight: 400;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.15s ease;
-}
-
-.speedButton.active {
-    background: #ffffff;
-    color: #000000;
-}
-
-.voiceSelect {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: #e8e8e8;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-}
-
-.voiceSelect option {
-    background: #111111;
-    color: #e8e8e8;
-}
-
-.speedBadge {
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 3px 6px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.4);
-    border: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    margin-right: 4px;
-}
-
-.speedBadge.active {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes scaleUp {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* ============================================================
-   TROUBLESHOOTING & WARNINGS
-   ============================================================ */
-
-.noVoicesMessage {
-    padding: 8px 0;
-}
-
-.warningBox {
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    border-radius: 6px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.warningTitle {
-    color: #fbbf24;
-    font-weight: 500;
-    font-size: 13px;
-    display: block;
-}
-
-.warningText {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 12px;
-    margin: 0;
-    line-height: 1.5;
-}
-
-.troubleshootSection {
-    margin-top: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.stepTitle {
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.commandGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.distroLabel {
-    font-size: 10px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: -4px;
-}
-
-.commandBox {
-    background: #0a0a0a;
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
-    padding: 10px;
-    font-family: 'SF Mono', 'Consolas', monospace;
-    font-size: 12px;
-    color: #e8e8e8;
-    word-break: break-all;
-    line-height: 1.4;
-    display: block;
-    font-weight: 400;
-}
-
-.stepHint {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
-    margin: 0;
-    font-style: italic;
-}
-
-@media (max-height: 800px) {
-    .contentWrapper {
-        padding: 8px 20px 24px;
-        gap: 10px;
-    }
-    .card {
-        min-height: 240px;
-        max-height: 300px;
-    }
-    .cardFront,
-    .cardBack {
-        padding: 24px;
-        border-radius: 10px;
-    }
-    .wordTitle {
-        font-size: clamp(1.8rem, 3.5vw, 3rem);
-    }
-    .transcription {
-        margin-top: 1px;
-    }
-    .contextFlashcard {
-        margin-top: 10px;
-        font-size: clamp(0.8rem, 1.1vw, 0.95rem);
-    }
-    .definitionText {
-        font-size: clamp(1.1rem, 1.8vw, 1.4rem);
-    }
-    .translationText {
-        font-size: 0.95rem;
-    }
-    .navButton {
         width: 38px;
         height: 38px;
-        min-width: 38px;
-        min-height: 38px;
     }
-    .imageContainer {
-        margin-bottom: 4px;
-    }
-    .cardImage {
-        max-height: 120px;
-    }
-}
-
-@media (max-height: 600px) {
-    .contentWrapper {
-        padding: 4px 16px 16px;
-        gap: 6px;
-    }
-    .card {
-        min-height: 200px;
-        max-height: 240px;
-    }
-    .cardFront,
-    .cardBack {
-        padding: 16px;
-        border-radius: 8px;
-    }
-    .wordTitle {
-        font-size: clamp(1.5rem, 3vw, 2.4rem);
-    }
-    .transcription {
-        margin-top: 0;
-        font-size: 11px;
-    }
-    .contextFlashcard {
-        margin-top: 6px;
-        font-size: clamp(0.75rem, 1vw, 0.85rem);
-    }
-    .definitionText {
-        font-size: clamp(0.95rem, 1.5vw, 1.2rem);
-    }
-    .translationText {
-        font-size: 0.85rem;
-    }
-    .navButton {
-        width: 34px;
-        height: 34px;
-        min-width: 34px;
-        min-height: 34px;
-    }
-    .imageContainer {
-        margin-bottom: 2px;
-    }
-    .cardImage {
-        max-height: 90px;
-    }
-}
-
-/* Alias classes used by components */
-.highlightedText {
-    composes: wordTitle;
-}
-
-.context {
-    composes: contextFlashcard;
-}
-
-.cardBackContent {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    gap: 12px;
-}
-
-.cardBackWithImage {
-    padding: 16px;
-    box-sizing: border-box;
-}
-
-.imageSection {
-    width: 100%;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.translationSection {
-    text-align: center;
-    padding: 0 12px;
-}
-
-.translationSection h3 {
-    font-size: clamp(1.2rem, 2vw, 1.6rem);
-    font-weight: 500;
-    color: #e8e8e8;
-    margin: 0;
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-}
-
-.premiumCard {
-    /* placeholder for premium styling */
-}
-
-.slideLeft {
-    animation: slideOutLeft 0.25s forwards;
-}
-
-.slideRight {
-    animation: slideOutRight 0.25s forwards;
-}
-
-.navigationButtons {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.cardCounter {
-    font-size: 12px;
-    color: #888888;
-    font-weight: 400;
-    min-width: 50px;
-    text-align: center;
-}
-
-.binButtonSmall {
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
-    background: #111111;
-    border: 1px solid #2a2a2a;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.binButtonSmall:hover {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.otherCards {
-    display: flex;
-    gap: 8px;
-}
-
-.exportButton {
-    composes: actionButton;
 }
