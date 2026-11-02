@@ -112,4 +112,19 @@ describe('DictionaryPage Empty State (0 words)', () => {
     expect(screen.queryByText('SOURCES')).not.toBeInTheDocument();
     expect(screen.queryByText('Vocabulary Preview')).not.toBeInTheDocument();
   });
+
+  it('renders telemetry Bento cards and source category filter toolbar with matching CSS module classes', async () => {
+    (DictionaryService.fetchDictionaryResources as jest.Mock).mockResolvedValue([]);
+    (DictionaryService.fetchDictionaryItemsByUser as jest.Mock).mockResolvedValue([]);
+
+    const { container } = renderComponent();
+
+    expect(screen.getByText('words saved')).toBeInTheDocument();
+    expect(screen.getByText('0% retention')).toBeInTheDocument();
+    expect(screen.getByText('media sources')).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: /source category filter/i })).toBeInTheDocument();
+    expect(container.querySelector('.statsGrid')).toBeInTheDocument();
+    expect(container.querySelector('.controlsContainer')).toBeInTheDocument();
+    expect(container.querySelector('.mainContentArea')).toBeInTheDocument();
+  });
 });

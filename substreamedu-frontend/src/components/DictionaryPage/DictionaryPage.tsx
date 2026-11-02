@@ -215,53 +215,96 @@ const DictionaryPage: React.FC = () => {
                     </div>
                 </motion.div>
 
-                {/* Hero Summary Metrics */}
-                <motion.div className={styles.statsOverview} variants={itemVariants}>
-                    <div className={styles.statMetric}>
-                        <span className={styles.statNumber}>{totalWordsCount}</span>
-                        <span className={styles.statLabel}>Total Vocabulary Words</span>
+                {/* Top Stats Hero Bar (3 Apple-Minimalist Telemetry Cards) */}
+                <motion.div className={styles.statsGrid} variants={itemVariants}>
+                    <div className={styles.statCard}>
+                        <div className={styles.statHeader}>
+                            <span className={styles.statLabel}>Total Vocabulary Words</span>
+                            <BookOpen size={16} className={styles.statIcon} />
+                        </div>
+                        <div className={styles.statBottomRow}>
+                            <span className={styles.statValue}>{totalWordsCount}</span>
+                            <span className={styles.statSubtext}>words saved</span>
+                        </div>
                     </div>
-                    <div className={styles.statMetric}>
-                        <span className={styles.statNumber}>{masteredCount}</span>
-                        <span className={styles.statLabel}>Mastered Words</span>
+
+                    <div className={styles.statCard}>
+                        <div className={styles.statHeader}>
+                            <span className={styles.statLabel}>Mastered in Memory</span>
+                            <Sparkles size={16} className={styles.statIcon} />
+                        </div>
+                        <div className={styles.statBottomRow}>
+                            <span className={styles.statValue}>{masteredCount}</span>
+                            <span className={styles.statSubtext}>
+                                {totalWordsCount > 0 ? `${Math.round((masteredCount / totalWordsCount) * 100)}% retention` : '0% retention'}
+                            </span>
+                        </div>
                     </div>
-                    <div className={styles.statMetric}>
-                        <span className={styles.statNumber}>{activeGroupsCount}</span>
-                        <span className={styles.statLabel}>Collections & Sources</span>
+
+                    <div className={styles.statCard}>
+                        <div className={styles.statHeader}>
+                            <span className={styles.statLabel}>Active Collections</span>
+                            <Layers size={16} className={styles.statIcon} />
+                        </div>
+                        <div className={styles.statBottomRow}>
+                            <span className={styles.statValue}>{activeGroupsCount}</span>
+                            <span className={styles.statSubtext}>media sources</span>
+                        </div>
                     </div>
                 </motion.div>
 
-                {/* Controls Bar: Search & Layout Toggle */}
-                <motion.div className={styles.controlsBar} variants={itemVariants}>
-                    <div className={styles.searchWrapper} role="search">
-                        <Search className={styles.searchIcon} />
-                        <Input
-                            type="text"
-                            placeholder={
-                                view.mode === 'groups'
-                                    ? intl.formatMessage({ id: 'searchGroupsPlaceholder', defaultMessage: 'Search collections...' })
-                                    : view.mode === 'categories'
-                                    ? 'Search themes or words...'
-                                    : intl.formatMessage({ id: 'searchWordsPlaceholder', defaultMessage: 'Search words or context...' })
-                            }
-                            value={search.query}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className={styles.dictionarySearch}
-                            aria-label="Search dictionary"
-                        />
-                        {search.query && (
-                            <button
-                                type="button"
-                                onClick={clearSearch}
-                                className={styles.searchClearBtn}
-                                aria-label="Clear search"
-                            >
-                                <X size={14} />
-                            </button>
-                        )}
-                    </div>
+                {/* Single-Row Filter & Search Toolbar */}
+                <motion.div className={styles.controlsContainer} variants={itemVariants}>
+                    {view.mode !== 'categories' ? (
+                        <div className={styles.categoryFilterList} role="tablist" aria-label="Source category filter">
+                            {filterCategories.map((cat) => {
+                                const Icon = cat.icon;
+                                const isActive = selectedCategory === cat.key;
+                                return (
+                                    <button
+                                        key={cat.key || 'all'}
+                                        onClick={() => setSelectedCategory(cat.key)}
+                                        className={`${styles.categoryFilterBtn} ${isActive ? styles.categoryFilterBtnActive : ''}`}
+                                        role="tab"
+                                        aria-selected={isActive}
+                                    >
+                                        <Icon size={14} />
+                                        <span>{cat.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : <div />}
 
-                    <div className={styles.viewLayoutControls}>
+                    <div className={styles.rightActionsGroup}>
+                        <div className={styles.searchWrapper} role="search">
+                            <Search className={styles.searchIcon} />
+                            <Input
+                                type="text"
+                                placeholder={
+                                    view.mode === 'groups'
+                                        ? intl.formatMessage({ id: 'searchGroupsPlaceholder', defaultMessage: 'Search collections...' })
+                                        : view.mode === 'categories'
+                                        ? 'Search themes or words...'
+                                        : intl.formatMessage({ id: 'searchWordsPlaceholder', defaultMessage: 'Search words or context...' })
+                                }
+                                value={search.query}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={styles.dictionarySearch}
+                                aria-label="Search dictionary"
+                            />
+                            {search.query && (
+                                <button
+                                    type="button"
+                                    onClick={clearSearch}
+                                    className={styles.searchClearBtn}
+                                    aria-label="Clear search"
+                                >
+                                    <X size={14} />
+                                </button>
+                            )}
+                        </div>
+
                         {view.mode === 'groups' && (
                             <div className={styles.layoutToggle} role="radiogroup" aria-label="Layout mode">
                                 <button
@@ -289,8 +332,8 @@ const DictionaryPage: React.FC = () => {
                     </div>
                 </motion.div>
 
-                {/* Content Area */}
-                <motion.div className={styles.viewContainer} variants={itemVariants}>
+                {/* Main Content Area */}
+                <motion.div className={styles.mainContentArea} variants={itemVariants}>
                     {status === 'loading' || (view.mode === 'words' && isLoadingWords) ? (
                         <div className={styles.groupsGrid}>
                             {[...Array(6)].map((_, i) => (
@@ -314,7 +357,7 @@ const DictionaryPage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className={styles.groupsList}>
+                                <div className={styles.groupsListWrapper}>
                                     {displayedResources.map((res, i) => (
                                         <DictionaryResourceCard
                                             key={res.groupName || `res-${i}`}
