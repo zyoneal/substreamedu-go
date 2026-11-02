@@ -1,16 +1,29 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useIntl, FormattedMessage } from 'react-intl';
-import { Book as BookIcon, Upload, Search, Clock, FileText, Trash2, BookOpen, Sparkles } from 'lucide-react';
+import { Book as BookIcon, Upload, Search, Sparkles } from 'lucide-react';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { Book, CEFRLevel, ReadingProgress } from './types/book.types';
 import { CURATED_BOOKS } from './data/curatedBooks';
 import { BookStorage } from './services/bookStorage';
 import { parsePlainText } from './services/txtParser';
 import { parseEpubFile } from './services/epubParser';
+import { BookContinueDesk } from './components/BookContinueDesk';
+import { BookFolioCard } from './components/BookFolioCard';
 import styles from './css/BooksCatalog.module.css';
 
 type FilterTab = 'ALL' | CEFRLevel | 'MY_BOOKS';
+
+const FILTER_TABS: readonly FilterTab[] = ['ALL', 'A1', 'A2', 'B1', 'B2', 'C1', 'MY_BOOKS'];
+
+const LEVEL_SUBTITLES: Record<CEFRLevel, string> = {
+    A1: 'Elementary',
+    A2: 'Pre-Int',
+    B1: 'Intermediate',
+    B2: 'Upper-Int',
+    C1: 'Advanced',
+};
+
+const getLevelSubtitle = (level: CEFRLevel): string => LEVEL_SUBTITLES[level] || '';
 
 export const BooksCatalogPage: React.FC = () => {
     usePixzenTheme();
@@ -28,55 +41,45 @@ export const BooksCatalogPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        loadBooksAndProgress();
+        let isMounted = true;
+        Promise.all([BookStorage.getCustomBooks(), BookStorage.getAllProgress()])
+            .then(([storedCustomBooks, storedProgress]) => {
+                if (isMounted) {
+                    if (storedCustomBooks.length > 0) setCustomBooks(storedCustomBooks);
+                    if (Object.keys(storedProgress).length > 0) setProgressMap(storedProgress);
+                }
+            })
+            .catch(() => {});
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    // Global drag-and-drop listener to reveal dropzone
     useEffect(() => {
         const handleDragEnter = (e: DragEvent) => {
-            if (e.dataTransfer?.types.includes('Files')) {
-                setIsDragging(true);
-            }
+            if (e.dataTransfer?.types.includes('Files')) setIsDragging(true);
         };
-
         window.addEventListener('dragenter', handleDragEnter);
         return () => window.removeEventListener('dragenter', handleDragEnter);
     }, []);
 
-    const loadBooksAndProgress = async () => {
-        try {
-            const [storedCustomBooks, storedProgress] = await Promise.all([
-                BookStorage.getCustomBooks(),
-                BookStorage.getAllProgress()
-            ]);
-            setCustomBooks(storedCustomBooks);
-            setProgressMap(storedProgress);
-        } catch {
-            // Keep default empty states
-        }
-    };
+    const allBooks = useMemo(() => [...CURATED_BOOKS, ...customBooks], [customBooks]);
 
-    const allBooks = useMemo(() => {
-        return [...CURATED_BOOKS, ...customBooks];
-    }, [customBooks]);
+    const featuredDeskBook = useMemo(() => {
+        const inProgressBooks = allBooks
+            .filter((b) => (progressMap[b.id]?.scrollPercentage ?? 0) > 0)
+            .sort((a, b) => (progressMap[b.id]?.lastReadAt ?? 0) - (progressMap[a.id]?.lastReadAt ?? 0));
+        return inProgressBooks[0] || CURATED_BOOKS[0];
+    }, [allBooks, progressMap]);
 
     const filteredBooks = useMemo(() => {
-        return allBooks.filter(book => {
-            // Filter by Level or Custom
-            if (activeFilter === 'MY_BOOKS') {
-                if (!book.isCustom) return false;
-            } else if (activeFilter !== 'ALL') {
-                if (book.level !== activeFilter) return false;
-            }
-
-            // Search query filter
+        return allBooks.filter((book) => {
+            if (activeFilter === 'MY_BOOKS' && !book.isCustom) return false;
+            if (activeFilter !== 'ALL' && activeFilter !== 'MY_BOOKS' && book.level !== activeFilter) return false;
             if (searchQuery.trim()) {
                 const query = searchQuery.toLowerCase();
-                const matchesTitle = book.title.toLowerCase().includes(query);
-                const matchesAuthor = book.author.toLowerCase().includes(query);
-                return matchesTitle || matchesAuthor;
+                return book.title.toLowerCase().includes(query) || book.author.toLowerCase().includes(query);
             }
-
             return true;
         });
     }, [allBooks, activeFilter, searchQuery]);
@@ -85,7 +88,6 @@ export const BooksCatalogPage: React.FC = () => {
         if (!files || files.length === 0) return;
         const file = files[0];
         const lowerName = file.name.toLowerCase();
-
         setIsUploading(true);
         setErrorMessage(null);
 
@@ -94,124 +96,92 @@ export const BooksCatalogPage: React.FC = () => {
             if (lowerName.endsWith('.epub')) {
                 parsedBook = await parseEpubFile(file, file.name);
             } else if (lowerName.endsWith('.txt')) {
-                const textContent = await file.text();
-                parsedBook = parsePlainText(textContent, file.name);
+                parsedBook = parsePlainText(await file.text(), file.name);
             } else {
-                throw new Error(intl.formatMessage({
-                    id: 'books.unsupportedFormat',
-                    defaultMessage: 'Please upload an .epub or .txt file.'
-                }));
+                throw new Error(intl.formatMessage({ id: 'books.unsupportedFormat', defaultMessage: 'Please upload an .epub or .txt file.' }));
             }
-
             await BookStorage.saveCustomBook(parsedBook);
-            setCustomBooks(prev => [parsedBook, ...prev]);
+            setCustomBooks((prev) => [parsedBook, ...prev]);
             setActiveFilter('MY_BOOKS');
             setIsUploadExpanded(false);
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Failed to parse book file.';
-            setErrorMessage(message);
+            setErrorMessage(err instanceof Error ? err.message : 'Failed to parse book file.');
         } finally {
             setIsUploading(false);
             setIsDragging(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleDeleteCustomBook = useCallback(
+        async (e: React.MouseEvent, bookId: string) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.confirm(intl.formatMessage({ id: 'books.confirmDelete', defaultMessage: 'Are you sure you want to remove this book from your library?' }))) {
+                await BookStorage.deleteCustomBook(bookId);
+                setCustomBooks((prev) => prev.filter((b) => b.id !== bookId));
             }
-        }
-    };
-
-    const handleDeleteCustomBook = async (e: React.MouseEvent, bookId: string) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (window.confirm(intl.formatMessage({
-            id: 'books.confirmDelete',
-            defaultMessage: 'Are you sure you want to remove this book from your library?'
-        }))) {
-            await BookStorage.deleteCustomBook(bookId);
-            setCustomBooks(prev => prev.filter(b => b.id !== bookId));
-        }
-    };
-
-    const getBannerClass = (level: CEFRLevel, isCustom?: boolean) => {
-        if (isCustom) return styles.bannerCustom;
-        switch (level) {
-            case 'A1': return styles.bannerA1;
-            case 'A2': return styles.bannerA2;
-            case 'B1': return styles.bannerB1;
-            case 'B2': return styles.bannerB2;
-            case 'C1': return styles.bannerC1;
-            default: return styles.bannerCustom;
-        }
-    };
-
-    const getLevelSubtitle = (level: CEFRLevel): string => {
-        switch (level) {
-            case 'A1': return 'Elementary';
-            case 'A2': return 'Pre-Int';
-            case 'B1': return 'Intermediate';
-            case 'B2': return 'Upper-Int';
-            case 'C1': return 'Advanced';
-            default: return '';
-        }
-    };
+        },
+        [intl]
+    );
 
     return (
         <div className={styles.catalogContainer}>
             <div className="pixzenGrain" aria-hidden="true" />
-
             <div className={styles.contentWrapper}>
                 <header className={styles.headerSection}>
-                    <div className={styles.badgeRow}>
-                        <Sparkles size={12} strokeWidth={2.5} />
-                        <span>GRADED EXTENSIVE READING</span>
+                    <div className={styles.headerTopRow}>
+                        <div>
+                            <div className={styles.badgeRow}>
+                                <Sparkles size={12} strokeWidth={2.5} />
+                                <span>GRADED EXTENSIVE READING</span>
+                            </div>
+                            <h1 className={styles.pageTitle}>
+                                <FormattedMessage id="books.catalogTitle" defaultMessage="Learn with" />{' '}
+                                <span className={styles.highlightText}>
+                                    <FormattedMessage id="books.catalogHighlight" defaultMessage="Books" />
+                                </span>
+                            </h1>
+                            <p className={styles.subtitle}>
+                                <FormattedMessage
+                                    id="books.catalogSubtitle"
+                                    defaultMessage="Read adapted classics and modern stories curated by language proficiency, or upload your own e-books to read and save vocabulary in-context."
+                                />
+                            </p>
+                        </div>
+                        <div className={styles.headerStatsGroup}>
+                            <div className={styles.statChip}>
+                                <span className={styles.statChipValue}>{allBooks.length}</span>
+                                <span className={styles.statChipLabel}>Editions</span>
+                            </div>
+                            <div className={styles.statChip}>
+                                <span className={styles.statChipValue}>A1–C1</span>
+                                <span className={styles.statChipLabel}>CEFR Graded</span>
+                            </div>
+                        </div>
                     </div>
-                    <h1 className={styles.pageTitle}>
-                        <FormattedMessage id="books.catalogTitle" defaultMessage="Learn with" />{' '}
-                        <span className={styles.highlightText}>
-                            <FormattedMessage id="books.catalogHighlight" defaultMessage="Books" />
-                        </span>
-                    </h1>
-                    <p className={styles.subtitle}>
-                        <FormattedMessage
-                            id="books.catalogSubtitle"
-                            defaultMessage="Read adapted classics and modern stories curated by language proficiency, or upload your own e-books to read and save vocabulary in-context."
-                        />
-                    </p>
                 </header>
 
-                {/* Collapsible / Drag-triggered Warm Dropzone */}
+                {activeFilter === 'ALL' && !searchQuery.trim() && featuredDeskBook && (
+                    <BookContinueDesk
+                        book={featuredDeskBook}
+                        progress={progressMap[featuredDeskBook.id]}
+                        levelSubtitle={getLevelSubtitle}
+                        onOpenUpload={() => setIsUploadExpanded((prev) => !prev)}
+                    />
+                )}
+
                 {(isDragging || isUploadExpanded) && (
                     <div
                         className={`${styles.dropzoneBanner} ${isDragging ? styles.dropzoneBannerActive : ''}`}
-                        onDragOver={e => {
-                            e.preventDefault();
-                            setIsDragging(true);
-                        }}
-                        onDragLeave={e => {
-                            // Only reset if leaving the dropzone container itself
-                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                                setIsDragging(false);
-                            }
-                        }}
-                        onDrop={e => {
-                            e.preventDefault();
-                            setIsDragging(false);
-                            handleFileUpload(e.dataTransfer.files);
-                        }}
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
+                        onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFileUpload(e.dataTransfer.files); }}
                         onClick={() => fileInputRef.current?.click()}
                         role="button"
                         tabIndex={0}
-                        onKeyDown={e => {
-                            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
-                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
                     >
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".epub,.txt"
-                            className={styles.uploadInputHidden}
-                            onChange={e => handleFileUpload(e.target.files)}
-                        />
                         <div className={styles.dropzoneIconSquircle}>
                             <Upload size={20} strokeWidth={2} />
                         </div>
@@ -225,27 +195,18 @@ export const BooksCatalogPage: React.FC = () => {
                         <p className={styles.dropzoneHint}>
                             <FormattedMessage id="books.dropzoneSupported" defaultMessage="Supports .epub and .txt with automatic chapter separation" />
                         </p>
-                        {errorMessage && (
-                            <p className="text-red-600 text-xs mt-2 font-mono">{errorMessage}</p>
-                        )}
+                        {errorMessage && <p className={styles.uploadErrorText}>{errorMessage}</p>}
                     </div>
                 )}
 
-                {/* Hidden input for action button when banner is collapsed */}
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".epub,.txt"
-                    className={styles.uploadInputHidden}
-                    onChange={e => handleFileUpload(e.target.files)}
-                />
+                <input ref={fileInputRef} type="file" accept=".epub,.txt" className={styles.uploadInputHidden} onChange={(e) => handleFileUpload(e.target.files)} />
 
-                {/* Filter and Search Bar */}
                 <div className={styles.controlBar}>
                     <div className={styles.levelFilters}>
-                        {(['ALL', 'A1', 'A2', 'B1', 'B2', 'C1', 'MY_BOOKS'] as FilterTab[]).map(tab => (
+                        {FILTER_TABS.map((tab) => (
                             <button
                                 key={tab}
+                                type="button"
                                 className={`${styles.filterPill} ${activeFilter === tab ? styles.filterPillActive : ''}`}
                                 onClick={() => setActiveFilter(tab)}
                             >
@@ -260,7 +221,6 @@ export const BooksCatalogPage: React.FC = () => {
                             </button>
                         ))}
                     </div>
-
                     <div className={styles.actionRow}>
                         <div className={styles.searchBox}>
                             <Search size={14} className={styles.searchIcon} />
@@ -268,26 +228,21 @@ export const BooksCatalogPage: React.FC = () => {
                                 type="text"
                                 placeholder={intl.formatMessage({ id: 'books.searchPlaceholder', defaultMessage: 'Search by title or author...' })}
                                 value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className={styles.searchInput}
                             />
                         </div>
-
-                        <button
-                            className={styles.uploadButton}
-                            onClick={() => setIsUploadExpanded(prev => !prev)}
-                        >
+                        <button type="button" className={styles.uploadButton} onClick={() => setIsUploadExpanded((prev) => !prev)}>
                             <Upload size={14} strokeWidth={2.2} />
                             <FormattedMessage id="books.uploadBtn" defaultMessage="Upload Book" />
                         </button>
                     </div>
                 </div>
 
-                {/* Books Grid */}
                 <div className={styles.bookGrid}>
                     {filteredBooks.length === 0 ? (
                         <div className={styles.emptyState}>
-                            <BookIcon size={36} className="mx-auto text-stone-500 mb-3" />
+                            <BookIcon size={36} className={styles.emptyStateIcon} />
                             <h3 className={styles.emptyStateTitle}>
                                 <FormattedMessage id="books.emptyTitle" defaultMessage="No books found" />
                             </h3>
@@ -302,82 +257,15 @@ export const BooksCatalogPage: React.FC = () => {
                             </p>
                         </div>
                     ) : (
-                        filteredBooks.map(book => {
-                            const progress = progressMap[book.id];
-                            const percentage = progress ? Math.min(100, Math.round(progress.scrollPercentage)) : 0;
-
-                            return (
-                                <article key={book.id} className={styles.bookCard}>
-                                    {/* Tailored Cover Banner Jacket */}
-                                    <div className={`${styles.bookCoverBanner} ${getBannerClass(book.level, book.isCustom)}`}>
-                                        <BookOpen size={64} className={styles.coverWatermark} aria-hidden="true" />
-                                        <div className={styles.bannerTopRow}>
-                                            <span className={styles.bookLevelPill}>
-                                                {book.isCustom ? 'CUSTOM' : `${book.level} · ${getLevelSubtitle(book.level)}`}
-                                            </span>
-                                            <div className={styles.cardMeta}>
-                                                <span>
-                                                    <Clock size={11} />
-                                                    {book.estimatedMinutes}m
-                                                </span>
-                                                <span>
-                                                    <FileText size={11} />
-                                                    {book.chapters.length} ch
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Card Body */}
-                                    <div className={styles.cardBody}>
-                                        <h2 className={styles.bookTitle}>{book.title}</h2>
-                                        <p className={styles.bookAuthor}>{book.author}</p>
-                                        <p className={styles.bookDescription}>{book.description}</p>
-                                    </div>
-
-                                    {/* Card Footer */}
-                                    <div className={styles.cardFooter}>
-                                        <div className={styles.progressContainer}>
-                                            <div className={styles.progressBarBg}>
-                                                <div
-                                                    className={styles.progressBarFill}
-                                                    style={{ width: `${percentage}%` }}
-                                                />
-                                            </div>
-                                            <span className={styles.progressLabel}>
-                                                {percentage > 0 ? `${percentage}% completed` : `${book.totalWords.toLocaleString()} words`}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            {book.isCustom && (
-                                                <button
-                                                    className={styles.deleteButton}
-                                                    onClick={e => handleDeleteCustomBook(e, book.id)}
-                                                    title={intl.formatMessage({ id: 'books.deleteTitle', defaultMessage: 'Delete book' })}
-                                                    aria-label="Delete book"
-                                                >
-                                                    <Trash2 size={15} />
-                                                </button>
-                                            )}
-                                            <Link
-                                                to={`/books/${book.id}`}
-                                                className={styles.readButton}
-                                            >
-                                                <BookOpen size={13} />
-                                                <span>
-                                                    {percentage > 0 ? (
-                                                        <FormattedMessage id="books.continue" defaultMessage="Continue" />
-                                                    ) : (
-                                                        <FormattedMessage id="books.read" defaultMessage="Read" />
-                                                    )}
-                                                </span>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </article>
-                            );
-                        })
+                        filteredBooks.map((book) => (
+                            <BookFolioCard
+                                key={book.id}
+                                book={book}
+                                progress={progressMap[book.id]}
+                                levelSubtitle={getLevelSubtitle}
+                                onDeleteCustomBook={handleDeleteCustomBook}
+                            />
+                        ))
                     )}
                 </div>
             </div>

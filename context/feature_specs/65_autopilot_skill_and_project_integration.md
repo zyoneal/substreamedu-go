@@ -26,9 +26,12 @@ Key deliverables:
 - `context/feature_specs/65_autopilot_skill_and_project_integration.md`
 - `context/feature_specs/66_homepage_perfection_and_humble_object.md`
 - `context/feature_specs/67_dashboard_perfection_and_humble_object.md`
+- `context/feature_specs/68_books_page_editorial_redesign_and_humble_object.md`
 - `context/progress_tracker.md`
 - `substreamedu-frontend/src/components/HomePage/**`
 - `substreamedu-frontend/src/components/DashboardPage/**`
+- `substreamedu-frontend/src/components/BooksPage/**`
+- `substreamedu-frontend/src/locales/**`
 - `.agents/skills/autopilot/**`
 - `.agents/workflows/autopilot.md`
 - `skills-lock.json`

@@ -507,6 +507,11 @@
   "books.deleteTitle": "Delete book",
   "books.continue": "Continue",
   "books.read": "Read",
+  "books.deskContinueBadge": "Continue Reading",
+  "books.deskFeaturedBadge": "Recommended Start",
+  "books.continueReadingBtn": "Continue Chapter",
+  "books.startReadingBtn": "Open Chapter 1",
+  "books.uploadOwnEpub": "Or upload EPUB / TXT",
   "books.wordSaved": "Word saved to your dictionary",
   "books.saveFailed": "Failed to save word. Please try again."
 }

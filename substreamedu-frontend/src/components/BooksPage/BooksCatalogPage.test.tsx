@@ -3,9 +3,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import BooksCatalogPage from './BooksCatalogPage';
+import { BookStorage } from './services/bookStorage';
 import enMessages from '../../locales/en.json';
 
 describe('BooksCatalogPage', () => {
+    beforeEach(() => {
+        jest.restoreAllMocks();
+    });
+
     const renderComponent = () => {
         return render(
             <IntlProvider locale="en" messages={enMessages}>
@@ -16,16 +21,39 @@ describe('BooksCatalogPage', () => {
         );
     };
 
-    it('renders the catalog header and curated books', async () => {
+    it('renders the catalog header, Reading Desk hero, and curated books', async () => {
         renderComponent();
 
         expect(screen.getByText(/Learn with/i)).toBeInTheDocument();
         expect(screen.getByText('Books')).toBeInTheDocument();
+        expect(screen.getByTestId('book-continue-desk')).toBeInTheDocument();
+        expect(screen.getByText('Recommended Start')).toBeInTheDocument();
+        expect(screen.getByText('Open Chapter 1')).toBeInTheDocument();
 
         // Curated books should be displayed
         await waitFor(() => {
             expect(screen.getByText('The Little Prince')).toBeInTheDocument();
             expect(screen.getByText('Dracula')).toBeInTheDocument();
+        });
+    });
+
+    it('shows Continue Reading Desk and progress percentage when a book is in progress', async () => {
+        jest.spyOn(BookStorage, 'getAllProgress').mockResolvedValueOnce({
+            'curated-the-little-prince': {
+                bookId: 'curated-the-little-prince',
+                currentChapterId: 'ch-1',
+                scrollPercentage: 33,
+                lastReadAt: Date.now(),
+                isCompleted: false,
+            },
+        });
+
+        renderComponent();
+
+        await waitFor(() => {
+            expect(screen.getByText('Resume: The Little Prince')).toBeInTheDocument();
+            expect(screen.getByText('Continue Chapter')).toBeInTheDocument();
+            expect(screen.getAllByText('33% completed').length).toBeGreaterThanOrEqual(1);
         });
     });
 
