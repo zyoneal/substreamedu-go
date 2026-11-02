@@ -600,6 +600,14 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                     )}
 
                                     <button
+                                        onClick={() => navigate('/')}
+                                        className={onStartActivePractice && sessionWords.length > 0 ? styles.refreshButton : styles.activePracticeButton}
+                                    >
+                                        <Layout size={16} />
+                                        <span>{intl.formatMessage({ id: 'flashcards.backToDashboard', defaultMessage: 'Back to Dashboard' })}</span>
+                                    </button>
+
+                                    <button
                                         onClick={handleRefresh}
                                         disabled={loading}
                                         className={styles.refreshButton}

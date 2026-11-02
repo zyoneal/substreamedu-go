@@ -100,17 +100,18 @@ const Header = () => {
         navigate('/login');
     };
 
-    const [isOnboarding, setIsOnboarding] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return false;
-        return localStorage.getItem('substreamedu_onboarding_completed') !== 'true';
+    const [onboardingCompleted, setOnboardingCompleted] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return true;
+        return localStorage.getItem('substreamedu_onboarding_completed') === 'true';
     });
 
     useEffect(() => {
-        const handleCompleted = () => setIsOnboarding(false);
+        const handleCompleted = () => setOnboardingCompleted(true);
         window.addEventListener('substreamedu:onboarding_completed', handleCompleted);
         return () => window.removeEventListener('substreamedu:onboarding_completed', handleCompleted);
     }, []);
 
+    const isOnboarding = !onboardingCompleted && new URLSearchParams(location.search).get('onboarding') === 'true';
     const isHomepage = location.pathname === '/';
     const isDashboard = location.pathname === '/dashboard' || (isHomepage && isLoggedIn);
 

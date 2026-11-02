@@ -140,4 +140,33 @@ describe('Header Component Mobile & Desktop Layout', () => {
         fireEvent.keyDown(window, { key: 'Escape' });
         expect(screen.getByTestId('icon-menu')).toBeInTheDocument();
     });
+
+    it('renders navigation menu on /learning even when substreamedu_onboarding_completed is not set', () => {
+        localStorage.removeItem('substreamedu_onboarding_completed');
+        render(
+            <AuthContext.Provider value={{
+                isLoggedIn: true,
+                setIsLoggedIn: jest.fn(),
+                authorities: [],
+                setAuthorities: jest.fn()
+            }}>
+                <LanguageContext.Provider value={{
+                    learningLanguage: 'en',
+                    setLearningLanguage: jest.fn(),
+                    fluentLanguage: 'uk',
+                    setFluentLanguage: jest.fn(),
+                    isPlayerActive: false,
+                    setIsPlayerActive: jest.fn(),
+                }}>
+                    <IntlProvider locale="en" messages={enMessages}>
+                        <MemoryRouter initialEntries={['/learning']}>
+                            <Header />
+                        </MemoryRouter>
+                    </IntlProvider>
+                </LanguageContext.Provider>
+            </AuthContext.Provider>
+        );
+
+        expect(screen.getByRole('button', { name: /menu/i })).toBeInTheDocument();
+    });
 });

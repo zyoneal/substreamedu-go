@@ -370,6 +370,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     expect(await screen.findByText('All cards have been studied!')).toBeInTheDocument();
     expect(screen.getByText("Great job today! You've reviewed 2 cards across 2 unique words.")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /back to dashboard/i })).toBeInTheDocument();
   });
 
   it('defines all required CSS classes for completion stage in Flashcards.module.css', () => {
