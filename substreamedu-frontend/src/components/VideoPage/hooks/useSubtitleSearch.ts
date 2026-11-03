@@ -297,7 +297,13 @@ export const useSubtitleSearch = ({
 
             const subtitleContent = await SubtitleService.downloadSubtitleFromSubDL(subtitle);
             const baseName = sessionStorage.getItem('videoFileName') || subtitle.name;
-            const file = new File([new Blob([subtitleContent], { type: 'text/plain' })], buildSubtitleFileName(baseName), { type: 'text/plain' });
+            const subFileName = buildSubtitleFileName(baseName);
+            const file = new File([new Blob([subtitleContent], { type: 'text/plain' })], subFileName, { type: 'text/plain' });
+
+            const parsedSubtitles = parseSRT(subtitleContent, subtitle.name);
+            setSubtitlesForVideo(sanitizeSubtitles(parsedSubtitles));
+            setSelectedSubtitle(subFileName);
+            setFileName(subFileName);
 
             await onSubtitleUpload(file);
             showNotification('Subtitles loaded successfully');
@@ -305,7 +311,7 @@ export const useSubtitleSearch = ({
             debugError('Error loading subtitle:', error);
             showNotification('Failed to load subtitles');
         }
-    }, [onSubtitleUpload, showNotification]);
+    }, [onSubtitleUpload, sanitizeSubtitles, setFileName, setSelectedSubtitle, setSubtitlesForVideo, showNotification]);
 
     return {
         isSearchingSubtitles,

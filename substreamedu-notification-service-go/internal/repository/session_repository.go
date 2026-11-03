@@ -19,6 +19,10 @@ func NewSessionRepository(db *pgxpool.Pool) *SessionRepository {
 }
 
 func (r *SessionRepository) SaveSession(ctx context.Context, chatID int64, data interface{}, ttl time.Duration) error {
+	return r.SaveNamedSession(ctx, chatID, "review", data, ttl)
+}
+
+func (r *SessionRepository) SaveNamedSession(ctx context.Context, chatID int64, sessionType string, data interface{}, ttl time.Duration) error {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -28,7 +32,7 @@ func (r *SessionRepository) SaveSession(ctx context.Context, chatID int64, data 
 		 VALUES ($1, $2, $3, NOW() + $4::interval)
 		 ON CONFLICT (chat_id, session_type) DO UPDATE
 		 SET session_data = $2, expires_at = NOW() + $4::interval, updated_at = NOW()`,
-		chatID, jsonData, "review", fmt.Sprintf("%d seconds", int(ttl.Seconds())))
+		chatID, jsonData, sessionType, fmt.Sprintf("%d seconds", int(ttl.Seconds())))
 	return err
 }
 

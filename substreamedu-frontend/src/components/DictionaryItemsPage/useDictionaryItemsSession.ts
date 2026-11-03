@@ -55,16 +55,16 @@ export const useDictionaryItemsSession = (resourceName: string | undefined) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingAll, setIsFetchingAll] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
-    const [failedImageKey, setFailedImageKey] = useState<string | null>(null);
+    const [failedImageKeys, setFailedImageKeys] = useState<Record<string, boolean>>({});
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
     const activeCard = dictionaryItems[currentIndex];
     const activeImageKey = activeCard?.imageUrl ? `${activeCard.id}:${activeCard.imageUrl}` : null;
-    const imageFailed = Boolean(activeImageKey && failedImageKey === activeImageKey);
+    const imageFailed = Boolean(activeImageKey && failedImageKeys[activeImageKey]);
 
     const handleImageError = useCallback(() => {
         if (activeImageKey) {
-            setFailedImageKey(activeImageKey);
+            setFailedImageKeys(prev => ({ ...prev, [activeImageKey]: true }));
         }
     }, [activeImageKey]);
 

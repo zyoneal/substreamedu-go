@@ -156,4 +156,50 @@ describe('BookReaderPage', () => {
         fireEvent.mouseLeave(saharaWord);
         expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     });
+
+    it('records progress on initial load and marks isCompleted only upon clicking Finish Book on the last chapter', async () => {
+        const saveSpy = jest.spyOn(BookStorage, 'saveProgress');
+        renderReader();
+
+        await waitFor(() => {
+            expect(screen.getByText('The Little Prince')).toBeInTheDocument();
+            expect(saveSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    bookId: 'curated-the-little-prince',
+                    currentChapterId: 'ch-1',
+                    isCompleted: false,
+                })
+            );
+        });
+
+        // Navigate to last chapter (Chapter 3)
+        const chaptersBtn = screen.getByRole('button', { name: /Table of Contents/i });
+        fireEvent.click(chaptersBtn);
+        const ch3Btn = screen.getByText('Chapter 3: The Secret of the Fox');
+        fireEvent.click(ch3Btn);
+
+        await waitFor(() => {
+            expect(screen.getByRole('heading', { level: 2, name: /Chapter 3: The Secret of the Fox/i })).toBeInTheDocument();
+        });
+
+        // Upon entering last chapter, it must NOT be prematurely completed
+        expect(saveSpy).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                currentChapterId: 'ch-3',
+                isCompleted: false,
+            })
+        );
+
+        // Click Finish Book button
+        const finishBtn = screen.getByRole('button', { name: /Finish Book/i });
+        fireEvent.click(finishBtn);
+
+        expect(saveSpy).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                currentChapterId: 'ch-3',
+                isCompleted: true,
+                scrollPercentage: 100,
+            })
+        );
+    });
 });

@@ -175,7 +175,7 @@ export const useVideoSubtitles = ({
                     setFileName((data[0] as any).name || id);
                     sessionStorage.setItem('subtitleName', (data[0] as any).name || id);
                 }
-                await fetchDictionaryItemsForCards(id);
+                await fetchDictionaryItemsForCards(`yt:${id}`);
                 if (onSubtitleSelect) {
                     onSubtitleSelect();
                 }

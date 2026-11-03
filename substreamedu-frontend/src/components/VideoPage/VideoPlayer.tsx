@@ -153,7 +153,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             setDictionaryItems([]);
             return;
         }
-        const name = resourceId || '';
+        let name = resourceId || (videoId ? `yt:${videoId}` : fileName) || '';
+        if (videoId && name && !name.startsWith('yt:') && name === videoId) {
+            name = `yt:${name}`;
+        }
         if (!name) {
             debugLog('No fileName available for cards dictionary fetch');
             return;
@@ -334,7 +337,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     // Subtitle card loading on filename/videoId change
     useEffect(() => {
         if (fileName || videoId) {
-            fetchDictionaryItemsForCards(videoId || fileName);
+            fetchDictionaryItemsForCards(videoId ? `yt:${videoId}` : fileName);
         }
     }, [fileName, videoId, fetchDictionaryItemsForCards]);
 

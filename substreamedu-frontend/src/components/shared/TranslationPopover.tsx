@@ -101,6 +101,11 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
         : null;
     const activeImageUrl = translationData?.imageUrl ?? imageUrl ?? null;
     const activeShowImage = translationData ? translationData.showImage : showImage;
+    const [imageLoadFailed, setImageLoadFailed] = React.useState(false);
+
+    React.useEffect(() => {
+        setImageLoadFailed(false);
+    }, [activeImageUrl]);
     const activePartOfSpeech = translationData?.partOfSpeech ?? partOfSpeech ?? null;
     const activeRegister = translationData?.register ?? register ?? null;
     const activeRecommendedSelections = translationData?.recommendedSelections ?? recommendedSelections ?? null;
@@ -225,12 +230,13 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                         )}
                     </div>
 
-                    {activeImageUrl && activeShowImage && (
+                    {Boolean(activeImageUrl && activeImageUrl.trim() && activeShowImage && !imageLoadFailed) && (
                         <div className={styles.popoverBodyImage} style={{ position: 'relative' }}>
                             <img
-                                src={activeImageUrl}
-                                alt="Visual reference"
+                                src={activeImageUrl || undefined}
+                                alt=""
                                 className={styles.translationImage}
+                                onError={() => setImageLoadFailed(true)}
                             />
                             {onRemoveImage && (
                                 <button

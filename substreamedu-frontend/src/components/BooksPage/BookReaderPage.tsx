@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, BookOpen, Check } from 'lucide-react';
 import { LanguageContext } from '../LanguageContext';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { Book, ReadingProgress } from './types/book.types';
@@ -14,6 +14,7 @@ import styles from './css/BookReader.module.css';
 export const BookReaderPage: React.FC = () => {
     usePixzenTheme();
     const { bookId } = useParams<{ bookId: string }>();
+    const navigate = useNavigate();
     const { learningLanguage, fluentLanguage } = useContext(LanguageContext);
 
     const [book, setBook] = useState<Book | null>(null);
@@ -59,26 +60,33 @@ export const BookReaderPage: React.FC = () => {
         loadBook();
     }, [loadBook]);
 
-    const saveCurrentProgress = useCallback(async (chapterIdx: number) => {
+    const saveCurrentProgress = useCallback(async (chapterIdx: number, markCompleted: boolean = false) => {
         if (!book || !book.chapters[chapterIdx]) return;
         const chapter = book.chapters[chapterIdx];
-        const progressPercentage = Math.round(((chapterIdx + 1) / book.chapters.length) * 100);
+        const isLastChapter = chapterIdx === book.chapters.length - 1;
+        const progressPercentage = Math.round(((chapterIdx + (markCompleted ? 1 : 0.5)) / book.chapters.length) * 100);
 
         const progress: ReadingProgress = {
             bookId: book.id,
             currentChapterId: chapter.id,
-            scrollPercentage: progressPercentage,
+            scrollPercentage: markCompleted ? 100 : Math.min(progressPercentage, 95),
             lastReadAt: Date.now(),
-            isCompleted: chapterIdx === book.chapters.length - 1
+            isCompleted: markCompleted && isLastChapter
         };
 
         await BookStorage.saveProgress(progress);
     }, [book]);
 
+    useEffect(() => {
+        if (book && book.chapters[currentChapterIndex]) {
+            saveCurrentProgress(currentChapterIndex, false);
+        }
+    }, [book, currentChapterIndex, saveCurrentProgress]);
+
     const handleSelectChapter = (index: number) => {
         if (!book || index < 0 || index >= book.chapters.length) return;
         setCurrentChapterIndex(index);
-        saveCurrentProgress(index);
+        saveCurrentProgress(index, false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -154,14 +162,27 @@ export const BookReaderPage: React.FC = () => {
                         Chapter {currentChapterIndex + 1} of {totalChapters} ({progressPercentage}%)
                     </span>
 
-                    <button
-                        className={styles.navChapterBtn}
-                        onClick={() => handleSelectChapter(currentChapterIndex + 1)}
-                        disabled={currentChapterIndex >= totalChapters - 1}
-                    >
-                        <span>Next Chapter</span>
-                        <ChevronRight size={16} />
-                    </button>
+                    {currentChapterIndex >= totalChapters - 1 ? (
+                        <button
+                            className={styles.navChapterBtn}
+                            onClick={() => {
+                                saveCurrentProgress(currentChapterIndex, true);
+                                navigate('/books');
+                            }}
+                            title="Finish reading book"
+                        >
+                            <span>Finish Book</span>
+                            <Check size={16} />
+                        </button>
+                    ) : (
+                        <button
+                            className={styles.navChapterBtn}
+                            onClick={() => handleSelectChapter(currentChapterIndex + 1)}
+                        >
+                            <span>Next Chapter</span>
+                            <ChevronRight size={16} />
+                        </button>
+                    )}
                 </footer>
             </div>
 

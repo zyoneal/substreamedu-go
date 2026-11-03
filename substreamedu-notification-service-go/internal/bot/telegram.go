@@ -124,14 +124,22 @@ func (b *TelegramBot) StartDailyReviewJob(ctx context.Context) {
 	)
 
 	now := time.Now().In(loc)
+	todayStr := now.Format("2006-01-02")
 	scheduledToday := time.Date(now.Year(), now.Month(), now.Day(), defaultReviewHour, 0, 0, 0, loc)
 
 	if now.After(scheduledToday) {
-		b.logger.Info("Startup catch-up: scheduled time already passed today, triggering now",
-			zap.Time("scheduled_time", scheduledToday),
-			zap.Time("current_time", now),
-		)
-		b.triggerDailyReviews(ctx)
+		hasRunToday, err := b.sessionRepo.HasSession(ctx, 0, "daily_review_"+todayStr)
+		if err == nil && hasRunToday {
+			b.logger.Info("Startup check: daily reviews already completed today; skipping catch-up",
+				zap.String("date", todayStr),
+			)
+		} else {
+			b.logger.Info("Startup catch-up: scheduled time already passed today, triggering now",
+				zap.Time("scheduled_time", scheduledToday),
+				zap.Time("current_time", now),
+			)
+			b.triggerDailyReviews(ctx)
+		}
 	}
 
 	for {
@@ -162,6 +170,10 @@ func (b *TelegramBot) StartDailyReviewJob(ctx context.Context) {
 func (b *TelegramBot) triggerDailyReviews(ctx context.Context) {
 	start := time.Now()
 	b.logger.Info("Triggering daily reviews for all active users")
+
+	loc := loadTimezone()
+	todayStr := time.Now().In(loc).Format("2006-01-02")
+	_ = b.sessionRepo.SaveNamedSession(ctx, 0, "daily_review_"+todayStr, map[string]string{"executed_at": time.Now().Format(time.RFC3339)}, 24*time.Hour)
 
 	var users []model.TelegramUser
 	var err error
@@ -343,6 +355,14 @@ func (b *TelegramBot) authenticateWithToken(ctx context.Context, chatID int64, t
 }
 
 func (b *TelegramBot) handleRandomWord(ctx context.Context, chatID int64) {
+	if val, ok := b.reviewSessions.Load(chatID); ok {
+		activeSession := val.(*ReviewSession)
+		if activeSession.HasNext() {
+			b.sendMessage(chatID, "⚠️ You already have an active review session in progress! Please finish or resume it with /review.")
+			return
+		}
+	}
+
 	userID := b.getUserID(chatID)
 	if userID == nil {
 		return
@@ -430,6 +450,10 @@ func (b *TelegramBot) sendNextWord(chatID int64, session *ReviewSession) {
 	word := session.Next()
 	if word == nil {
 		return
+	}
+
+	if err := b.sessionRepo.SaveSession(context.Background(), chatID, session.Snapshot(), 2*time.Hour); err != nil {
+		b.logger.Error("Failed to persist review session on word step", zap.Int64("chat_id", chatID), zap.Error(err))
 	}
 
 	session.SetWordStartTime(word.ID)
@@ -573,6 +597,15 @@ func (b *TelegramBot) handleRating(ctx context.Context, chatID int64, data strin
 
 	rating := parts[1]
 	wordID, _ := strconv.ParseInt(parts[2], 10, 64)
+
+	currentWord := session.GetCurrentWord()
+	if currentWord == nil || currentWord.ID != wordID {
+		b.logger.Warn("Ignored stale or mismatched rating callback query",
+			zap.Int64("chat_id", chatID),
+			zap.Int64("received_word_id", wordID),
+		)
+		return
+	}
 
 	durationMs := session.GetWordDuration(wordID)
 	session.RecordAnswer(rating)

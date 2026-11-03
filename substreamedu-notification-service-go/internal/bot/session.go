@@ -175,19 +175,25 @@ func (s *ReviewSession) Snapshot() *ReviewSessionSnapshot {
 }
 
 func RestoreReviewSession(snap *ReviewSessionSnapshot) *ReviewSession {
-	s := &ReviewSession{
-		words:			snap.Words,
-		currentIndex:		snap.CurrentIndex,
-		startTime:		snap.StartTime,
-		difficultCount:		snap.DifficultCount,
-		normalCount:		snap.NormalCount,
-		easyCount:		snap.EasyCount,
-		wordStartTimes:		snap.WordStartTimes,
-		answerShownTimes:	snap.AnswerShownTimes,
-		answerShown:		false,
+	answeredCount := snap.DifficultCount + snap.NormalCount + snap.EasyCount
+	resumeIndex := answeredCount
+	if resumeIndex > len(snap.Words) {
+		resumeIndex = len(snap.Words)
 	}
-	if snap.CurrentIndex > 0 && len(snap.Words) > 0 {
-		s.currentWord = &snap.Words[snap.CurrentIndex-1]
+
+	s := &ReviewSession{
+		words:            snap.Words,
+		currentIndex:     resumeIndex,
+		startTime:        snap.StartTime,
+		difficultCount:   snap.DifficultCount,
+		normalCount:      snap.NormalCount,
+		easyCount:        snap.EasyCount,
+		wordStartTimes:   snap.WordStartTimes,
+		answerShownTimes: snap.AnswerShownTimes,
+		answerShown:      false,
+	}
+	if resumeIndex > 0 && resumeIndex <= len(snap.Words) {
+		s.currentWord = &snap.Words[resumeIndex-1]
 	}
 	if s.wordStartTimes == nil {
 		s.wordStartTimes = make(map[int64]time.Time)
