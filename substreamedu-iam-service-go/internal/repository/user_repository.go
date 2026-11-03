@@ -18,6 +18,8 @@ type UserRepository interface {
 	FindByTelegramToken(ctx context.Context, token string) (*model.User, error)
 	Save(ctx context.Context, user *model.User) error
 	Update(ctx context.Context, user *model.User) error
+	IncrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error)
+	DecrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error)
 	FindAll(ctx context.Context, limit, offset int, query string, isPremium *bool, sortBy, sortOrder string) ([]model.User, error)
 	CountAll(ctx context.Context, query string, isPremium *bool) (int64, error)
 }
@@ -163,6 +165,70 @@ func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 	}
 
 	return nil
+}
+
+func (r *userRepository) IncrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error) {
+	if delta <= 0 {
+		delta = 1
+	}
+	const query = `
+		UPDATE sse_user
+		SET translation_count = CASE WHEN $2 = 'translation' THEN translation_count + $3 ELSE translation_count END,
+		    saved_words_count = CASE WHEN $2 = 'save' THEN saved_words_count + $3 ELSE saved_words_count END
+		WHERE id = $1
+		RETURNING id, email, is_active, telegram_token, is_premium, translation_count, saved_words_count, role, created_at`
+
+	var user model.User
+	err := r.pool.QueryRow(ctx, query, id, usageType, delta).Scan(
+		&user.ID,
+		&user.Email,
+		&user.IsActive,
+		&user.TelegramToken,
+		&user.IsPremium,
+		&user.TranslationCount,
+		&user.SavedWordsCount,
+		&user.Role,
+		&user.CreatedAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("increment usage: %w", err)
+	}
+	return &user, nil
+}
+
+func (r *userRepository) DecrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error) {
+	if delta <= 0 {
+		delta = 1
+	}
+	const query = `
+		UPDATE sse_user
+		SET saved_words_count = CASE WHEN $2 = 'save' THEN GREATEST(0, saved_words_count - $3) ELSE saved_words_count END,
+		    translation_count = CASE WHEN $2 = 'translation' THEN GREATEST(0, translation_count - $3) ELSE translation_count END
+		WHERE id = $1
+		RETURNING id, email, is_active, telegram_token, is_premium, translation_count, saved_words_count, role, created_at`
+
+	var user model.User
+	err := r.pool.QueryRow(ctx, query, id, usageType, delta).Scan(
+		&user.ID,
+		&user.Email,
+		&user.IsActive,
+		&user.TelegramToken,
+		&user.IsPremium,
+		&user.TranslationCount,
+		&user.SavedWordsCount,
+		&user.Role,
+		&user.CreatedAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("decrement usage: %w", err)
+	}
+	return &user, nil
 }
 
 func (r *userRepository) FindAll(ctx context.Context, limit, offset int, query string, isPremium *bool, sortBy, sortOrder string) ([]model.User, error) {

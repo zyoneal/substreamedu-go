@@ -445,6 +445,14 @@ func (h *DictionaryHandler) DeleteWord(c *gin.Context) {
 		return
 	}
 
+	if h.iamClient != nil {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = h.iamClient.DecrementUsage(ctx, userID, "save", 1)
+		}()
+	}
+
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Message: "Item deleted"})
 }
 
@@ -463,9 +471,19 @@ func (h *DictionaryHandler) DeleteResource(c *gin.Context) {
 		return
 	}
 
+	deletedCount, _ := h.vocabularyService.CountLexemesByResource(c.Request.Context(), userID, name)
+
 	if err := h.vocabularyService.DeleteResource(c.Request.Context(), userID, name); err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
+	}
+
+	if h.iamClient != nil && deletedCount > 0 {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_ = h.iamClient.DecrementUsage(ctx, userID, "save", int(deletedCount))
+		}()
 	}
 
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Message: "Resource deleted"})

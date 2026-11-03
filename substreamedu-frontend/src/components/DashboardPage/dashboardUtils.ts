@@ -72,7 +72,10 @@ export const computeWeekActivity = (
 
 export const getHeroVideoTargetUrl = (latestRecentVideo: RecentVideo | null): string => {
     if (latestRecentVideo?.videoUrl && /^https?:\/\//i.test(latestRecentVideo.videoUrl)) {
-        return `/videos?videoUrl=${encodeURIComponent(latestRecentVideo.videoUrl)}`;
+        const timeParam = latestRecentVideo.currentTime && latestRecentVideo.currentTime > 5
+            ? `&t=${Math.floor(latestRecentVideo.currentTime)}`
+            : '';
+        return `/videos?videoUrl=${encodeURIComponent(latestRecentVideo.videoUrl)}${timeParam}`;
     }
     return '/videos';
 };

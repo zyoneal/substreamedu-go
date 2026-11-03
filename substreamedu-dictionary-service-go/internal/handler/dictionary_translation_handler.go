@@ -65,30 +65,30 @@ func (h *DictionaryHandler) GetTranslationProd(c *gin.Context) {
 		h.mapCompatibilityFields(&response)
 	}
 
-	searchWord := response.VisualKeyword
-	if searchWord == "" {
-		searchWord = response.Definition
+	var imageUrl string
+	var iconErr error
+	searchWord := strings.TrimSpace(response.VisualKeyword)
 
-		if idx := strings.Index(searchWord, "("); idx != -1 {
-			searchWord = strings.TrimSpace(searchWord[:idx])
+	// If no visual keyword was returned (abstract/grammatical term), only fallback to highlighted text if it is a single word
+	if searchWord == "" && len(strings.Fields(req.HighlightedText)) == 1 {
+		searchWord = strings.TrimSpace(req.HighlightedText)
+	}
+
+	// Never query NounProject with multi-word definitions or long phrases
+	if searchWord != "" && len(strings.Fields(searchWord)) == 1 {
+		iconStart := time.Now()
+		imageUrl, iconErr = h.nounProjectService.GetIcon(c.Request.Context(), searchWord)
+
+		if (iconErr != nil || imageUrl == "") && searchWord != req.HighlightedText && len(strings.Fields(req.HighlightedText)) == 1 {
+			if logger, ok := c.Get("logger"); ok {
+				logger.(*zap.Logger).Info("Primary visual keyword returned no image, trying highlighted text", zap.String("fallback", req.HighlightedText))
+			}
+			imageUrl, iconErr = h.nounProjectService.GetIcon(c.Request.Context(), req.HighlightedText)
 		}
-	}
-	if searchWord == "" {
-		searchWord = req.HighlightedText
-	}
 
-	iconStart := time.Now()
-	imageUrl, iconErr := h.nounProjectService.GetIcon(c.Request.Context(), searchWord)
-
-	if (iconErr != nil || imageUrl == "") && searchWord != req.HighlightedText {
 		if logger, ok := c.Get("logger"); ok {
-			logger.(*zap.Logger).Info("Primary search returned no image, trying highlighted text", zap.String("fallback", req.HighlightedText))
+			logger.(*zap.Logger).Info("Icon fetch completed", zap.Duration("duration", time.Since(iconStart)), zap.String("search_word", searchWord))
 		}
-		imageUrl, iconErr = h.nounProjectService.GetIcon(c.Request.Context(), req.HighlightedText)
-	}
-
-	if logger, ok := c.Get("logger"); ok {
-		logger.(*zap.Logger).Info("Icon fetch completed", zap.Duration("duration", time.Since(iconStart)))
 	}
 
 	if iconErr != nil {

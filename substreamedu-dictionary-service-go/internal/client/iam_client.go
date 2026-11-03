@@ -205,3 +205,59 @@ func (c *IAMClient) IncrementUsage(ctx context.Context, userID uuid.UUID, usageT
 	c.InvalidateCache(userID)
 	return nil
 }
+
+func (c *IAMClient) DecrementUsage(ctx context.Context, userID uuid.UUID, usageType string, delta ...int) error {
+	d := 1
+	if len(delta) > 0 && delta[0] > 0 {
+		d = delta[0]
+	}
+	url := fmt.Sprintf("%s/auth-service/auth/internal/user/%s/usage/decrement", c.baseURL, userID.String())
+
+	body := map[string]interface{}{"type": usageType, "delta": d}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("marshal body: %w", err)
+	}
+
+	_, err = c.breaker.Execute(func() (interface{}, error) {
+		retryCfg := resilience.RetryConfig{
+			MaxAttempts:     3,
+			InitialInterval: 50 * time.Millisecond,
+			MaxInterval:     500 * time.Millisecond,
+			Multiplier:      2.0,
+			IsRetryable:     resilience.IsTransientNetworkError,
+		}
+
+		return nil, resilience.Retry(ctx, retryCfg, func(reqCtx context.Context) error {
+			req, reqErr := http.NewRequestWithContext(reqCtx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
+			if reqErr != nil {
+				return reqErr
+			}
+			req.Header.Set("Content-Type", "application/json")
+			if c.internalServiceKey != "" {
+				req.Header.Set("X-Internal-Service-Key", c.internalServiceKey)
+			}
+
+			resp, doErr := c.httpClient.Do(req)
+			if doErr != nil {
+				return doErr
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return &resilience.HTTPStatusError{
+					StatusCode: resp.StatusCode,
+					Message:    fmt.Sprintf("IAM returned status %d", resp.StatusCode),
+				}
+			}
+			return nil
+		})
+	})
+
+	if err != nil {
+		return fmt.Errorf("decrement usage: %w", err)
+	}
+
+	c.InvalidateCache(userID)
+	return nil
+}

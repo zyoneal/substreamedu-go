@@ -7,6 +7,8 @@ export interface RecentVideo {
   date: string;
   videoUrl: string;
   thumbnailUrl?: string;
+  currentTime?: number;
+  duration?: number;
 }
 
 const RECENT_VIDEOS_KEY = 'recentVideos';

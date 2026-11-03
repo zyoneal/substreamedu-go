@@ -210,6 +210,18 @@
     border-bottom-color: #0a0a0a;
 }
 
+.wordToken {
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .wordToken:hover {
+        background: rgba(10, 10, 10, 0.06);
+    }
+}
+
 /* Hover Tooltip (Identical to SubtitleViewer) */
 .wordTooltip {
     position: absolute;

@@ -37,10 +37,12 @@ export const useVideoUpload = (
     if (typeof window === 'undefined') return null;
     const urlParams = new URLSearchParams(window.location.search);
     const queryVideo = urlParams.get('v') || urlParams.get('videoUrl');
+    const queryTime = urlParams.get('t');
+    if (queryTime) {
+      sessionStorage.setItem('videoCurrentTime', queryTime);
+    }
     if (queryVideo) return queryVideo;
-    const isDemoRoute = ['/youtube-demo', '/demo', '/movies'].includes(window.location.pathname);
-    if (isDemoRoute) return sessionStorage.getItem('videoUrl') || null;
-    return null;
+    return sessionStorage.getItem('videoUrl') || null;
   });
   const [youtubeUrlInput, setYoutubeUrlInput] = useState<string>('');
   const [isYoutubeLoading, setIsYoutubeLoading] = useState<boolean>(false);

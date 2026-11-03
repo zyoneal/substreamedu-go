@@ -106,3 +106,11 @@ func (s *UserService) CountAll(ctx context.Context, query string, isPremium *boo
 func (s *UserService) Update(ctx context.Context, user *model.User) error {
 	return s.repo.Update(ctx, user)
 }
+
+func (s *UserService) IncrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error) {
+	return s.repo.IncrementUsage(ctx, id, usageType, delta)
+}
+
+func (s *UserService) DecrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error) {
+	return s.repo.DecrementUsage(ctx, id, usageType, delta)
+}

@@ -97,8 +97,7 @@ export const BookContent: React.FC<BookContentProps> = ({
         return selected;
     };
 
-    const getPopoverPosition = useCallback((range: Range): SelectionPosition | null => {
-        const rect = range.getBoundingClientRect();
+    const getPopoverPositionFromRect = useCallback((rect: DOMRect | { left: number; top: number; width: number; bottom: number } | null): SelectionPosition | null => {
         if (!rect || rect.width === 0) return null;
 
         let x = rect.left + rect.width / 2;
@@ -168,17 +167,16 @@ export const BookContent: React.FC<BookContentProps> = ({
         }
     };
 
-    // Translation triggers strictly upon text selection (onMouseUp / onTouchEnd)
+    // Text drag/selection lookup
     const handleTextSelection = () => {
         const selection = window.getSelection();
         if (!selection || selection.isCollapsed) return;
 
         const rawSelected = selection.toString().trim();
-        // Ignore single character or empty accidental clicks
         if (rawSelected.length < 2) return;
 
         const range = selection.getRangeAt(0);
-        const position = getPopoverPosition(range);
+        const position = getPopoverPositionFromRect(range.getBoundingClientRect());
         if (!position) return;
 
         const sentence = findSentenceForText(content, rawSelected);
@@ -188,6 +186,27 @@ export const BookContent: React.FC<BookContentProps> = ({
         setIsPopoverOpen(true);
 
         fetchTranslation(rawSelected, sentence);
+    };
+
+    // Single-click lookup for individual words
+    const handleWordClick = (e: React.MouseEvent, rawToken: string, paragraphText: string) => {
+        const selection = window.getSelection();
+        if (selection && !selection.isCollapsed) return;
+
+        const cleanWord = rawToken.replace(/^[.,!?;:—“”"()]+|[.,!?;:—“”"()]+$/g, '').trim();
+        if (cleanWord.length < 2) return;
+
+        const target = e.currentTarget as HTMLElement;
+        const position = getPopoverPositionFromRect(target.getBoundingClientRect());
+        if (!position) return;
+
+        const sentence = findSentenceForText(paragraphText || content, cleanWord);
+        setSelectedText(cleanWord);
+        setSelectedSentence(sentence);
+        setSelectionPosition(position);
+        setIsPopoverOpen(true);
+
+        fetchTranslation(cleanWord, sentence);
     };
 
     // Tooltip mouse handlers for underlined dictionary items
@@ -303,6 +322,7 @@ export const BookContent: React.FC<BookContentProps> = ({
                             {tokens.map((token, tIdx) => {
                                 const clean = token.toLowerCase().trim();
                                 const hasTranslation = clean.length >= 2 && dictionaryMap.has(clean);
+                                const isWord = clean.length >= 2 && /\p{L}/u.test(clean);
 
                                 if (hasTranslation) {
                                     return (
@@ -310,8 +330,21 @@ export const BookContent: React.FC<BookContentProps> = ({
                                             key={tIdx}
                                             className={styles.highlightedText}
                                             data-translation={dictionaryMap.get(clean)}
+                                            onClick={e => handleWordClick(e, token, para)}
                                             onMouseEnter={e => handleWordMouseEnter(e, clean)}
                                             onMouseLeave={handleWordMouseLeave}
+                                        >
+                                            {token}
+                                        </span>
+                                    );
+                                }
+
+                                if (isWord) {
+                                    return (
+                                        <span
+                                            key={tIdx}
+                                            className={styles.wordToken}
+                                            onClick={e => handleWordClick(e, token, para)}
                                         >
                                             {token}
                                         </span>

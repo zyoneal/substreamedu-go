@@ -1,7 +1,7 @@
 # Spec 71: Full-Stack Business Logic Remediation Plan
 
 ## Status
-- **Phase**: In Progress
+- **Phase**: Completed
 - **Date**: 2026-11-03
 
 ## Allowed files
@@ -44,7 +44,7 @@
 - [x] **2.2 Fair Quota Charging & Valid-JSON-Only Caching**:
   - Do not cache malformed/unparseable LLM responses in Redis.
   - Only increment the user's `translation` usage quota when a valid translation was freshly generated (never on `"cached"` hits or parse errors).
-- [ ] **2.3 Multi-Language Prompt & Icon Search Accuracy**:
+- [x] **2.3 Multi-Language Prompt & Icon Search Accuracy**:
   - Use the requested `LearningLanguage` and `FluentLanguage` in `ai_prompts.go` and `ai_service.go` instead of hardcoded `"English"`.
   - Do not query NounProject with multi-word `Definition` when the LLM intentionally returns `visual_keyword: ""` for abstract/grammatical words.
 - [x] **2.4 `GenerateSessionSummary` Timeout Alignment**:
@@ -58,7 +58,7 @@
 - [x] **3.2 Telegram Token Lifecycle & OTP Security**:
   - Initialize `TelegramToken` in `model.NewUser(email)` so Email/OTP users never get `?start=undefined`, and stop overwriting existing users' `TelegramToken` on unauthenticated `POST /auth/login`.
   - Fix `OTPCache.Get` / `IncrementAttempts` so brute-force blocking after 3 failed attempts works, and remove plaintext OTP values from `INFO` logs.
-- [ ] **3.3 Atomic Usage Counters & Word Deletion Quota Decrement**:
+- [x] **3.3 Atomic Usage Counters & Word Deletion Quota Decrement**:
   - Replace read-modify-write in `UsageHandler.IncrementUsage` with atomic SQL increments (`translation_count = translation_count + 1`, `saved_words_count = saved_words_count + 1`) so concurrent updates never overwrite `is_premium` or drop increments.
   - Add `DecrementUsage` (`saved_words_count = GREATEST(0, saved_words_count - $2)`) in `iam-service` and call it from `dictionary-service` on `DeleteWord` and `DeleteResource`.
 - [x] **3.4 Frontend Promo Activation & Quota Error Handling**:
@@ -87,7 +87,7 @@
   - Parse and activate subtitles immediately when clicking `"Select"` in `useSubtitleSearch.ts` (`handleSelectSubtitleFromSearch`).
   - Fix the inverted `else if (sessionStorage.getItem('videoCurrentTime'))` condition in `useVideoUpload.ts` so new videos do not jump to the previous video's timestamp.
   - Unify `yt:<videoId>` resource naming in `VideoPlayer.tsx` and `useVideoSubtitles.ts` so saved words highlight properly in YouTube videos.
-- [ ] **5.3 Video Playback Persistence & Watch History Progress**:
+- [x] **5.3 Video Playback Persistence & Watch History Progress**:
   - Store `currentTime` in `useRecentVideos.ts`, restore `videoUrl` on `/videos` across page refreshes, and pass saved `currentTime` when resuming from Dashboard or Recent Videos.
 - [x] **5.4 Books Reader Progress, Completion & Word Click Lookup**:
   - Save reading progress in `BookReaderPage.tsx` on chapter load (`useEffect`) so Chapter 1 and single-chapter books appear in `"Continue Reading"`, and only mark a book `isCompleted: true` when explicitly finishing the final chapter (not upon entering it).

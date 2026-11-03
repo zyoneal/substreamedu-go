@@ -116,6 +116,7 @@ func (r *Router) Setup() *gin.Engine {
 		{
 			internal.GET("/user/:userId/usage", r.usageHandler.GetUsage)
 			internal.POST("/user/:userId/usage/increment", r.usageHandler.IncrementUsage)
+			internal.POST("/user/:userId/usage/decrement", r.usageHandler.DecrementUsage)
 		}
 
 		actuator := api.Group("/actuator")

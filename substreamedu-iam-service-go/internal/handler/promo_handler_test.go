@@ -56,6 +56,44 @@ func (m *mockUserRepo) Update(ctx context.Context, user *model.User) error {
 	return nil
 }
 
+func (m *mockUserRepo) IncrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error) {
+	u, ok := m.users[id]
+	if !ok {
+		return nil, nil
+	}
+	if delta <= 0 {
+		delta = 1
+	}
+	if usageType == "translation" {
+		u.TranslationCount += delta
+	} else if usageType == "save" {
+		u.SavedWordsCount += delta
+	}
+	return u, nil
+}
+
+func (m *mockUserRepo) DecrementUsage(ctx context.Context, id uuid.UUID, usageType string, delta int) (*model.User, error) {
+	u, ok := m.users[id]
+	if !ok {
+		return nil, nil
+	}
+	if delta <= 0 {
+		delta = 1
+	}
+	if usageType == "save" {
+		u.SavedWordsCount -= delta
+		if u.SavedWordsCount < 0 {
+			u.SavedWordsCount = 0
+		}
+	} else if usageType == "translation" {
+		u.TranslationCount -= delta
+		if u.TranslationCount < 0 {
+			u.TranslationCount = 0
+		}
+	}
+	return u, nil
+}
+
 func (m *mockUserRepo) FindAll(ctx context.Context, limit, offset int, query string, isPremium *bool, sortBy, sortOrder string) ([]model.User, error) {
 	var list []model.User
 	for _, u := range m.users {

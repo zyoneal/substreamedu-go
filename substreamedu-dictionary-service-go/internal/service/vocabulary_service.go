@@ -339,6 +339,10 @@ func (s *VocabularyService) DeleteResource(ctx context.Context, userID uuid.UUID
 	return nil
 }
 
+func (s *VocabularyService) CountLexemesByResource(ctx context.Context, userID uuid.UUID, resourceName string) (int64, error) {
+	return s.repo.CountLexemesByResource(ctx, userID, resourceName)
+}
+
 func (s *VocabularyService) GetTotalWords(ctx context.Context, userID uuid.UUID) (int64, error) {
 	return s.repo.CountTotalWords(ctx, userID)
 }
