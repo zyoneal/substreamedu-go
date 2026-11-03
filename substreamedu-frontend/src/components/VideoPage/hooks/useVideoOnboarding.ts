@@ -43,7 +43,7 @@ export const useVideoOnboarding = ({
     );
     const isOnboardingActive = Boolean(isOnboardingProp || isUrlOnboardingParam);
 
-    const isOnboardingMode = false; // Disabled by AI: preserves core mechanics (blur, delay, top controls)
+    const isOnboardingMode = Boolean(isOnboardingActive && !onboardingDismissed);
 
     const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>(1);
 

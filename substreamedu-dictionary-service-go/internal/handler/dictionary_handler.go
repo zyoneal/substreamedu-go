@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -130,7 +131,7 @@ func (h *DictionaryHandler) AddWord(c *gin.Context) {
 		return
 	}
 
-	if h.iamClient != nil {
+	if h.iamClient != nil && (res == nil || !res.AlreadyExists) {
 		var log *zap.Logger
 		if l, ok := c.Get("logger"); ok {
 			log = l.(*zap.Logger)
@@ -198,9 +199,18 @@ func (h *DictionaryHandler) ReviewCard(c *gin.Context) {
 		return
 	}
 
+	userID := uuid.Nil
+	if uid, ok := h.getUserId(c); ok {
+		userID = uid
+	}
+
 	loc := h.resolveLocation(c)
-	res, err := h.learningService.ReviewCardWithLocation(c.Request.Context(), cardID, req.Rating, req.ResponseTimeMs, loc)
+	res, err := h.learningService.ReviewCardWithUserAndLocation(c.Request.Context(), userID, cardID, req.Rating, req.ResponseTimeMs, loc)
 	if err != nil {
+		if strings.Contains(err.Error(), "unauthorized") {
+			c.JSON(http.StatusForbidden, dto.ApiResponse{Status: "error", Message: err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
 	}

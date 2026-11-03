@@ -43,6 +43,25 @@ func NewVocabularyService(repo *repository.DictionaryRepository, ls *LearningSer
 
 func (s *VocabularyService) AddWord(ctx context.Context, userID uuid.UUID, req dto.AddWordRequestDto) (*dto.DictionaryItemDto, error) {
 
+	// 1. Check deduplication for recognition card in the same resource
+	existingRecognition, _ := s.repo.FindExistingLexeme(ctx, userID, req.HighlightedText, req.ResourceName, 0)
+	if existingRecognition != nil {
+		// Update existing recognition and production cards in place
+		_ = s.repo.UpdateLexemeContent(ctx, existingRecognition.ID, req.Translation, req.Transcription, req.Context, req.Definition, req.ImageUrl, req.Category, req.Note, req.ExtendedContext)
+		if existingProduction, _ := s.repo.FindExistingLexeme(ctx, userID, req.HighlightedText, req.ResourceName, 1); existingProduction != nil {
+			_ = s.repo.UpdateLexemeContent(ctx, existingProduction.ID, req.Translation, req.Transcription, req.Context, req.Definition, req.ImageUrl, req.Category, req.Note, req.ExtendedContext)
+		}
+		if req.ImageUrl != "" && strings.HasPrefix(req.ImageUrl, "http") {
+			s.downloadAndStoreImageAsync(existingRecognition.ID, 0, req.ImageUrl)
+		}
+		s.learningService.InvalidateCache(ctx, userID)
+		s.deleteLexemeLightCache(ctx, userID, existingRecognition.ID)
+		s.InvalidateSRSStatsCache(ctx, userID)
+		resDto := s.mapModelToDto(existingRecognition)
+		resDto.AlreadyExists = true
+		return resDto, nil
+	}
+
 	cardRecognition := &model.Dictionary{
 		UserID:		userID,
 		Word:		req.HighlightedText,
@@ -279,20 +298,20 @@ func (s *VocabularyService) GetLexemesByResourcePaginated(ctx context.Context, u
 
 func (s *VocabularyService) DeleteWord(ctx context.Context, userID uuid.UUID, wordID int64) error {
 
-	word, err := s.repo.FindByID(ctx, wordID)
-	if err == nil {
-		s.invalidateResourceCount(ctx, userID, word.Source)
+	word, err := s.repo.DeleteWordWithSiblings(ctx, userID, wordID)
+	if err != nil {
+		return err
 	}
 
-	if err := s.repo.DeleteWord(ctx, userID, wordID); err != nil {
-		return err
+	if word != nil {
+		s.invalidateResourceCount(ctx, userID, word.Source)
 	}
 
 	s.learningService.InvalidateCache(ctx, userID)
 	s.deleteLexemeLightCache(ctx, userID, wordID)
 	s.InvalidateSRSStatsCache(ctx, userID)
 
-	if s.redis != nil {
+	if s.redis != nil && word != nil {
 		if err := s.EnsureGroupCountsCache(ctx, userID); err == nil {
 			newCount, _ := s.redis.HIncrBy(ctx, "groups:"+userID.String(), word.Source, -1).Result()
 			if newCount <= 0 {

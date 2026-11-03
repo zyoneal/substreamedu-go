@@ -25,10 +25,12 @@ type User struct {
 }
 
 func NewUser(email string) *User {
+	token := uuid.New().String()
 	return &User{
 		ID:			uuid.New(),
 		Email:			strings.ToLower(strings.TrimSpace(email)),
 		IsActive:		true,
+		TelegramToken:		&token,
 		IsPremium:		false,
 		TranslationCount:	0,
 		SavedWordsCount:	0,

@@ -168,9 +168,16 @@ func (s *LearningService) ReviewCard(ctx context.Context, cardID int64, rating s
 }
 
 func (s *LearningService) ReviewCardWithLocation(ctx context.Context, cardID int64, rating string, responseTimeMs int, loc *time.Location) (*dto.ReviewResponseDto, error) {
+	return s.ReviewCardWithUserAndLocation(ctx, uuid.Nil, cardID, rating, responseTimeMs, loc)
+}
+
+func (s *LearningService) ReviewCardWithUserAndLocation(ctx context.Context, userID uuid.UUID, cardID int64, rating string, responseTimeMs int, loc *time.Location) (*dto.ReviewResponseDto, error) {
 	card, err := s.repo.FindByID(ctx, cardID)
 	if err != nil {
 		return nil, err
+	}
+	if userID != uuid.Nil && card.UserID != userID {
+		return nil, fmt.Errorf("unauthorized: card does not belong to user")
 	}
 
 	stabilityBefore := card.Stability

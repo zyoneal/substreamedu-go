@@ -95,7 +95,7 @@ func (h *DictionaryHandler) GenerateSessionSummary(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 45*time.Second)
 	defer cancel()
 
 	result, err := h.aiService.GenerateSessionSummary(ctx, req)
@@ -103,7 +103,7 @@ func (h *DictionaryHandler) GenerateSessionSummary(c *gin.Context) {
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			c.JSON(http.StatusGatewayTimeout, dto.ApiResponse{
 				Status:  "error",
-				Message: "AI generation timed out after 15 seconds. Please try again with shorter content.",
+				Message: "AI generation timed out after 45 seconds. Please try again with shorter content.",
 			})
 			return
 		}

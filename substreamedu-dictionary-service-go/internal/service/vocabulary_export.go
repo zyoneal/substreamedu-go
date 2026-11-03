@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"os"
@@ -221,9 +222,35 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 	}
 
 	for i, item := range items {
-		if item.ImageUrl == "" || !strings.HasPrefix(item.ImageUrl, "http") {
+		if item.ImageUrl == "" {
 			results <- mediaResult{index: i, mediaKind: "image"}
-		} else {
+		} else if strings.HasPrefix(item.ImageUrl, "/videos/images/words/") {
+			// Local image cached on shared disk
+			wg.Add(1)
+			sem <- struct{}{}
+			go func(idx int, relPath string) {
+				defer wg.Done()
+				defer func() { <-sem }()
+
+				mediaDir := os.Getenv("SHARED_MEDIA_DIR")
+				if mediaDir == "" {
+					mediaDir = "/var/www/shared_media"
+				}
+				cleanRel := strings.TrimPrefix(relPath, "/videos/")
+				fullDiskPath := filepath.Join(mediaDir, cleanRel)
+				data, err := os.ReadFile(fullDiskPath)
+				if err != nil {
+					results <- mediaResult{index: idx, err: err, mediaKind: "image"}
+					return
+				}
+				name := filepath.Base(fullDiskPath)
+				results <- mediaResult{index: idx, name: name, data: data, mediaKind: "image"}
+			}(i, item.ImageUrl)
+		} else if strings.HasPrefix(item.ImageUrl, "http") {
+			if !IsSafePublicImageURL(item.ImageUrl) {
+				results <- mediaResult{index: i, mediaKind: "image"}
+				continue
+			}
 			wg.Add(1)
 			sem <- struct{}{}
 			go func(idx int, url string) {
@@ -251,6 +278,8 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 				name := hex.EncodeToString(hash[:]) + ext
 				results <- mediaResult{index: idx, name: name, data: data, mediaKind: "image"}
 			}(i, item.ImageUrl)
+		} else {
+			results <- mediaResult{index: i, mediaKind: "image"}
 		}
 
 		isPhrase := len(strings.Fields(item.Word)) > 1
@@ -326,9 +355,9 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 			noteImage = fmt.Sprintf(`<img src="%s">`, name)
 		}
 
-		wordField := item.Word
+		wordField := html.EscapeString(item.Word)
 		if name, ok := audioFiles[i]; ok {
-			wordField = fmt.Sprintf("%s [sound:%s]", item.Word, name)
+			wordField = fmt.Sprintf("%s [sound:%s]", wordField, name)
 		}
 
 		mainMeaning := item.Translation
@@ -340,20 +369,24 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 			}
 		}
 
+		safeTranscription := html.EscapeString(item.Transcription)
+		safeContext := html.EscapeString(item.Context)
+		safeMeaning := html.EscapeString(mainMeaning)
+
 		noteStraight := genanki.NewNote(modelIDStraight, []string{
 			wordField,
-			item.Transcription,
-			item.Context,
-			mainMeaning,
+			safeTranscription,
+			safeContext,
+			safeMeaning,
 			noteImage,
 		}, []string{"SubstreamEDU"})
 		deck.AddNote(noteStraight)
 
 		noteReversed := genanki.NewNote(modelIDReversed, []string{
 			wordField,
-			item.Transcription,
-			item.Context,
-			mainMeaning,
+			safeTranscription,
+			safeContext,
+			safeMeaning,
 			noteImage,
 		}, []string{"SubstreamEDU"})
 		deck.AddNote(noteReversed)

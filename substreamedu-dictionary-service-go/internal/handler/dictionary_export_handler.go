@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -39,8 +40,9 @@ func (h *DictionaryHandler) ExportResourceCsv(c *gin.Context) {
 		name = c.Param("name")
 	}
 
+	safeFilename := url.PathEscape(name)
 	c.Header("Content-Type", "text/csv; charset=utf-8")
-	c.Header("Content-Disposition", "attachment; filename=dictionary_"+name+".csv")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"dictionary_%s.csv\"; filename*=UTF-8''dictionary_%s.csv", safeFilename, safeFilename))
 	c.Status(http.StatusOK)
 
 	if err := h.vocabularyService.StreamResourceAsCsv(c.Request.Context(), userID, name, c.Writer); err != nil {
@@ -96,6 +98,7 @@ func (h *DictionaryHandler) ExportResourceAnki(c *gin.Context) {
 		return
 	}
 
-	c.Header("Content-Disposition", "attachment; filename=dictionary_"+name+".apkg")
+	safeFilename := url.PathEscape(name)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"dictionary_%s.apkg\"; filename*=UTF-8''dictionary_%s.apkg", safeFilename, safeFilename))
 	c.Data(http.StatusOK, "application/octet-stream", ankiData)
 }

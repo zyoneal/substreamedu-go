@@ -3,7 +3,7 @@
 ## Status Board
 
 - **Current Phase**: Phase 2: Product Feature Expansion & Engineering Excellence
-- **In Progress**: None
+- **In Progress**: Spec 71: Full-Stack Business Logic Remediation Plan (`context/feature_specs/71_business_logic_remediation_plan.md`)
 - **Backlog**: None
 - **Recent Completed**:
   - Spec 70: FSRS Spaced Repetition Workflow, Recall Latency & Dashboard Stats Alignment (ADR-145): Fixed pre-reveal recall latency measurement in `useFlashcardsSession.ts` (`answerShownTime - cardStartTime` instead of post-reveal reading time) with reading-time normalization (`normalizeRecallLatencyMs`) for long idioms/contexts (`> 60` chars) and full same-day `"Again"` card persistence across reloads; enforced 1-day next-day reinforcement interval on all first-time graduations (`RepetitionLevel == 0`), guarded against intra-session failure `EASY` bonuses (`HardCount > 0`), and added dedicated FSRS-4.5 `W15`/`W16` weights in `fsrs/engine.go`; added timezone-aware `ReviewCardWithLocation` / `LocalReviewTimestamp` in `learning_service.go` and `dictionary_handler.go`; aligned `GetDictionaryStats` (`ComputeGatedSessionNewCards`) and `findUnlockedNewProductionCardsSQL` with Sibling Burying (`s.last_reviewed >= CURRENT_DATE OR s.next_repetition_date <= CURRENT_DATE`) so Production cards never collide on the same day as Recognition reviews and Dashboard `CARDS TODAY` matches `/learning`; and updated `deriveDashboardMetrics` (`dashboardUtils.ts`) so `isAllCaughtUp` reflects `sessionCardsCount === 0` (Frontend 67/67 suites 354/354 tests passing, Go suites clean).

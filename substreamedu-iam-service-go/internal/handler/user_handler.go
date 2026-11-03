@@ -45,12 +45,17 @@ func (h *UserHandler) GetUserDetails(c *gin.Context) {
 	authUserIDVal, exists := c.Get("userID")
 	authRoleVal, _ := c.Get("userRole")
 	if exists {
-		if authUserID, ok := authUserIDVal.(uuid.UUID); ok {
-			role, _ := authRoleVal.(string)
-			if authUserID != userID && role != model.RoleAdmin {
-				c.JSON(http.StatusForbidden, dto.Error[any]("Forbidden: Access denied"))
-				return
-			}
+		var authUserID uuid.UUID
+		switch v := authUserIDVal.(type) {
+		case uuid.UUID:
+			authUserID = v
+		case string:
+			authUserID, _ = uuid.Parse(v)
+		}
+		role, _ := authRoleVal.(string)
+		if authUserID != userID && role != model.RoleAdmin {
+			c.JSON(http.StatusForbidden, dto.Error[any]("Forbidden: Access denied"))
+			return
 		}
 	}
 

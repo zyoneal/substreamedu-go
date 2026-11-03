@@ -104,7 +104,7 @@ func (r *DictionaryRepository) GetDictionaryStats(ctx context.Context, userID uu
 			COUNT(*) FILTER (WHERE status = 'new' AND card_type = 1 AND NOT EXISTS (
 				SELECT 1 FROM dictionary s
 				WHERE s.user_id = dictionary.user_id
-				  AND s.highlighted_text = dictionary.highlighted_text
+				  AND LOWER(s.highlighted_text) = LOWER(dictionary.highlighted_text)
 				  AND s.card_type = 0
 				  AND (
 				      s.status <> 'review'

@@ -84,7 +84,7 @@ func (s *AIService) TranslateWithContext(ctx context.Context, req dto.Dictionary
 		resolvedSource = val
 	}
 
-	cacheKey := fmt.Sprintf("ai:translation:v3.3:%s:%s:%s", req.HighlightedText, req.FluentLanguage, req.Context)
+	cacheKey := fmt.Sprintf("ai:translation:v3.4:%s:%s:%s:%s:%s", req.LearningLanguage, req.FluentLanguage, req.HighlightedText, req.Context, req.ExtendedContext)
 	if s.redis != nil {
 		if val, err := s.redis.Get(ctx, cacheKey).Result(); err == nil {
 			s.logger.Info("AI Cache Hit", zap.String("key", cacheKey))
@@ -192,11 +192,20 @@ func (s *AIService) TranslateWithContext(ctx context.Context, req dto.Dictionary
 		return "", "", fmt.Errorf("all translation providers failed: %s", strings.Join(errs, " | "))
 	}
 
-	if err == nil {
-		if s.redis != nil {
-			s.redis.Set(ctx, cacheKey, resp, 24*time.Hour)
-			s.redis.Set(ctx, cacheKey+":provider", activeProvider, 24*time.Hour)
+	// Validate JSON before caching in Redis
+	startIdx := strings.Index(resp, "{")
+	endIdx := strings.LastIndex(resp, "}")
+	isValidJSON := false
+	if startIdx != -1 && endIdx != -1 && endIdx > startIdx {
+		var dummy map[string]interface{}
+		if jsonErr := json.Unmarshal([]byte(resp[startIdx:endIdx+1]), &dummy); jsonErr == nil {
+			isValidJSON = true
 		}
+	}
+
+	if isValidJSON && s.redis != nil {
+		s.redis.Set(ctx, cacheKey, resp, 24*time.Hour)
+		s.redis.Set(ctx, cacheKey+":provider", activeProvider, 24*time.Hour)
 	}
 	return resp, activeProvider, nil
 }

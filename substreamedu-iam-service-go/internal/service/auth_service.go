@@ -49,10 +49,12 @@ func (s *AuthService) SendMagicLink(ctx context.Context, email, telegramToken st
 
 	otp := generateOTP()
 	s.otpCache.Set(email, otp)
-	s.logger.Info("Generated OTP for login", zap.String("email", email), zap.String("otp", otp))
+	s.logger.Info("Generated OTP for login", zap.String("email", email))
 
-	if err := s.userService.UpdateTelegramToken(ctx, email, telegramToken); err != nil {
-		s.logger.Warn("Failed to update telegram token", zap.String("email", email), zap.Error(err))
+	if telegramToken != "" {
+		if err := s.userService.UpdateTelegramToken(ctx, email, telegramToken); err != nil {
+			s.logger.Warn("Failed to update telegram token", zap.String("email", email), zap.Error(err))
+		}
 	}
 
 	go func() {

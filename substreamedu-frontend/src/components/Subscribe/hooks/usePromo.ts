@@ -30,11 +30,13 @@ export const usePromo = () => {
         try {
             const response = await axiosService.post(urls.auth.promo, { code: promoCode });
             setStatus('success');
-            setMessage(response.data.data?.message || 'Premium activated.');
+            const dataObj = response.data?.data || response.data;
+            setMessage(dataObj?.message || 'Premium activated.');
             setPromoCode('');
 
-            if (response.data.data?.token) {
-                localStorage.setItem('jwt', response.data.data.token);
+            const token = dataObj?.token;
+            if (token) {
+                localStorage.setItem('jwt', token);
             }
 
             setTimeout(() => window.location.reload(), 1500);

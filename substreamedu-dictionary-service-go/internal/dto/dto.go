@@ -38,6 +38,7 @@ type DictionaryItemDto struct {
 	RollingRetention	float32		`json:"rollingRetention"`
 	CardType		int		`json:"cardType"`
 	Category		string		`json:"category"`
+	AlreadyExists		bool		`json:"alreadyExists,omitempty"`
 }
 
 type LexemeLightDto struct {

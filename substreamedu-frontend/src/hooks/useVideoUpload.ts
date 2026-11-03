@@ -97,7 +97,7 @@ export const useVideoUpload = (
     sessionStorage.setItem('videoUrl', trimmedUrl);
     if (startTime !== undefined) {
       sessionStorage.setItem('videoCurrentTime', startTime.toString());
-    } else if (!sessionStorage.getItem('videoCurrentTime')) {
+    } else {
       sessionStorage.removeItem('videoCurrentTime');
     }
     sessionStorage.removeItem('videoMimeType');

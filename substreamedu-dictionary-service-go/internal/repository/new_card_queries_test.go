@@ -23,7 +23,7 @@ func TestUnlockedNewProductionCardsSQL_Contract(t *testing.T) {
 	// was reviewed today, or is due for review today (sibling burying).
 	assert.Contains(t, q, "NOT EXISTS")
 	assert.Contains(t, q, "s.user_id = d.user_id")
-	assert.Contains(t, q, "s.highlighted_text = d.highlighted_text")
+	assert.Contains(t, q, "LOWER(s.highlighted_text) = LOWER(d.highlighted_text)")
 	assert.Contains(t, q, "s.card_type = 0")
 	assert.Contains(t, q, "s.status <> 'review'")
 	assert.Contains(t, q, "s.last_reviewed >= CURRENT_DATE")

@@ -98,19 +98,22 @@ func (h *DictionaryHandler) GetTranslationProd(c *gin.Context) {
 	}
 	response.ImageUrl = imageUrl
 
-	if userID, ok := c.Get("userID"); ok {
-		if uid, err := uuid.Parse(userID.(string)); err == nil && h.iamClient != nil {
-			var log *zap.Logger
-			if l, ok := c.Get("logger"); ok {
-				log = l.(*zap.Logger)
-			}
-			go func() {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-				if err := h.iamClient.IncrementUsage(ctx, uid, "translation"); err != nil && log != nil {
-					log.Warn("Failed to increment translation usage", zap.Error(err))
+	// Only increment usage on fresh successful LLM generations (not on cached hits or parse errors)
+	if provider != "cached" && response.Translation != "Error parsing AI response." {
+		if userID, ok := c.Get("userID"); ok {
+			if uid, err := uuid.Parse(userID.(string)); err == nil && h.iamClient != nil {
+				var log *zap.Logger
+				if l, ok := c.Get("logger"); ok {
+					log = l.(*zap.Logger)
 				}
-			}()
+				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					if err := h.iamClient.IncrementUsage(ctx, uid, "translation"); err != nil && log != nil {
+						log.Warn("Failed to increment translation usage", zap.Error(err))
+					}
+				}()
+			}
 		}
 	}
 

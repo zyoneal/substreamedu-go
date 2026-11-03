@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,6 +24,49 @@ type DictionaryRepository struct {
 
 func NewDictionaryRepository(db *pgxpool.Pool) *DictionaryRepository {
 	return &DictionaryRepository{db: db}
+}
+
+func (r *DictionaryRepository) FindExistingLexeme(ctx context.Context, userID uuid.UUID, word string, resourceName string, cardType int) (*model.Dictionary, error) {
+	var d model.Dictionary
+	err := r.db.QueryRow(ctx, `
+		SELECT id, user_id, highlighted_text, translated_text, transcription, context, resource_name, status, 
+		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
+		       created_on, difficulty_score, lapses, consecutive_success, 
+		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(category, '')
+		FROM dictionary 
+		WHERE user_id = $1 
+		  AND LOWER(highlighted_text) = LOWER($2) 
+		  AND resource_name = $3 
+		  AND card_type = $4
+		LIMIT 1`, userID, strings.TrimSpace(word), strings.TrimSpace(resourceName), cardType).Scan(
+		&d.ID, &d.UserID, &d.Word, &d.Translation, &d.Transcription, &d.Context, &d.Source, &d.Status,
+		&d.EaseFactor, &d.Interval, &d.RepetitionLevel, &d.LastReviewed, &d.NextRepetitionDate,
+		&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
+		&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
+		&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType, &d.Category,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (r *DictionaryRepository) UpdateLexemeContent(ctx context.Context, id int64, translation, transcription, contextStr, definition, imageURL, category, note, extendedContext string) error {
+	_, err := r.db.Exec(ctx, `
+		UPDATE dictionary SET
+			translated_text = CASE WHEN $2 <> '' THEN $2 ELSE translated_text END,
+			transcription = CASE WHEN $3 <> '' THEN $3 ELSE transcription END,
+			context = CASE WHEN $4 <> '' THEN $4 ELSE context END,
+			definition = CASE WHEN $5 <> '' THEN $5 ELSE definition END,
+			image_url = CASE WHEN $6 <> '' THEN $6 ELSE image_url END,
+			category = CASE WHEN $7 <> '' THEN $7 ELSE category END,
+			note = CASE WHEN $8 <> '' THEN $8 ELSE note END,
+			extended_context = CASE WHEN $9 <> '' THEN $9 ELSE extended_context END
+		WHERE id = $1`,
+		id, translation, transcription, contextStr, definition, imageURL, category, note, extendedContext,
+	)
+	return err
 }
 
 func (r *DictionaryRepository) FindByID(ctx context.Context, id int64) (*model.Dictionary, error) {
@@ -262,7 +306,7 @@ const findUnlockedNewProductionCardsSQL = `
 		  AND NOT EXISTS (
 		      SELECT 1 FROM dictionary s
 		      WHERE s.user_id = d.user_id
-		        AND s.highlighted_text = d.highlighted_text
+		        AND LOWER(s.highlighted_text) = LOWER(d.highlighted_text)
 		        AND s.card_type = 0
 		        AND (
 		            s.status <> 'review'
@@ -373,7 +417,7 @@ func (r *DictionaryRepository) FindLexemesByResourcePaginated(ctx context.Contex
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
 		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(category, '')
 		FROM dictionary 
-		WHERE user_id = $1 AND resource_name ILIKE '%' || $2 || '%' AND id > $3 AND card_type = 0
+		WHERE user_id = $1 AND resource_name = $2 AND id > $3 AND card_type = 0
 		ORDER BY id ASC
 		LIMIT $4`, userID, resourceName, cursor, limit+1)
 	if err != nil {
@@ -410,7 +454,7 @@ func (r *DictionaryRepository) FindLexemesByResourcePaginated(ctx context.Contex
 
 func (r *DictionaryRepository) CountLexemesByResource(ctx context.Context, userID uuid.UUID, resourceName string) (int64, error) {
 	var count int64
-	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM dictionary WHERE user_id = $1 AND resource_name ILIKE '%' || $2 || '%' AND card_type = 0`, userID, resourceName).Scan(&count)
+	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM dictionary WHERE user_id = $1 AND resource_name = $2 AND card_type = 0`, userID, resourceName).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -425,7 +469,7 @@ func (r *DictionaryRepository) FindLexemesByResource(ctx context.Context, userID
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
 		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
 		FROM dictionary 
-		WHERE user_id = $1 AND resource_name ILIKE '%' || $2 || '%' AND card_type = 0
+		WHERE user_id = $1 AND resource_name = $2 AND card_type = 0
 		ORDER BY id ASC`, userID, resourceName)
 	if err != nil {
 		return nil, err
@@ -589,8 +633,30 @@ func (r *DictionaryRepository) DeleteWord(ctx context.Context, userID uuid.UUID,
 	return err
 }
 
+func (r *DictionaryRepository) DeleteWordWithSiblings(ctx context.Context, userID uuid.UUID, wordID int64) (*model.Dictionary, error) {
+	word, err := r.FindByID(ctx, wordID)
+	if err != nil {
+		return nil, err
+	}
+	if word.UserID != userID {
+		return nil, fmt.Errorf("unauthorized: card does not belong to user")
+	}
+
+	_, err = r.db.Exec(ctx, `
+		DELETE FROM dictionary 
+		WHERE user_id = $1 
+		  AND LOWER(highlighted_text) = LOWER($2) 
+		  AND resource_name = $3`,
+		userID, word.Word, word.Source,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return word, nil
+}
+
 func (r *DictionaryRepository) DeleteByResource(ctx context.Context, userID uuid.UUID, resourceName string) error {
-	_, err := r.db.Exec(ctx, "DELETE FROM dictionary WHERE user_id = $1 AND resource_name ILIKE '%' || $2 || '%'", userID, resourceName)
+	_, err := r.db.Exec(ctx, "DELETE FROM dictionary WHERE user_id = $1 AND resource_name = $2", userID, resourceName)
 	return err
 }
 
