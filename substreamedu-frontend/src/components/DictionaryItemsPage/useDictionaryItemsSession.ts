@@ -55,7 +55,18 @@ export const useDictionaryItemsSession = (resourceName: string | undefined) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingAll, setIsFetchingAll] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [failedImageKey, setFailedImageKey] = useState<string | null>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
+
+    const activeCard = dictionaryItems[currentIndex];
+    const activeImageKey = activeCard?.imageUrl ? `${activeCard.id}:${activeCard.imageUrl}` : null;
+    const imageFailed = Boolean(activeImageKey && failedImageKey === activeImageKey);
+
+    const handleImageError = useCallback(() => {
+        if (activeImageKey) {
+            setFailedImageKey(activeImageKey);
+        }
+    }, [activeImageKey]);
 
     const fetchDictionaryItems = useCallback(async () => {
         setError('');
@@ -289,6 +300,8 @@ export const useDictionaryItemsSession = (resourceName: string | undefined) => {
         onTouchStart,
         onTouchMove,
         onTouchEnd,
+        imageFailed,
+        handleImageError,
     };
 };
 

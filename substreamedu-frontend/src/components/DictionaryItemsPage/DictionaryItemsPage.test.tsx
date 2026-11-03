@@ -113,5 +113,31 @@ describe('DictionaryItemsPage Pixzen Light Editorial Redesign', () => {
         expect(cssContent).not.toContain('background: #111111');
         expect(cssContent).toMatch(/prefers-reduced-motion:\s*reduce/);
     });
+
+    it('hides the image container completely when the card image fails to load', async () => {
+        (DictionaryService.fetchDictionaryItemsPaginated as jest.Mock).mockResolvedValueOnce({
+            items: [
+                {
+                    ...mockItems[0],
+                    imageUrl: 'https://invalid.example.com/broken-icon.png',
+                },
+            ],
+            nextCursor: null,
+            hasMore: false,
+            totalCount: 1,
+        });
+
+        const { container } = renderPage();
+        await screen.findByRole('heading', { level: 2, name: 'lonesome' });
+
+        const img = container.querySelector('img');
+        expect(img).toBeInTheDocument();
+
+        fireEvent.error(img!);
+
+        await waitFor(() => {
+            expect(container.querySelector('img')).not.toBeInTheDocument();
+        });
+    });
 });
 

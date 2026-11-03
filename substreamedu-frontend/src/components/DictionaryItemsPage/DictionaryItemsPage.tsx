@@ -41,7 +41,7 @@ const DictionaryItemsPage: React.FC = () => {
         animationState, isShuffle, isLoadingMore, totalCount, isLoading,
         isFetchingAll, isExporting, loadMoreRef, showNextCard, showPreviousCard,
         toggleCardFlip, handleToggleShuffle, exportAnki, deleteItem,
-        onTouchStart, onTouchMove, onTouchEnd,
+        onTouchStart, onTouchMove, onTouchEnd, imageFailed, handleImageError,
     } = useDictionaryItemsSession(resourceName);
 
     const activeCard = dictionaryItems[currentIndex];
@@ -140,9 +140,9 @@ const DictionaryItemsPage: React.FC = () => {
 
                                     <div className={styles.cardBack}>
                                         <div className={styles.cardContent}>
-                                            {activeCard.imageUrl && (
+                                            {Boolean(activeCard.imageUrl && activeCard.imageUrl.trim() && !imageFailed) && (
                                                 <div className={styles.imageContainer}>
-                                                    <img src={activeCard.imageUrl} alt="Visual context" className={styles.cardImage} />
+                                                    <img src={activeCard.imageUrl} alt="" className={styles.cardImage} onError={handleImageError} />
                                                 </div>
                                             )}
                                             <div className={styles.definitionSection}>
