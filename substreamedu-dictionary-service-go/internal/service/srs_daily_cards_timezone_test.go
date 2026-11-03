@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/substreamedu/substreamedu-dictionary-service/internal/service/fsrs"
 )
 
 func TestSRSDailyCards_TimezoneCutoffComparison(t *testing.T) {
@@ -52,4 +54,26 @@ func TestLearningService_CacheInvalidationNilSafety(t *testing.T) {
 		err := ls.RefreshSession(context.Background(), testUserID)
 		assert.NoError(t, err)
 	})
+}
+
+func TestLocalReviewTimestamp_LateNightReviewSchedulesNextLocalDay(t *testing.T) {
+	locKyiv, err := time.LoadLocation("Europe/Kyiv")
+	require.NoError(t, err)
+
+	// User in Kyiv (UTC+3) reviews a card at 00:15 local time on Sept 16
+	// (which is 21:15 UTC on Sept 15).
+	nowUTC := time.Date(2026, 9, 15, 21, 15, 0, 0, time.UTC)
+	reviewNow := LocalReviewTimestamp(nowUTC, locKyiv)
+
+	assert.Equal(t, 16, reviewNow.Day(), "LocalReviewTimestamp must carry the user's local calendar day (16th)")
+
+	engine := fsrs.NewEngine(fsrs.NewStubClock(nowUTC))
+	state := &fsrs.CardState{Status: "new", EaseFactor: 2.5}
+	res := engine.ReviewAt(state, fsrs.Remember, 1200, nil, reviewNow)
+
+	assert.Equal(t, 1, res.NextIntervalDays)
+	require.NotNil(t, state.LastReviewed)
+	require.NotNil(t, state.NextRepetitionDate)
+	assert.Equal(t, 16, state.LastReviewed.Day(), "LastReviewed must be Sept 16 (local today)")
+	assert.Equal(t, 17, state.NextRepetitionDate.Day(), "NextRepetitionDate must be Sept 17 (local tomorrow)")
 }

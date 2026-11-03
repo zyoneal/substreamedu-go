@@ -198,7 +198,8 @@ func (h *DictionaryHandler) ReviewCard(c *gin.Context) {
 		return
 	}
 
-	res, err := h.learningService.ReviewCard(c.Request.Context(), cardID, req.Rating, req.ResponseTimeMs)
+	loc := h.resolveLocation(c)
+	res, err := h.learningService.ReviewCardWithLocation(c.Request.Context(), cardID, req.Rating, req.ResponseTimeMs, loc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return

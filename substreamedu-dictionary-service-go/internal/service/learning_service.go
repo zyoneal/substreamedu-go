@@ -151,7 +151,23 @@ func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, l
 	return result, nil
 }
 
+// LocalReviewTimestamp projects a UTC instant into a time.Time whose UTC calendar
+// components (Year, Month, Day) match the user's wall-clock date in loc. This ensures
+// PostgreSQL DATE columns (last_reviewed, next_repetition_date) and FSRS startOfDayUTC
+// align with the user's local day even when reviewing between 00:00 and 03:00 local time.
+func LocalReviewTimestamp(nowUTC time.Time, loc *time.Location) time.Time {
+	if loc == nil {
+		loc = time.UTC
+	}
+	inLoc := nowUTC.In(loc)
+	return time.Date(inLoc.Year(), inLoc.Month(), inLoc.Day(), inLoc.Hour(), inLoc.Minute(), inLoc.Second(), inLoc.Nanosecond(), time.UTC)
+}
+
 func (s *LearningService) ReviewCard(ctx context.Context, cardID int64, rating string, responseTimeMs int) (*dto.ReviewResponseDto, error) {
+	return s.ReviewCardWithLocation(ctx, cardID, rating, responseTimeMs, time.UTC)
+}
+
+func (s *LearningService) ReviewCardWithLocation(ctx context.Context, cardID int64, rating string, responseTimeMs int, loc *time.Location) (*dto.ReviewResponseDto, error) {
 	card, err := s.repo.FindByID(ctx, cardID)
 	if err != nil {
 		return nil, err
@@ -164,15 +180,16 @@ func (s *LearningService) ReviewCard(ctx context.Context, cardID int64, rating s
 	totalReviewsBefore := card.TotalReviews
 
 	now := time.Now().UTC()
+	reviewNow := LocalReviewTimestamp(now, loc)
 	var elapsedDays float32
 	if card.LastReviewed != nil {
-		elapsedDays = float32(now.Sub(*card.LastReviewed).Hours() / 24.0)
+		elapsedDays = float32(reviewNow.Sub(*card.LastReviewed).Hours() / 24.0)
 	}
 
 	state := cardStateFromDictionary(card)
 
 	fsrsRating := fsrs.UserRating(rating)
-	result := s.fsrsEngine.Review(&state, fsrsRating, responseTimeMs, nil)
+	result := s.fsrsEngine.ReviewAt(&state, fsrsRating, responseTimeMs, nil, reviewNow)
 
 	applyCardStateToDictionary(&state, card)
 

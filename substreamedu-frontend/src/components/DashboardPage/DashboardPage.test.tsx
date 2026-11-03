@@ -162,4 +162,33 @@ describe('DashboardPage Bento Studio Redesign', () => {
         fireEvent.keyDown(window, { key: 'Escape' });
         expect(handleClose).toHaveBeenCalledTimes(1);
     });
+
+    it('renders caught-up state when sessionCards is 0 even if reviewedToday is false', async () => {
+        (DictionaryService.fetchDashboardStats as jest.Mock).mockResolvedValueOnce({
+            totalWords: 1,
+            newWords: 0,
+            learningWords: 1,
+            dueToday: 0,
+            sessionCards: 0,
+            sessionDueCards: 0,
+            sessionNewCards: 0,
+            sessionNewWords: 0,
+            streakDays: 1,
+            reviewedToday: false,
+            weekDays: [true, false, false, false, false, false, false],
+        });
+
+        render(
+            <IntlProvider locale="en" messages={enMessages}>
+                <MemoryRouter>
+                    <DashboardPage />
+                </MemoryRouter>
+            </IntlProvider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Daily goal completed!/i)).toBeInTheDocument();
+        });
+        expect(screen.getByText(/Practice More/i)).toBeInTheDocument();
+    });
 });

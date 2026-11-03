@@ -95,7 +95,7 @@ export const deriveDashboardMetrics = (
     const totalWords = stats?.totalWords ?? 0;
     const learningWords = stats?.learningWords ?? 0;
     const isNewUser = !statsLoading && totalWords === 0;
-    const isAllCaughtUp = !isNewUser && reviewedToday && dueCount === 0;
+    const isAllCaughtUp = !isNewUser && !statsLoading && sessionCardsCount === 0;
     const weekActivity = computeWeekActivity(stats, currentDayIndex);
 
     return {

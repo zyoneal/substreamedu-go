@@ -19,12 +19,41 @@ func TestUnlockedNewProductionCardsSQL_Contract(t *testing.T) {
 	assert.Contains(t, q, "d.card_type = 1")
 	assert.Contains(t, q, "LIMIT $2")
 
-	// Sibling gate: locked while a recognition sibling is not yet in 'review'.
+	// Sibling gate: locked while a recognition sibling is not yet in 'review'
+	// or just graduated for the first time today.
 	assert.Contains(t, q, "NOT EXISTS")
 	assert.Contains(t, q, "s.user_id = d.user_id")
 	assert.Contains(t, q, "s.highlighted_text = d.highlighted_text")
 	assert.Contains(t, q, "s.card_type = 0")
 	assert.Contains(t, q, "s.status <> 'review'")
+	assert.Contains(t, q, "s.last_reviewed >= CURRENT_DATE")
+}
+
+func TestComputeGatedSessionNewCards(t *testing.T) {
+	t.Run("1 new word on day 1 (1 recognition new, 0 unlocked production) yields 1 session new card", func(t *testing.T) {
+		gotCards, gotWords := ComputeGatedSessionNewCards(0, 1, 0, true)
+		assert.Equal(t, int64(1), gotCards)
+		assert.Equal(t, int64(1), gotWords)
+	})
+
+	t.Run("Day 2 with 0 new recognition and 1 unlocked production yields 1 session new card", func(t *testing.T) {
+		gotCards, gotWords := ComputeGatedSessionNewCards(1, 0, 1, true)
+		assert.Equal(t, int64(1), gotCards)
+		assert.Equal(t, int64(1), gotWords)
+	})
+
+	t.Run("Full deck caps recognition at 15 and fills remaining 15 with unlocked production", func(t *testing.T) {
+		gotCards, gotWords := ComputeGatedSessionNewCards(0, 25, 20, true)
+		assert.Equal(t, int64(30), gotCards)
+		assert.Equal(t, int64(15), gotWords)
+	})
+
+	t.Run("Gate disabled falls back to total new cards capped at 30", func(t *testing.T) {
+		gotCards, gotWords := ComputeGatedSessionNewCards(0, 1, 0, false)
+		// When gate disabled, caller passes totalNewCards in recognition+production
+		assert.Equal(t, int64(1), gotCards)
+		assert.Equal(t, int64(1), gotWords)
+	})
 }
 
 func TestNewRecognitionCardsSQL_Contract(t *testing.T) {

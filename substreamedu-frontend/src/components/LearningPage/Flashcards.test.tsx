@@ -401,4 +401,28 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     const cssContent = fs.readFileSync(path.resolve(__dirname, 'Flashcards.module.css'), 'utf-8');
     expect(cssContent).toMatch(/prefers-reduced-motion:\s*reduce/);
   });
+
+  it('measures responseTimeMs from card appearance until answer reveal (not post-reveal reading time)', async () => {
+    let fakeNow = 100000;
+    const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => fakeNow);
+
+    try {
+      renderComponent();
+      await screen.findByRole('heading', { level: 1, name: 'tenure' });
+
+      // User thinks for 4,500ms before flipping the card
+      fakeNow += 4500;
+      fireEvent.click(screen.getByText(/tap to reveal/i));
+
+      // User confirms the translation on the back and clicks Good 700ms later
+      fakeNow += 700;
+      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+
+      await waitFor(() => {
+        expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(101, 'remember', 4500);
+      });
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
 });

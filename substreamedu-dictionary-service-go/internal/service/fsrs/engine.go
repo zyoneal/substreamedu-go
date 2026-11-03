@@ -21,6 +21,8 @@ const (
 	W12	= 0.11
 	W13	= 0.29605
 	W14	= 2.2698
+	W15	= 0.29
+	W16	= 2.61
 
 	Decay	= -0.5
 	Factor	= 19.0 / 81.0
@@ -67,8 +69,10 @@ func NewEngine(clock Clock) *Engine {
 }
 
 func (e *Engine) Review(state *CardState, rating UserRating, responseTimeMs int, params *AlgorithmParams) ReviewResult {
-	now := e.clock.Now()
+	return e.ReviewAt(state, rating, responseTimeMs, params, e.clock.Now())
+}
 
+func (e *Engine) ReviewAt(state *CardState, rating UserRating, responseTimeMs int, params *AlgorithmParams, now time.Time) ReviewResult {
 	prevLastReviewed := state.LastReviewed
 
 	state.TotalReviews++
@@ -154,27 +158,31 @@ func (e *Engine) learningRemember(state *CardState, responseTimeMs int, params *
 }
 
 func (e *Engine) graduateToReview(state *CardState, responseTimeMs int, params *AlgorithmParams, now time.Time) ReviewResult {
+	hadIntraSessionFailure := state.HardCount > 0
 	state.LearningStep = 0
 	state.LearningDue = nil
 	state.Status = "review"
 	state.HardCount = 0
 
 	grade := e.inferGrade(responseTimeMs)
+	if hadIntraSessionFailure && grade == EASY {
+		grade = GOOD
+	}
 
 	var initialStability float64
 	var interval int
 
 	if state.RepetitionLevel == 0 {
 		// Senior FAANG Invariant: First graduation of a newly learned card
-		// MUST be scheduled for tomorrow (1 day) for GOOD and HARD.
-		// Fast answer heuristic (< 3000ms, EASY) is capped at 2 days (never 16 days W3).
+		// MUST always be scheduled for tomorrow (1 day) so Day-2 reinforcement
+		// is never skipped. Fast first-try answers (< 3000ms, EASY) receive higher
+		// initial stability (1.5 vs 1.0) without skipping the Day-2 review.
+		interval = 1
 		switch grade {
 		case AGAIN, HARD, GOOD:
 			initialStability = 1.0
-			interval = 1
 		case EASY:
-			initialStability = 2.0
-			interval = 2
+			initialStability = 1.5
 		}
 
 		if params != nil {
@@ -194,19 +202,9 @@ func (e *Engine) graduateToReview(state *CardState, responseTimeMs int, params *
 			if initialStability < 1.0 {
 				initialStability = 1.0
 			}
-			interval = e.stabilityToInterval(initialStability)
-			if interval < 1 {
-				interval = 1
-			}
-			if interval > 2 {
-				interval = 2
-			}
-			if grade != EASY && interval > 1 {
-				interval = 1
-			}
 		}
 
-		state.Interval = float32(interval)
+		state.Interval = float32(initialStability)
 		state.Stability = float32(initialStability)
 		state.RepetitionLevel = 1
 	} else {
@@ -393,10 +391,18 @@ func (e *Engine) calculateNewStability(s, d, r float64, grade InternalGrade, par
 
 	easyBonus := 1.0
 	if grade == EASY {
-		easyBonus = 1 + w12
+		if params != nil && params.W12 > 0 {
+			easyBonus = 1 + w12
+		} else {
+			easyBonus = W16
+		}
 	}
 	if grade == HARD {
-		easyBonus = 1.0 / w11
+		if params != nil && params.W11 > 0 {
+			easyBonus = 1.0 / w11
+		} else {
+			easyBonus = W15
+		}
 	}
 
 	stabilityIncrease := math.Exp(w8) * (11 - d) * math.Pow(s, -w9) * (math.Exp(w10*(1-r)) - 1) * easyBonus

@@ -57,13 +57,34 @@ func TestNewCard_FastAnswer_DoesNotScheduleSixteenDays(t *testing.T) {
 	e := NewEngine(clock)
 	state := &CardState{Status: "new"}
 
-	// Speed < 3000ms triggers EASY grade
+	// Speed < 3000ms triggers EASY grade, but first graduation of a new word
+	// must still be scheduled for tomorrow (1 day) for Day-2 reinforcement.
 	result := e.Review(state, Remember, 1200, nil)
 
 	assert.False(t, result.RepeatInSession)
 	assert.Equal(t, "review", state.Status)
-	assert.LessOrEqual(t, result.NextIntervalDays, 2, "fast initial answer must NOT schedule 16 days out; max 2 days")
+	assert.Equal(t, 1, result.NextIntervalDays, "first graduation must always schedule 1 day out (tomorrow)")
+	assert.Greater(t, state.Stability, float32(1.0), "fast initial answer still grants higher initial stability")
 	assert.LessOrEqual(t, state.Interval, float32(2.0))
+}
+
+func TestNewCard_IntraSessionForgotThenFastRemember_NoEasyBonus(t *testing.T) {
+	clock := NewStubClock(baseTime)
+	e := NewEngine(clock)
+	state := &CardState{Status: "new", EaseFactor: 2.5}
+
+	// 1. User forgets the new card on first try
+	r1 := e.Review(state, Forgot, 4000, nil)
+	assert.True(t, r1.RepeatInSession)
+	assert.Equal(t, "learning", state.Status)
+
+	// 2. Later in the same session, user answers quickly (< 3000ms)
+	clock.Advance(10 * time.Minute)
+	r2 := e.Review(state, Remember, 900, nil)
+	assert.False(t, r2.RepeatInSession)
+	assert.Equal(t, "review", state.Status)
+	assert.Equal(t, 1, r2.NextIntervalDays)
+	assert.Equal(t, float32(1.0), state.Stability, "card forgotten earlier in session must not receive EASY stability bonus")
 }
 
 func TestEngineForgotResetsLearning(t *testing.T) {

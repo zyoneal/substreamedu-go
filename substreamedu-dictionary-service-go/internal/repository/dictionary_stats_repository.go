@@ -2,12 +2,57 @@ package repository
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/substreamedu/substreamedu-dictionary-service/internal/dto"
 	"github.com/substreamedu/substreamedu-dictionary-service/internal/model"
 )
+
+func ComputeGatedSessionNewCards(sessionDueCards, newRecognitionCards, unlockedProductionCards int64, gateEnabled bool) (int64, int64) {
+	const sessionLimit int64 = 50
+	const maxNewWords int64 = 15
+	const maxNewCards int64 = maxNewWords * 2
+
+	targetNew := sessionLimit - sessionDueCards
+	if targetNew <= 0 {
+		return 0, 0
+	}
+	if targetNew > maxNewCards {
+		targetNew = maxNewCards
+	}
+
+	if !gateEnabled {
+		totalNew := newRecognitionCards + unlockedProductionCards
+		if targetNew > totalNew {
+			targetNew = totalNew
+		}
+		return targetNew, (targetNew + 1) / 2
+	}
+
+	recCap := targetNew
+	if recCap > maxNewWords {
+		recCap = maxNewWords
+	}
+	selectedRec := newRecognitionCards
+	if selectedRec > recCap {
+		selectedRec = recCap
+	}
+
+	remaining := targetNew - selectedRec
+	selectedProd := unlockedProductionCards
+	if selectedProd > remaining {
+		selectedProd = remaining
+	}
+
+	sessionNewCards := selectedRec + selectedProd
+	sessionNewWords := selectedRec
+	if sessionNewWords == 0 && selectedProd > 0 {
+		sessionNewWords = selectedProd
+	}
+	return sessionNewCards, sessionNewWords
+}
 
 func (r *DictionaryRepository) SaveReviewLog(ctx context.Context, tx DB, l *model.ReviewLog) error {
 	_, err := tx.Exec(ctx, `
@@ -48,11 +93,21 @@ func (r *DictionaryRepository) GetDictionaryStats(ctx context.Context, userID uu
 	todayStart := time.Date(dueCutoff.Year(), dueCutoff.Month(), dueCutoff.Day(), 0, 0, 0, 0, dueCutoff.Location())
 	var stats dto.DictionaryStatsDto
 	var totalNewCards int64
+	var newRecognitionCards int64
+	var unlockedProductionCards int64
 	err := r.db.QueryRow(ctx, `
 		SELECT 
 			COUNT(*) FILTER (WHERE card_type = 0) as total,
 			COUNT(*) FILTER (WHERE status = 'new' AND card_type = 0) as new_words,
 			COUNT(*) FILTER (WHERE status = 'new') as total_new_cards,
+			COUNT(*) FILTER (WHERE status = 'new' AND card_type <> 1) as new_recognition_cards,
+			COUNT(*) FILTER (WHERE status = 'new' AND card_type = 1 AND NOT EXISTS (
+				SELECT 1 FROM dictionary s
+				WHERE s.user_id = dictionary.user_id
+				  AND s.highlighted_text = dictionary.highlighted_text
+				  AND s.card_type = 0
+				  AND (s.status <> 'review' OR (s.repetition_level <= 1 AND s.last_reviewed >= $3))
+			)) as unlocked_production_cards,
 			COUNT(*) FILTER (WHERE status != 'new' AND card_type = 0) as learning,
 			COUNT(*) FILTER (WHERE status != 'new' AND (last_reviewed IS NULL OR last_reviewed < $3) AND (
 				(status = 'review' AND next_repetition_date <= $2)
@@ -62,30 +117,41 @@ func (r *DictionaryRepository) GetDictionaryStats(ctx context.Context, userID uu
 				(status = 'review' AND next_repetition_date IS NULL)
 			)) as due
 		FROM dictionary 
-		WHERE user_id = $1`, userID, dueCutoff, todayStart).Scan(&stats.TotalWords, &stats.NewWords, &totalNewCards, &stats.LearningWords, &stats.DueToday)
+		WHERE user_id = $1`, userID, dueCutoff, todayStart).Scan(
+		&stats.TotalWords,
+		&stats.NewWords,
+		&totalNewCards,
+		&newRecognitionCards,
+		&unlockedProductionCards,
+		&stats.LearningWords,
+		&stats.DueToday,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	const sessionLimit int64 = 50
-	const maxNewCards int64 = 30 // 15 words * 2 cards (recognition + production)
 	stats.SessionDueCards = stats.DueToday
 	if stats.SessionDueCards > sessionLimit {
 		stats.SessionDueCards = sessionLimit
 	}
 
-	targetNew := sessionLimit - stats.SessionDueCards
-	if targetNew < 0 {
-		targetNew = 0
+	gateEnabled := os.Getenv("SRS_GATE_PRODUCTION_CARDS") != "false"
+	if gateEnabled {
+		stats.SessionNewCards, stats.SessionNewWords = ComputeGatedSessionNewCards(
+			stats.SessionDueCards,
+			newRecognitionCards,
+			unlockedProductionCards,
+			true,
+		)
+	} else {
+		stats.SessionNewCards, stats.SessionNewWords = ComputeGatedSessionNewCards(
+			stats.SessionDueCards,
+			totalNewCards,
+			0,
+			false,
+		)
 	}
-	if targetNew > maxNewCards {
-		targetNew = maxNewCards
-	}
-	if targetNew > totalNewCards {
-		targetNew = totalNewCards
-	}
-	stats.SessionNewCards = targetNew
-	stats.SessionNewWords = (stats.SessionNewCards + 1) / 2
 	stats.SessionCards = stats.SessionDueCards + stats.SessionNewCards
 
 	return &stats, nil

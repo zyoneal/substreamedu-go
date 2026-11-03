@@ -197,6 +197,7 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
     const changeCard = useCallback((newIndex: number) => {
         setDirection(newIndex > currentIndex ? 1 : -1);
         setRevealLevel(0);
+        setAnswerShownTime(null);
         setCurrentIndex(newIndex);
         setCardStartTime(Date.now());
     }, [currentIndex]);
@@ -252,7 +253,8 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
             setSessionWords(nextSessionWords);
         }
 
-        const responseTimeMs = answerShownTime ? Date.now() - answerShownTime : 5000;
+        const recallEndTime = answerShownTime ?? Date.now();
+        const responseTimeMs = Math.max(0, recallEndTime - cardStartTime);
 
         const newAnsweredIds = new Set(answeredIds);
         newAnsweredIds.add(word.id);
@@ -320,6 +322,7 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
     }, [
         reviewWords,
         currentIndex,
+        cardStartTime,
         answerShownTime,
         answeredIds,
         goodIds,
