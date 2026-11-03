@@ -123,7 +123,7 @@ const StudentLessonPage: React.FC = () => {
       });
       setSavedWords((prev) => ({ ...prev, [word.toLowerCase()]: true }));
     } catch {
-      setSavedWords((prev) => ({ ...prev, [word.toLowerCase()]: true }));
+      alert("Failed to save word to dictionary. Please try again.");
     }
   };
 

@@ -75,7 +75,7 @@ type ApiResponse[T any] struct {
 
 type WordReviewedEvent struct {
 	UserID		uuid.UUID	`json:"userId"`
-	WordID		int64		`json:"wordId"`
+	WordID		int64		`json:"cardId"`
 	Rating		string		`json:"rating"`
-	Timestamp	time.Time	`json:"timestamp"`
+	Timestamp	time.Time	`json:"reviewedAt"`
 }

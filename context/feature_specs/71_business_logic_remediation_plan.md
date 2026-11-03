@@ -74,13 +74,13 @@
 - [ ] **4.2 Idempotent Daily Reminder Cron & Safe `/random_word`**:
   - Track the last triggered date in `StartDailyReviewJob` so container restarts after 09:00 do not spam all users again on the same day.
   - Do not overwrite an active multi-word `/review` session when a user invokes `/random_word`.
-- [ ] **4.3 Telegram Markdown Escaping, Local Image Support & Event Schema Alignment**:
+- [x] **4.3 Telegram Markdown Escaping, Local Image Support & Event Schema Alignment**:
   - Escape `word.Transcription` and backticks in `telegram.go` messages.
   - Resolve relative `/videos/images/words/...` paths in `sendPhoto` (or skip invalid relative URLs cleanly).
   - Align `WordReviewedEvent` JSON tags (`cardId`, `reviewedAt`) in `notification-service/internal/dto/dto.go`.
 
 ### Phase 5: Media Service & Frontend User Flows (`substreamedu-media-service-go`, `substreamedu-frontend`)
-- [ ] **5.1 Subtitle Re-Upload & Validation (`media-service`)**:
+- [x] **5.1 Subtitle Re-Upload & Validation (`media-service`)**:
   - Replace existing subtitles in `SubtitleService.UploadSubtitles` when a user uploads a new subtitle with the same `fileName` (and invalidate Redis cache), and return an error if the parsed subtitle contains 0 cues.
   - Add nil-safety checks in `youtube.go` (`Thumbnails.High`, `Statistics`) and enforce `claims.Role == "ADMIN"` on `/subtitles/admin/*`.
 - [ ] **5.2 Video Player Subtitle Selection, Timestamp & Resource Name Consistency**:
@@ -92,7 +92,7 @@
 - [ ] **5.4 Books Reader Progress, Completion & Word Click Lookup**:
   - Save reading progress in `BookReaderPage.tsx` on chapter load (`useEffect`) so Chapter 1 and single-chapter books appear in `"Continue Reading"`, and only mark a book `isCompleted: true` when explicitly finishing the final chapter (not upon entering it).
   - Support clicking individual words to translate in `BookContent.tsx` and multi-word phrase highlighting.
-- [ ] **5.5 Spotify Integration, Student Lesson Save & Onboarding/Dashboard Fixes**:
+- [x] **5.5 Spotify Integration, Student Lesson Save & Onboarding/Dashboard Fixes**:
   - Align `EnhancedSongSearchService.ts` with backend `GET /api/music/search?q=...` and flat `MusicTrackDto`, track token expiry in `spotify.go`, and remove hardcoded client secret from `SpotifyService.ts`.
   - Fix `StudentLessonPage.tsx` `catch` block so failed saves do not mark words as `"Saved"`.
   - Derive `isOnboardingMode` from `?onboarding=true` in `useVideoOnboarding.ts` so demo subtitles are unblurred during onboarding.

@@ -38,14 +38,6 @@ func NewSubtitleService(repo *repository.SubtitleRepository, transcriptFetcher T
 }
 
 func (s *SubtitleService) UploadSubtitles(ctx context.Context, userID uuid.UUID, fileName string, content string) error {
-	exists, err := s.repo.ExistsByUserIdAndName(ctx, userID, fileName)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-
 	lines := strings.Split(content, "\n")
 	var parsedSubs []dto.SubtitleResponseDto
 	if strings.HasSuffix(strings.ToLower(fileName), ".srt") {
@@ -55,6 +47,13 @@ func (s *SubtitleService) UploadSubtitles(ctx context.Context, userID uuid.UUID,
 	} else {
 		return fmt.Errorf("unsupported subtitle format: %s", fileName)
 	}
+
+	if len(parsedSubs) == 0 {
+		return fmt.Errorf("no cues parsed from subtitle file")
+	}
+
+	// Delete old subtitles with the same name if re-uploading
+	_ = s.repo.DeleteByUserIdAndName(ctx, userID, fileName)
 
 	var subtitles []model.Subtitle
 	for _, ps := range parsedSubs {
@@ -67,7 +66,7 @@ func (s *SubtitleService) UploadSubtitles(ctx context.Context, userID uuid.UUID,
 		})
 	}
 
-	err = s.repo.SaveAll(ctx, subtitles)
+	err := s.repo.SaveAll(ctx, subtitles)
 	if err == nil {
 		s.invalidateCache(ctx, userID, fileName)
 	}

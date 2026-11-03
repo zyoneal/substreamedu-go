@@ -463,7 +463,7 @@ func (b *TelegramBot) sendNextWord(chatID int64, session *ReviewSession) {
 			session.GetCurrentIndex(), session.GetTotal(), escapeMarkdown(word.HighlightedText))
 
 		if word.Transcription != "" {
-			text += " (" + word.Transcription + ")"
+			text += " (" + escapeMarkdown(word.Transcription) + ")"
 		}
 		if word.Context != "" {
 			text += "\n\n" + escapeMarkdown(word.Context)
@@ -512,7 +512,7 @@ func (b *TelegramBot) showAnswer(chatID int64, wordID int64) {
 		// Production/Recall card: Reveal the English word (HighlightedText)
 		text = fmt.Sprintf("✅ Answer: *%s*", escapeMarkdown(word.HighlightedText))
 		if word.Transcription != "" {
-			text += " (" + word.Transcription + ")"
+			text += " (" + escapeMarkdown(word.Transcription) + ")"
 		}
 		if word.Context != "" {
 			text += "\n\n" + escapeMarkdown(word.Context)
@@ -683,6 +683,10 @@ func (b *TelegramBot) sendMessageWithKeyboard(chatID int64, text string, keyboar
 }
 
 func (b *TelegramBot) sendPhoto(chatID int64, url, caption string) {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		b.sendMessage(chatID, caption)
+		return
+	}
 	photo := tgbotapi.NewPhoto(chatID, tgbotapi.FileURL(url))
 	photo.Caption = caption
 	photo.ParseMode = "Markdown"
@@ -698,6 +702,7 @@ func escapeMarkdown(text string) string {
 		"*", "\\*",
 		"[", "\\[",
 		"]", "\\]",
+		"`", "\\`",
 	)
 	return replacer.Replace(text)
 }
