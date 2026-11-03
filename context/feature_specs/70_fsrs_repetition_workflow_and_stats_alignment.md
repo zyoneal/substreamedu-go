@@ -39,7 +39,7 @@ Key root causes identified during architectural audit:
 ## 4. Verification Checklist
 - [x] `fsrs/engine.go` schedules all first-time graduations (`RepetitionLevel == 0`) for `interval = 1` day (tomorrow), caps grade at `GOOD` when `HardCount > 0` during graduation, and uses dedicated `W15`/`W16` stability multipliers.
 - [x] `ReviewCard` supports user timezone location (`loc *time.Location`) so `LastReviewed` and `NextRepetitionDate` align with the user's local calendar date.
-- [x] `findUnlockedNewProductionCardsSQL` and `GetDictionaryStats` align on Production Gate rules and keep new Production cards locked on the day their Recognition sibling first graduates.
-- [x] `useFlashcardsSession.ts` measures recall latency from `cardStartTime` to `answerShownTime` (before card flip).
+- [x] `findUnlockedNewProductionCardsSQL` and `GetDictionaryStats` align on Production Gate rules and Sibling Burying (keeping new Production cards locked when their Recognition sibling was reviewed today or is due today).
+- [x] `useFlashcardsSession.ts` measures recall latency from `cardStartTime` to `answerShownTime` (before card flip), normalizes reading time for long phrases/contexts (`normalizeRecallLatencyMs`), and persists remaining `DictionaryItem` objects across same-day reloads so `"Again"` cards are never lost.
 - [x] `dashboardUtils.ts` derives `isAllCaughtUp` from `sessionCardsCount === 0` so new cards remain actionable after earlier same-day reviews and `0 cards today` never renders a dead-end `Start Review` state.
 - [x] `./verify.sh` passes with 0 errors.

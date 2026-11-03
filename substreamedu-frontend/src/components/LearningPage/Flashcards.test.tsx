@@ -425,4 +425,69 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       dateNowSpy.mockRestore();
     }
   });
+
+  it('compensates recall latency for long phrases/contexts (> 60 chars) so reading time does not penalize FSRS grade', async () => {
+    let fakeNow = 200000;
+    const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => fakeNow);
+
+    (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValueOnce({
+      cards: [
+        {
+          ...mockCards[0],
+          id: 501,
+          highlightedText: 'burn the midnight oil',
+          // 21 chars word + 119 chars context = 140 chars (80 chars above 60-char baseline -> 80 * 25ms = 2000ms reading allowance)
+          context: 'When the deadline approached, the entire engineering team had to burn the midnight oil to ship the release on schedule.',
+        },
+      ],
+      totalDictionarySize: 1,
+    });
+
+    try {
+      renderComponent();
+      await screen.findByRole('heading', { level: 1, name: 'burn the midnight oil' });
+
+      // User takes 4,500ms total to read the 140-char card and recall the idiom
+      fakeNow += 4500;
+      fireEvent.click(screen.getByText(/tap to reveal/i));
+
+      fakeNow += 600;
+      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+
+      await waitFor(() => {
+        // 4500ms - 2000ms reading allowance = 2500ms (< 3000ms -> EASY)
+        expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(501, 'remember', 2500);
+      });
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
+  it('preserves cards rated "Again" when the user reloads or returns later the same day', async () => {
+    const { unmount } = renderComponent();
+    await screen.findByRole('heading', { level: 1, name: 'tenure' });
+
+    // Rate card 101 ('tenure') as "Again" -> moves to end of session queue, backend marks last_reviewed = today
+    fireEvent.click(screen.getByText(/tap to reveal/i));
+    fireEvent.click(screen.getByRole('button', { name: /again/i }));
+
+    await screen.findByRole('heading', { level: 1, name: 'serendipity' });
+
+    // User closes tab and returns 2 hours later on the same day; backend fetchSRSToday now only returns card 102
+    unmount();
+    (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValueOnce({
+      cards: [mockCards[1]],
+      totalDictionarySize: 2,
+    });
+
+    renderComponent();
+    await screen.findByRole('heading', { level: 1, name: 'serendipity' });
+
+    // Finish card 102 ('serendipity') with "Good"
+    fireEvent.click(screen.getByText(/tap to reveal/i));
+    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+
+    // Card 101 ('tenure') rated "Again" earlier today MUST still be in the session queue!
+    expect(await screen.findByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
+  });
 });

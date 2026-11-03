@@ -106,7 +106,12 @@ func (r *DictionaryRepository) GetDictionaryStats(ctx context.Context, userID uu
 				WHERE s.user_id = dictionary.user_id
 				  AND s.highlighted_text = dictionary.highlighted_text
 				  AND s.card_type = 0
-				  AND (s.status <> 'review' OR (s.repetition_level <= 1 AND s.last_reviewed >= $3))
+				  AND (
+				      s.status <> 'review'
+				      OR s.last_reviewed >= $3
+				      OR s.next_repetition_date IS NULL
+				      OR s.next_repetition_date <= $2
+				  )
 			)) as unlocked_production_cards,
 			COUNT(*) FILTER (WHERE status != 'new' AND card_type = 0) as learning,
 			COUNT(*) FILTER (WHERE status != 'new' AND (last_reviewed IS NULL OR last_reviewed < $3) AND (

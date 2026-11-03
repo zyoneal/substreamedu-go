@@ -19,14 +19,15 @@ func TestUnlockedNewProductionCardsSQL_Contract(t *testing.T) {
 	assert.Contains(t, q, "d.card_type = 1")
 	assert.Contains(t, q, "LIMIT $2")
 
-	// Sibling gate: locked while a recognition sibling is not yet in 'review'
-	// or just graduated for the first time today.
+	// Sibling gate: locked while a recognition sibling is not yet in 'review',
+	// was reviewed today, or is due for review today (sibling burying).
 	assert.Contains(t, q, "NOT EXISTS")
 	assert.Contains(t, q, "s.user_id = d.user_id")
 	assert.Contains(t, q, "s.highlighted_text = d.highlighted_text")
 	assert.Contains(t, q, "s.card_type = 0")
 	assert.Contains(t, q, "s.status <> 'review'")
 	assert.Contains(t, q, "s.last_reviewed >= CURRENT_DATE")
+	assert.Contains(t, q, "s.next_repetition_date <= CURRENT_DATE")
 }
 
 func TestComputeGatedSessionNewCards(t *testing.T) {

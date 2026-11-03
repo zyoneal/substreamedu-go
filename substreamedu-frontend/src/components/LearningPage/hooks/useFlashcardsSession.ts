@@ -24,10 +24,38 @@ export type Rating = 'again' | 'good';
 
 export const SESSION_STORAGE_KEY = 'srs_session_state';
 export const SESSION_CHECKPOINT = 20;
+export const READING_BASELINE_CHARS = 60;
+export const READING_ALLOWANCE_MS_PER_CHAR = 25;
+export const MAX_READING_ALLOWANCE_MS = 3000;
+export const MIN_NORMALIZED_RECALL_MS = 500;
+
+export const normalizeRecallLatencyMs = (
+    rawElapsedMs: number,
+    card: Pick<DictionaryItem, 'cardType' | 'highlightedText' | 'context' | 'definition' | 'translatedText'>
+): number => {
+    const safeRaw = Math.max(0, rawElapsedMs);
+    const isProduction = card.cardType === 1;
+    const frontText = isProduction
+        ? `${card.definition || ''}${card.translatedText || ''}`
+        : `${card.highlightedText || ''}${card.context || ''}`;
+    const extraChars = Math.max(0, frontText.trim().length - READING_BASELINE_CHARS);
+    if (extraChars === 0) {
+        return safeRaw;
+    }
+    const readingAllowanceMs = Math.min(
+        MAX_READING_ALLOWANCE_MS,
+        extraChars * READING_ALLOWANCE_MS_PER_CHAR
+    );
+    return Math.max(
+        Math.min(safeRaw, MIN_NORMALIZED_RECALL_MS),
+        safeRaw - readingAllowanceMs
+    );
+};
 
 interface StoredSessionState {
     sessionId: string;
     wordIds: number[];
+    words?: DictionaryItem[];
     currentIndex: number;
     answeredIds: number[];
     goodIds?: number[];
@@ -95,6 +123,7 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
         const state: StoredSessionState = {
             sessionId,
             wordIds: words.map(w => w.id),
+            words,
             currentIndex: index,
             answeredIds: Array.from(answered),
             goodIds: Array.from(good),
@@ -139,15 +168,18 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
             const savedState = localStorage.getItem(SESSION_STORAGE_KEY);
             if (savedState) {
                 const state: StoredSessionState = JSON.parse(savedState);
-                const sessionAge = Date.now() - state.startTime;
-                if (sessionAge < 60 * 60 * 1000) {
+                const nowMs = Date.now();
+                const sessionAge = nowMs - state.startTime;
+                const isSameDay = new Date(state.startTime).toDateString() === new Date(nowMs).toDateString();
+                if (isSameDay && sessionAge < 24 * 60 * 60 * 1000) {
                     const sessionData = await DictionaryService.fetchSRSToday();
                     setTotalDictionarySize(sessionData.totalDictionarySize);
                     const freshWords = sessionData.cards || [];
                     const wordsMap = new Map(freshWords.map(w => [w.id, w]));
+                    const savedWordsMap = new Map((state.words || []).map(w => [w.id, w]));
 
                     const restoredWords = state.wordIds
-                        .map(id => wordsMap.get(id))
+                        .map(id => wordsMap.get(id) ?? savedWordsMap.get(id))
                         .filter((w): w is DictionaryItem => w !== undefined);
 
                     if (restoredWords.length > 0) {
@@ -254,7 +286,8 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
         }
 
         const recallEndTime = answerShownTime ?? Date.now();
-        const responseTimeMs = Math.max(0, recallEndTime - cardStartTime);
+        const rawElapsedMs = Math.max(0, recallEndTime - cardStartTime);
+        const responseTimeMs = normalizeRecallLatencyMs(rawElapsedMs, word);
 
         const newAnsweredIds = new Set(answeredIds);
         newAnsweredIds.add(word.id);

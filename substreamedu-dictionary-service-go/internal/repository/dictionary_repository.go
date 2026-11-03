@@ -248,9 +248,9 @@ const findNewRecognitionCardsSQL = `
 		LIMIT $2`
 
 // findUnlockedNewProductionCardsSQL selects new production cards whose recognition sibling
-// (same user and highlighted_text) is in 'review' and was not just graduated for the first
-// time today. A production card without any recognition sibling stays eligible so orphaned
-// or legacy cards cannot get stuck.
+// (same user and highlighted_text) is in 'review', was not reviewed today, and is not due
+// for review today (sibling burying). A production card without any recognition sibling
+// stays eligible so orphaned or legacy cards cannot get stuck.
 const findUnlockedNewProductionCardsSQL = `
 		SELECT d.id, d.user_id, d.highlighted_text, d.translated_text, d.transcription, d.context, d.resource_name, d.status,
 		       d.ease_factor, d.interval, d.repetition_level, d.last_reviewed, d.next_repetition_date,
@@ -264,7 +264,12 @@ const findUnlockedNewProductionCardsSQL = `
 		      WHERE s.user_id = d.user_id
 		        AND s.highlighted_text = d.highlighted_text
 		        AND s.card_type = 0
-		        AND (s.status <> 'review' OR (s.repetition_level <= 1 AND s.last_reviewed >= CURRENT_DATE))
+		        AND (
+		            s.status <> 'review'
+		            OR s.last_reviewed >= CURRENT_DATE
+		            OR s.next_repetition_date IS NULL
+		            OR s.next_repetition_date <= CURRENT_DATE
+		        )
 		  )
 		ORDER BY d.created_on DESC
 		LIMIT $2`
