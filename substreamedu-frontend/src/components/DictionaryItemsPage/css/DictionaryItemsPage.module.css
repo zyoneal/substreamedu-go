@@ -249,6 +249,7 @@
 .cardWrapper {
     width: 100%;
     max-width: 900px;
+    isolation: isolate;
 }
 
 .card {
@@ -258,8 +259,8 @@
     max-height: 370px;
     cursor: pointer;
     position: relative;
-    will-change: transform;
     perspective: 2000px;
+    -webkit-perspective: 2000px;
 }
 
 .cardInner {
@@ -269,10 +270,13 @@
     text-align: center;
     transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
 }
 
 .card.flipped .cardInner {
-    transform: rotateY(180deg);
+    transform: rotateY(180deg) translate3d(0, 0, 0);
 }
 
 .cardFront,
@@ -292,7 +296,6 @@
     align-items: center;
     padding: 36px;
     box-sizing: border-box;
-    overflow: hidden;
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -305,11 +308,11 @@
 }
 
 .cardFront {
-    transform: translateZ(0.5px);
+    transform: rotateY(0deg);
 }
 
 .cardBack {
-    transform: rotateY(180deg) translateZ(0.5px);
+    transform: rotateY(180deg);
 }
 
 .cardContent {

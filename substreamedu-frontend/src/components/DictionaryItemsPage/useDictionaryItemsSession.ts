@@ -263,19 +263,21 @@ export const useDictionaryItemsSession = (resourceName: string | undefined) => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [showNextCard, showPreviousCard, toggleCardFlip]);
 
-    const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const onTouchStart = (e: React.TouchEvent) => {
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
-    };
-    const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
+    const touchStartXRef = useRef<number | null>(null);
+    const touchEndXRef = useRef<number | null>(null);
+    const onTouchStart = useCallback((e: React.TouchEvent) => {
+        touchEndXRef.current = null;
+        touchStartXRef.current = e.targetTouches[0].clientX;
+    }, []);
+    const onTouchMove = useCallback((e: React.TouchEvent) => {
+        touchEndXRef.current = e.targetTouches[0].clientX;
+    }, []);
+    const onTouchEnd = useCallback(() => {
+        if (touchStartXRef.current === null || touchEndXRef.current === null) return;
+        const distance = touchStartXRef.current - touchEndXRef.current;
         if (distance > 50) showNextCard();
         else if (distance < -50) showPreviousCard();
-    };
+    }, [showNextCard, showPreviousCard]);
 
     return {
         dictionaryItems,

@@ -114,6 +114,17 @@ describe('DictionaryItemsPage Pixzen Light Editorial Redesign', () => {
         expect(cssContent).toMatch(/prefers-reduced-motion:\s*reduce/);
     });
 
+    it('configures hardware acceleration and 3D compositing properties for card flip', () => {
+        const cssContent = fs.readFileSync(
+            path.resolve(__dirname, 'css/DictionaryItemsPage.module.css'),
+            'utf-8'
+        );
+
+        expect(cssContent).toMatch(/\.cardWrapper\s*\{[^}]*isolation:\s*isolate;/);
+        expect(cssContent).toMatch(/\.cardInner\s*\{[^}]*will-change:\s*transform;/);
+        expect(cssContent).toMatch(/\.cardInner\s*\{[^}]*-webkit-transform-style:\s*preserve-3d;/);
+    });
+
     it('hides the image container completely when the card image fails to load', async () => {
         (DictionaryService.fetchDictionaryItemsPaginated as jest.Mock).mockResolvedValueOnce({
             items: [

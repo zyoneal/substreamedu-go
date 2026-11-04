@@ -20,7 +20,7 @@ interface DictionaryTermsListProps {
     onYouGlishClick: (word: string) => void;
 }
 
-export const DictionaryTermsList: React.FC<DictionaryTermsListProps> = ({
+export const DictionaryTermsList: React.FC<DictionaryTermsListProps> = React.memo(({
     dictionaryItems,
     currentIndex,
     displayTotal,
@@ -101,5 +101,5 @@ export const DictionaryTermsList: React.FC<DictionaryTermsListProps> = ({
             </div>
         </div>
     </div>
-);
+));
 
