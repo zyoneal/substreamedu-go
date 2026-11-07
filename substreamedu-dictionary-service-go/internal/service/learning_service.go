@@ -411,18 +411,6 @@ func applyCardStateToDictionary(state *fsrs.CardState, d *model.Dictionary) {
 	d.IsLeech = state.IsLeech
 }
 
-func algorithmParamsFromModel(p *model.UserSRSParameters) *fsrs.AlgorithmParams {
-	if p == nil {
-		return nil
-	}
-	return &fsrs.AlgorithmParams{
-		W0:	p.W0, W1: p.W1, W2: p.W2, W3: p.W3,
-		W4:	p.W4, W5: p.W5, W6: p.W6, W7: p.W7,
-		W8:	p.W8, W9: p.W9, W10: p.W10,
-		W11:	p.W11, W12: p.W12, W13: p.W13, W14: p.W14,
-	}
-}
-
 func (s *LearningService) mapCardToDto(dw *model.Dictionary) dto.DictionaryItemDto {
 	return dto.DictionaryItemDto{
 		ID:			dw.ID,

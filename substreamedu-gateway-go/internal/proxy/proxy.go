@@ -35,7 +35,6 @@ type ProxyHandler struct {
 	logger		*zap.Logger
 	proxies		map[string]*httputil.ReverseProxy
 	breakers	map[string]*CircuitBreaker
-	mu		sync.RWMutex
 }
 
 func NewProxyHandler(routes []config.RouteConfig, logger *zap.Logger) *ProxyHandler {

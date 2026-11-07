@@ -1,7 +1,6 @@
 package service
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -49,10 +48,6 @@ func NewRSAKeyManager() (*RSAKeyManager, error) {
 	}
 
 	return nil, nil
-}
-
-func generateRSAKeyPair() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 2048)
 }
 
 type JWKItem struct {

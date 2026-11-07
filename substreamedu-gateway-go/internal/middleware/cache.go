@@ -8,11 +8,6 @@ import (
 	"github.com/substreamedu/substreamedu-gateway/internal/cache"
 )
 
-type cacheEntry struct {
-	ContentType	string
-	Body		[]byte
-}
-
 type cacheResponseWriter struct {
 	http.ResponseWriter
 	buf		bytes.Buffer

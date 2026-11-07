@@ -29,7 +29,6 @@ import HomeDemoModal from './HomeDemoModal';
 import styles from './HomePage.module.css';
 
 import { usePixzenTheme } from './pixzen/usePixzenTheme';
-import SmoothScroll from './pixzen/SmoothScroll';
 import TypingHeadline from './pixzen/TypingHeadline';
 import BrandMarquee from './pixzen/BrandMarquee';
 import ManifestoReveal from './pixzen/ManifestoReveal';
@@ -68,7 +67,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={styles.page} ref={pageRef}>
-      <SmoothScroll />
       <div className="pixzenGrain" aria-hidden="true" />
       <motion.div
         className={styles.scrollProgressBar}
