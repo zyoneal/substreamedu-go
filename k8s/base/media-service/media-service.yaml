@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-service
+  labels:
+    app: media-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media-service
+  template:
+    metadata:
+      labels:
+        app: media-service
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: media-service
+        image: ghcr.io/zyoneal/subsreamedu/media-service:latest
+        ports:
+        - containerPort: 3004
+        env:
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_DB_MEDIA
+          value: "substreamedu_media"
+        - name: POSTGRES_USER_APP
+          value: "substream_app"
+        - name: POSTGRES_PASSWORD_APP
+          valueFrom:
+            secretKeyRef:
+              name: media-secrets
+              key: postgres-password
+        - name: YOUTUBE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: youtube-api-key
+        - name: SPOTIFY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: spotify-client-id
+        - name: SPOTIFY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: spotify-client-secret
+        - name: DEEPSEEK_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-secrets
+              key: deepseek-api-key
+        - name: SUBDL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: subdl-api-key
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop: ["ALL"]
+          allowPrivilegeEscalation: false
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+        livenessProbe:
+          httpGet:
+            path: /media-service/actuator/health
+            port: 3004
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /media-service/actuator/health
+            port: 3004
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-service
+spec:
+  selector:
+    app: media-service
+  ports:
+  - protocol: TCP
+    port: 3004
+    targetPort: 3004

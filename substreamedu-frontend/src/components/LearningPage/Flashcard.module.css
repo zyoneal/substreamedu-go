@@ -1,0 +1,211 @@
+/* ==========================================================================
+   SUBSTREAMEDU — FLASHCARD (PIXZEN MONOCHROME EDITORIAL DESIGN)
+   ========================================================================== */
+
+.ankiCard {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #eae7e1;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(10, 10, 10, 0.04);
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    padding: 2.25rem 2rem;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-body);
+    box-sizing: border-box;
+}
+
+.frontSide,
+.backSide {
+    width: 100%;
+}
+
+.divider {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid rgba(10, 10, 10, 0.12);
+    margin: 1.75rem 0;
+}
+
+.wordSection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.word {
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: clamp(32px, 4.5vw, 44px);
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.032em;
+    color: #0a0a0a;
+    margin: 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.word:hover {
+    color: #4a4a48;
+}
+
+.transcription {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 13.5px;
+    line-height: 18px;
+    font-weight: 500;
+    color: #8e8e8e;
+    margin: 0;
+}
+
+.definition {
+    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-size: 26px;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #0a0a0a;
+    margin: 0;
+    text-align: center;
+}
+
+.backContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.playButton {
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: #0a0a0a;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.playButton:hover {
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+    transform: scale(1.05);
+}
+
+.playing {
+    opacity: 0.6;
+}
+
+.contextGap {
+    color: #8e8e8e;
+    letter-spacing: 2px;
+}
+
+.playIcon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.contextSection {
+    margin-top: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.context {
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 400;
+    color: #4a4a48;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.08);
+    border-radius: 12px;
+    padding: 14px 20px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.contextHighlight {
+    color: #0a0a0a;
+    font-weight: 700;
+    background: rgba(10, 10, 10, 0.08);
+    padding: 2px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.contextHighlight:hover {
+    transform: scale(1.03);
+}
+
+.imageSection {
+    margin-top: 1.25rem;
+    max-width: 100%;
+}
+
+.image {
+    max-width: 100%;
+    max-height: 260px;
+    border-radius: 12px;
+    border: 1px solid rgba(10, 10, 10, 0.1);
+}
+
+.revealHint {
+    margin-top: auto;
+    padding-top: 2rem;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+.hintText {
+    color: #8e8e8e;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+}
+
+.revealHint:hover .hintText {
+    color: #0a0a0a;
+}
+
+@media (max-width: 640px) {
+    .ankiCard {
+        padding: 1.25rem 1rem;
+        min-height: 220px;
+    }
+
+    .word {
+        font-size: 30px;
+    }
+
+    .definition {
+        font-size: 22px;
+    }
+
+    .divider {
+        margin: 1.25rem 0;
+    }
+}

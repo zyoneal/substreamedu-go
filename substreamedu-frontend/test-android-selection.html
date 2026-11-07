@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Text Selection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #000000;
+            color: #EAEAEA;
+        }
+        
+        .subtitle-container {
+            background-color: rgba(23, 28, 48, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+        
+        .subtitle-text {
+            font-size: 1.2em;
+            line-height: 1.4;
+            cursor: text;
+        }
+        
+        .selection-info {
+            background-color: rgba(25, 249, 216, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid rgba(25, 249, 216, 0.3);
+        }
+        
+        .device-info {
+            background-color: rgba(143, 0, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid rgba(143, 0, 255, 0.3);
+        }
+        
+        .log {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Android Text Selection Test</h1>
+    
+    <div class="device-info">
+        <h3>Device Information:</h3>
+        <p id="device-info"></p>
+    </div>
+    
+    <div class="subtitle-container">
+        <div class="subtitle-text" id="subtitle-text">
+            This is a sample subtitle text that you can select. Try selecting different words or phrases to test the selection behavior on Android devices. The quick brown fox jumps over the lazy dog.
+        </div>
+    </div>
+    
+    <div class="selection-info">
+        <h3>Selection Information:</h3>
+        <p><strong>Selected Text:</strong> <span id="selected-text">None</span></p>
+        <p><strong>Selection Method:</strong> <span id="selection-method">None</span></p>
+        <p><strong>Event Type:</strong> <span id="event-type">None</span></p>
+    </div>
+    
+    <div class="log">
+        <h3>Event Log:</h3>
+        <div id="log-content"></div>
+    </div>
+    
+    <script>
+        // Detect device
+        const isMobile = window.innerWidth <= 768;
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        document.getElementById('device-info').innerHTML = `
+            Mobile: ${isMobile}<br>
+            Android: ${isAndroid}<br>
+            iOS: ${isIOS}<br>
+            User Agent: ${navigator.userAgent}
+        `;
+        
+        const subtitleText = document.getElementById('subtitle-text');
+        const selectedTextSpan = document.getElementById('selected-text');
+        const selectionMethodSpan = document.getElementById('selection-method');
+        const eventTypeSpan = document.getElementById('event-type');
+        const logContent = document.getElementById('log-content');
+        
+        let isTouchSelecting = false;
+        let lastSelectionText = '';
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logContent.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+        
+        function updateSelectionInfo(text, method, eventType) {
+            selectedTextSpan.textContent = text || 'None';
+            selectionMethodSpan.textContent = method || 'None';
+            eventTypeSpan.textContent = eventType || 'None';
+        }
+        
+        function processSelection(selectedText, method, eventType) {
+            log(`Processing selection: "${selectedText}" via ${method} (${eventType})`);
+            updateSelectionInfo(selectedText, method, eventType);
+        }
+        
+        function handleTextSelection(eventType) {
+            const selection = window.getSelection();
+            if (!selection || selection.toString().trim().length < 2) {
+                log(`${eventType}: No valid selection`);
+                return;
+            }
+            
+            const selectedText = selection.toString().trim();
+            log(`${eventType}: Selected "${selectedText}"`);
+            
+            if (isMobile) {
+                if (!isTouchSelecting && selectedText !== lastSelectionText) {
+                    lastSelectionText = selectedText;
+                    processSelection(selectedText, 'Mobile Selection', eventType);
+                }
+            } else {
+                processSelection(selectedText, 'Desktop Selection', eventType);
+            }
+        }
+        
+        function handleMobileClick(eventType) {
+            if (isMobile) {
+                const selection = window.getSelection();
+                if (selection && selection.toString().trim().length >= 2) {
+                    const selectedText = selection.toString().trim();
+                    log(`${eventType}: Mobile click on selected text "${selectedText}"`);
+                    
+                    if (isAndroid) {
+                        log('Android device detected, processing selection on click');
+                    }
+                    
+                    processSelection(selectedText, 'Mobile Click', eventType);
+                }
+            }
+        }
+        
+        function handleTouchStart() {
+            if (isMobile) {
+                isTouchSelecting = true;
+                log('Touch start - setting touch selecting flag');
+            }
+        }
+        
+        function handleTouchMove() {
+            if (isMobile) {
+                isTouchSelecting = true;
+                log('Touch move - user is selecting');
+            }
+        }
+        
+        function handleTouchEnd() {
+            if (isMobile) {
+                isTouchSelecting = false;
+                log('Touch end - clearing touch selecting flag');
+                setTimeout(() => {
+                    const selection = window.getSelection();
+                    if (selection && selection.toString().trim().length >= 2) {
+                        const selectedText = selection.toString().trim();
+                        if (selectedText !== lastSelectionText) {
+                            lastSelectionText = selectedText;
+                            processSelection(selectedText, 'Touch End', 'touchend');
+                        }
+                    }
+                }, 100);
+            }
+        }
+        
+        // Selection change handler for Android
+        function handleSelectionChange() {
+            if (isMobile && isAndroid) {
+                const selection = window.getSelection();
+                if (selection && selection.toString().trim().length >= 2) {
+                    const selectedText = selection.toString().trim();
+                    log(`Selection change detected: "${selectedText}"`);
+
+                    // Check if selection is in subtitle container
+                    const range = selection.getRangeAt(0);
+                    const container = range.commonAncestorContainer;
+                    const element = container.nodeType === Node.TEXT_NODE
+                        ? container.parentElement
+                        : container;
+
+                    const isInSubtitles = element?.closest('#subtitle-text') ||
+                                        element?.id === 'subtitle-text';
+
+                    if (isInSubtitles) {
+                        setTimeout(() => {
+                            processSelection(selectedText, 'Selection Change', 'selectionchange');
+                        }, 200);
+                    }
+                }
+            }
+        }
+
+        // Event listeners
+        subtitleText.addEventListener('mouseup', (e) => {
+            e.stopPropagation();
+            handleTextSelection('mouseup');
+        });
+
+        subtitleText.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleMobileClick('click');
+        });
+
+        subtitleText.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            handleTouchStart();
+        });
+
+        subtitleText.addEventListener('touchmove', (e) => {
+            e.stopPropagation();
+            handleTouchMove();
+        });
+
+        subtitleText.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            handleTouchEnd();
+        });
+
+        // Add selection change listener for Android
+        if (isMobile && isAndroid) {
+            document.addEventListener('selectionchange', handleSelectionChange);
+            log('Android selection change listener added');
+        }
+
+        log('Test page loaded and event listeners attached');
+    </script>
+</body>
+</html>

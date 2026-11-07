@@ -1,0 +1,190 @@
+import React from 'react';
+import { render, screen, fireEvent, act, within, waitFor } from '@testing-library/react';
+import { IntlProvider } from 'react-intl';
+import { MemoryRouter } from 'react-router-dom';
+// Mock direct ESM icon imports for Jest
+jest.mock('lucide-react/dist/esm/icons/x', () => (props: any) => <span data-testid="icon-x" {...props} />);
+
+jest.mock('./pixzen/SmoothScroll', () => () => null);
+jest.mock('./pixzen/ManifestoReveal', () => ({ text }: { text: string }) => <p>{text}</p>);
+
+import HomePage from './HomePage';
+
+// Mock IntersectionObserver for framer-motion whileInView
+beforeAll(() => {
+  class MockIntersectionObserver implements IntersectionObserver {
+    readonly root: Element | null = null;
+    readonly rootMargin: string = '';
+    readonly thresholds: ReadonlyArray<number> = [];
+    observe = jest.fn();
+    unobserve = jest.fn();
+    disconnect = jest.fn();
+    takeRecords = jest.fn().mockReturnValue([]);
+  }
+  global.IntersectionObserver = MockIntersectionObserver as any;
+
+  window.HTMLMediaElement.prototype.play = jest.fn().mockImplementation(() => Promise.resolve());
+  window.HTMLMediaElement.prototype.pause = jest.fn();
+});
+
+// Mock SEO component
+jest.mock('../SEO/SEO', () => ({
+  SEO: () => <div data-testid="mock-seo" />
+}));
+
+// Mock ScrollingTextWall to avoid canvas/animation overhead
+jest.mock('./ScrollingTextWall', () => () => <div data-testid="mock-scrolling-text-wall" />);
+
+describe('HomePage Demo Modal', () => {
+  const renderHomePage = () => {
+    return render(
+      <IntlProvider locale="en" messages={{}}>
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      </IntlProvider>
+    );
+  };
+
+  it('renders Watch demo button on hero section', () => {
+    renderHomePage();
+    const demoBtn = screen.getByRole('button', { name: /watch demo/i });
+    expect(demoBtn).toBeInTheDocument();
+  });
+
+  it('renders Try with a YouTube video button leading to /youtube-demo?onboarding=true', () => {
+    renderHomePage();
+    const tryBtn = screen.getByRole('link', { name: /try with a youtube video/i });
+    expect(tryBtn).toBeInTheDocument();
+    expect(tryBtn).toHaveAttribute('href', '/youtube-demo?onboarding=true');
+  });
+
+  it('opens demo modal when Watch demo is clicked and can be closed via close button', async () => {
+    renderHomePage();
+    const demoBtn = screen.getByRole('button', { name: /watch demo/i });
+
+    // Click Watch demo
+    act(() => {
+      fireEvent.click(demoBtn);
+    });
+
+    // Close button should be accessible and present in the DOM
+    const closeBtn = screen.getByRole('button', { name: /close modal/i });
+    expect(closeBtn).toBeInTheDocument();
+
+    // Video should be present with movies_example.mp4
+    const video = document.querySelector('video');
+    expect(video).toBeInTheDocument();
+    const source = video?.querySelector('source');
+    expect(source?.getAttribute('src')).toBe('/movies_example.mp4');
+
+    // Start free CTA link should be present in modal footer
+    const modalCtaLinks = screen.getAllByRole('link', { name: /start free/i });
+    expect(modalCtaLinks.length).toBeGreaterThanOrEqual(1);
+    const modalCta = modalCtaLinks[modalCtaLinks.length - 1];
+    expect(modalCta).toHaveAttribute('href', '/login');
+
+    // Click close button
+    act(() => {
+      fireEvent.click(closeBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: /video walkthrough/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders interactive demo dock with all 3 instant sandbox options without requiring signup', () => {
+    renderHomePage();
+    const demoDock = screen.getByTestId('hero-demo-dock');
+    expect(demoDock).toBeInTheDocument();
+
+    const movieDemoLink = within(demoDock).getByRole('link', { name: /movie player/i });
+    expect(movieDemoLink).toBeInTheDocument();
+    expect(movieDemoLink).toHaveAttribute('href', '/youtube-demo');
+
+    const songDemoLink = within(demoDock).getByRole('link', { name: /synced lyrics/i });
+    expect(songDemoLink).toBeInTheDocument();
+    expect(songDemoLink).toHaveAttribute('href', '/songs-demo');
+
+    const textDemoLink = within(demoDock).getByRole('link', { name: /ai stories/i });
+    expect(textDemoLink).toBeInTheDocument();
+    expect(textDemoLink).toHaveAttribute('href', '/texts-demo');
+
+    const booksDemoLink = within(demoDock).getByRole('link', { name: /graded books/i });
+    expect(booksDemoLink).toBeInTheDocument();
+    expect(booksDemoLink).toHaveAttribute('href', '/books');
+  });
+
+  it('toggles Grammar Spotlight badge, 3x repeat state, and keyboard subtitle reveal in HeroCinemaPlayer', () => {
+    renderHomePage();
+    const heroPlayer = screen.getByTestId('hero-cinema-player');
+
+    // Grammar Spotlight button toggles grammar badge
+    const grammarBtn = within(heroPlayer).getByRole('button', { name: /grammar in this video/i });
+    expect(grammarBtn).toHaveAttribute('aria-pressed', 'false');
+    act(() => {
+      fireEvent.click(grammarBtn);
+    });
+    expect(grammarBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(within(heroPlayer).getByText(/idiom \/ phrase/i)).toBeInTheDocument();
+
+    // 3x Repeat pill toggles active state
+    const repeatBtn = within(heroPlayer).getByRole('button', { name: /repeat subtitle 3 times/i });
+    expect(repeatBtn).toHaveAttribute('aria-pressed', 'false');
+    act(() => {
+      fireEvent.click(repeatBtn);
+    });
+    expect(repeatBtn).toHaveAttribute('aria-pressed', 'true');
+
+    // Keyboard accessibility on blurred subtitle line
+    const subtitleLine = within(heroPlayer).getByRole('button', { name: /toggle subtitle blur/i });
+    act(() => {
+      fireEvent.keyDown(subtitleLine, { key: 'Enter' });
+    });
+    expect(within(heroPlayer).getByRole('button', { name: /subtitle revealed/i })).toBeInTheDocument();
+  });
+
+  it('renders interactive HeroCinemaPlayer with subtitle blur and contextual translation card', () => {
+    renderHomePage();
+    const heroPlayer = screen.getByTestId('hero-cinema-player');
+    expect(heroPlayer).toBeInTheDocument();
+
+    // Verify real player quick action controls (Blur pill & Repeat pill)
+    expect(within(heroPlayer).getByRole('button', { name: /subtitle blurred/i })).toBeInTheDocument();
+    expect(within(heroPlayer).getByRole('button', { name: /repeat subtitle 3 times/i })).toBeInTheDocument();
+
+    // Verify initial scene (Interstellar) and that highlightWord stays unblurred while context is blurred
+    expect(within(heroPlayer).getByText(/interstellar/i)).toBeInTheDocument();
+    expect(within(heroPlayer).getAllByText(/no problem/i).length).toBeGreaterThanOrEqual(1);
+    const subtitleLine = within(heroPlayer).getByRole('button', { name: /toggle subtitle blur/i });
+    expect(within(subtitleLine).getByText(/Hey relax/i).className).toMatch(/blurredContext/);
+    expect(within(subtitleLine).getByText('no problem').className).toMatch(/selectionHighlight/);
+    expect(within(subtitleLine).getByText('no problem').className).not.toMatch(/blurredContext/);
+
+    // Verify subtitle reveal toggle
+    const blurButton = within(heroPlayer).getByRole('button', { name: /subtitle blurred/i });
+    expect(blurButton).toBeInTheDocument();
+    act(() => {
+      fireEvent.click(blurButton);
+    });
+    expect(within(heroPlayer).getByRole('button', { name: /subtitle revealed/i })).toBeInTheDocument();
+
+    // Verify contextual translation popover and save button
+    const saveBtn = within(heroPlayer).getByRole('button', { name: /add word to dictionary/i });
+    expect(saveBtn).toBeInTheDocument();
+    act(() => {
+      fireEvent.click(saveBtn);
+    });
+    expect(within(heroPlayer).getByRole('button', { name: /word saved to dictionary/i })).toBeInTheDocument();
+
+    // Verify tab switching to YouTube interviews
+    const youtubeTab = within(heroPlayer).getByRole('tab', { name: /youtube interviews/i });
+    act(() => {
+      fireEvent.click(youtubeTab);
+    });
+    expect(within(heroPlayer).getByText(/suits & style/i)).toBeInTheDocument();
+    expect(within(heroPlayer).getAllByText(/suit/i).length).toBeGreaterThanOrEqual(1);
+  });
+});
+

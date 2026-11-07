@@ -1,0 +1,48 @@
+# Devin Blueprint for Python
+# Place in .devin/blueprint.yaml or register in Devin settings.
+
+initialize:
+  - name: "Install Python 3.12"
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+
+  - name: "Install uv"
+    run: |
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+maintenance:
+  - name: "Sync dependencies with uv"
+    run: |
+      uv sync --all-extras --dev
+
+knowledge:
+  - name: lint
+    contents: |
+      Check lint and format:
+      uv run ruff check .
+      uv run ruff format --check .
+
+      Auto-fix:
+      uv run ruff check --fix .
+      uv run ruff format .
+
+      Type check:
+      uv run mypy .
+
+  - name: test
+    contents: |
+      Run full test suite:
+      uv run pytest -v
+
+      Run a single test file:
+      uv run pytest tests/test_my_module.py
+
+      Run a single test function:
+      uv run pytest tests/test_my_module.py::test_specific_behavior -v
+
+  - name: verify
+    contents: |
+      Run complete harness Definition of Done:
+      .harness/verify.sh

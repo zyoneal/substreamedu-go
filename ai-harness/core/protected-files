@@ -1,0 +1,23 @@
+# Protected configuration files that AI agents cannot alter to bypass lint/checks.
+# Changes to these files require human intervention or ALLOW_PROTECTED_CHANGES=true.
+build.gradle
+build.gradle.kts
+settings.gradle
+settings.gradle.kts
+gradle/
+pom.xml
+checkstyle.xml
+spotless.gradle
+spotbugs-exclude.xml
+pyproject.toml
+poetry.lock
+uv.lock
+ruff.toml
+.ruff.toml
+mypy.ini
+.mypy.ini
+.flake8
+setup.cfg
+.devin/config.json
+.devin/hooks.v1.json
+.harness/

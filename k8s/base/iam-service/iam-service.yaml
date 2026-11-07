@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iam-service
+  labels:
+    app: iam-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iam-service
+  template:
+    metadata:
+      labels:
+        app: iam-service
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: iam-service
+        image: ghcr.io/zyoneal/subsreamedu/iam-service:latest
+        ports:
+        - containerPort: 3002
+        env:
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_DB_IAM
+          value: "sse_iam"
+        - name: POSTGRES_USER_APP
+          value: "substream_app"
+        - name: POSTGRES_PASSWORD_APP
+          valueFrom:
+            secretKeyRef:
+              name: iam-secrets
+              key: postgres-password
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: iam-secrets
+              key: jwt-secret
+        - name: JWT_EXPIRATION_MS
+          value: "2592000000"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop: ["ALL"]
+          allowPrivilegeEscalation: false
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+        livenessProbe:
+          httpGet:
+            path: /auth-service/actuator/health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /auth-service/actuator/health
+            port: 3002
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam-service
+spec:
+  selector:
+    app: iam-service
+  ports:
+  - protocol: TCP
+    port: 3002
+    targetPort: 3002

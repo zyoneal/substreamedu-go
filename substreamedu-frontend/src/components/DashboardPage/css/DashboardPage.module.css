@@ -1,0 +1,1025 @@
+/* ==========================================================================
+   SUBSTREAMEDU — PIXZEN MONOCHROME EDITORIAL BENTO DASHBOARD
+   Warm-White Canvas (#F5F3EF), Soft-Gray Bento Cards (#EAE7E1) & Satoshi Type
+   ========================================================================== */
+
+.dashboardContainer {
+    min-height: 100dvh;
+    padding: 92px 48px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-canvas, #f5f3ef);
+    font-family: var(--font-body, 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif);
+    color: var(--color-ink, #0a0a0a);
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.contentWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    max-width: 1560px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   EDITORIAL HEADER
+   ========================================================================== */
+
+.headerSection {
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
+}
+
+.pageTitle {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: clamp(2rem, 2.8vw, 2.75rem);
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0;
+    letter-spacing: -0.032em;
+    line-height: 1.1;
+}
+
+.accent {
+    color: var(--color-ink, #0a0a0a);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   PIXZEN BENTO GRID (FULL-SCREEN PROPORTIONAL FILL)
+   ========================================================================== */
+
+.bentoGrid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: auto;
+    gap: 18px;
+    width: 100%;
+    flex: 1;
+}
+
+.bentoCard {
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 24px;
+    padding: 28px 32px;
+    text-decoration: none;
+    color: var(--color-ink, #0a0a0a);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition:
+        transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+        border-color 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .bentoCard:hover {
+        background: #e3dfd8;
+        border-color: rgba(10, 10, 10, 0.28);
+        transform: translateY(-2px);
+        box-shadow: 0 18px 40px rgba(10, 10, 10, 0.06);
+    }
+
+    .cardStreak:hover .sharePill {
+        background: #0a0a0a;
+        border-color: #0a0a0a;
+        color: #f5f3ef;
+    }
+
+    .cardReview:hover .inlineAction {
+        color: var(--color-ink, #0a0a0a);
+        transform: translateX(3px);
+    }
+
+    .bentoCard:hover .quietChevron {
+        color: var(--color-ink, #0a0a0a);
+        transform: translateX(3px);
+    }
+
+    .cardHeroVideo:hover .primaryPillBtn {
+        background: #262626;
+        color: #f5f3ef;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(10, 10, 10, 0.16);
+    }
+
+    .bentoCard:hover .iconSquircle {
+        background: #0a0a0a;
+        border-color: #0a0a0a;
+        color: #f5f3ef;
+    }
+}
+
+.bentoCard:active {
+    transform: scale(0.985);
+    transition-duration: 0.1s;
+}
+
+.bentoCard:focus-visible {
+    outline: 2px solid #0a0a0a;
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   RIGHT COLUMN: 3 TELEMETRY / DAILY CARDS (COLS 9–12, ROWS 1–3)
+   ========================================================================== */
+
+.cardStreak {
+    grid-column: 9 / 13;
+    grid-row: 1;
+    cursor: pointer;
+}
+
+.cardStreakDisabled {
+    cursor: default;
+}
+
+.cardReview {
+    grid-column: 9 / 13;
+    grid-row: 2;
+}
+
+.cardVault {
+    grid-column: 9 / 13;
+    grid-row: 3;
+}
+
+.streakTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.streakNumberRow,
+.metricRow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.metricValue {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+}
+
+.metricValueMuted {
+    color: var(--color-mute, #8e8e8e);
+}
+
+.metricValueLoading {
+    opacity: 0.45;
+    animation: metricPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes metricPulse {
+    0%, 100% {
+        opacity: 0.35;
+    }
+    50% {
+        opacity: 0.65;
+    }
+}
+
+.metricValueAccent {
+    color: var(--color-ink, #0a0a0a);
+}
+
+.metricValueSuccess {
+    color: #15803d;
+}
+
+.metricLabel {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-mute, #8e8e8e);
+}
+
+.sharePill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border-radius: 9999px;
+    background: rgba(10, 10, 10, 0.05);
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-body, #4a4a48);
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cardStreak:hover .sharePill {
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+/* Minimal 7-Day Row */
+.streakWeekRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(10, 10, 10, 0.1);
+}
+
+.weekDayCol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.weekDayLetter {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--color-mute, #8e8e8e);
+    line-height: 1;
+}
+
+.weekDayLetterToday {
+    color: var(--color-ink, #0a0a0a);
+    font-weight: 700;
+}
+
+.weekDot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(10, 10, 10, 0.05);
+    border: 1px solid rgba(10, 10, 10, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.weekDotActive {
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.weekDotToday {
+    box-shadow: inset 0 0 0 1.5px #0a0a0a;
+}
+
+/* Metric Cards (Review & Dictionary) */
+.metricTopGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.zeroStateHeading {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    letter-spacing: -0.02em;
+}
+
+.metricSubtext {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-body, #4a4a48);
+}
+
+.metricSubtextSuccess {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #15803d;
+}
+
+.metricFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(10, 10, 10, 0.1);
+}
+
+.metricFooterTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--color-mute, #8e8e8e);
+}
+
+.inlineAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-ink, #0a0a0a);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.cardReview:hover .inlineAction {
+    color: var(--color-ink, #0a0a0a);
+    transform: translateX(3px);
+}
+
+.quietChevron {
+    color: var(--color-mute, #8e8e8e);
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.bentoCard:hover .quietChevron {
+    color: var(--color-ink, #0a0a0a);
+    transform: translateX(3px);
+}
+
+/* ==========================================================================
+   LEARNING FORMAT CARDS (SCALED WIDESCREEN SQUIRCLES)
+   ========================================================================== */
+
+/* Featured Video Card (Row 1, Cols 1–8) */
+.cardHeroVideo {
+    grid-column: 1 / 9;
+    grid-row: 1;
+    padding: 32px 36px;
+    background: #eae7e1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.heroCardBody {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.formatHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.heroTitle {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+.heroDescription {
+    font-family: var(--font-body, 'Satoshi', -apple-system, sans-serif);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--color-body, #4a4a48);
+    margin: 0;
+    max-width: 680px;
+}
+
+.heroFooter {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.primaryPillBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 26px;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-radius: 9999px;
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cardHeroVideo:hover .primaryPillBtn {
+    background: #262626;
+    color: #f5f3ef;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(10, 10, 10, 0.16);
+}
+
+/* Secondary Format Cards (Span 4 Each) */
+.cardFormat {
+    grid-column: span 4;
+    justify-content: center;
+    gap: 14px;
+}
+
+.formatTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.iconSquircle {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-ink, #0a0a0a);
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition:
+        background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bentoCard:hover .iconSquircle {
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.cardTitle {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0;
+    line-height: 1.24;
+    letter-spacing: -0.02em;
+}
+
+.cardDescription {
+    font-family: var(--font-body, 'Satoshi', -apple-system, sans-serif);
+    font-size: 14.5px;
+    font-weight: 400;
+    line-height: 1.56;
+    color: var(--color-body, #4a4a48);
+    margin: 0;
+}
+
+.cardSongs,
+.cardTexts,
+.cardBooks,
+.cardSubtitles {
+    /* Semantic format identifiers */
+}
+
+.cardTelegram {
+    grid-column: 1 / 13;
+    grid-row: 4;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 32px;
+}
+
+.telegramBody {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.telegramTextGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS (HABIT-FIRST LAYOUT)
+   ========================================================================== */
+
+@media (max-width: 1180px) {
+    .dashboardContainer {
+        padding: 88px 24px 48px;
+    }
+
+    .bentoGrid {
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: auto;
+        max-height: none;
+        gap: 16px;
+    }
+
+    /* Habit & Daily Telemetry First */
+    .cardStreak {
+        order: 1;
+        grid-column: span 6;
+        grid-row: auto;
+    }
+
+    .cardReview {
+        order: 2;
+        grid-column: span 6;
+        grid-row: auto;
+    }
+
+    /* Hero Video */
+    .cardHeroVideo {
+        order: 3;
+        grid-column: span 12;
+        grid-row: auto;
+    }
+
+    /* Learning Studio Formats (2x2 on Tablet) */
+    .cardSongs {
+        order: 4;
+        grid-column: span 6;
+    }
+
+    .cardBooks {
+        order: 5;
+        grid-column: span 6;
+    }
+
+    .cardTexts {
+        order: 6;
+        grid-column: span 6;
+    }
+
+    .cardSubtitles {
+        order: 7;
+        grid-column: span 6;
+    }
+
+    .cardTelegram {
+        order: 8;
+        grid-column: span 12;
+        grid-row: auto;
+    }
+
+    /* Vault Summary */
+    .cardVault {
+        order: 9;
+        grid-column: span 12;
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboardContainer {
+        padding: 76px 14px 56px;
+        justify-content: flex-start;
+    }
+
+    .headerSection {
+        margin-bottom: 16px;
+    }
+
+    .pageTitle {
+        font-size: 26px;
+        letter-spacing: -0.025em;
+        line-height: 1.18;
+    }
+
+    .bentoGrid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
+        gap: 10px;
+        max-height: none;
+    }
+
+    /* Habit-First Order: Daily retention at the top */
+    .cardStreak {
+        order: 1;
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 18px 20px;
+        border-radius: 20px;
+    }
+
+    .cardReview {
+        order: 2;
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    /* Prominent Hero CTA for Start Review on mobile */
+    .cardReview .inlineAction {
+        background: #0a0a0a;
+        color: #f5f3ef;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        box-shadow: 0 4px 14px rgba(10, 10, 10, 0.12);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cardReview:hover .inlineAction {
+        background: #262626;
+        color: #f5f3ef;
+    }
+
+    /* Featured / Resume Video format */
+    .cardHeroVideo {
+        order: 3;
+        grid-column: span 2;
+        grid-row: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .heroCardBody {
+        gap: 10px;
+    }
+
+    .heroTitle {
+        font-size: 20px;
+    }
+
+    .heroDescription {
+        font-size: 13.5px;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .heroFooter {
+        width: 100%;
+    }
+
+    .primaryPillBtn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 11.5px;
+    }
+
+    /* Compact 2x2 Format Grid */
+    .cardFormat {
+        grid-column: span 1;
+        grid-row: auto;
+        padding: 14px;
+        border-radius: 18px;
+        min-height: 108px;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .cardSongs {
+        order: 4;
+    }
+
+    .cardBooks {
+        order: 5;
+    }
+
+    .cardTexts {
+        order: 6;
+    }
+
+    .cardSubtitles {
+        order: 7;
+    }
+
+    .cardTelegram {
+        order: 8;
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 16px 20px;
+        border-radius: 18px;
+    }
+
+    .formatTop {
+        position: relative;
+        width: 100%;
+    }
+
+    .formatHeaderLeft {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .iconSquircle {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+
+    .iconSquircle svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .quietChevron {
+        position: absolute;
+        top: 2px;
+        right: 0;
+        opacity: 0.45;
+        width: 15px;
+        height: 15px;
+    }
+
+    .cardTitle {
+        font-size: 14.5px;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
+        word-break: break-word;
+    }
+
+    /* Hide verbose 3-line essays on mobile tiles to prevent massive vertical bloat */
+    .cardDescription {
+        display: none;
+    }
+
+    /* Vocabulary Vault at bottom */
+    .cardVault {
+        order: 9;
+        grid-column: span 2;
+        grid-row: auto;
+        padding: 18px 20px;
+        border-radius: 20px;
+    }
+
+    .metricValue {
+        font-size: 34px;
+    }
+}
+
+@media (max-width: 360px) {
+    .bentoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .cardFormat {
+        grid-column: span 1;
+        min-height: auto;
+    }
+
+    .formatHeaderLeft {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .quietChevron {
+        position: static;
+    }
+}
+
+/* ==========================================================================
+   WELCOME ONBOARDING MODAL
+   ========================================================================== */
+
+.welcomeModalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.welcomeModalBackdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(10, 10, 10, 0.45);
+    backdrop-filter: blur(12px);
+}
+
+.welcomeModalCard {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: var(--color-canvas, #f5f3ef);
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    border-radius: 24px;
+    padding: 36px 32px;
+    box-shadow: 0 28px 72px rgba(10, 10, 10, 0.16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-family: var(--font-body, 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif);
+    box-sizing: border-box;
+}
+
+.welcomeModalCloseBtn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 34px;
+    height: 34px;
+    border-radius: 9999px;
+    background: transparent;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-body, #4a4a48);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        background-color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+        color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+        transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.welcomeModalCloseBtn:active {
+    transform: scale(0.95);
+}
+
+.welcomeModalIconBadge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.welcomeModalTitle {
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0 0 10px;
+    letter-spacing: -0.025em;
+}
+
+.welcomeModalDesc {
+    font-size: 15px;
+    color: var(--color-body, #4a4a48);
+    line-height: 1.6;
+    margin: 0 0 24px;
+}
+
+.welcomeModalSteps {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.welcomeModalStepItem {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    background: #eae7e1;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(10, 10, 10, 0.1);
+}
+
+.welcomeModalStepIcon {
+    background: var(--color-canvas, #f5f3ef);
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.welcomeModalStepText {
+    color: var(--color-ink, #0a0a0a);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.welcomeModalPrimaryBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border: none;
+    padding: 15px 28px;
+    border-radius: 9999px;
+    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        transform 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.welcomeModalPrimaryBtn:active {
+    transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .welcomeModalCloseBtn:hover {
+        background: rgba(10, 10, 10, 0.06);
+        color: var(--color-ink, #0a0a0a);
+    }
+
+    .welcomeModalPrimaryBtn:hover {
+        background: #262626;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(10, 10, 10, 0.16);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bentoCard,
+    .sharePill,
+    .inlineAction,
+    .quietChevron,
+    .primaryPillBtn,
+    .iconSquircle,
+    .welcomeModalPrimaryBtn,
+    .welcomeModalCloseBtn {
+        transition: none !important;
+        transform: none !important;
+    }
+
+    .metricValueLoading {
+        animation: none !important;
+    }
+}

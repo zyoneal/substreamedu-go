@@ -1,0 +1,11 @@
+CREATE INDEX IF NOT EXISTS idx_dictionary_user_id ON dictionary (user_id);
+CREATE INDEX IF NOT EXISTS idx_dictionary_srs ON dictionary (user_id, status, next_repetition_date);
+CREATE INDEX IF NOT EXISTS idx_dictionary_learning_due ON dictionary (user_id, status, learning_due);
+CREATE INDEX IF NOT EXISTS idx_dictionary_pagination ON dictionary (user_id, card_type, id);
+CREATE INDEX IF NOT EXISTS idx_dictionary_resource_name_trgm ON dictionary USING gin (resource_name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_dictionary_embedding ON dictionary USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS idx_dictionary_is_leech ON dictionary(is_leech) WHERE is_leech = TRUE;
+CREATE INDEX IF NOT EXISTS idx_dictionary_user_resource ON dictionary(user_id, resource_name);
+CREATE INDEX IF NOT EXISTS idx_dictionary_user_status_due ON dictionary(user_id, status, next_repetition_date, learning_due);
+CREATE INDEX IF NOT EXISTS idx_dictionary_user_due_filter ON dictionary(user_id, status, last_reviewed, next_repetition_date, learning_due);
+CREATE INDEX IF NOT EXISTS idx_outbox_events_status_created ON outbox_events(status, created_at);

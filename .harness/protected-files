@@ -1,0 +1,23 @@
+# Protected configuration files in substreamedu-go that AI agents cannot alter to bypass lint/checks.
+# Changes to these files require human intervention or ALLOW_PROTECTED_CHANGES=true.
+.golangci.yml
+go.work
+go.work.sum
+substreamedu-gateway-go/go.mod
+substreamedu-gateway-go/go.sum
+substreamedu-iam-service-go/go.mod
+substreamedu-iam-service-go/go.sum
+substreamedu-dictionary-service-go/go.mod
+substreamedu-dictionary-service-go/go.sum
+substreamedu-media-service-go/go.mod
+substreamedu-media-service-go/go.sum
+substreamedu-notification-service-go/go.mod
+substreamedu-notification-service-go/go.sum
+substreamedu-frontend/package.json
+substreamedu-frontend/package-lock.json
+substreamedu-frontend/tsconfig.json
+substreamedu-frontend/.eslintrc.json
+.harness/
+.devin/hooks.v1.json
+verify.sh
+Makefile

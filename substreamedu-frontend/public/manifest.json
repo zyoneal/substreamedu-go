@@ -1,0 +1,35 @@
+{
+  "short_name": "SubStreamEdu",
+  "name": "SubStreamEdu - Learn English with Movies, YouTube, Spotify & Texts",
+  "description": "Smart EdTech platform: Learn English through movies (.mp4+.srt), YouTube videos, Spotify lyrics, and texts. Highlight words to build your dictionary. Includes flashcards, Anki/Quizlet export, and Telegram bot.",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "language", "learning", "english"],
+  "screenshots": []
+}

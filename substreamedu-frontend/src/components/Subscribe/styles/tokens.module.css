@@ -1,0 +1,15 @@
+/* ==========================================================================
+   SUBSTREAMEDU — PIXZEN MONOCHROME EDITORIAL TOKENS (/subscribe)
+   Scoped locally without mutating global :root variables
+   ========================================================================== */
+
+.tokensScope {
+    --sub-canvas: #f5f3ef;
+    --sub-surface: #eae7e1;
+    --sub-elevated: #ffffff;
+    --sub-ink: #0a0a0a;
+    --sub-body: #4a4a48;
+    --sub-mute: #8e8e8e;
+    --sub-hairline: rgba(10, 10, 10, 0.12);
+    --sub-hairline-strong: rgba(10, 10, 10, 0.28);
+}

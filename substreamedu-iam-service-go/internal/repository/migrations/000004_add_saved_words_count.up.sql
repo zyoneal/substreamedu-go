@@ -1,0 +1,1 @@
+ALTER TABLE sse_user ADD COLUMN IF NOT EXISTS saved_words_count INTEGER DEFAULT 0;

@@ -1,0 +1,430 @@
+/* ==========================================================================
+   SUBSTREAMEDU — PIXZEN WARM EDITORIAL BOOK READER (/books/:bookId)
+   Monochrome paper reading surface (#F5F3EF), Satoshi typography, and SubtitleViewer-parity tooltips
+   ========================================================================== */
+
+.readerContainer {
+    min-height: 100vh;
+    padding-top: 64px;
+    background-color: var(--color-canvas, #f5f3ef);
+    color: var(--color-ink, #0a0a0a);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+}
+
+/* Sticky Header */
+.readerHeader {
+    position: sticky;
+    top: 64px;
+    z-index: 40;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background-color: rgba(245, 243, 239, 0.9);
+    border-bottom: 1px solid rgba(10, 10, 10, 0.12);
+    padding: 0.85rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+}
+
+.backLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    text-decoration: none;
+    transition:
+        background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease,
+        transform 0.15s ease;
+    flex-shrink: 0;
+}
+
+.backLink:hover {
+    color: #f5f3ef;
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    transform: translateX(-2px);
+}
+
+.headerTitleGroup {
+    min-width: 0;
+}
+
+.bookHeaderTitle {
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-ink, #0a0a0a);
+    letter-spacing: -0.015em;
+}
+
+.chapterHeaderSubtitle {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-mute, #8e8e8e);
+    margin: 1px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+}
+
+.fontControlBtn {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.fontControlBtn:hover:not(:disabled) {
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.fontControlBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.headerPillBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.headerPillBtn:hover {
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+/* Thin Top Progress Bar */
+.progressBarTop {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background-color: #0a0a0a;
+    transition: width 0.3s ease;
+}
+
+/* Reading Stage */
+.stageWrapper {
+    max-width: 740px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 3.5rem 1.5rem 5rem;
+    box-sizing: border-box;
+}
+
+.chapterTitle {
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0 0 2.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.1);
+}
+
+.textContent {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+}
+
+.paragraph {
+    margin: 0 0 1.65rem;
+    line-height: 1.88;
+    color: #1a1a19;
+    letter-spacing: 0.005em;
+    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+}
+
+/* Existing vocabulary highlight (from user's dictionary) */
+.highlightedText {
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    transition:
+        background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease;
+    color: #0a0a0a;
+    font-weight: 600;
+    background: rgba(10, 10, 10, 0.06);
+    border-bottom: 1.5px dashed rgba(10, 10, 10, 0.45);
+    border-radius: 4px;
+    padding: 0 3px;
+}
+
+.highlightedText:hover {
+    background: #0a0a0a;
+    color: #f5f3ef;
+    border-bottom-color: #0a0a0a;
+}
+
+.wordToken {
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .wordToken:hover {
+        background: rgba(10, 10, 10, 0.06);
+    }
+}
+
+/* Hover Tooltip (Identical to SubtitleViewer) */
+.wordTooltip {
+    position: absolute;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    z-index: 10000;
+    transform: translateX(-50%);
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px rgba(10, 10, 10, 0.18);
+    border: 1px solid rgba(10, 10, 10, 0.2);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    letter-spacing: 0.01em;
+}
+
+/* Reader Footer Navigation */
+.readerFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid rgba(10, 10, 10, 0.12);
+}
+
+.navChapterBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 9999px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navChapterBtn:hover:not(:disabled) {
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.navChapterBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.progressLabelCenter {
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-mute, #8e8e8e);
+}
+
+/* Chapter Drawer / Modal */
+.drawerOverlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(10, 10, 10, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 50;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.drawerContent {
+    width: 100%;
+    max-width: 380px;
+    height: 100%;
+    background-color: #f5f3ef;
+    border-left: 1px solid rgba(10, 10, 10, 0.12);
+    padding: 2rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: -10px 0 30px rgba(10, 10, 10, 0.08);
+}
+
+.drawerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.1);
+}
+
+.drawerTitle {
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-ink, #0a0a0a);
+}
+
+.closeBtn {
+    background: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--color-ink, #0a0a0a);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.closeBtn:hover {
+    background-color: #0a0a0a;
+    color: #f5f3ef;
+    border-color: #0a0a0a;
+}
+
+.chapterList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.chapterItem {
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    background-color: #eae7e1;
+    border: 1px solid rgba(10, 10, 10, 0.08);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: left;
+    width: 100%;
+}
+
+.chapterItem:hover {
+    background-color: #e3dfd8;
+    border-color: rgba(10, 10, 10, 0.2);
+}
+
+.chapterItemActive {
+    background-color: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.chapterItemActive .chapterItemTitle {
+    color: #f5f3ef;
+}
+
+.chapterItemActive .chapterItemWords {
+    color: rgba(245, 243, 239, 0.7);
+}
+
+.chapterItemTitle {
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-ink, #0a0a0a);
+    margin: 0 0 0.25rem;
+}
+
+.chapterItemWords {
+    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-size: 11.5px;
+    color: var(--color-mute, #8e8e8e);
+    margin: 0;
+}
+
+/* Toast Notification */
+.notificationToast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f5f3ef;
+    padding: 0.7rem 1.5rem;
+    border-radius: 9999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(10, 10, 10, 0.25);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, 10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}

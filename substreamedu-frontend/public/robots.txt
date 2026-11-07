@@ -1,0 +1,12 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /admin
+Disallow: /learning
+Disallow: /telegramBot
+Disallow: /tt
+Disallow: /dashboard
+
+Sitemap: https://substreamedu.com/sitemap.xml

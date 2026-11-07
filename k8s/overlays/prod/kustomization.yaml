@@ -1,0 +1,37 @@
+resources:
+- ../../base
+
+namePrefix: prod-
+commonLabels:
+  env: production
+
+patchesStrategicMerge:
+- iam-limits.yaml
+
+# In a real FAANG setup, secrets would be managed via HashiCorp Vault or External Secrets Operator.
+# For this project, we define them using SecretGenerator with environment variables.
+secretGenerator:
+- name: iam-secrets
+  literals:
+  - postgres-password=${PROD_IAM_POSTGRES_PASSWORD}
+  - jwt-secret=${PROD_JWT_SECRET}
+- name: dictionary-secrets
+  literals:
+  - postgres-password=${PROD_DICT_POSTGRES_PASSWORD}
+- name: media-secrets
+  literals:
+  - postgres-password=${PROD_MEDIA_POSTGRES_PASSWORD}
+- name: api-secrets
+  literals:
+  - youtube-api-key=${PROD_YOUTUBE_API_KEY}
+  - spotify-client-id=${PROD_SPOTIFY_CLIENT_ID}
+  - spotify-client-secret=${PROD_SPOTIFY_CLIENT_SECRET}
+  - subdl-api-key=${PROD_SUBDL_API_KEY}
+  - telegram-bot-token=${PROD_TELEGRAM_BOT_TOKEN}
+  - telegram-bot-username=${PROD_TELEGRAM_BOT_USERNAME}
+- name: ai-secrets
+  literals:
+  - deepseek-api-key=${PROD_DEEPSEEK_API_KEY}
+- name: infra-secrets
+  literals:
+  - postgres-password=${PROD_IAM_POSTGRES_PASSWORD} # Shared or specific

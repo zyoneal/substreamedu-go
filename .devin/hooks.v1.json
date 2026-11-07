@@ -1,0 +1,14 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "exec",
+      "hooks": [
+        {
+          "type": "command",
+          "command": ".harness/scripts/devin-pre-exec.sh",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}

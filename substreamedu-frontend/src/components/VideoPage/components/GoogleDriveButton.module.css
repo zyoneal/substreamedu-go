@@ -1,0 +1,292 @@
+.container {
+  width: 100%;
+  background: var(--color-surface-elevated, #eae7e1);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.12));
+  border-radius: 20px;
+  padding: 36px 42px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.textSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.description {
+  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-ink, #0a0a0a);
+  margin: 0;
+}
+
+.formFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  align-items: end;
+}
+
+@media (max-width: 900px) {
+  .formFields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.fieldLabel {
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-mute, #8e8e8e);
+  margin-left: 4px;
+  user-select: none;
+}
+
+.inputContainer,
+.titleInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.14));
+  border-radius: 9999px;
+  padding: 0 18px;
+  height: 48px;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.inputContainer:hover,
+.titleInputContainer:hover {
+  border-color: rgba(10, 10, 10, 0.28);
+}
+
+.inputContainer:focus-within,
+.titleInputContainer:focus-within {
+  border-color: var(--color-ink, #0a0a0a);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.06);
+}
+
+.inputContainer.valid {
+  border-color: rgba(22, 163, 74, 0.55);
+}
+
+.inputContainer.invalid {
+  border-color: rgba(220, 38, 38, 0.55);
+}
+
+.driveIconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.driveIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-body, #4a4a48);
+  flex-shrink: 0;
+}
+
+.titleIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-body, #4a4a48);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-weight: 400;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-ink, #0a0a0a);
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .input {
+    font-size: 16px;
+  }
+}
+
+.input::placeholder {
+  color: var(--color-mute, #8e8e8e);
+  font-weight: 400;
+}
+
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+  color: #16a34a;
+  stroke-width: 2.5px;
+  flex-shrink: 0;
+}
+
+.clearButton,
+.pasteButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0;
+  color: var(--color-mute, #8e8e8e);
+}
+
+.clearButton:hover,
+.pasteButton:hover {
+  color: var(--color-ink, #0a0a0a);
+  background: transparent;
+}
+
+.clearButton:hover {
+  transform: rotate(90deg);
+}
+
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #dc2626;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.buttonSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.loadButton {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 46px;
+  padding: 0 32px;
+  border-radius: 9999px;
+  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--color-ink, #0a0a0a);
+  color: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-ink, #0a0a0a);
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loadButton:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.loadButton:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.loadButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.buttonText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-mute, #8e8e8e);
+  margin: 0;
+}
+
+.instructionsBox {
+  background: var(--color-canvas, #f5f3ef);
+  border: 1px solid var(--color-border-hairline, rgba(10, 10, 10, 0.12));
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.instructionsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-ink, #0a0a0a);
+}
+
+.instructionsIcon {
+  color: var(--color-body, #4a4a48);
+  flex-shrink: 0;
+}
+
+.instructionsList {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-body, #4a4a48);
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 767px) {
+  .container {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+}

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dictionary-service
+  labels:
+    app: dictionary-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dictionary-service
+  template:
+    metadata:
+      labels:
+        app: dictionary-service
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: dictionary-service
+        image: ghcr.io/zyoneal/subsreamedu/dictionary-service:latest
+        ports:
+        - containerPort: 3003
+        env:
+        - name: POSTGRES_HOST
+          value: "postgres"
+        - name: POSTGRES_DB_DICTIONARY
+          value: "substreamedu_dictionary"
+        - name: POSTGRES_USER_APP
+          value: "substream_app"
+        - name: POSTGRES_PASSWORD_APP
+          valueFrom:
+            secretKeyRef:
+              name: dictionary-secrets
+              key: postgres-password
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
+        - name: DEEPSEEK_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-secrets
+              key: deepseek-api-key
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop: ["ALL"]
+          allowPrivilegeEscalation: false
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+        livenessProbe:
+          httpGet:
+            path: /dictionary-service/actuator/health
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /dictionary-service/actuator/health
+            port: 3003
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dictionary-service
+spec:
+  selector:
+    app: dictionary-service
+  ports:
+  - protocol: TCP
+    port: 3003
+    targetPort: 3003

@@ -1,0 +1,300 @@
+{
+  "$schema": "https://tt-a1i.github.io/archify/schemas/architecture.v1.json",
+  "schemaVersion": "1.0",
+  "kind": "architecture",
+  "metadata": {
+    "title": "SubStreamEdu Microservices Architecture",
+    "description": "High-availability Go microservices ecosystem for SubstreamEdu platform with Kafka event bus, Redis caching, and full observability stack.",
+    "version": "1.0.0",
+    "author": "SubstreamEdu Core Team"
+  },
+  "groups": [
+    {
+      "id": "edge-layer",
+      "label": "Edge & Client Layer",
+      "description": "Public ingress, reverse proxy, and web frontend"
+    },
+    {
+      "id": "gateway-layer",
+      "label": "API Gateway Layer",
+      "description": "Central routing, JWT verification, and rate limiting"
+    },
+    {
+      "id": "backend-services",
+      "label": "Go Microservices",
+      "description": "Domain-driven Go backend services"
+    },
+    {
+      "id": "data-layer",
+      "label": "Data & Event Bus Layer",
+      "description": "State persistence, caching, and async messaging"
+    },
+    {
+      "id": "monitoring-layer",
+      "label": "Observability & Monitoring Stack",
+      "description": "Metrics, logs, and distributed tracing"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "client-browser",
+      "label": "Client / Web Browser",
+      "group": "edge-layer",
+      "type": "client",
+      "status": "active",
+      "tech": "React, Tailwind, WebSockets",
+      "description": "User facing web application for vocabulary learning and media streaming."
+    },
+    {
+      "id": "caddy-proxy",
+      "label": "Caddy Reverse Proxy",
+      "group": "edge-layer",
+      "type": "gateway",
+      "status": "active",
+      "tech": "Caddy v2 (Ports 80/443)",
+      "description": "SSL termination, static asset serving for React frontend, and reverse proxying /api to API Gateway."
+    },
+    {
+      "id": "api-gateway",
+      "label": "SubStreamEdu Gateway",
+      "group": "gateway-layer",
+      "type": "gateway",
+      "status": "active",
+      "tech": "Go, Gin (Port 8080)",
+      "description": "Central entry point. Handles request routing, token authentication checks, and Redis rate limiting."
+    },
+    {
+      "id": "iam-service",
+      "label": "IAM Service",
+      "group": "backend-services",
+      "type": "service",
+      "status": "active",
+      "tech": "Go (Port 3002)",
+      "description": "Identity & Access Management. Google OAuth2, JWT generation, user registration & email validation."
+    },
+    {
+      "id": "dictionary-service",
+      "label": "Dictionary Service",
+      "group": "backend-services",
+      "type": "service",
+      "status": "active",
+      "tech": "Go (Port 3003)",
+      "description": "Core vocabulary service with AI LLM integrations (DeepSeek, Groq, Gemini) and image APIs."
+    },
+    {
+      "id": "media-service",
+      "label": "Media Service",
+      "group": "backend-services",
+      "type": "service",
+      "status": "active",
+      "tech": "Go (Port 3004)",
+      "description": "Subtitles processing & audio/video integration (YouTube, Spotify, SubDL, DeepSeek)."
+    },
+    {
+      "id": "notification-service",
+      "label": "Notification Service",
+      "group": "backend-services",
+      "type": "service",
+      "status": "active",
+      "tech": "Go (Port 3005)",
+      "description": "Async notification processing. Telegram bot integrations, email alerts, and Kafka consumer."
+    },
+    {
+      "id": "postgres-db",
+      "label": "PostgreSQL Database",
+      "group": "data-layer",
+      "type": "database",
+      "status": "active",
+      "tech": "PostgreSQL 15 (Port 5432)",
+      "description": "Primary relational database storing IAM (sse_iam), Dictionary (substreamedu_dictionary), and Media schemas."
+    },
+    {
+      "id": "redis-cache",
+      "label": "Redis Cache",
+      "group": "data-layer",
+      "type": "cache",
+      "status": "active",
+      "tech": "Redis 7 (Port 6379)",
+      "description": "In-memory cache for API rate limiting, session storage, and dictionary lookup acceleration."
+    },
+    {
+      "id": "kafka-broker",
+      "label": "Kafka & Zookeeper",
+      "group": "data-layer",
+      "type": "queue",
+      "status": "active",
+      "tech": "Confluent Kafka 7.5 (Port 9092)",
+      "description": "Event bus for asynchronous event processing (e.g. dictionary updates triggering notifications)."
+    },
+    {
+      "id": "prometheus",
+      "label": "Prometheus Metrics",
+      "group": "monitoring-layer",
+      "type": "monitoring",
+      "status": "active",
+      "tech": "Prometheus (Port 9090)",
+      "description": "Pulls HTTP actuator metrics and system performance metrics from Gateway and all services."
+    },
+    {
+      "id": "grafana-loki",
+      "label": "Grafana & Loki",
+      "group": "monitoring-layer",
+      "type": "monitoring",
+      "status": "active",
+      "tech": "Grafana 11 (Port 3000) + Loki (3100)",
+      "description": "Centralized visualization dashboards and log aggregation for microservices."
+    },
+    {
+      "id": "jaeger-tracer",
+      "label": "Jaeger Tracing",
+      "group": "monitoring-layer",
+      "type": "monitoring",
+      "status": "active",
+      "tech": "Jaeger (Port 16686 / OTLP 4317)",
+      "description": "Distributed request tracing across Gateway and microservice calls."
+    }
+  ],
+  "edges": [
+    {
+      "from": "client-browser",
+      "to": "caddy-proxy",
+      "label": "HTTPS / WSS",
+      "type": "sync",
+      "description": "User web traffic and WebSocket connection"
+    },
+    {
+      "from": "caddy-proxy",
+      "to": "api-gateway",
+      "label": "HTTP /api",
+      "type": "sync",
+      "description": "Proxies API calls to the central Go Gateway"
+    },
+    {
+      "from": "api-gateway",
+      "to": "redis-cache",
+      "label": "Rate Limit & Sessions",
+      "type": "sync",
+      "description": "Checks client request rate limits and token sessions"
+    },
+    {
+      "from": "api-gateway",
+      "to": "iam-service",
+      "label": "/auth-service/*",
+      "type": "sync",
+      "description": "Authentication, OAuth login, registration requests"
+    },
+    {
+      "from": "api-gateway",
+      "to": "dictionary-service",
+      "label": "/dictionary-service/*",
+      "type": "sync",
+      "description": "Vocabulary searches, definitions, AI word processing"
+    },
+    {
+      "from": "api-gateway",
+      "to": "media-service",
+      "label": "/media-service/*",
+      "type": "sync",
+      "description": "Subtitle fetch, YouTube/Spotify processing"
+    },
+    {
+      "from": "api-gateway",
+      "to": "notification-service",
+      "label": "/notification-service/*",
+      "type": "sync",
+      "description": "Direct notification & Telegram bot management"
+    },
+    {
+      "from": "iam-service",
+      "to": "postgres-db",
+      "label": "SQL (sse_iam)",
+      "type": "sync",
+      "description": "Persists user profiles, roles, and refresh tokens"
+    },
+    {
+      "from": "dictionary-service",
+      "to": "postgres-db",
+      "label": "SQL (substreamedu_dictionary)",
+      "type": "sync",
+      "description": "Stores words, translations, and user vocabulary lists"
+    },
+    {
+      "from": "dictionary-service",
+      "to": "redis-cache",
+      "label": "Get/Set Cache",
+      "type": "sync",
+      "description": "Caches AI LLM responses and word definitions"
+    },
+    {
+      "from": "dictionary-service",
+      "to": "kafka-broker",
+      "label": "Publish Event",
+      "type": "async",
+      "description": "Publishes word_learned and streak_updated events to Kafka"
+    },
+    {
+      "from": "media-service",
+      "to": "postgres-db",
+      "label": "SQL (substreamedu_media)",
+      "type": "sync",
+      "description": "Stores subtitle timestamps and media metadata"
+    },
+    {
+      "from": "notification-service",
+      "to": "kafka-broker",
+      "label": "Consume Event",
+      "type": "async",
+      "description": "Listens for learning events to trigger Telegram / Email notifications"
+    },
+    {
+      "from": "notification-service",
+      "to": "postgres-db",
+      "label": "SQL (sse_iam)",
+      "type": "sync",
+      "description": "Reads user notification preferences and Telegram IDs"
+    },
+    {
+      "from": "prometheus",
+      "to": "api-gateway",
+      "label": "Scrape Metrics",
+      "type": "metrics",
+      "description": "Pulls HTTP latency and error rates"
+    },
+    {
+      "from": "prometheus",
+      "to": "iam-service",
+      "label": "Scrape Metrics",
+      "type": "metrics"
+    },
+    {
+      "from": "prometheus",
+      "to": "dictionary-service",
+      "label": "Scrape Metrics",
+      "type": "metrics"
+    },
+    {
+      "from": "prometheus",
+      "to": "media-service",
+      "label": "Scrape Metrics",
+      "type": "metrics"
+    },
+    {
+      "from": "prometheus",
+      "to": "notification-service",
+      "label": "Scrape Metrics",
+      "type": "metrics"
+    },
+    {
+      "from": "grafana-loki",
+      "to": "prometheus",
+      "label": "Query PromQL",
+      "type": "sync"
+    },
+    {
+      "from": "api-gateway",
+      "to": "jaeger-tracer",
+      "label": "OTLP Spans",
+      "type": "async"
+    }
+  ]
+}

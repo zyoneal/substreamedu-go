@@ -1,0 +1,73 @@
+{
+  "title": "Go Runtime & HTTP Metrics",
+  "uid": "go-runtime",
+  "tags": ["go", "prometheus"],
+  "schemaVersion": 38,
+  "version": 1,
+  "panels": [
+    {
+      "title": "HTTP Request Rate",
+      "type": "graph",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "rate(http_server_requests_total[5m])",
+        "legendFormat": "{{job}} {{method}} {{path}}",
+        "intervalFactor": 2
+      }]
+    },
+    {
+      "title": "HTTP Request Duration (p99)",
+      "type": "heatmap",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "histogram_quantile(0.99, rate(http_server_request_duration_seconds_bucket[5m]))",
+        "legendFormat": "{{job}} {{method}}"
+      }]
+    },
+    {
+      "title": "Go Routines",
+      "type": "graph",
+      "gridPos": {"x": 0, "y": 8, "w": 8, "h": 8},
+      "targets": [{
+        "expr": "go_goroutines",
+        "legendFormat": "{{job}}"
+      }]
+    },
+    {
+      "title": "Go Memory (Heap)",
+      "type": "graph",
+      "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
+      "targets": [{
+        "expr": "go_memstats_heap_alloc_bytes",
+        "legendFormat": "{{job}}"
+      }]
+    },
+    {
+      "title": "Go GC Duration",
+      "type": "graph",
+      "gridPos": {"x": 16, "y": 8, "w": 8, "h": 8},
+      "targets": [{
+        "expr": "rate(go_gc_duration_seconds_sum[5m])",
+        "legendFormat": "{{job}}"
+      }]
+    },
+    {
+      "title": "HTTP Error Rate (4xx/5xx)",
+      "type": "graph",
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "sum(rate(http_server_requests_total{status=~\"4..|5..\"}[5m])) by (job)",
+        "legendFormat": "{{job}}"
+      }]
+    },
+    {
+      "title": "Active Requests",
+      "type": "graph",
+      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "sum(rate(http_server_requests_total[5m])) by (job)",
+        "legendFormat": "{{job}}"
+      }]
+    }
+  ]
+}
