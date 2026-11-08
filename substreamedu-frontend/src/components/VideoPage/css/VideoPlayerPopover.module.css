@@ -441,18 +441,48 @@
     text-rendering: optimizeLegibility;
     position: relative;
     z-index: 1;
-    transition: filter 0.2s ease, opacity 0.2s ease;
+    animation: subtitleFocusIn 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: filter 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes subtitleFocusIn {
+    0% {
+        opacity: 0;
+        filter: blur(3px);
+        transform: translateY(3px) scale(0.99);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0px);
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes subtitleBlurredIn {
+    0% {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+    100% {
+        opacity: 0.75;
+        transform: translateY(0);
+    }
 }
 
 .currentSubtitle.isBlurred {
-    filter: blur(5px);
+    filter: blur(6px);
+    opacity: 0.75;
     cursor: pointer;
+    user-select: none;
+    animation: subtitleBlurredIn 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .currentSubtitle.isBlurred:hover,
 .currentSubtitle.isBlurred:active,
 .currentSubtitle.isRevealed {
     filter: blur(0) !important;
+    opacity: 1 !important;
+    user-select: text !important;
 }
 
 @media (max-width: 768px) {
@@ -461,6 +491,34 @@
         line-height: 1.4 !important;
         width: 100% !important;
         display: block !important;
+        animation: subtitleMobileIn 0.14s ease forwards !important;
+        transform: none !important;
+    }
+}
+
+@keyframes subtitleMobileIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .currentSubtitle {
+        animation: none !important;
+        transform: none !important;
+        filter: none !important;
+    }
+    .currentSubtitle.isBlurred {
+        filter: blur(5px) !important;
+    }
+    .dictionaryWord {
+        animation: none !important;
+    }
+    .grammarBadgeContainer {
+        animation: none !important;
     }
 }
 
@@ -479,6 +537,18 @@
     pointer-events: auto;
     flex-shrink: 0;
     vertical-align: middle;
+    animation: grammarBadgeSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes grammarBadgeSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(2px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .grammarBadge {
@@ -3234,17 +3304,36 @@
     cursor: pointer;
     position: relative;
     transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    color: #e8e8e8 !important;
+    color: #f3ece1 !important;
     font-weight: 600;
     font-style: italic;
-    border-bottom: 1px dashed #666666;
+    border-bottom: 1px dashed rgba(245, 158, 11, 0.55);
     padding: 0 2px;
+    animation: lexemeAccentPulse 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.12s backwards;
+}
+
+@keyframes lexemeAccentPulse {
+    0% {
+        color: #e8e8e8;
+        border-bottom-color: rgba(255, 255, 255, 0.2);
+        text-shadow: none;
+    }
+    45% {
+        color: #fbd38d;
+        border-bottom-color: rgba(245, 158, 11, 0.85);
+        text-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+    }
+    100% {
+        color: #f3ece1;
+        border-bottom-color: rgba(245, 158, 11, 0.55);
+        text-shadow: none;
+    }
 }
 
 .dictionaryWord:hover {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.08);
-    border-bottom-color: #ffffff;
+    background: rgba(245, 158, 11, 0.15);
+    border-bottom-color: #f59e0b;
     border-radius: 2px;
 }
 

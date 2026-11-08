@@ -109,4 +109,25 @@ describe('SubtitleOverlay Component', () => {
         const wrapper = container.querySelector('.fullscreenSubtitles');
         expect(wrapper).toBeInTheDocument();
     });
+
+    it('remounts subtitle paragraph on currentSubtitle change to trigger entrance animation', () => {
+        const { rerender } = render(<SubtitleOverlay {...defaultProps} currentSubtitle="First sentence." renderedSubtitle={<span>First sentence.</span>} />);
+        const firstP = screen.getByText('First sentence.').closest('p');
+        expect(firstP).toBeInTheDocument();
+
+        rerender(<SubtitleOverlay {...defaultProps} currentSubtitle="Second sentence." renderedSubtitle={<span>Second sentence.</span>} />);
+        const secondP = screen.getByText('Second sentence.').closest('p');
+        expect(secondP).toBeInTheDocument();
+        expect(secondP).not.toBe(firstP);
+    });
+
+    it('reveals blurred subtitles on touch interaction (Ghost-to-Ink reveal)', () => {
+        render(<SubtitleOverlay {...defaultProps} blurSubtitles={true} isMobile={true} />);
+        const paragraph = screen.getByText('I went to the store yesterday.').closest('p');
+        expect(paragraph).toHaveClass('isBlurred');
+        expect(paragraph).not.toHaveClass('isRevealed');
+
+        fireEvent.touchStart(paragraph!);
+        expect(paragraph).toHaveClass('isRevealed');
+    });
 });

@@ -187,7 +187,7 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                 ) : currentSubtitle && (
                     <>
                         {activeGrammarPoint && (
-                            <div className={styles.grammarBadgeContainer}>
+                            <div key={activeGrammarPoint.tag} className={styles.grammarBadgeContainer}>
                                 <button
                                     type="button"
                                     className={styles.grammarBadge}
@@ -212,6 +212,7 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
                             </div>
                         )}
                         <p
+                            key={currentSubtitle}
                             className={`${styles.currentSubtitle} ${blurSubtitles ? styles.isBlurred : ''} ${isTouchRevealed ? styles.isRevealed : ''}`}
                             onContextMenu={(e) => {
                                 const isAndroid = /Android/i.test(navigator.userAgent);
