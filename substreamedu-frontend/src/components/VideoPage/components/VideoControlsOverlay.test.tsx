@@ -254,4 +254,19 @@ describe('VideoControlsOverlay Component', () => {
         expect(seekBarWrapper).not.toHaveClass('scrubbing');
         expect(onSeekTo).toHaveBeenCalledWith(100);
     });
+
+    it('exposes aria-pressed state on Blur, Delay, and Subtitle visibility toggles', () => {
+        render(
+            <VideoControlsOverlay
+                {...defaultProps}
+                showSubtitles={true}
+                blurSubtitles={true}
+                delay={-2}
+            />
+        );
+
+        expect(screen.getByRole('button', { name: /toggle blur subtitles/i })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: /toggle subtitle delay -2s/i })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('button', { name: /hide subtitles/i })).toHaveAttribute('aria-pressed', 'true');
+    });
 });

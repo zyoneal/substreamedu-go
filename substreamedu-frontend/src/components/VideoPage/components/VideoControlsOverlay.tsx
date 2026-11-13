@@ -206,18 +206,21 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                         )}
                         <button
                             type="button"
-                            className={styles.controlButton}
+                            className={`${styles.controlButton} ${!showSubtitles ? styles.mutedControlButton : ''}`}
                             onClick={onToggleSubtitles}
                             aria-label={showSubtitles ? "Hide subtitles" : "Show subtitles"}
+                            aria-pressed={showSubtitles}
                             title={showSubtitles ? "Hide subtitles" : "Show subtitles"}
                         >
                             {showSubtitles ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
+
                         {/* 1. Subtitle Blur Toggle */}
                         <button
                             type="button"
                             className={`${styles.quickPillButton} ${blurSubtitles ? styles.activePill : ''}`}
                             onClick={onToggleBlur}
+                            aria-pressed={blurSubtitles}
                             title={blurSubtitles ? "Subtitles blurred (Listening practice active) — click to show plain" : "Blur subtitles (Listening practice)"}
                             aria-label="Toggle blur subtitles"
                         >
@@ -229,6 +232,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                             type="button"
                             className={`${styles.quickPillButton} ${delay === -2 ? styles.activePill : ''}`}
                             onClick={() => onDelayChange(delay === -2 ? 0 : -2)}
+                            aria-pressed={delay === -2}
                             title={delay === -2 ? "Subtitle delay: -2s active — click for 0s" : "Delay subtitles by 2s (Listening practice)"}
                             aria-label="Toggle subtitle delay -2s"
                         >
@@ -243,138 +247,145 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                             title="Repeat current subtitle 3 times"
                             aria-label="Repeat subtitle 3 times"
                         >
-                            <RotateCcw size={12} />
+                            <RotateCcw size={13} />
                             <span>3x</span>
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* 3. BOTTOM CONTROLS */}
+            {/* 3. BOTTOM CONTROLS (Netflix-style edge-to-edge two-row layout) */}
             <div className={styles.bottomControls} onClick={(e) => e.stopPropagation()}>
-                {/* Play / Pause Toggle Button */}
-                <button
-                    type="button"
-                    className={styles.controlButton}
-                    onClick={onTogglePlayPause}
-                    aria-label={isPlaying ? "Pause" : "Play"}
-                    title={isPlaying ? "Pause (Space)" : "Play (Space)"}
-                >
-                    {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
-                </button>
-
-                {!isMobile && (
+                <div className={styles.timelineRow}>
+                    <div className={styles.timeCurrent}>
+                        {formatTime(currentTime)}
+                    </div>
                     <div
-                        className={`${styles.volumeControl} ${styles.desktopOnlyControl}`}
-                        ref={volumeControlRef}
+                        ref={seekBarWrapperRef}
+                        className={`${styles.seekBarWrapper} ${isScrubbing ? styles.scrubbing : ''}`}
+                        role="slider"
+                        tabIndex={0}
+                        aria-label="Seek video timeline"
+                        aria-valuemin={0}
+                        aria-valuemax={Math.round(duration || 100)}
+                        aria-valuenow={Math.round(currentTime || 0)}
+                        onKeyDown={(e) => {
+                            if (!onSeekTo || !duration) return;
+                            if (e.key === 'ArrowRight') {
+                                e.preventDefault();
+                                onSeekTo(Math.min(duration, (currentTime || 0) + 5));
+                            } else if (e.key === 'ArrowLeft') {
+                                e.preventDefault();
+                                onSeekTo(Math.max(0, (currentTime || 0) - 5));
+                            }
+                        }}
+                        onClick={onSeek}
+                        onTouchStart={onTouchSeek}
+                        onTouchMove={onTouchSeek}
+                        onTouchEnd={onTouchSeek}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerCancel={handlePointerCancel}
                     >
+                        {isScrubbing && (
+                            <div
+                                className={styles.scrubBadge}
+                                style={{ left: `${scrubPercent}%` }}
+                            >
+                                {formatTime(scrubTime)}
+                            </div>
+                        )}
+                        <div className={styles.seekBar}>
+                            <div
+                                className={styles.seekBarProgress}
+                                style={{ width: `${isScrubbing ? scrubPercent : progress}%` }}
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.timeDuration}>
+                        {formatTime(duration)}
+                    </div>
+                </div>
+
+                <div className={styles.transportRow}>
+                    <div className={styles.transportLeft}>
                         <button
                             type="button"
-                            className={`${styles.controlButton} ${isVolumeOpen ? styles.activeControlButton : ''}`}
-                            onClick={() => setIsVolumeOpen((prev) => !prev)}
-                            aria-label={isMuted ? "Unmute" : "Volume"}
-                            title={isMuted ? "Unmute" : "Volume"}
+                            className={styles.controlButton}
+                            onClick={onTogglePlayPause}
+                            aria-label={isPlaying ? "Pause" : "Play"}
+                            title={isPlaying ? "Pause (Space)" : "Play (Space)"}
                         >
-                            {isMuted || volume === 0 ? (
-                                <VolumeX size={18} />
-                            ) : volume > 0.5 ? (
-                                <Volume2 size={18} />
-                            ) : (
-                                <Volume1 size={18} />
-                            )}
+                            {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
                         </button>
 
-                        {isVolumeOpen && (
+                        {!isMobile && (
                             <div
-                                className={styles.verticalVolumePopup}
-                                onClick={(e) => e.stopPropagation()}
+                                className={`${styles.volumeControl} ${styles.desktopOnlyControl}`}
+                                ref={volumeControlRef}
                             >
-                                <span className={styles.volumePercentageText}>
-                                    {isMuted || volume === 0 ? '0%' : `${Math.round(volume * 100)}%`}
-                                </span>
-                                <div className={styles.verticalVolumeTrackWrapper}>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="1"
-                                        step="0.05"
-                                        value={isMuted ? 0 : volume}
-                                        onChange={onVolumeChange}
-                                        className={styles.verticalVolumeSlider}
-                                        aria-label="Volume slider"
-                                    />
-                                </div>
                                 <button
                                     type="button"
-                                    className={styles.volumeMuteMiniButton}
-                                    onClick={onToggleMute}
-                                    aria-label={isMuted ? "Unmute" : "Mute"}
-                                    title={isMuted ? "Unmute" : "Mute"}
+                                    className={`${styles.controlButton} ${isVolumeOpen ? styles.activeControlButton : ''}`}
+                                    onClick={() => setIsVolumeOpen((prev) => !prev)}
+                                    aria-label={isMuted ? "Unmute" : "Volume"}
+                                    title={isMuted ? "Unmute" : "Volume"}
                                 >
-                                    {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                    {isMuted || volume === 0 ? (
+                                        <VolumeX size={21} />
+                                    ) : volume > 0.5 ? (
+                                        <Volume2 size={21} />
+                                    ) : (
+                                        <Volume1 size={21} />
+                                    )}
                                 </button>
+
+                                {isVolumeOpen && (
+                                    <div
+                                        className={styles.horizontalVolumeDrawer}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.05"
+                                            value={isMuted ? 0 : volume}
+                                            onChange={onVolumeChange}
+                                            className={styles.horizontalVolumeSlider}
+                                            aria-label="Volume slider"
+                                        />
+                                        <span className={styles.volumePercentageText}>
+                                            {isMuted || volume === 0 ? '0%' : `${Math.round(volume * 100)}%`}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className={styles.volumeMuteMiniButton}
+                                            onClick={onToggleMute}
+                                            aria-label={isMuted ? "Unmute" : "Mute"}
+                                            title={isMuted ? "Unmute" : "Mute"}
+                                        >
+                                            {isMuted || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                )}
-                <div className={styles.timeCurrent}>
-                    {formatTime(currentTime)}
-                </div>
-                <div
-                    ref={seekBarWrapperRef}
-                    className={`${styles.seekBarWrapper} ${isScrubbing ? styles.scrubbing : ''}`}
-                    role="slider"
-                    tabIndex={0}
-                    aria-label="Seek video timeline"
-                    aria-valuemin={0}
-                    aria-valuemax={Math.round(duration || 100)}
-                    aria-valuenow={Math.round(currentTime || 0)}
-                    onKeyDown={(e) => {
-                        if (!onSeekTo || !duration) return;
-                        if (e.key === 'ArrowRight') {
-                            e.preventDefault();
-                            onSeekTo(Math.min(duration, (currentTime || 0) + 5));
-                        } else if (e.key === 'ArrowLeft') {
-                            e.preventDefault();
-                            onSeekTo(Math.max(0, (currentTime || 0) - 5));
-                        }
-                    }}
-                    onClick={onSeek}
-                    onTouchStart={onTouchSeek}
-                    onTouchMove={onTouchSeek}
-                    onTouchEnd={onTouchSeek}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
-                    onPointerUp={handlePointerUp}
-                    onPointerCancel={handlePointerCancel}
-                >
-                    {isScrubbing && (
-                        <div
-                            className={styles.scrubBadge}
-                            style={{ left: `${scrubPercent}%` }}
+
+                    <div className={styles.transportRight}>
+                        <button
+                            type="button"
+                            className={styles.controlButton}
+                            onClick={onToggleFullscreen}
+                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                         >
-                            {formatTime(scrubTime)}
-                        </div>
-                    )}
-                    <div className={styles.seekBar}>
-                        <div
-                            className={styles.seekBarProgress}
-                            style={{ width: `${isScrubbing ? scrubPercent : progress}%` }}
-                        />
+                            {isFullscreen ? <Minimize size={21} /> : <Maximize size={21} />}
+                        </button>
                     </div>
                 </div>
-                <div className={styles.timeDuration}>
-                    {formatTime(duration)}
-                </div>
-                <button
-                    type="button"
-                    className={styles.controlButton}
-                    onClick={onToggleFullscreen}
-                    aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                    title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                >
-                    {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                </button>
             </div>
         </div>
     );

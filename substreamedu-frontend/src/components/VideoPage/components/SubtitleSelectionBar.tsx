@@ -1,5 +1,6 @@
 import React from 'react';
 import { useIntl } from 'react-intl';
+import { Search, Upload } from 'lucide-react';
 import { SearchableSelect } from '../../shared/SearchableSelect';
 import styles from '../css/VideoPlayerPopover.module.css';
 
@@ -26,11 +27,10 @@ export const SubtitleSelectionBar: React.FC<SubtitleSelectionBarProps> = ({
     const hasSubtitles = Boolean(subtitles && subtitles.length > 0);
 
     return (
-        <div className={styles.subtitleContainer}>
-            <div className={styles.innerSubtitlesContainer}>
-                <div className={styles.subtitleSelectionRow}>
+        <div className={styles.subtitleSelectionBarContainer}>
+            <div className={`${styles.subtitleSelectionRow} ${styles.subtitleTrackBarCard}`}>
                     {hasSubtitles && (
-                        <div style={{ flexShrink: 0, minWidth: '250px', maxWidth: '350px', width: '100%' }}>
+                        <div className={styles.subtitleSelectWrapper}>
                             <SearchableSelect
                                 options={subtitles || []}
                                 value={fileName || ''}
@@ -46,18 +46,22 @@ export const SubtitleSelectionBar: React.FC<SubtitleSelectionBarProps> = ({
                             : "Automatic subtitle search available! Click 'Search Subtitles' or upload your own .srt file."
                         }
                     </p>
-                    <button
-                        type="button"
-                        onClick={onSearchSubtitles}
-                        className={styles.minimalistButton}
-                        disabled={isSearchingSubtitles}
-                        aria-label={isSearchingSubtitles ? 'Searching subtitles' : 'Search Subtitles'}
-                    >
-                        {isSearchingSubtitles ? 'Searching...' : 'Search Subtitles'}
-                    </button>
-                    <label htmlFor="subtitle-upload-player" className={styles.minimalistButton}>
-                        Upload Subtitles
-                    </label>
+                    <div className={styles.subtitleTrackActions}>
+                        <button
+                            type="button"
+                            onClick={onSearchSubtitles}
+                            className={styles.minimalistButton}
+                            disabled={isSearchingSubtitles}
+                            aria-label={isSearchingSubtitles ? 'Searching subtitles' : 'Search Subtitles'}
+                        >
+                            <Search size={14} aria-hidden="true" />
+                            <span>{isSearchingSubtitles ? 'Searching...' : 'Search Subtitles'}</span>
+                        </button>
+                        <label htmlFor="subtitle-upload-player" className={styles.minimalistSecondaryButton}>
+                            <Upload size={14} aria-hidden="true" />
+                            <span>Upload Subtitles</span>
+                        </label>
+                    </div>
                     <input
                         id="subtitle-upload-player"
                         ref={subtitleInputRef}
@@ -66,7 +70,6 @@ export const SubtitleSelectionBar: React.FC<SubtitleSelectionBarProps> = ({
                         onChange={onUploadSubtitles}
                         className="sr-only"
                     />
-                </div>
             </div>
         </div>
     );
