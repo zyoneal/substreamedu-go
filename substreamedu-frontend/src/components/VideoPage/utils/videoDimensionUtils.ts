@@ -5,7 +5,8 @@
 
 export const DEFAULT_COMPACT_WIDTH = 1050;
 export const DEFAULT_ASPECT_RATIO = 16 / 9;
-export const DEFAULT_VERTICAL_OVERHEAD = 260; // Top padding (80px) + player header (~48px) + subtitle bar (~96px) + bottom padding (36px)
+export const DEFAULT_VERTICAL_OVERHEAD = 152; // Top header (76px) + control bar (~52px) + bottom padding (24px)
+export const SUBTITLE_BAR_VERTICAL_OVERHEAD = 260; // Includes SubtitleSelectionBar below the player before subtitles are chosen
 export const MIN_PLAYER_WIDTH = 320;
 export const MIN_AVAILABLE_HEIGHT = 240;
 export const HORIZONTAL_PADDING = 48;

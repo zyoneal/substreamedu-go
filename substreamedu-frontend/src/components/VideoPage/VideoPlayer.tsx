@@ -11,6 +11,7 @@ import { useSubtitleSearch } from './hooks/useSubtitleSearch';
 import { useVideoKeyboardShortcuts } from './hooks/useVideoKeyboardShortcuts';
 import { useSubtitleTranslation } from './hooks/useSubtitleTranslation';
 import { useVideoDimensions } from './hooks/useVideoDimensions';
+import { DEFAULT_VERTICAL_OVERHEAD, SUBTITLE_BAR_VERTICAL_OVERHEAD } from './utils/videoDimensionUtils';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
 import { useWordTooltip } from './hooks/useWordTooltip';
 import { useVideoOnboarding } from './hooks/useVideoOnboarding';
@@ -248,6 +249,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         videoId,
         videoRef,
         handleVideoMetadata,
+        verticalOverhead: selectedSubtitle || videoId ? DEFAULT_VERTICAL_OVERHEAD : SUBTITLE_BAR_VERTICAL_OVERHEAD,
     });
 
     // 8. Subtitle Search hook
