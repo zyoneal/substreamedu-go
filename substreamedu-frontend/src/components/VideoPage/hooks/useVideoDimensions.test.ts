@@ -30,8 +30,8 @@ describe('useVideoDimensions', () => {
 
         expect(result.current.isMaxFit).toBe(true);
         expect(result.current.mediaAspectRatio).toBe(DEFAULT_ASPECT_RATIO);
-        // (900 - 152) * 16/9 = 748 * 16/9 = 1329
-        expect(result.current.playerWidth).toBe(1329);
+        // (900 - 260) * 16/9 = 640 * 16/9 = 1137
+        expect(result.current.playerWidth).toBe(1137);
     });
 
     it('toggles between max fit and compact theater mode', () => {
@@ -46,7 +46,7 @@ describe('useVideoDimensions', () => {
         );
 
         expect(result.current.isMaxFit).toBe(true);
-        expect(result.current.playerWidth).toBe(1329);
+        expect(result.current.playerWidth).toBe(1137);
 
         // Toggle to compact
         act(() => {
@@ -62,7 +62,7 @@ describe('useVideoDimensions', () => {
         });
 
         expect(result.current.isMaxFit).toBe(true);
-        expect(result.current.playerWidth).toBe(1329);
+        expect(result.current.playerWidth).toBe(1137);
     });
 
     it('adapts aspect ratio and recalculates width when video metadata loads', () => {
@@ -88,8 +88,8 @@ describe('useVideoDimensions', () => {
 
         expect(handleVideoMetadata).toHaveBeenCalledTimes(1);
         expect(result.current.mediaAspectRatio).toBe(4 / 3);
-        // 748 * 4/3 = 997
-        expect(result.current.playerWidth).toBe(997);
+        // 640 * 4/3 = 853
+        expect(result.current.playerWidth).toBe(853);
     });
 
     it('updates playerWidth on window resize event', () => {
@@ -103,7 +103,7 @@ describe('useVideoDimensions', () => {
             })
         );
 
-        expect(result.current.playerWidth).toBe(1329);
+        expect(result.current.playerWidth).toBe(1137);
 
         // Resize window to 1920x1080
         act(() => {
@@ -112,8 +112,8 @@ describe('useVideoDimensions', () => {
             window.dispatchEvent(new Event('resize'));
         });
 
-        // (1080 - 152) * 16/9 = 928 * 16/9 = 1649
-        expect(result.current.playerWidth).toBe(1649);
+        // (1080 - 260) * 16/9 = 820 * 16/9 = 1457
+        expect(result.current.playerWidth).toBe(1457);
     });
 
     it('resets to max fit when videoId changes', () => {

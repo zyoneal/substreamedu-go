@@ -7,83 +7,91 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 12px 16px;
+    background: var(--color-surface-elevated, #eae7e1);
+    border: 1px solid var(--color-hairline-strong, rgba(10, 10, 10, 0.18));
+    border-radius: 9999px;
+    padding: 9px 16px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
+    transition: background-color 0.2s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+    box-sizing: border-box;
 }
 
 .inputWrapper:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(0, 69, 230, 0.3);
+    background: var(--color-canvas, #f5f3ef);
+    border-color: var(--color-ink, #0a0a0a);
 }
 
 .inputWrapper.open {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #FAF92F;
+    background: var(--color-canvas, #f5f3ef);
+    border-color: var(--color-ink, #0a0a0a);
     box-shadow: none;
 }
 
 .input {
     flex: 1;
+    min-width: 0;
     background: transparent;
     border: none;
     outline: none;
-    color: #FFFFFF;
-    font-size: 15px;
-    font-family: var(--font-body), 'Segoe UI', sans-serif;
-    font-weight: 400;
+    color: var(--color-ink, #0a0a0a);
+    font-size: 13.5px;
+    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-weight: 500;
     width: 100%;
+    text-overflow: ellipsis;
 }
 
 .input::placeholder {
-    color: rgba(139, 157, 195, 0.6);
+    color: var(--color-mute, #73706b);
 }
 
 .arrow {
-    color: #8B9DC3;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--color-body, #4a4a48);
+    transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), color 0.2s ease;
     flex-shrink: 0;
     margin-left: 8px;
 }
 
 .arrowOpen {
     transform: rotate(180deg);
-    color: #FAF92F;
+    color: var(--color-ink, #0a0a0a);
 }
 
 .dropdown {
     position: absolute;
     left: 0;
-    right: 0;
-    max-height: 400px;
+    right: auto;
+    min-width: 100%;
+    width: max-content;
+    max-width: min(440px, 90vw);
+    max-height: 360px;
     overflow-y: auto;
-    background: rgba(20, 25, 35, 0.98);
-    border: 1px solid rgba(0, 69, 230, 0.2);
-    border-radius: 12px;
-    box-shadow: none
-                0 0 0 1px rgba(0, 69, 230, 0.1);
+    overflow-x: hidden;
+    padding-bottom: 6px;
+    background: rgba(20, 19, 18, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
     z-index: 1000;
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-sizing: border-box;
 }
 
 .dropdownBottom {
     top: calc(100% + 8px);
-    animation: dropdownSlideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: dropdownSlideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dropdownTop {
     bottom: calc(100% + 8px);
-    animation: dropdownSlideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: dropdownSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes dropdownSlideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-6px);
     }
     to {
         opacity: 1;
@@ -94,7 +102,7 @@
 @keyframes dropdownSlideUp {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(6px);
     }
     to {
         opacity: 1;
@@ -103,77 +111,81 @@
 }
 
 .dropdown::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .dropdown::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 4px;
+    background: transparent;
 }
 
 .dropdown::-webkit-scrollbar-thumb {
-    background: rgba(0, 69, 230, 0.2);
-    border-radius: 4px;
-    transition: background 0.2s;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 9999px;
 }
 
 .dropdown::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 69, 230, 0.4);
+    background: rgba(255, 255, 255, 0.32);
 }
 
 .resultsCount {
-    padding: 8px 16px;
-    font-size: 12px;
-    color: #8B9DC3;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 14px 8px 14px;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 11px;
+    color: rgba(245, 243, 239, 0.55);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 4px;
     font-weight: 500;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .option {
-    padding: 12px 16px;
-    color: #FFFFFF;
+    padding: 9px 12px;
+    margin: 2px 6px;
+    border-radius: 8px;
+    color: rgba(245, 243, 239, 0.88);
     cursor: pointer;
-    transition: all 0.15s ease;
-    font-size: 15px;
-    font-family: var(--font-body), 'Segoe UI', sans-serif;
-    border-left: 3px solid transparent;
+    transition: background-color 0.14s ease, color 0.14s ease;
+    font-size: 13.5px;
+    font-family: var(--font-body, 'Satoshi', sans-serif);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .option:hover,
 .option.highlighted {
-    background: rgba(0, 69, 230, 0.08);
-    border-left-color: #FAF92F;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
 }
 
 .option.selected {
-    background: rgba(0, 69, 230, 0.12);
-    border-left-color: #FAF92F;
-    font-weight: 500;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-weight: 600;
 }
 
 .option.selected::after {
     content: '✓';
     float: right;
-    color: #FAF92F;
-    font-weight: bold;
+    margin-left: 10px;
+    color: #f5f3ef;
+    font-weight: 600;
 }
 
 .highlight {
-    background: rgba(0, 69, 230, 0.25);
-    color: #FAF92F;
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
     font-weight: 600;
     padding: 0 2px;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 .noOptions {
-    padding: 32px 16px;
+    padding: 24px 16px;
     text-align: center;
-    color: #8B9DC3;
-    font-size: 14px;
-    font-style: italic;
+    color: rgba(245, 243, 239, 0.55);
+    font-size: 13px;
 }
 
 @media (max-width: 768px) {
@@ -182,19 +194,21 @@
     }
 
     .dropdown {
-        max-height: 300px;
+        max-width: 100%;
+        width: 100%;
+        max-height: 280px;
     }
 
     .inputWrapper {
-        padding: 10px 14px;
+        padding: 9px 14px;
     }
 
     .input {
-        font-size: 14px;
+        font-size: 13.5px;
     }
 
     .option {
-        padding: 10px 14px;
-        font-size: 14px;
+        padding: 9px 12px;
+        font-size: 13.5px;
     }
 }

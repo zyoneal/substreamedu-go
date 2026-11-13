@@ -10,28 +10,28 @@ import {
 describe('videoDimensionUtils', () => {
     describe('calculateMaxFitWidth', () => {
         it('calculates max fit width for standard 16:9 on 1920x1080 desktop', () => {
-            // viewportHeight = 1080, overhead = 152 -> availableHeight = 928
-            // maxWidthFromHeight = floor(928 * 16/9) = floor(1649.77) = 1649
+            // viewportHeight = 1080, overhead = 260 -> availableHeight = 820
+            // maxWidthFromHeight = floor(820 * 16/9) = floor(1457.77) = 1457
             // maxWidthFromWidth = 1920 - 48 = 1872
-            // maxAllowed = min(1649, 1872) = 1649
+            // maxAllowed = min(1457, 1872) = 1457
             const width = calculateMaxFitWidth(16 / 9, 1920, 1080);
-            expect(width).toBe(1649);
+            expect(width).toBe(1457);
         });
 
         it('calculates max fit width for 1440x900 laptop screen', () => {
-            // viewportHeight = 900, overhead = 152 -> availableHeight = 748
-            // maxWidthFromHeight = floor(748 * 16/9) = floor(1329.77) = 1329
+            // viewportHeight = 900, overhead = 260 -> availableHeight = 640
+            // maxWidthFromHeight = floor(640 * 16/9) = floor(1137.77) = 1137
             // maxWidthFromWidth = 1440 - 48 = 1392
-            // maxAllowed = min(1329, 1392) = 1329
+            // maxAllowed = min(1137, 1392) = 1137
             const width = calculateMaxFitWidth(16 / 9, 1440, 900);
-            expect(width).toBe(1329);
+            expect(width).toBe(1137);
         });
 
         it('bounds by screen width on narrow mobile viewports', () => {
             // viewportWidth = 375, viewportHeight = 667
             // maxWidthFromWidth = 375 - 48 = 327
-            // availableHeight = 667 - 152 = 515, maxWidthFromHeight = 915
-            // maxAllowed = min(915, 327) = 327
+            // availableHeight = 667 - 260 = 407, maxWidthFromHeight = 723
+            // maxAllowed = min(723, 327) = 327
             const width = calculateMaxFitWidth(16 / 9, 375, 667);
             expect(width).toBe(327);
         });
@@ -42,15 +42,15 @@ describe('videoDimensionUtils', () => {
         });
 
         it('handles 4:3 aspect ratio correctly', () => {
-            // availableHeight = 900 - 152 = 748 -> 748 * 4/3 = 997.33 -> 997
+            // availableHeight = 900 - 260 = 640 -> 640 * 4/3 = 853.33 -> 853
             const width = calculateMaxFitWidth(4 / 3, 1440, 900);
-            expect(width).toBe(997);
+            expect(width).toBe(853);
         });
 
         it('handles vertical 9:16 aspect ratio correctly', () => {
-            // availableHeight = 900 - 152 = 748 -> 748 * 9/16 = 420.75 -> 420
+            // availableHeight = 900 - 260 = 640 -> 640 * 9/16 = 360
             const width = calculateMaxFitWidth(9 / 16, 1440, 900);
-            expect(width).toBe(420);
+            expect(width).toBe(360);
         });
 
         it('falls back to 16:9 when invalid ratio is supplied', () => {
