@@ -211,6 +211,7 @@ const DictionaryService = {
         `${baseURL}${urls.dictionaryResources}/${resourceName}/export/anki`,
         {
           responseType: "blob",
+          timeout: 120000,
         }
       );
       if (response && response.data) {
@@ -247,6 +248,7 @@ const DictionaryService = {
         `${baseURL}${urls.dictionary}/export/anki`,
         {
           responseType: "blob",
+          timeout: 120000,
         }
       );
       if (response && response.data) {

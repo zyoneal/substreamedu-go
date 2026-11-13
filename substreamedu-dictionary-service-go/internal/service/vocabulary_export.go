@@ -199,7 +199,12 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 	results := make(chan mediaResult, len(items)*2)
 	var wg sync.WaitGroup
 
-	sem := make(chan struct{}, 10)
+	// Bound remote media fetching so large decks (e.g. 10k words) never hit the 95s gateway timeout.
+	skipRemoteMedia := len(items) > 500
+	mediaCtx, mediaCancel := context.WithTimeout(ctx, 45*time.Second)
+	defer mediaCancel()
+
+	sem := make(chan struct{}, 16)
 
 	httpClient := &http.Client{Timeout: 10 * time.Second}
 	userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
@@ -247,7 +252,7 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 				results <- mediaResult{index: idx, name: name, data: data, mediaKind: "image"}
 			}(i, item.ImageUrl)
 		} else if strings.HasPrefix(item.ImageUrl, "http") {
-			if !IsSafePublicImageURL(item.ImageUrl) {
+			if skipRemoteMedia || !IsSafePublicImageURL(item.ImageUrl) {
 				results <- mediaResult{index: i, mediaKind: "image"}
 				continue
 			}
@@ -257,7 +262,7 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 				defer wg.Done()
 				defer func() { <-sem }()
 
-				data, err := downloadFile(ctx, url)
+				data, err := downloadFile(mediaCtx, url)
 				if err != nil {
 					results <- mediaResult{index: idx, err: err, mediaKind: "image"}
 					return
@@ -283,7 +288,7 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 		}
 
 		isPhrase := len(strings.Fields(item.Word)) > 1
-		if isPhrase || item.Word == "" {
+		if skipRemoteMedia || isPhrase || item.Word == "" {
 			results <- mediaResult{index: i, mediaKind: "audio"}
 		} else {
 			wg.Add(1)
@@ -295,9 +300,9 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 				var audioData []byte
 				var audioErr error
 
-				audioURL := s.getHumanAudioURL(ctx, word)
+				audioURL := s.getHumanAudioURL(mediaCtx, word)
 				if audioURL != "" {
-					audioData, audioErr = downloadFile(ctx, audioURL)
+					audioData, audioErr = downloadFile(mediaCtx, audioURL)
 				}
 
 				if audioData == nil || audioErr != nil {
@@ -306,7 +311,7 @@ func (s *VocabularyService) generateAnkiPackage(ctx context.Context, items []mod
 						strings.ReplaceAll(word, " ", "+"),
 						len(word),
 					)
-					audioData, audioErr = downloadFile(ctx, ttsURL)
+					audioData, audioErr = downloadFile(mediaCtx, ttsURL)
 				}
 
 				if audioErr != nil || audioData == nil {

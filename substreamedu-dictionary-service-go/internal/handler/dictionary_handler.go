@@ -22,7 +22,7 @@ import (
 const (
 	translationLimit   = 100
 	savedWordsLimit    = 50
-	maxAnkiExportCards = 2500
+	maxAnkiExportCards = 0
 )
 
 type DictionaryHandler struct {

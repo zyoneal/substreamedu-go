@@ -63,4 +63,19 @@ func TestAnkiExportLimit(t *testing.T) {
 	t.Run("ExportDictionaryAsAnki rejects when exceeding maxLimit", func(t *testing.T) {
 		assert.Equal(t, "export limit exceeded: maximum allowed cards is 2,500", ErrExportLimitExceeded.Error())
 	})
+
+	t.Run("generateAnkiPackage handles 10,000 words quickly without remote media hangs", func(t *testing.T) {
+		s := &VocabularyService{}
+		items := make([]model.Dictionary, 10000)
+		for i := range items {
+			items[i] = model.Dictionary{
+				Word:        "word",
+				Translation: "слово",
+				ImageUrl:    "https://example.com/should-be-skipped-for-10k.jpg",
+			}
+		}
+		data, err := s.generateAnkiPackage(context.Background(), items, "10k Deck")
+		assert.NoError(t, err)
+		assert.NotEmpty(t, data)
+	})
 }

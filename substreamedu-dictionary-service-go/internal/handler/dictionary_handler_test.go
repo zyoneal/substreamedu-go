@@ -145,3 +145,7 @@ func TestDictionary_GuestAllowed(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code, "Guest request to GetDictionaryStats must return 200 OK, not 401 Unauthorized")
 	})
 }
+
+func TestAnkiExportLimitAllowsLargeDictionaries(t *testing.T) {
+	assert.True(t, maxAnkiExportCards == 0 || maxAnkiExportCards >= 25000, "maxAnkiExportCards should not artificially block dictionaries > 2,500 words")
+}
