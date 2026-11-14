@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useEffect, useState, useRef, useContext, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SubtitleService } from '../../services/SubtitleService';
 import { AuthService } from '../../services/AuthService';
@@ -53,9 +53,10 @@ interface VideoPageProps {
 const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
   usePixzenTheme();
   const intl = useIntl();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isLoggedIn } = useContext(AuthContext);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const hasAutoLoadedDemoRef = useRef<boolean>(false);
   const [recentVideos, addRecentVideo, deleteRecentVideo] = useRecentVideos();
   const [videoState, videoActions] = useVideoUpload(addRecentVideo);
   const [activeTab, setActiveTab] = useState<VideoSource>('youtube');
@@ -91,7 +92,8 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
     if (queryVideo && queryVideo !== videoState.videoUrl) {
       const parsedTime = queryTime ? parseFloat(queryTime) : undefined;
       videoActions.handleYoutubeUrlLoad(queryVideo, undefined, undefined, parsedTime);
-    } else if (!videoState.videoUrl && (isOnboardingParam || isDemoRoute)) {
+    } else if (!videoState.videoUrl && !hasAutoLoadedDemoRef.current && (isOnboardingParam || isDemoRoute)) {
+      hasAutoLoadedDemoRef.current = true;
       videoActions.handleYoutubeUrlLoad(
         DEFAULT_ONBOARDING_PRESET.url,
         DEFAULT_ONBOARDING_PRESET.title,
@@ -100,6 +102,18 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
       );
     }
   }, [searchParams, videoActions, videoState.videoUrl, isLoggedIn]);
+
+  const handleSelectAnotherVideo = useCallback(() => {
+    hasAutoLoadedDemoRef.current = true;
+    videoActions.handleSelectAnotherVideo();
+    if (searchParams.has('v') || searchParams.has('videoUrl') || searchParams.has('t')) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('v');
+      nextParams.delete('videoUrl');
+      nextParams.delete('t');
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [videoActions, searchParams, setSearchParams]);
 
   const [subtitles, setSubtitles] = useState<SubtitleDto[]>([]);
   const [subtitleUploadStatus, setSubtitleUploadStatus] = useState<string | null>(null);
@@ -481,7 +495,7 @@ const VideoPage: React.FC<VideoPageProps> = ({ hideGoogleDrive = false }) => {
                   fetchSubtitles={fetchSubtitles}
                   onSubtitleUpload={handleSubtitleUpload}
                   isExtractingSubtitles={videoState.isExtractingSubtitles}
-                  onSelectAnotherVideo={videoActions.handleSelectAnotherVideo}
+                  onSelectAnotherVideo={handleSelectAnotherVideo}
                   isOnboarding={isOnboarding}
                 />
               </ErrorBoundary>
