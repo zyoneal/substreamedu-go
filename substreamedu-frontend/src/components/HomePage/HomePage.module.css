@@ -256,10 +256,11 @@
 
 .heroTitle {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 7.6vw, 7.5rem);
+  font-size: clamp(2rem, 6.2vw, 6.4rem);
   font-weight: 500;
   line-height: 1.1;
   min-height: 1.15em;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
