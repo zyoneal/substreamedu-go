@@ -45,6 +45,25 @@ describe('HomePage Demo Modal', () => {
     );
   };
 
+  it('renders hero heading with English-focused phrases', () => {
+    renderHomePage();
+    const heading = screen.getByRole('heading', {
+      level: 1,
+      name: 'Learn English from movies. Learn English from music. Learn English from any text',
+    });
+    expect(heading).toBeInTheDocument();
+  });
+
+  it('holds each hero phrase for 2600ms before switching', () => {
+    const intervalSpy = jest.spyOn(window, 'setInterval');
+    try {
+      renderHomePage();
+      expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 2600);
+    } finally {
+      intervalSpy.mockRestore();
+    }
+  });
+
   it('renders Watch demo button on hero section', () => {
     renderHomePage();
     const demoBtn = screen.getByRole('button', { name: /watch demo/i });

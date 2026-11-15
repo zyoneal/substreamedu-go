@@ -19,9 +19,9 @@ import { MarqueeItem } from './pixzen/BrandMarquee';
 import styles from './HomePage.module.css';
 
 export const HERO_PHRASES: readonly string[] = [
-  'Learn from movies',
-  'Learn from music',
-  'Learn from any text',
+  'Learn English from movies',
+  'Learn English from music',
+  'Learn English from any text',
 ];
 
 export const SOURCE_ITEMS: readonly MarqueeItem[] = [
