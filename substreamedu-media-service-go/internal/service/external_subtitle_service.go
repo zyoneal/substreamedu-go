@@ -40,12 +40,7 @@ func (s *ExternalSubtitleService) SearchSubtitles(ctx context.Context, filmName,
 	raw, err := s.subDLClient.SearchSubtitles(ctx, filmName, languages, filmType, season, episode, year, imdbId, tmdbId, sdId)
 	if err != nil {
 		s.logger.Error("failed to search subdl", zap.Error(err))
-
-		return &dto.SubtitleSearchResponse{
-			Status:		false,
-			Results:	[]dto.SearchResult{},
-			Subtitles:	[]dto.SubtitleItem{},
-		}, nil
+		return nil, fmt.Errorf("failed to search subdl: %w", err)
 	}
 
 	// If a specific year was requested and multiple results were returned:

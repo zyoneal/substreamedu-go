@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -16,8 +17,15 @@ import (
 
 var (
 	sharedSubDLClient = &http.Client{
-		Timeout:	3 * time.Second,
+		Timeout:	8 * time.Second,
 		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				dialer := &net.Dialer{
+					Timeout:	5 * time.Second,
+					KeepAlive:	30 * time.Second,
+				}
+				return dialer.DialContext(ctx, "tcp4", addr)
+			},
 			MaxIdleConns:		100,
 			MaxIdleConnsPerHost:	10,
 			IdleConnTimeout:	90 * time.Second,
@@ -70,6 +78,8 @@ func (c *SubDLClient) SearchSubtitles(ctx context.Context, filmName, languages, 
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("User-Agent", "SubStreamEdu/1.0 (+https://substreamedu.com)")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := sharedSubDLClient.Do(req)
 	if err != nil {

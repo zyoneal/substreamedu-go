@@ -1,10 +1,16 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/substreamedu/substreamedu-media-service/internal/config"
 	"github.com/substreamedu/substreamedu-media-service/internal/dto"
+	"go.uber.org/zap"
 )
 
 func TestSubDLUnmarshaling(t *testing.T) {
@@ -60,5 +66,39 @@ func TestSubDLUnmarshaling(t *testing.T) {
 	id, _ := res.Subtitles[0].SubtitleID.Int64()
 	if id != 12345 {
 		t.Errorf("Expected subtitle ID 12345, got %d", id)
+	}
+}
+
+func TestSubDLClient_TimeoutAndHeaders(t *testing.T) {
+	if sharedSubDLClient.Timeout < 8*time.Second {
+		t.Fatalf("expected sharedSubDLClient timeout >= 8s to tolerate cold SubDL searches, got %v", sharedSubDLClient.Timeout)
+	}
+
+	var gotUserAgent, gotAccept string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUserAgent = r.Header.Get("User-Agent")
+		gotAccept = r.Header.Get("Accept")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":true,"results":[],"subtitles":[]}`))
+	}))
+	defer srv.Close()
+
+	c := NewSubDLClient(&config.SubDLConfig{
+		APIKey:  "test-key",
+		BaseURL: srv.URL,
+	}, zap.NewNop())
+
+	res, err := c.SearchSubtitles(context.Background(), "Alvin And The Chipmunks", "EN", "movie", nil, nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !res.Status {
+		t.Fatalf("expected status=true, got false")
+	}
+	if gotUserAgent == "" || gotUserAgent == "Go-http-client/1.1" {
+		t.Errorf("expected explicit browser/app User-Agent header, got %q", gotUserAgent)
+	}
+	if gotAccept != "application/json" {
+		t.Errorf("expected Accept: application/json, got %q", gotAccept)
 	}
 }
