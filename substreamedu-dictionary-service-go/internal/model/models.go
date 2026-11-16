@@ -38,6 +38,9 @@ type Dictionary struct {
 	IsLeech			bool		`json:"isLeech" db:"is_leech"`
 	CardType		int		`json:"cardType" db:"card_type"`
 	Category		string		`json:"category" db:"category"`
+	TimestampSec		*int		`json:"timestampSec,omitempty" db:"timestamp_sec"`
+	SourceUrl		string		`json:"sourceUrl,omitempty" db:"source_url"`
+	Note			string		`json:"note,omitempty" db:"note"`
 }
 
 type OutboxStatus string

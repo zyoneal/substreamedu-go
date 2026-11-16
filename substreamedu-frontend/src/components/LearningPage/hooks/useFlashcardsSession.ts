@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { DictionaryService } from '../../../services/DictionaryService';
+import { DictionaryService, SRSSessionFilters, SRSItemKind } from '../../../services/DictionaryService';
 import { SessionWord } from '../utils/storyHighlightUtils';
 
 export interface DictionaryItem {
@@ -52,8 +52,41 @@ export const normalizeRecallLatencyMs = (
     );
 };
 
+export const DEFAULT_SRS_FILTERS: SRSSessionFilters = {
+    resource: '',
+    category: '',
+    kind: 'all',
+};
+
+export const hasActiveSrsFilters = (filters: SRSSessionFilters): boolean =>
+    Boolean(
+        (filters.resource && filters.resource.trim()) ||
+        (filters.category && filters.category.trim()) ||
+        (filters.kind && filters.kind !== 'all')
+    );
+
+export const getFilterKey = (filters: SRSSessionFilters): string =>
+    JSON.stringify({
+        resource: (filters.resource || '').trim(),
+        category: (filters.category || '').trim(),
+        kind: filters.kind || 'all',
+    });
+
+const readInitialFiltersFromUrl = (): SRSSessionFilters => {
+    if (typeof window === 'undefined') return DEFAULT_SRS_FILTERS;
+    const params = new URLSearchParams(window.location.search);
+    const rawKind = params.get('kind');
+    const kind: SRSItemKind = rawKind === 'words' || rawKind === 'phrases' ? rawKind : 'all';
+    return {
+        resource: params.get('resource') || '',
+        category: params.get('category') || '',
+        kind,
+    };
+};
+
 interface StoredSessionState {
     sessionId: string;
+    filterKey?: string;
     wordIds: number[];
     words?: DictionaryItem[];
     currentIndex: number;
@@ -78,6 +111,8 @@ export interface UseFlashcardsSessionReturn {
     answeredIds: Set<number>;
     sessionWords: SessionWord[];
     completionStage: 'learning' | 'story' | 'finished';
+    filters: SRSSessionFilters;
+    hasActiveFilters: boolean;
     isCardInFlight: (id: number) => boolean;
     handleRating: (rating: Rating) => void;
     revealNext: () => void;
@@ -87,12 +122,18 @@ export interface UseFlashcardsSessionReturn {
     handleRefresh: () => void;
     handleFinishEarly: () => void;
     handleContinueCheckpoint: () => void;
+    applyFilters: (nextFilters: SRSSessionFilters) => void;
+    resetFilters: () => void;
     setCompletionStage: React.Dispatch<React.SetStateAction<'learning' | 'story' | 'finished'>>;
     setRevealLevel: React.Dispatch<React.SetStateAction<0 | 1 | 2 | 3>>;
     setSessionWords: React.Dispatch<React.SetStateAction<SessionWord[]>>;
 }
 
 export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
+    const [filters, setFilters] = useState<SRSSessionFilters>(readInitialFiltersFromUrl);
+    const filtersRef = useRef<SRSSessionFilters>(filters);
+    filtersRef.current = filters;
+
     const [reviewWords, setReviewWords] = useState<DictionaryItem[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [revealLevel, setRevealLevel] = useState<0 | 1 | 2 | 3>(0);
@@ -122,6 +163,7 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
     ) => {
         const state: StoredSessionState = {
             sessionId,
+            filterKey: getFilterKey(filtersRef.current),
             wordIds: words.map(w => w.id),
             words,
             currentIndex: index,
@@ -132,13 +174,15 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
         localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
     }, [sessionId, cardStartTime]);
 
-    const fetchReviewWords = useCallback(async (forceRefresh = false) => {
+    const fetchReviewWords = useCallback(async (forceRefresh = false, activeFilters: SRSSessionFilters = filtersRef.current) => {
         setLoading(true);
         try {
             if (forceRefresh) {
                 await DictionaryService.refreshSRSSession();
             }
-            const data = await DictionaryService.fetchSRSToday();
+            const data = hasActiveSrsFilters(activeFilters)
+                ? await DictionaryService.fetchSRSToday(activeFilters)
+                : await DictionaryService.fetchSRSToday();
             const cards = data.cards || [];
             setReviewWords(cards);
             initialCardsCount.current = cards.length;
@@ -150,6 +194,8 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
             setTotalDictionarySize(data.totalDictionarySize);
             setAnsweredIds(new Set());
             setCurrentIndex(0);
+            setRevealLevel(0);
+            setAnswerShownTime(null);
             setCardStartTime(Date.now());
 
             localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -164,6 +210,8 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
 
     const restoreOrFetchSession = useCallback(async () => {
         setLoading(true);
+        const activeFilters = filtersRef.current;
+        const currentFilterKey = getFilterKey(activeFilters);
         try {
             const savedState = localStorage.getItem(SESSION_STORAGE_KEY);
             if (savedState) {
@@ -171,8 +219,11 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
                 const nowMs = Date.now();
                 const sessionAge = nowMs - state.startTime;
                 const isSameDay = new Date(state.startTime).toDateString() === new Date(nowMs).toDateString();
-                if (isSameDay && sessionAge < 24 * 60 * 60 * 1000) {
-                    const sessionData = await DictionaryService.fetchSRSToday();
+                const isSameFilter = (state.filterKey || getFilterKey(DEFAULT_SRS_FILTERS)) === currentFilterKey;
+                if (isSameDay && isSameFilter && sessionAge < 24 * 60 * 60 * 1000) {
+                    const sessionData = hasActiveSrsFilters(activeFilters)
+                        ? await DictionaryService.fetchSRSToday(activeFilters)
+                        : await DictionaryService.fetchSRSToday();
                     setTotalDictionarySize(sessionData.totalDictionarySize);
                     const freshWords = sessionData.cards || [];
                     const wordsMap = new Map(freshWords.map(w => [w.id, w]));
@@ -211,8 +262,19 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
     }, [restoreOrFetchSession]);
 
     const handleRefresh = useCallback(() => {
-        fetchReviewWords(true);
+        fetchReviewWords(true, filtersRef.current);
     }, [fetchReviewWords]);
+
+    const applyFilters = useCallback((nextFilters: SRSSessionFilters) => {
+        setFilters(nextFilters);
+        filtersRef.current = nextFilters;
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        fetchReviewWords(false, nextFilters);
+    }, [fetchReviewWords]);
+
+    const resetFilters = useCallback(() => {
+        applyFilters(DEFAULT_SRS_FILTERS);
+    }, [applyFilters]);
 
     const handleFinishEarly = useCallback(() => {
         localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -384,6 +446,8 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
         answeredIds,
         sessionWords,
         completionStage,
+        filters,
+        hasActiveFilters: hasActiveSrsFilters(filters),
         isCardInFlight,
         handleRating,
         revealNext,
@@ -393,6 +457,8 @@ export const useFlashcardsSession = (): UseFlashcardsSessionReturn => {
         handleRefresh,
         handleFinishEarly,
         handleContinueCheckpoint,
+        applyFilters,
+        resetFilters,
         setCompletionStage,
         setRevealLevel,
         setSessionWords,

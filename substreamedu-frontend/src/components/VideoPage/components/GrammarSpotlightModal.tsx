@@ -10,6 +10,7 @@ interface GrammarSpotlightModalProps {
   onClose: () => void;
   grammarPoint: DetectedGrammarPoint | null;
   fullSentence: string;
+  extendedContext?: string;
   learningLanguage?: string;
   fluentLanguage?: string;
 }
@@ -19,6 +20,7 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
   onClose,
   grammarPoint,
   fullSentence,
+  extendedContext,
   learningLanguage = 'en',
   fluentLanguage = 'ru'
 }) => {
@@ -78,6 +80,7 @@ export const GrammarSpotlightModal: React.FC<GrammarSpotlightModalProps> = ({
     try {
       const response = await DictionaryService.analyzeGrammar({
         sentence: fullSentence,
+        extendedContext,
         ruleHint: grammarPoint.tag,
         learningLanguage,
         fluentLanguage: activeFluentLanguage

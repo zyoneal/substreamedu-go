@@ -1,6 +1,8 @@
 import React from 'react';
-import { Volume2, Folder, Edit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Volume2, Folder, Edit, Trash2, Clock } from 'lucide-react';
 import { DictionaryItem, getHighlightedParts } from '../utils/dictionaryUtils';
+import { buildVideoJumpUrl, formatTimestampSec } from '../../../utils/videoTimestampUtils';
 import styles from '../DictionaryPage.module.css';
 
 export interface DictionaryWordCardProps {
@@ -86,6 +88,12 @@ export const DictionaryWordCard: React.FC<DictionaryWordCardProps> = ({
                     </div>
                 )}
 
+                {word.note && word.note.trim() && (
+                    <p className={styles.wordNoteBox}>
+                        {word.note}
+                    </p>
+                )}
+
                 {word.tags && word.tags.length > 0 && (
                     <div className={styles.wordTagsRow}>
                         {word.tags.slice(0, 4).map((tag, tagIdx) => (
@@ -107,6 +115,29 @@ export const DictionaryWordCard: React.FC<DictionaryWordCardProps> = ({
                     <Folder size={11} />
                     <span>{word.resourceName || 'vault'}</span>
                 </span>
+
+                {word.timestampSec !== null && word.timestampSec !== undefined && (
+                    (() => {
+                        const jumpUrl = buildVideoJumpUrl(word.resourceName, word.sourceUrl, word.timestampSec);
+                        const formatted = formatTimestampSec(word.timestampSec);
+                        return jumpUrl ? (
+                            <Link
+                                to={jumpUrl}
+                                className={styles.timestampJumpLink}
+                                title={`Jump to ${formatted} in video`}
+                                aria-label={`Jump to ${formatted} in video`}
+                            >
+                                <Clock size={11} aria-hidden="true" />
+                                <span>{formatted}</span>
+                            </Link>
+                        ) : (
+                            <span className={styles.timestampBadge}>
+                                <Clock size={11} aria-hidden="true" />
+                                <span>{formatted}</span>
+                            </span>
+                        );
+                    })()
+                )}
 
                 <div className={styles.actionButtonsGroup}>
                     <button

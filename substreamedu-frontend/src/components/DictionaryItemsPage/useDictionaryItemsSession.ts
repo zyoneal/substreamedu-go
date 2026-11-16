@@ -11,6 +11,8 @@ export interface DictionaryItem {
     definition: string;
     imageUrl: string;
     transcription: string;
+    timestampSec?: number | null;
+    sourceUrl?: string;
 }
 
 export type CardAnimationState =

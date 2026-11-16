@@ -10,6 +10,7 @@ interface FlashcardProps {
   definition?: string;
   translatedText?: string;
   context?: string;
+  note?: string;
   imageUrl?: string;
   revealLevel: 0 | 1 | 2 | 3;
   cardType?: number;
@@ -25,6 +26,7 @@ const Flashcard: React.FC<FlashcardProps> = ({
   definition,
   translatedText,
   context,
+  note,
   imageUrl,
   revealLevel,
   cardType = 0,
@@ -195,6 +197,12 @@ const Flashcard: React.FC<FlashcardProps> = ({
         )}
 
         {isProduction && contextContent}
+
+        {Boolean(note && note.trim()) && (
+          <div className={styles.noteSection}>
+            <p className={styles.noteText}>{note}</p>
+          </div>
+        )}
 
         {Boolean(imageUrl && imageUrl.trim() && !imageFailed) && (
           <div className={styles.imageSection}>

@@ -103,6 +103,85 @@ describe('VideoControlsOverlay Component', () => {
         expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
     });
 
+    it('renders Auto-Pause, Loop, Clean CC, and 2x Gap toggles with aria-pressed and fires callbacks', () => {
+        const onToggleAutoPause = jest.fn();
+        const onToggleAutoLoop = jest.fn();
+        const onToggleFilterCC = jest.fn();
+        const onToggleSkipSilence = jest.fn();
+
+        render(
+            <VideoControlsOverlay
+                {...defaultProps}
+                autoPause={true}
+                autoLoop={false}
+                filterCC={true}
+                skipSilence={true}
+                onToggleAutoPause={onToggleAutoPause}
+                onToggleAutoLoop={onToggleAutoLoop}
+                onToggleFilterCC={onToggleFilterCC}
+                onToggleSkipSilence={onToggleSkipSilence}
+            />
+        );
+
+        const autoPauseBtn = screen.getByRole('button', { name: /toggle auto-pause after subtitle/i });
+        const autoLoopBtn = screen.getByRole('button', { name: /toggle auto-loop current subtitle/i });
+        const filterCCBtn = screen.getByRole('button', { name: /toggle closed captions filter/i });
+        const skipSilenceBtn = screen.getByRole('button', { name: /toggle 2x speed during silent gaps/i });
+
+        expect(autoPauseBtn).toHaveAttribute('aria-pressed', 'true');
+        expect(autoLoopBtn).toHaveAttribute('aria-pressed', 'false');
+        expect(filterCCBtn).toHaveAttribute('aria-pressed', 'true');
+        expect(skipSilenceBtn).toHaveAttribute('aria-pressed', 'true');
+
+        fireEvent.click(autoPauseBtn);
+        expect(onToggleAutoPause).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(autoLoopBtn);
+        expect(onToggleAutoLoop).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(filterCCBtn);
+        expect(onToggleFilterCC).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(skipSilenceBtn);
+        expect(onToggleSkipSilence).toHaveBeenCalledTimes(1);
+    });
+
+    it('opens Player settings popover and triggers settings callbacks', () => {
+        const onToggleSubtitleOnly = jest.fn();
+        const onToggleShortcutsDisabled = jest.fn();
+        const onToggleDisableLemmatization = jest.fn();
+        const onSubtitleBgOpacityChange = jest.fn();
+
+        render(
+            <VideoControlsOverlay
+                {...defaultProps}
+                subtitleOnly={false}
+                shortcutsDisabled={true}
+                disableLemmatization={false}
+                subtitleBgOpacity={0.8}
+                onToggleSubtitleOnly={onToggleSubtitleOnly}
+                onToggleShortcutsDisabled={onToggleShortcutsDisabled}
+                onToggleDisableLemmatization={onToggleDisableLemmatization}
+                onSubtitleBgOpacityChange={onSubtitleBgOpacityChange}
+            />
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: /player settings/i }));
+        expect(screen.getByRole('dialog', { name: /player settings menu/i })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByLabelText(/subtitle-only mode/i));
+        expect(onToggleSubtitleOnly).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByLabelText(/disable shortcuts/i));
+        expect(onToggleShortcutsDisabled).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByLabelText(/exact word form/i));
+        expect(onToggleDisableLemmatization).toHaveBeenCalledTimes(1);
+
+        fireEvent.change(screen.getByLabelText(/subtitle background opacity/i), { target: { value: '0.5' } });
+        expect(onSubtitleBgOpacityChange).toHaveBeenCalledWith(0.5);
+    });
+
     it('renders Pause icon when isPlaying is true and Play icon when false', () => {
         const { rerender } = render(<VideoControlsOverlay {...defaultProps} isPlaying={false} />);
         expect(screen.getByTestId('icon-play')).toBeInTheDocument();

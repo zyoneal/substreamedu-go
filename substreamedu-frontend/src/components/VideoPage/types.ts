@@ -29,6 +29,8 @@ export interface DictionaryItem {
     translatedText: string;
     context: string;
     definition: string;
+    status?: string;
+    repetitionLevel?: number;
 }
 
 

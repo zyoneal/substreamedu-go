@@ -72,6 +72,19 @@ export const DictionaryEditModal: React.FC<DictionaryEditModalProps> = ({
                         placeholder="Enter context sentence..."
                     />
                 </div>
+
+                <div className={styles.modalFieldGroup}>
+                    <label htmlFor="edit-note-input" className={styles.modalLabel}>
+                        Personal Note / Mnemonic
+                    </label>
+                    <Input
+                        id="edit-note-input"
+                        value={draftWord.note || ''}
+                        onChange={(e) => setDraftWord({ ...draftWord, note: e.target.value })}
+                        className={styles.modalInput}
+                        placeholder="Add a mnemonic, nuance, or personal note..."
+                    />
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <button

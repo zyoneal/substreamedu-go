@@ -1,0 +1,7 @@
+{
+  "name": "java-spring-boot-best-practices",
+  "version": "1.0.0",
+  "description": "Java 17+ and Spring Boot 3 coding standards for writing and reviewing code: core Java pitfalls, collections/streams, money arithmetic, concurrency, transactions, JPA/database, REST API design, resilience, caching, observability, security, logging, and testing, with a Blocker/Critical/Major/Minor severity map for code review.",
+  "author": { "name": "hector.haito" },
+  "repository": "https://github.com/honghaine/java-spring-boot-best-practices-plugin"
+}

@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { SubtitleService, TranslationProdResponse } from '../../../services/SubtitleService';
 import { useSaveWord, SaveWordData, useUserDictionaryItemsLight } from '../../../hooks/useDictionary';
 import { TranslationPopover } from '../../shared/TranslationPopover';
+import { getSrsTier, SrsTier } from '../../../utils/srsStatusUtils';
 import { SelectionPosition, TranslationData, INITIAL_TRANSLATION_DATA } from '../../VideoPage/types';
 import styles from '../css/BookReader.module.css';
 
@@ -51,22 +52,23 @@ export const BookContent: React.FC<BookContentProps> = ({
 
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Build lookup dictionary map: normalized word -> translatedText or definition
+    // Build lookup dictionary map: normalized word -> { text, tier }
     const dictionaryMap = useMemo(() => {
-        const map = new Map<string, string>();
+        const map = new Map<string, { text: string; tier: SrsTier }>();
         if (Array.isArray(userDictionaryItems)) {
-            userDictionaryItems.forEach((item: { highlightedText?: string; translatedText?: string; definition?: string }) => {
+            userDictionaryItems.forEach((item: { highlightedText?: string; translatedText?: string; definition?: string; status?: string; repetitionLevel?: number }) => {
                 if (item.highlightedText) {
                     const key = item.highlightedText.toLowerCase().trim();
                     const trans = item.translatedText?.trim() || item.definition?.trim() || '';
+                    const tier = getSrsTier(item.status, item.repetitionLevel);
                     if (!map.has(key)) {
-                        map.set(key, trans || item.highlightedText);
+                        map.set(key, { text: trans || item.highlightedText, tier });
                     }
                 }
             });
         }
         optimisticSavedWords.forEach((val, key) => {
-            map.set(key, val);
+            map.set(key, { text: val, tier: 'new' });
         });
         return map;
     }, [userDictionaryItems, optimisticSavedWords]);
@@ -212,16 +214,16 @@ export const BookContent: React.FC<BookContentProps> = ({
     // Tooltip mouse handlers for underlined dictionary items
     const handleWordMouseEnter = (e: React.MouseEvent, word: string) => {
         const clean = word.toLowerCase().trim();
-        const translation = dictionaryMap.get(clean);
+        const entry = dictionaryMap.get(clean);
 
-        if (translation) {
+        if (entry) {
             const target = e.currentTarget as HTMLElement;
             const rect = target.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
             setTooltipState({
-                text: translation,
+                text: entry.text,
                 x: rect.left + scrollLeft + rect.width / 2,
                 y: rect.top + scrollTop - 34
             });
@@ -321,15 +323,21 @@ export const BookContent: React.FC<BookContentProps> = ({
                         <p key={pIdx} className={styles.paragraph}>
                             {tokens.map((token, tIdx) => {
                                 const clean = token.toLowerCase().trim();
-                                const hasTranslation = clean.length >= 2 && dictionaryMap.has(clean);
+                                const entry = clean.length >= 2 ? dictionaryMap.get(clean) : undefined;
                                 const isWord = clean.length >= 2 && /\p{L}/u.test(clean);
 
-                                if (hasTranslation) {
+                                if (entry) {
+                                    const tierClass = entry.tier === 'mastered'
+                                        ? styles.highlightedMastered
+                                        : entry.tier === 'learning'
+                                            ? styles.highlightedLearning
+                                            : styles.highlightedNew;
                                     return (
                                         <span
                                             key={tIdx}
-                                            className={styles.highlightedText}
-                                            data-translation={dictionaryMap.get(clean)}
+                                            className={`${styles.highlightedText} ${tierClass}`}
+                                            data-srs-tier={entry.tier}
+                                            data-translation={entry.text}
                                             onClick={e => handleWordClick(e, token, para)}
                                             onMouseEnter={e => handleWordMouseEnter(e, clean)}
                                             onMouseLeave={handleWordMouseLeave}

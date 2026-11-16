@@ -21,8 +21,17 @@ export interface EvaluateSentenceResult {
   improved_version?: string;
 }
 
+export type SRSItemKind = 'all' | 'words' | 'phrases';
+
+export interface SRSSessionFilters {
+  resource?: string;
+  category?: string;
+  kind?: SRSItemKind;
+}
+
 export interface AnalyzeGrammarRequest {
   sentence: string;
+  extendedContext?: string;
   ruleHint?: string;
   learningLanguage?: string;
   fluentLanguage?: string;
@@ -205,6 +214,29 @@ const DictionaryService = {
     await axiosService.delete(`${baseURL}${urls.dictionary}/resources/${resourceName}/items/${itemId}`);
   },
 
+  async updateDictionaryItem(
+    itemId: number,
+    payload: { translatedText?: string; definition?: string; context?: string; note?: string }
+  ): Promise<any> {
+    const response = await axiosService.patch(`${baseURL}${urls.dictionary}/items/${itemId}`, payload);
+    return response.data;
+  },
+
+  async importDictionaryWords(
+    resourceName: string,
+    items: Array<{ word: string; translation?: string; definition?: string; context?: string; note?: string }>
+  ): Promise<{ importedCount: number; skippedCount: number }> {
+    const response = await axiosService.post(`${baseURL}${urls.dictionary}/import`, {
+      resourceName,
+      items,
+    });
+    const payload = response.data?.data ?? response.data;
+    return {
+      importedCount: payload?.importedCount ?? 0,
+      skippedCount: payload?.skippedCount ?? 0,
+    };
+  },
+
   async exportDictionaryByResourceAsAnki(resourceName: string): Promise<Blob> {
     try {
       const response = await axiosService.get(
@@ -279,9 +311,22 @@ const DictionaryService = {
     }
   },
 
-  async fetchSRSToday(): Promise<{ cards: any[]; totalDictionarySize: number }> {
+  async fetchSRSToday(filters?: SRSSessionFilters): Promise<{ cards: any[]; totalDictionarySize: number }> {
     try {
-      const response = await axiosService.get(`/api/dictionary/srs/today`);
+      const params: Record<string, string> = {};
+      if (filters?.resource && filters.resource.trim()) {
+        params.resource = filters.resource.trim();
+      }
+      if (filters?.category && filters.category.trim()) {
+        params.category = filters.category.trim();
+      }
+      if (filters?.kind && filters.kind !== 'all') {
+        params.kind = filters.kind;
+      }
+      const hasParams = Object.keys(params).length > 0;
+      const response = hasParams
+        ? await axiosService.get(`/api/dictionary/srs/today`, { params })
+        : await axiosService.get(`/api/dictionary/srs/today`);
       return response.data;
     } catch (error) {
       console.error("Error fetching review words:", error);

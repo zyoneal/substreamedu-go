@@ -81,9 +81,9 @@ func productionGateEnabled() bool {
 // selectNewCards picks up to targetNew new cards. With the gate on, day one of a new word is
 // recognition only; its production card appears once recognition reaches 'review'.
 // Any query failure degrades to the legacy selection so a session never fails because of the gate.
-func (s *LearningService) selectNewCards(ctx context.Context, userID uuid.UUID, targetNew int) []model.Dictionary {
+func (s *LearningService) selectNewCards(ctx context.Context, userID uuid.UUID, targetNew int, filter dto.SessionFilter) []model.Dictionary {
 	legacy := func() []model.Dictionary {
-		newWords, err := s.repo.FindRandomNewWords(ctx, userID, targetNew)
+		newWords, err := s.repo.FindRandomNewWordsFiltered(ctx, userID, targetNew, filter)
 		if err != nil {
 			s.logger.Warn("Failed to fetch new words, proceeding with reviews only", zap.Error(err))
 			return nil
@@ -95,7 +95,7 @@ func (s *LearningService) selectNewCards(ctx context.Context, userID uuid.UUID, 
 		return legacy()
 	}
 
-	recognition, err := s.repo.FindNewRecognitionCards(ctx, userID, SplitNewCardQuota(targetNew, DefaultMaxNewWords))
+	recognition, err := s.repo.FindNewRecognitionCardsFiltered(ctx, userID, SplitNewCardQuota(targetNew, DefaultMaxNewWords), filter)
 	if err != nil {
 		s.logger.Warn("Gated new-card selection failed, falling back to legacy selection", zap.Error(err))
 		return legacy()
@@ -103,7 +103,7 @@ func (s *LearningService) selectNewCards(ctx context.Context, userID uuid.UUID, 
 
 	selected := recognition
 	if remaining := targetNew - len(recognition); remaining > 0 {
-		production, err := s.repo.FindUnlockedNewProductionCards(ctx, userID, remaining)
+		production, err := s.repo.FindUnlockedNewProductionCardsFiltered(ctx, userID, remaining, filter)
 		if err != nil {
 			s.logger.Warn("Failed to fetch unlocked production cards, continuing without them", zap.Error(err))
 		} else {
@@ -114,16 +114,21 @@ func (s *LearningService) selectNewCards(ctx context.Context, userID uuid.UUID, 
 }
 
 func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, loc *time.Location) (*dto.DailySessionDto, error) {
+	return s.GetDailyCardsWithFilter(ctx, userID, loc, dto.SessionFilter{})
+}
+
+func (s *LearningService) GetDailyCardsWithFilter(ctx context.Context, userID uuid.UUID, loc *time.Location, filter dto.SessionFilter) (*dto.DailySessionDto, error) {
 	if loc == nil {
 		loc = time.UTC
 	}
+	filter = filter.Normalize()
 	now := time.Now().In(loc)
 	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	dueCutoff := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, loc)
 
 	totalCount, _ := s.repo.CountTotalWords(ctx, userID)
 
-	reviewBatch, reviewErr := s.repo.FindDueWordsSorted(ctx, userID, todayStart, dueCutoff, SessionLimit)
+	reviewBatch, reviewErr := s.repo.FindDueWordsSortedFiltered(ctx, userID, todayStart, dueCutoff, SessionLimit, filter)
 	if reviewErr != nil {
 		return nil, fmt.Errorf("failed to fetch due words: %w", reviewErr)
 	}
@@ -132,7 +137,7 @@ func (s *LearningService) GetDailyCards(ctx context.Context, userID uuid.UUID, l
 
 	var newWords []model.Dictionary
 	if targetNew > 0 {
-		newWords = s.selectNewCards(ctx, userID, targetNew)
+		newWords = s.selectNewCards(ctx, userID, targetNew, filter)
 	}
 
 	finalBatch := append(reviewBatch, newWords...)
@@ -430,6 +435,7 @@ func (s *LearningService) mapCardToDto(dw *model.Dictionary) dto.DictionaryItemD
 		Retrievability:		dw.Retrievability,
 		RollingRetention:	dw.RollingRetention,
 		CardType:		dw.CardType,
+		Note:			dw.Note,
 	}
 }
 

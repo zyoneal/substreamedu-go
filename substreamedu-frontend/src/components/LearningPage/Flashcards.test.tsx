@@ -490,4 +490,79 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     // Card 101 ('tenure') rated "Again" earlier today MUST still be in the session queue!
     expect(await screen.findByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
   });
+
+  describe('session filters', () => {
+    it('fetches filtered cards when switching kind to Phrases and resets back to daily queue', async () => {
+      renderComponent();
+      await screen.findByRole('heading', { level: 1, name: 'tenure' });
+
+      (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValueOnce({
+        cards: [],
+        totalDictionarySize: 2,
+      });
+
+      const phrasesBtn = screen.getByRole('button', { name: 'Phrases' });
+      fireEvent.click(phrasesBtn);
+
+      await waitFor(() => {
+        expect(DictionaryService.fetchSRSToday).toHaveBeenCalledWith({
+          resource: '',
+          category: '',
+          kind: 'phrases',
+        });
+      });
+
+      expect(await screen.findByText(/No cards match this filter/i)).toBeInTheDocument();
+
+      (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValueOnce({
+        cards: mockCards,
+        totalDictionarySize: 2,
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /Reset filters/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
+      });
+    });
+
+    it('renders source and category selectors when metadata is available and filters by source', async () => {
+      (DictionaryService as any).fetchDictionaryResources = jest.fn().mockResolvedValue([
+        { resourceName: 'Movie 1' },
+        { resourceName: 'Movie 2' },
+      ]);
+      (DictionaryService as any).fetchDictionaryCategories = jest.fn().mockResolvedValue([
+        { categoryName: 'Idioms', numberOfWords: 4 },
+      ]);
+
+      try {
+        renderComponent();
+        await screen.findByRole('heading', { level: 1, name: 'tenure' });
+
+        const sourceSelect = await screen.findByLabelText(/Filter by source/i);
+        expect(sourceSelect).toBeInTheDocument();
+        expect(screen.getByLabelText(/Filter by category/i)).toBeInTheDocument();
+
+        (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValueOnce({
+          cards: [mockCards[1]],
+          totalDictionarySize: 2,
+        });
+
+        fireEvent.change(sourceSelect, { target: { value: 'Movie 2' } });
+
+        await waitFor(() => {
+          expect(DictionaryService.fetchSRSToday).toHaveBeenCalledWith({
+            resource: 'Movie 2',
+            category: '',
+            kind: 'all',
+          });
+        });
+
+        expect(await screen.findByRole('heading', { level: 1, name: 'serendipity' })).toBeInTheDocument();
+      } finally {
+        delete (DictionaryService as any).fetchDictionaryResources;
+        delete (DictionaryService as any).fetchDictionaryCategories;
+      }
+    });
+  });
 });

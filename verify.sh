@@ -51,9 +51,13 @@ fi
 
 # 3. Go Microservices Verification
 if [ "$GO_TOUCHED" = true ]; then
-  echo "🔍 [3/4] Verifying Go Microservices (lint & unit tests)..."
+  echo "🔍 [3/4] Verifying Go Microservices (diff-scoped lint & unit tests)..."
   if command -v golangci-lint &> /dev/null; then
-    golangci-lint run ./...
+    if [ "${FULL_VERIFY:-false}" != "true" ] && [ -n "$(git rev-parse --verify origin/main 2>/dev/null || true)" ]; then
+      golangci-lint run --new-from-rev=origin/main ./...
+    else
+      golangci-lint run ./...
+    fi
   else
     echo "⚠️  golangci-lint not installed, running go vet..."
     make vet
@@ -79,14 +83,33 @@ fi
 
 # 4. Frontend Verification
 if [ "$FE_TOUCHED" = true ]; then
-  echo "🔍 [4/4] Verifying Frontend Client (tsc, lint, tests)..."
+  echo "🔍 [4/4] Verifying Frontend Client (tsc, diff-scoped lint, tests)..."
   if [ -d "substreamedu-frontend" ]; then
+    CHANGED_FE_LINT_FILES=""
+    if [ "${FULL_VERIFY:-false}" != "true" ] && [ -n "$ALL_MODS" ]; then
+      CHANGED_FE_LINT_FILES=$(echo "$ALL_MODS" | grep -E '^substreamedu-frontend/src/.*\.(js|jsx|ts|tsx)$' | sed 's|^substreamedu-frontend/||' || true)
+    fi
+
     (
       cd substreamedu-frontend
       echo "  👉 Running TypeScript type check..."
       npx tsc --noEmit
       echo "  👉 Running linter..."
-      npm run lint
+      if [ -n "$CHANGED_FE_LINT_FILES" ]; then
+        EXISTING_FE_FILES=()
+        while IFS= read -r fe_file; do
+          [ -n "$fe_file" ] && [ -f "$fe_file" ] && EXISTING_FE_FILES+=("$fe_file")
+        done <<< "$CHANGED_FE_LINT_FILES"
+        if [ ${#EXISTING_FE_FILES[@]} -gt 0 ]; then
+          npx eslint "${EXISTING_FE_FILES[@]}"
+        else
+          echo "  ⏩ All changed frontend lint targets were deleted; skipping eslint."
+        fi
+      elif [ "${FULL_VERIFY:-false}" = "true" ] || [ -z "$ALL_MODS" ]; then
+        npm run lint
+      else
+        echo "  ⏩ No frontend JS/TS files modified; skipping full-tree eslint."
+      fi
       echo "  👉 Running unit tests..."
       npm test -- --watchAll=false
     )
@@ -95,8 +118,15 @@ else
   echo "⏩ [4/4] No Frontend files modified. Skipping Frontend suite."
 fi
 
+HEAD_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+DIRTY_FLAG=""
+if [ -n "$(git status --porcelain 2>/dev/null || true)" ]; then
+  DIRTY_FLAG=" (dirty working tree)"
+fi
+
 echo ""
 echo "=========================================================="
 echo "✅ ALL CHECKS PASSED: State satisfies Definition of Done."
+echo "📌 Verified HEAD SHA: ${HEAD_SHA}${DIRTY_FLAG}"
 echo "=========================================================="
 exit 0

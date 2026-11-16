@@ -18,6 +18,7 @@ import { DictionaryService } from '../../services/DictionaryService';
 import { LanguageContext } from '../LanguageContext';
 import { useTTS } from '../../hooks/useTTS';
 import Flashcard from './Flashcard';
+import { SessionFilterBar } from './components/SessionFilterBar';
 import { useFlashcardsSession, DictionaryItem, Rating } from './hooks/useFlashcardsSession';
 import { useFlashcardsKeyboard } from './hooks/useFlashcardsKeyboard';
 import { highlightStoryText, decodeHtmlEntities } from './utils/storyHighlightUtils';
@@ -52,6 +53,8 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         answeredIds,
         sessionWords,
         completionStage,
+        filters,
+        hasActiveFilters,
         isCardInFlight,
         handleRating,
         revealNext,
@@ -60,6 +63,8 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         handleRefresh,
         handleFinishEarly,
         handleContinueCheckpoint,
+        applyFilters,
+        resetFilters,
         setCompletionStage,
         setRevealLevel,
     } = useFlashcardsSession();
@@ -278,6 +283,15 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
 
             <div className={styles.content}>
                 <div className="flex flex-col flex-1 items-center justify-start pt-28 pb-4">
+                    {!showCheckpoint && completionStage === 'learning' && (
+                        <SessionFilterBar
+                            filters={filters}
+                            hasActiveFilters={hasActiveFilters}
+                            disabled={loading}
+                            onApplyFilters={applyFilters}
+                            onResetFilters={resetFilters}
+                        />
+                    )}
                     {showCheckpoint ? (
                         <div className={styles.completionContainer}>
                             <div className={styles.checkpointContent}>
@@ -343,6 +357,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                                 definition={currentWord.definition || ''}
                                                 translatedText={currentWord.translatedText || ''}
                                                 context={currentWord.context || ''}
+                                                note={currentWord.note || ''}
                                                 imageUrl={currentWord.imageUrl || ''}
                                                 revealLevel={revealLevel}
                                                 cardType={currentWord.cardType}
@@ -412,6 +427,30 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transition-transform duration-300 ease-in-out hover:scale-120" aria-hidden="true">
                                             <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : reviewWords.length === 0 && answeredIds.size === 0 && hasActiveFilters ? (
+                        <div className={styles.emptyContainer}>
+                            <div className={styles.emptyContent}>
+                                <div className={styles.emptyIconWrapper}>
+                                    <BookOpen size={48} className={styles.emptyIcon} />
+                                </div>
+                                <h2 className={styles.emptyTitle}>
+                                    {intl.formatMessage({ id: 'flashcards.filter.emptyTitle', defaultMessage: 'No cards match this filter' })}
+                                </h2>
+                                <p className={styles.emptyDescription}>
+                                    {intl.formatMessage({ id: 'flashcards.filter.emptyDescription', defaultMessage: 'Try switching to another source, category, or reset filters to return to your daily queue.' })}
+                                </p>
+                                <div className={styles.emptyActions}>
+                                    <button
+                                        type="button"
+                                        onClick={resetFilters}
+                                        className={styles.primaryButton}
+                                    >
+                                        <RotateCcw size={18} />
+                                        <span>{intl.formatMessage({ id: 'flashcards.filter.resetAction', defaultMessage: 'Reset filters' })}</span>
                                     </button>
                                 </div>
                             </div>

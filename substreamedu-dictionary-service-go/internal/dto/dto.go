@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -38,6 +39,9 @@ type DictionaryItemDto struct {
 	RollingRetention	float32		`json:"rollingRetention"`
 	CardType		int		`json:"cardType"`
 	Category		string		`json:"category"`
+	TimestampSec		*int		`json:"timestampSec,omitempty"`
+	SourceUrl		string		`json:"sourceUrl,omitempty"`
+	Note			string		`json:"note,omitempty"`
 	AlreadyExists		bool		`json:"alreadyExists,omitempty"`
 }
 
@@ -47,11 +51,34 @@ type LexemeLightDto struct {
 	TranslatedText	string	`json:"translatedText"`
 	Definition	string	`json:"definition"`
 	CardType	int	`json:"cardType"`
+	Status		string	`json:"status,omitempty"`
+	RepetitionLevel	int	`json:"repetitionLevel,omitempty"`
 }
 
 type DailySessionDto struct {
 	Cards			[]DictionaryItemDto	`json:"cards"`
 	TotalDictionarySize	int64			`json:"totalDictionarySize"`
+}
+
+// SessionFilter narrows an SRS daily session by resource, category, or item granularity.
+type SessionFilter struct {
+	ResourceName	string
+	Category	string
+	ItemKind	string // "", "all", "words", "phrases"
+}
+
+// Normalize trims whitespace and canonicalizes ItemKind to "words", "phrases", or "".
+func (f SessionFilter) Normalize() SessionFilter {
+	kind := ""
+	switch f.ItemKind {
+	case "words", "phrases":
+		kind = f.ItemKind
+	}
+	return SessionFilter{
+		ResourceName:	strings.TrimSpace(f.ResourceName),
+		Category:	strings.TrimSpace(f.Category),
+		ItemKind:	kind,
+	}
 }
 
 type UserOverviewDto struct {
@@ -120,6 +147,33 @@ type AddWordRequestDto struct {
 	Definition	string	`json:"definition,omitempty"`
 	ImageUrl	string	`json:"imageUrl,omitempty"`
 	Category	string	`json:"category,omitempty"`
+	TimestampSec	*int	`json:"timestampSec,omitempty"`
+	SourceUrl	string	`json:"sourceUrl,omitempty"`
+}
+
+type UpdateWordRequestDto struct {
+	TranslatedText	string	`json:"translatedText"`
+	Definition	string	`json:"definition"`
+	Context		string	`json:"context"`
+	Note		string	`json:"note"`
+}
+
+type ImportWordItemDto struct {
+	Word		string	`json:"word" binding:"required"`
+	Translation	string	`json:"translation"`
+	Definition	string	`json:"definition"`
+	Context		string	`json:"context"`
+	Note		string	`json:"note"`
+}
+
+type ImportWordsRequestDto struct {
+	ResourceName	string			`json:"resourceName"`
+	Items		[]ImportWordItemDto	`json:"items" binding:"required,min=1,max=200"`
+}
+
+type ImportWordsResponseDto struct {
+	ImportedCount	int	`json:"importedCount"`
+	SkippedCount	int	`json:"skippedCount"`
 }
 
 type DictionaryRequest struct {
@@ -128,6 +182,7 @@ type DictionaryRequest struct {
 	ExtendedContext		string	`json:"extendedContext,omitempty"`
 	LearningLanguage	string	`json:"learningLanguage" binding:"required"`
 	FluentLanguage		string	`json:"fluentLanguage" binding:"required"`
+	DisableLemmatization	bool	`json:"disableLemmatization,omitempty"`
 }
 
 type TranslationMetaDto struct {
@@ -276,6 +331,7 @@ type EvaluateSentenceResponse struct {
 
 type AnalyzeGrammarRequest struct {
 	Sentence         string `json:"sentence" binding:"required"`
+	ExtendedContext  string `json:"extendedContext,omitempty"`
 	RuleHint         string `json:"ruleHint"`
 	LearningLanguage string `json:"learningLanguage"`
 	FluentLanguage   string `json:"fluentLanguage"`

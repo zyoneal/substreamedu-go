@@ -76,6 +76,8 @@ func Setup(r *gin.Engine, contextPath string, dh *handler.DictionaryHandler, ah 
 			}
 			{
 				mutations.POST("/translated", dh.AddWord)
+				mutations.POST("/import", dh.ImportWords)
+				mutations.PATCH("/items/:id", dh.UpdateWord)
 				mutations.POST("/categorize", dh.CategorizeWordsBatch)
 				mutations.DELETE("/resources/:name/items/:id", dh.DeleteWord)
 				mutations.DELETE("/resources/:name", dh.DeleteResource)

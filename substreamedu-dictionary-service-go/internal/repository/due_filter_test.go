@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substreamedu/substreamedu-dictionary-service/internal/dto"
 	"github.com/substreamedu/substreamedu-dictionary-service/internal/model"
 )
 
@@ -300,4 +301,37 @@ func TestMultiSessionSimulation_FaangScenario(t *testing.T) {
 	// On Day 2, all 48 learning cards from Day 1 are ready for step 2 review!
 	assert.Equal(t, 48, dueTomorrow,
 		"On day 2, all 48 learning cards must be eligible for their next review step")
+}
+
+func TestBuildSessionFilterClause(t *testing.T) {
+	t.Run("Empty filter yields empty clause and nil args", func(t *testing.T) {
+		sql, args := buildSessionFilterClause("", dto.SessionFilter{}, 2)
+		assert.Empty(t, sql)
+		assert.Nil(t, args)
+	})
+
+	t.Run("Resource, category, and words kind build parameterized predicates", func(t *testing.T) {
+		sql, args := buildSessionFilterClause("d.", dto.SessionFilter{
+			ResourceName: " yt:abc123 ",
+			Category:     " Idioms ",
+			ItemKind:     "words",
+		}, 2)
+		assert.Contains(t, sql, "AND d.resource_name = $2")
+		assert.Contains(t, sql, "AND d.category = $3")
+		assert.Contains(t, sql, "AND strpos(TRIM(d.highlighted_text), ' ') = 0")
+		assert.Equal(t, []any{"yt:abc123", "Idioms"}, args)
+	})
+
+	t.Run("Phrases kind filters multi-word expressions", func(t *testing.T) {
+		sql, args := buildSessionFilterClause("", dto.SessionFilter{
+			ItemKind: "phrases",
+		}, 4)
+		assert.Contains(t, sql, "AND strpos(TRIM(highlighted_text), ' ') > 0")
+		assert.Empty(t, args)
+	})
+
+	t.Run("Unknown kind normalizes to empty", func(t *testing.T) {
+		f := dto.SessionFilter{ItemKind: "invalid"}.Normalize()
+		assert.Equal(t, "", f.ItemKind)
+	})
 }

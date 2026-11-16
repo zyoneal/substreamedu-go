@@ -25,7 +25,7 @@ export const useDictionaryItems = (resourceName: string, enabled: boolean = true
 export const useReviewWords = () => {
     return useQuery({
         queryKey: ['reviewWords'],
-        queryFn: DictionaryService.fetchSRSToday,
+        queryFn: () => DictionaryService.fetchSRSToday(),
         enabled: !!AuthService.getUserEmail(),
     });
 };
@@ -59,6 +59,8 @@ export interface SaveWordData {
     transcription: string | null;
     definition: string | null;
     imageUrl: string | null;
+    timestampSec?: number;
+    sourceUrl?: string;
 }
 
 export interface SaveWordContext {

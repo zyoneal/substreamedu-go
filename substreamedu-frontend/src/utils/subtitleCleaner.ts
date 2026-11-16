@@ -57,3 +57,28 @@ export function cleanSubtitleSelection(text: string | null | undefined): string 
     if (!text) return '';
     return cleanSubtitleText(text).replace(/\s+/g, ' ').trim();
 }
+
+/**
+ * Strips Closed Caption / SDH annotations such as [music], (laughs), ♪ ... ♪,
+ * and uppercase speaker labels (e.g. "JOHN:", "DR. SMITH:") while keeping normal prose colons intact.
+ */
+export function stripClosedCaptions(text: string | null | undefined): string {
+    if (!text) return '';
+
+    const cleaned = text
+        // Remove bracketed and parenthetical stage directions
+        .replace(/\[[^\]]*\]/g, '')
+        .replace(/\([^)]*\)/g, '')
+        // Remove musical note blocks and standalone music symbols
+        .replace(/♪[^♪]*♪/g, '')
+        .replace(/[♪♫]+/g, '')
+        // Remove uppercase speaker prefixes at line starts (e.g. "NARRATOR: ", "- JOHN: ")
+        .replace(/(^|\n)(\s*[-–—]\s*)?[A-Z][A-Z0-9 .'-]{1,24}:\s+/g, '$1$2');
+
+    return cleaned
+        .split('\n')
+        .map(line => line.replace(/[ \t]{2,}/g, ' ').trim())
+        .filter(line => line.length > 0 && !/^[-–—]$/.test(line))
+        .join('\n')
+        .trim();
+}

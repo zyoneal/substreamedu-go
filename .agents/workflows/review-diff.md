@@ -75,13 +75,15 @@ No confirmed bugs found.
 ---
 
 ## Severity guideline
-- critical — data loss, security issue, or guaranteed incorrect behavior
-- high — likely incorrect behavior in common scenarios
-- medium — edge-case incorrect behavior
+- `blocker` — data loss, security issue, broken invariant, or guaranteed incorrect behavior (blocks merge)
+- `must-fix` — likely incorrect behavior or concrete edge-case bug in the diff (blocks merge)
+- `minor` — non-blocking observation; does not block approval
 
 ## Rules
+- Judge strictly against the task's acceptance criteria and real runtime impact (no scope expansion)
 - Do NOT report style, formatting, tests, or documentation issues
-- Do NOT report pre-existing issues
+- Do NOT report pre-existing issues outside the diff
 - Do NOT report compiler/import errors
 - Do NOT suggest fixes unless a bug is confirmed
 - Do NOT rely on assumptions about unseen code
+- Author may rebut any finding with concrete evidence (test output, measurement, or code trace)

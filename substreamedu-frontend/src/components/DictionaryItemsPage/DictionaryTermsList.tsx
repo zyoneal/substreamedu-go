@@ -1,6 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Play from 'lucide-react/dist/esm/icons/play';
+import { Clock } from 'lucide-react';
 import BinButton from './BinButton';
+import { buildVideoJumpUrl, formatTimestampSec } from '../../utils/videoTimestampUtils';
 import {
     DictionaryItem,
     cleanTranscription,
@@ -92,6 +95,29 @@ export const DictionaryTermsList: React.FC<DictionaryTermsListProps> = React.mem
                                     __html: highlightContext(item.context, item.highlightedText, styles.highlight),
                                 }}
                             />
+                        )}
+                        {item.timestampSec !== null && item.timestampSec !== undefined && (
+                            (() => {
+                                const jumpUrl = buildVideoJumpUrl(item.resourceName, item.sourceUrl, item.timestampSec);
+                                const formatted = formatTimestampSec(item.timestampSec);
+                                return jumpUrl ? (
+                                    <Link
+                                        to={jumpUrl}
+                                        onClick={e => e.stopPropagation()}
+                                        className={styles.timestampJumpLink}
+                                        title={`Jump to ${formatted} in video`}
+                                        aria-label={`Jump to ${formatted} in video`}
+                                    >
+                                        <Clock size={12} aria-hidden="true" />
+                                        <span>{formatted}</span>
+                                    </Link>
+                                ) : (
+                                    <span className={styles.timestampBadge}>
+                                        <Clock size={12} aria-hidden="true" />
+                                        <span>{formatted}</span>
+                                    </span>
+                                );
+                            })()
                         )}
                     </div>
                 </div>

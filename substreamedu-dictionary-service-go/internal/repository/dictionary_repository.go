@@ -69,6 +69,33 @@ func (r *DictionaryRepository) UpdateLexemeContent(ctx context.Context, id int64
 	return err
 }
 
+func (r *DictionaryRepository) UpdateLexemeVideoLocation(ctx context.Context, id int64, timestampSec *int, sourceURL string) error {
+	if timestampSec == nil && sourceURL == "" {
+		return nil
+	}
+	_, err := r.db.Exec(ctx, `
+		UPDATE dictionary
+		SET timestamp_sec = COALESCE($2, timestamp_sec),
+			source_url = CASE WHEN $3 <> '' THEN $3 ELSE source_url END
+		WHERE id = $1`,
+		id, timestampSec, sourceURL,
+	)
+	return err
+}
+
+func (r *DictionaryRepository) UpdateWordWithSiblings(ctx context.Context, userID uuid.UUID, word, resourceName, translation, definition, contextStr, note string) error {
+	_, err := r.db.Exec(ctx, `
+		UPDATE dictionary
+		SET translated_text = $4,
+			definition = $5,
+			context = $6,
+			note = $7
+		WHERE user_id = $1 AND LOWER(highlighted_text) = LOWER($2) AND resource_name = $3`,
+		userID, word, resourceName, translation, definition, contextStr, note,
+	)
+	return err
+}
+
 func (r *DictionaryRepository) FindByID(ctx context.Context, id int64) (*model.Dictionary, error) {
 	var d model.Dictionary
 	err := r.db.QueryRow(ctx, `
@@ -76,13 +103,15 @@ func (r *DictionaryRepository) FindByID(ctx context.Context, id int64) (*model.D
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(category, '')
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(category, ''),
+		       timestamp_sec, COALESCE(source_url, ''), COALESCE(note, '')
 		FROM dictionary WHERE id = $1`, id).Scan(
 		&d.ID, &d.UserID, &d.Word, &d.Translation, &d.Transcription, &d.Context, &d.Source, &d.Status,
 		&d.EaseFactor, &d.Interval, &d.RepetitionLevel, &d.LastReviewed, &d.NextRepetitionDate,
 		&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
 		&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
 		&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType, &d.Category,
+		&d.TimestampSec, &d.SourceUrl, &d.Note,
 	)
 	if err != nil {
 		return nil, err
@@ -96,13 +125,13 @@ func (r *DictionaryRepository) Save(ctx context.Context, d *model.Dictionary) er
 			INSERT INTO dictionary (user_id, highlighted_text, translated_text, transcription, context, resource_name, status, 
 			       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 			       created_on, difficulty_score, lapses, consecutive_success, 
-			       total_reviews, correct_reviews, hard_count, learning_step, learning_due, definition, image_url, is_leech, stability, retrievability, rolling_retention, card_type, category)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
+			       total_reviews, correct_reviews, hard_count, learning_step, learning_due, definition, image_url, is_leech, stability, retrievability, rolling_retention, card_type, category, timestamp_sec, source_url, note)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)
 			RETURNING id`,
 			d.UserID, d.Word, d.Translation, d.Transcription, d.Context, d.Source, d.Status,
 			d.EaseFactor, d.Interval, d.RepetitionLevel, d.LastReviewed, d.NextRepetitionDate,
 			time.Now(), d.DifficultyScore, d.Lapses, d.ConsecutiveSuccess,
-			d.TotalReviews, d.CorrectReviews, d.HardCount, d.LearningStep, d.LearningDue, d.Definition, d.ImageUrl, d.IsLeech, d.Stability, d.Retrievability, d.RollingRetention, d.CardType, d.Category,
+			d.TotalReviews, d.CorrectReviews, d.HardCount, d.LearningStep, d.LearningDue, d.Definition, d.ImageUrl, d.IsLeech, d.Stability, d.Retrievability, d.RollingRetention, d.CardType, d.Category, d.TimestampSec, d.SourceUrl, d.Note,
 		).Scan(&d.ID)
 	}
 
@@ -179,14 +208,54 @@ func (r *DictionaryRepository) SaveTxOptimistic(ctx context.Context, tx DB, d *m
 	return nil
 }
 
-func (r *DictionaryRepository) FindDueWordsSorted(ctx context.Context, userID uuid.UUID, todayStart time.Time, dueCutoff time.Time, limit int) ([]model.Dictionary, error) {
+// buildSessionFilterClause builds parameterized SQL WHERE predicates for SRS session filtering.
+// alias should be "" for unaliased queries or e.g. "d." when querying an aliased table.
+func buildSessionFilterClause(alias string, filter dto.SessionFilter, startParam int) (string, []any) {
+	f := filter.Normalize()
+	var clauses []string
+	var args []any
+	paramIdx := startParam
 
-	rows, err := r.db.Query(ctx, `
+	if f.ResourceName != "" {
+		clauses = append(clauses, fmt.Sprintf("AND %sresource_name = $%d", alias, paramIdx))
+		args = append(args, f.ResourceName)
+		paramIdx++
+	}
+	if f.Category != "" {
+		clauses = append(clauses, fmt.Sprintf("AND %scategory = $%d", alias, paramIdx))
+		args = append(args, f.Category)
+		paramIdx++
+	}
+	switch f.ItemKind {
+	case "words":
+		clauses = append(clauses, fmt.Sprintf("AND strpos(TRIM(%shighlighted_text), ' ') = 0", alias))
+	case "phrases":
+		clauses = append(clauses, fmt.Sprintf("AND strpos(TRIM(%shighlighted_text), ' ') > 0", alias))
+	}
+
+	if len(clauses) == 0 {
+		return "", nil
+	}
+	return "\n\t\t  " + strings.Join(clauses, "\n\t\t  "), args
+}
+
+func (r *DictionaryRepository) FindDueWordsSorted(ctx context.Context, userID uuid.UUID, todayStart time.Time, dueCutoff time.Time, limit int) ([]model.Dictionary, error) {
+	return r.FindDueWordsSortedFiltered(ctx, userID, todayStart, dueCutoff, limit, dto.SessionFilter{})
+}
+
+func (r *DictionaryRepository) FindDueWordsSortedFiltered(ctx context.Context, userID uuid.UUID, todayStart time.Time, dueCutoff time.Time, limit int, filter dto.SessionFilter) ([]model.Dictionary, error) {
+	filterSQL, filterArgs := buildSessionFilterClause("", filter, 4)
+	args := []any{userID, todayStart, dueCutoff}
+	args = append(args, filterArgs...)
+	limitParam := len(args) + 1
+	args = append(args, limit)
+
+	query := fmt.Sprintf(`
 		SELECT id, user_id, highlighted_text, translated_text, transcription, context, resource_name, status, 
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(note, '')
 		FROM dictionary 
 		WHERE user_id = $1
 		  AND status != 'new'
@@ -197,7 +266,7 @@ func (r *DictionaryRepository) FindDueWordsSorted(ctx context.Context, userID uu
 		      (status = 'learning' AND learning_due IS NOT NULL AND learning_due <= NOW())
 		      OR
 		      (status = 'review' AND next_repetition_date IS NULL)
-		  )
+		  )%s
 		ORDER BY 
 		      CASE 
 		          WHEN status = 'review' AND next_repetition_date IS NULL THEN 0
@@ -210,76 +279,45 @@ func (r *DictionaryRepository) FindDueWordsSorted(ctx context.Context, userID uu
 		      END ASC,
 		      next_repetition_date ASC NULLS FIRST,
 		      difficulty_score DESC
-		LIMIT $4`, userID, todayStart, dueCutoff, limit)
+		LIMIT $%d`, filterSQL, limitParam)
+
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var result []model.Dictionary
-	for rows.Next() {
-		var d model.Dictionary
-		err := rows.Scan(
-			&d.ID, &d.UserID, &d.Word, &d.Translation, &d.Transcription, &d.Context, &d.Source, &d.Status,
-			&d.EaseFactor, &d.Interval, &d.RepetitionLevel, &d.LastReviewed, &d.NextRepetitionDate,
-			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
-			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
-			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
-		)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, d)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return scanNewCardRows(rows)
 }
 
 func (r *DictionaryRepository) FindRandomNewWords(ctx context.Context, userID uuid.UUID, limit int) ([]model.Dictionary, error) {
+	return r.FindRandomNewWordsFiltered(ctx, userID, limit, dto.SessionFilter{})
+}
 
-	rows, err := r.db.Query(ctx, `
-		SELECT id, user_id, highlighted_text, translated_text, transcription, context, resource_name, status, 
-		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
-		       created_on, difficulty_score, lapses, consecutive_success, 
-		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
+func (r *DictionaryRepository) FindRandomNewWordsFiltered(ctx context.Context, userID uuid.UUID, limit int, filter dto.SessionFilter) ([]model.Dictionary, error) {
+	filterSQL, filterArgs := buildSessionFilterClause("", filter, 2)
+	args := []any{userID}
+	args = append(args, filterArgs...)
+	limitParam := len(args) + 1
+	args = append(args, limit)
+
+	query := fmt.Sprintf(`
+		SELECT `+newCardColumns+`
 		FROM dictionary 
-		WHERE user_id = $1 AND status = 'new'
+		WHERE user_id = $1 AND status = 'new'%s
 		ORDER BY created_on DESC
-		LIMIT $2`, userID, limit)
+		LIMIT $%d`, filterSQL, limitParam)
+
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var result []model.Dictionary
-	for rows.Next() {
-		var d model.Dictionary
-		err := rows.Scan(
-			&d.ID, &d.UserID, &d.Word, &d.Translation, &d.Transcription, &d.Context, &d.Source, &d.Status,
-			&d.EaseFactor, &d.Interval, &d.RepetitionLevel, &d.LastReviewed, &d.NextRepetitionDate,
-			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
-			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
-			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
-		)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, d)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return scanNewCardRows(rows)
 }
 
 const newCardColumns = `id, user_id, highlighted_text, translated_text, transcription, context, resource_name, status,
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date,
 		       created_on, difficulty_score, lapses, consecutive_success,
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type`
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(note, '')`
 
 // findNewRecognitionCardsSQL selects new non-production cards (recognition and any legacy type).
 // Production cards (card_type = 1) are deliberately excluded: they enter a session only
@@ -300,7 +338,7 @@ const findUnlockedNewProductionCardsSQL = `
 		       d.ease_factor, d.interval, d.repetition_level, d.last_reviewed, d.next_repetition_date,
 		       d.created_on, d.difficulty_score, d.lapses, d.consecutive_success,
 		       d.total_reviews, d.correct_reviews, d.hard_count, d.learning_step, d.learning_due,
-		       COALESCE(d.definition, ''), COALESCE(d.image_url, ''), d.is_leech, d.stability, d.retrievability, d.rolling_retention, d.card_type
+		       COALESCE(d.definition, ''), COALESCE(d.image_url, ''), d.is_leech, d.stability, d.retrievability, d.rolling_retention, d.card_type, COALESCE(d.note, '')
 		FROM dictionary d
 		WHERE d.user_id = $1 AND d.status = 'new' AND d.card_type = 1
 		  AND NOT EXISTS (
@@ -318,9 +356,29 @@ const findUnlockedNewProductionCardsSQL = `
 		ORDER BY d.created_on DESC
 		LIMIT $2`
 
+func applyFilterToNewCardSQL(baseSQL string, filterSQL string, limitParam int) string {
+	if filterSQL == "" {
+		return baseSQL
+	}
+	withFilter := strings.Replace(baseSQL, "\n\t\tORDER BY", filterSQL+"\n\t\tORDER BY", 1)
+	return strings.Replace(withFilter, "LIMIT $2", fmt.Sprintf("LIMIT $%d", limitParam), 1)
+}
+
 // FindNewRecognitionCards returns up to limit new non-production cards, newest first.
 func (r *DictionaryRepository) FindNewRecognitionCards(ctx context.Context, userID uuid.UUID, limit int) ([]model.Dictionary, error) {
-	rows, err := r.db.Query(ctx, findNewRecognitionCardsSQL, userID, limit)
+	return r.FindNewRecognitionCardsFiltered(ctx, userID, limit, dto.SessionFilter{})
+}
+
+// FindNewRecognitionCardsFiltered returns up to limit new non-production cards matching filter, newest first.
+func (r *DictionaryRepository) FindNewRecognitionCardsFiltered(ctx context.Context, userID uuid.UUID, limit int, filter dto.SessionFilter) ([]model.Dictionary, error) {
+	filterSQL, filterArgs := buildSessionFilterClause("", filter, 2)
+	args := []any{userID}
+	args = append(args, filterArgs...)
+	limitParam := len(args) + 1
+	args = append(args, limit)
+
+	query := applyFilterToNewCardSQL(findNewRecognitionCardsSQL, filterSQL, limitParam)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query new recognition cards: %w", err)
 	}
@@ -330,7 +388,20 @@ func (r *DictionaryRepository) FindNewRecognitionCards(ctx context.Context, user
 // FindUnlockedNewProductionCards returns up to limit new production cards whose recognition
 // sibling has graduated to 'review', newest first.
 func (r *DictionaryRepository) FindUnlockedNewProductionCards(ctx context.Context, userID uuid.UUID, limit int) ([]model.Dictionary, error) {
-	rows, err := r.db.Query(ctx, findUnlockedNewProductionCardsSQL, userID, limit)
+	return r.FindUnlockedNewProductionCardsFiltered(ctx, userID, limit, dto.SessionFilter{})
+}
+
+// FindUnlockedNewProductionCardsFiltered returns up to limit new production cards matching filter whose recognition
+// sibling has graduated to 'review', newest first.
+func (r *DictionaryRepository) FindUnlockedNewProductionCardsFiltered(ctx context.Context, userID uuid.UUID, limit int, filter dto.SessionFilter) ([]model.Dictionary, error) {
+	filterSQL, filterArgs := buildSessionFilterClause("d.", filter, 2)
+	args := []any{userID}
+	args = append(args, filterArgs...)
+	limitParam := len(args) + 1
+	args = append(args, limit)
+
+	query := applyFilterToNewCardSQL(findUnlockedNewProductionCardsSQL, filterSQL, limitParam)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query unlocked new production cards: %w", err)
 	}
@@ -348,7 +419,7 @@ func scanNewCardRows(rows pgx.Rows) ([]model.Dictionary, error) {
 			&d.EaseFactor, &d.Interval, &d.RepetitionLevel, &d.LastReviewed, &d.NextRepetitionDate,
 			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
 			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
-			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
+			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType, &d.Note,
 		)
 		if err != nil {
 			return nil, err
@@ -368,7 +439,7 @@ func (r *DictionaryRepository) FindRandomWord(ctx context.Context, userID uuid.U
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(note, '')
 		FROM dictionary 
 		WHERE user_id = $1 AND card_type = 0
 		ORDER BY RANDOM()
@@ -415,7 +486,8 @@ func (r *DictionaryRepository) FindLexemesByResourcePaginated(ctx context.Contex
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(category, '')
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type, COALESCE(category, ''),
+		       timestamp_sec, COALESCE(source_url, ''), COALESCE(note, '')
 		FROM dictionary 
 		WHERE user_id = $1 AND resource_name = $2 AND id > $3 AND card_type = 0
 		ORDER BY id ASC
@@ -434,6 +506,7 @@ func (r *DictionaryRepository) FindLexemesByResourcePaginated(ctx context.Contex
 			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
 			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
 			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType, &d.Category,
+			&d.TimestampSec, &d.SourceUrl, &d.Note,
 		)
 		if err != nil {
 			return nil, false, err
@@ -467,7 +540,8 @@ func (r *DictionaryRepository) FindLexemesByResource(ctx context.Context, userID
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type,
+		       timestamp_sec, COALESCE(source_url, ''), COALESCE(note, '')
 		FROM dictionary 
 		WHERE user_id = $1 AND resource_name = $2 AND card_type = 0
 		ORDER BY id ASC`, userID, resourceName)
@@ -485,6 +559,7 @@ func (r *DictionaryRepository) FindLexemesByResource(ctx context.Context, userID
 			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
 			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
 			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
+			&d.TimestampSec, &d.SourceUrl, &d.Note,
 		)
 		if err != nil {
 			return nil, err
@@ -503,7 +578,8 @@ func (r *DictionaryRepository) FindAllLexemes(ctx context.Context, userID uuid.U
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type,
+		       timestamp_sec, COALESCE(source_url, ''), COALESCE(note, '')
 		FROM dictionary 
 		WHERE user_id = $1 AND card_type = 0`, userID)
 	if err != nil {
@@ -520,6 +596,7 @@ func (r *DictionaryRepository) FindAllLexemes(ctx context.Context, userID uuid.U
 			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
 			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
 			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
+			&d.TimestampSec, &d.SourceUrl, &d.Note,
 		)
 		if err != nil {
 			return nil, err
@@ -538,7 +615,8 @@ func (r *DictionaryRepository) FindAllLexemesPaginated(ctx context.Context, user
 		       ease_factor, interval, repetition_level, last_reviewed, next_repetition_date, 
 		       created_on, difficulty_score, lapses, consecutive_success, 
 		       total_reviews, correct_reviews, hard_count, learning_step, learning_due,
-		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type
+		       COALESCE(definition, ''), COALESCE(image_url, ''), is_leech, stability, retrievability, rolling_retention, card_type,
+		       timestamp_sec, COALESCE(source_url, ''), COALESCE(note, '')
 		FROM dictionary 
 		WHERE user_id = $1 AND card_type = 0 AND id > $2
 		ORDER BY id ASC
@@ -557,6 +635,7 @@ func (r *DictionaryRepository) FindAllLexemesPaginated(ctx context.Context, user
 			&d.CreatedAt, &d.DifficultyScore, &d.Lapses, &d.ConsecutiveSuccess,
 			&d.TotalReviews, &d.CorrectReviews, &d.HardCount, &d.LearningStep, &d.LearningDue, &d.Definition, &d.ImageUrl, &d.IsLeech,
 			&d.Stability, &d.Retrievability, &d.RollingRetention, &d.CardType,
+			&d.TimestampSec, &d.SourceUrl, &d.Note,
 		)
 		if err != nil {
 			return nil, false, err
@@ -576,7 +655,7 @@ func (r *DictionaryRepository) FindAllLexemesPaginated(ctx context.Context, user
 
 func (r *DictionaryRepository) FindAllLexemesLightPaginated(ctx context.Context, userID uuid.UUID, cursor int64, limit int) ([]dto.LexemeLightDto, bool, error) {
 	rows, err := r.db.Query(ctx, `
-		SELECT id, highlighted_text, translated_text, COALESCE(definition, ''), card_type
+		SELECT id, highlighted_text, translated_text, COALESCE(definition, ''), card_type, COALESCE(status, 'new'), repetition_level
 		FROM dictionary 
 		WHERE user_id = $1 AND card_type = 0 AND id > $2
 		ORDER BY id ASC
@@ -589,7 +668,7 @@ func (r *DictionaryRepository) FindAllLexemesLightPaginated(ctx context.Context,
 	var result []dto.LexemeLightDto
 	for rows.Next() {
 		var d dto.LexemeLightDto
-		err := rows.Scan(&d.ID, &d.HighlightedText, &d.TranslatedText, &d.Definition, &d.CardType)
+		err := rows.Scan(&d.ID, &d.HighlightedText, &d.TranslatedText, &d.Definition, &d.CardType, &d.Status, &d.RepetitionLevel)
 		if err != nil {
 			return nil, false, err
 		}
@@ -608,7 +687,7 @@ func (r *DictionaryRepository) FindAllLexemesLightPaginated(ctx context.Context,
 
 func (r *DictionaryRepository) FindAllLexemesLight(ctx context.Context, userID uuid.UUID) ([]dto.LexemeLightDto, error) {
 	rows, err := r.db.Query(ctx, `
-		SELECT id, highlighted_text, translated_text, COALESCE(definition, ''), card_type
+		SELECT id, highlighted_text, translated_text, COALESCE(definition, ''), card_type, COALESCE(status, 'new'), repetition_level
 		FROM dictionary 
 		WHERE user_id = $1 AND card_type = 0`, userID)
 	if err != nil {
@@ -619,7 +698,7 @@ func (r *DictionaryRepository) FindAllLexemesLight(ctx context.Context, userID u
 	var result []dto.LexemeLightDto
 	for rows.Next() {
 		var d dto.LexemeLightDto
-		err := rows.Scan(&d.ID, &d.HighlightedText, &d.TranslatedText, &d.Definition, &d.CardType)
+		err := rows.Scan(&d.ID, &d.HighlightedText, &d.TranslatedText, &d.Definition, &d.CardType, &d.Status, &d.RepetitionLevel)
 		if err != nil {
 			return nil, err
 		}

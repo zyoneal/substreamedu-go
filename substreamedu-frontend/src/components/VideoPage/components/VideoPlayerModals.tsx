@@ -49,6 +49,7 @@ export interface VideoPlayerModalsProps {
     isGrammarModalOpen: boolean;
     selectedGrammarPoint: DetectedGrammarPoint | null;
     selectedGrammarSentence: string;
+    selectedGrammarExtendedContext?: string;
     learningLanguage?: string;
     fluentLanguage?: string;
     onCloseGrammarModal: () => void;
@@ -96,6 +97,7 @@ export const VideoPlayerModals: React.FC<VideoPlayerModalsProps> = ({
     isGrammarModalOpen,
     selectedGrammarPoint,
     selectedGrammarSentence,
+    selectedGrammarExtendedContext,
     learningLanguage,
     fluentLanguage,
     onCloseGrammarModal,
@@ -158,6 +160,7 @@ export const VideoPlayerModals: React.FC<VideoPlayerModalsProps> = ({
                 onClose={onCloseGrammarModal}
                 grammarPoint={selectedGrammarPoint}
                 fullSentence={selectedGrammarSentence}
+                extendedContext={selectedGrammarExtendedContext}
                 learningLanguage={learningLanguage}
                 fluentLanguage={fluentLanguage}
             />

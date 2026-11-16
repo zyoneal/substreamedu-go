@@ -1,5 +1,6 @@
 import React from 'react';
 import { cleanSubtitleText } from '../../../utils/subtitleCleaner';
+import { getSrsTier, SrsTier } from '../../../utils/srsStatusUtils';
 import { DictionaryItem } from '../types';
 import styles from '../css/VideoPlayerPopover.module.css';
 
@@ -175,17 +176,21 @@ export const renderHighlightedSubtitle = (
 ): React.ReactNode => {
     if (!text) return null;
 
-    const wordMap = new Map<string, { translations: string[] }>();
+    const wordMap = new Map<string, { translations: string[]; srsTier: SrsTier }>();
 
     for (const item of highlightedWords) {
         const searchTerm = item.highlightedText.trim().toLowerCase();
         if (!searchTerm) continue;
 
+        const tier = getSrsTier(item.status, item.repetitionLevel);
         if (!wordMap.has(searchTerm)) {
-            wordMap.set(searchTerm, { translations: [] });
+            wordMap.set(searchTerm, { translations: [], srsTier: tier });
         }
 
         const entry = wordMap.get(searchTerm)!;
+        if (tier === 'mastered' || (tier === 'learning' && entry.srsTier === 'new')) {
+            entry.srsTier = tier;
+        }
 
         const translation = item.translatedText && item.translatedText.trim()
             ? item.translatedText.trim()
@@ -206,6 +211,7 @@ export const renderHighlightedSubtitle = (
         translation: string;
         definition: string;
         originalText: string;
+        srsTier: SrsTier;
     }> = [];
 
     for (const searchTerm of sortedSearchTerms) {
@@ -233,7 +239,8 @@ export const renderHighlightedSubtitle = (
                     end: matchResult.end!,
                     translation: translations,
                     definition: '',
-                    originalText: originalWord
+                    originalText: originalWord,
+                    srsTier: entry.srsTier,
                 });
             }
 
@@ -298,8 +305,13 @@ export const renderHighlightedSubtitle = (
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
-        const spanClass = customWordClass || styles.dictionaryWord;
-        const spanHtml = `<span class="${spanClass}" data-translation="${escapedTranslation}" data-definition="${escapedDefinition}">${escapedOriginalText}</span>`;
+        const tierClass = match.srsTier === 'mastered'
+            ? styles.srsMastered
+            : match.srsTier === 'learning'
+                ? styles.srsLearning
+                : styles.srsNew;
+        const spanClass = customWordClass || `${styles.dictionaryWord} ${tierClass}`;
+        const spanHtml = `<span class="${spanClass}" data-srs-tier="${match.srsTier}" data-translation="${escapedTranslation}" data-definition="${escapedDefinition}">${escapedOriginalText}</span>`;
         combinedMatches.push({
             start: match.start,
             end: match.end,

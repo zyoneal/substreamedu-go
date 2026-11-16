@@ -1,0 +1,3 @@
+ALTER TABLE dictionary
+    ADD COLUMN IF NOT EXISTS timestamp_sec INTEGER,
+    ADD COLUMN IF NOT EXISTS source_url TEXT;

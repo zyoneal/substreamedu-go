@@ -38,6 +38,7 @@ export interface UseSubtitleTranslationParams {
     customSaveWordMutation?: any;
     isPopoverOpen?: boolean;
     setIsPopoverOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+    disableLemmatization?: boolean;
 }
 
 export interface UseSubtitleTranslationResult {
@@ -111,9 +112,12 @@ export const useSubtitleTranslation = ({
     customSaveWordMutation,
     isPopoverOpen: externalIsPopoverOpen,
     setIsPopoverOpen: externalSetIsPopoverOpen,
+    disableLemmatization = false,
 }: UseSubtitleTranslationParams): UseSubtitleTranslationResult => {
     const intl = useIntl();
     const queryClient = useQueryClient();
+    const disableLemmatizationRef = useRef(disableLemmatization);
+    disableLemmatizationRef.current = disableLemmatization;
 
     const [selectedText, setSelectedText] = useState<string | null>(null);
     const [selectedSentence, setSelectedSentence] = useState<string | null>(null);
@@ -346,6 +350,7 @@ export const useSubtitleTranslation = ({
                     extendedContext: extendedCtx,
                     learningLanguage: learningLanguage,
                     fluentLanguage: fluentLanguage,
+                    disableLemmatization: disableLemmatizationRef.current || undefined,
                 });
 
                 if (!isMountedRef.current) return;
@@ -504,6 +509,21 @@ export const useSubtitleTranslation = ({
         };
 
         const extendedCtx = getExtendedSubtitleContext(subtitlesForVideo, currentSubtitle);
+        const matchingCue = subtitlesForVideo?.find((s) => s.text === currentSubtitle);
+        let timestampSec: number | undefined;
+        if (typeof matchingCue?.startTimeMs === 'number' && Number.isFinite(matchingCue.startTimeMs)) {
+            timestampSec = Math.max(0, Math.floor(matchingCue.startTimeMs / 1000));
+        } else if (typeof matchingCue?.startTime === 'number' && Number.isFinite(matchingCue.startTime)) {
+            timestampSec = Math.max(0, Math.floor(matchingCue.startTime));
+        } else if (typeof window !== 'undefined') {
+            const storedTime = sessionStorage.getItem('videoCurrentTime');
+            const parsed = storedTime ? parseFloat(storedTime) : Number.NaN;
+            if (Number.isFinite(parsed) && parsed >= 0) {
+                timestampSec = Math.floor(parsed);
+            }
+        }
+        const rawVideoUrl = typeof window !== 'undefined' ? (sessionStorage.getItem('videoUrl') || '').trim() : '';
+        const sourceUrl = (rawVideoUrl.startsWith('http://') || rawVideoUrl.startsWith('https://')) ? rawVideoUrl : undefined;
 
         activeSaveMutation.mutate({
             resourceName: getResourceName(),
@@ -515,6 +535,8 @@ export const useSubtitleTranslation = ({
             transcription: translationDataToSave.transcription || '',
             definition: translationDataToSave.definition || '',
             imageUrl: translationDataToSave.imageUrl || '',
+            timestampSec,
+            sourceUrl,
         });
     }, [
         selectedText,

@@ -41,15 +41,35 @@ func NewVocabularyService(repo *repository.DictionaryRepository, ls *LearningSer
 	}
 }
 
+func sanitizeTimestampSec(ts *int) *int {
+	if ts == nil || *ts < 0 {
+		return nil
+	}
+	v := *ts
+	return &v
+}
+
+func sanitizeSourceURL(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	if strings.HasPrefix(trimmed, "http://") || strings.HasPrefix(trimmed, "https://") {
+		return trimmed
+	}
+	return ""
+}
+
 func (s *VocabularyService) AddWord(ctx context.Context, userID uuid.UUID, req dto.AddWordRequestDto) (*dto.DictionaryItemDto, error) {
+	timestampSec := sanitizeTimestampSec(req.TimestampSec)
+	sourceURL := sanitizeSourceURL(req.SourceUrl)
 
 	// 1. Check deduplication for recognition card in the same resource
 	existingRecognition, _ := s.repo.FindExistingLexeme(ctx, userID, req.HighlightedText, req.ResourceName, 0)
 	if existingRecognition != nil {
 		// Update existing recognition and production cards in place
 		_ = s.repo.UpdateLexemeContent(ctx, existingRecognition.ID, req.Translation, req.Transcription, req.Context, req.Definition, req.ImageUrl, req.Category, req.Note, req.ExtendedContext)
+		_ = s.repo.UpdateLexemeVideoLocation(ctx, existingRecognition.ID, timestampSec, sourceURL)
 		if existingProduction, _ := s.repo.FindExistingLexeme(ctx, userID, req.HighlightedText, req.ResourceName, 1); existingProduction != nil {
 			_ = s.repo.UpdateLexemeContent(ctx, existingProduction.ID, req.Translation, req.Transcription, req.Context, req.Definition, req.ImageUrl, req.Category, req.Note, req.ExtendedContext)
+			_ = s.repo.UpdateLexemeVideoLocation(ctx, existingProduction.ID, timestampSec, sourceURL)
 		}
 		if req.ImageUrl != "" && strings.HasPrefix(req.ImageUrl, "http") {
 			s.downloadAndStoreImageAsync(existingRecognition.ID, 0, req.ImageUrl)
@@ -78,6 +98,9 @@ func (s *VocabularyService) AddWord(ctx context.Context, userID uuid.UUID, req d
 		ImageUrl:	req.ImageUrl,
 		CardType:	0,
 		Category:	req.Category,
+		TimestampSec:	timestampSec,
+		SourceUrl:	sourceURL,
+		Note:		strings.TrimSpace(req.Note),
 	}
 
 	cardProduction := &model.Dictionary{
@@ -96,6 +119,9 @@ func (s *VocabularyService) AddWord(ctx context.Context, userID uuid.UUID, req d
 		ImageUrl:	req.ImageUrl,
 		CardType:	1,
 		Category:	req.Category,
+		TimestampSec:	timestampSec,
+		SourceUrl:	sourceURL,
+		Note:		strings.TrimSpace(req.Note),
 	}
 
 	if cardRecognition.Category == "" {
@@ -490,7 +516,123 @@ func (s *VocabularyService) mapModelToDto(m *model.Dictionary) *dto.DictionaryIt
 		RollingRetention:	m.RollingRetention,
 		CardType:		m.CardType,
 		Category:		m.Category,
+		TimestampSec:		m.TimestampSec,
+		SourceUrl:		m.SourceUrl,
+		Note:			m.Note,
 	}
+}
+
+func (s *VocabularyService) UpdateWord(ctx context.Context, userID uuid.UUID, cardID int64, req dto.UpdateWordRequestDto) (*dto.DictionaryItemDto, error) {
+	card, err := s.repo.FindByID(ctx, cardID)
+	if err != nil {
+		return nil, err
+	}
+	if card.UserID != userID {
+		return nil, fmt.Errorf("unauthorized: card does not belong to user")
+	}
+
+	translation := strings.TrimSpace(req.TranslatedText)
+	definition := strings.TrimSpace(req.Definition)
+	contextStr := strings.TrimSpace(req.Context)
+	note := strings.TrimSpace(req.Note)
+
+	if err := s.repo.UpdateWordWithSiblings(ctx, userID, card.Word, card.Source, translation, definition, contextStr, note); err != nil {
+		return nil, err
+	}
+
+	card.Translation = translation
+	card.Definition = definition
+	card.Context = contextStr
+	card.Note = note
+
+	s.learningService.InvalidateCache(ctx, userID)
+	s.deleteLexemeLightCache(ctx, userID, cardID)
+	s.InvalidateSRSStatsCache(ctx, userID)
+
+	return s.mapModelToDto(card), nil
+}
+
+func (s *VocabularyService) ImportWords(ctx context.Context, userID uuid.UUID, req dto.ImportWordsRequestDto) (*dto.ImportWordsResponseDto, error) {
+	resourceName := strings.TrimSpace(req.ResourceName)
+	if resourceName == "" {
+		resourceName = "Imported Vocabulary"
+	}
+
+	imported := 0
+	skipped := 0
+	now := time.Now()
+
+	for _, item := range req.Items {
+		word := strings.TrimSpace(item.Word)
+		if word == "" {
+			skipped++
+			continue
+		}
+
+		existing, _ := s.repo.FindExistingLexeme(ctx, userID, word, resourceName, 0)
+		if existing != nil {
+			skipped++
+			continue
+		}
+
+		translation := strings.TrimSpace(item.Translation)
+		definition := strings.TrimSpace(item.Definition)
+		contextStr := strings.TrimSpace(item.Context)
+		note := strings.TrimSpace(item.Note)
+
+		cardRecognition := &model.Dictionary{
+			UserID:		userID,
+			Word:		word,
+			Translation:	translation,
+			Context:	contextStr,
+			Source:		resourceName,
+			Status:		"new",
+			EaseFactor:	2.5,
+			Interval:	0,
+			CreatedAt:	now,
+			UpdatedAt:	now,
+			Definition:	definition,
+			CardType:	0,
+			Note:		note,
+		}
+		if err := s.repo.Save(ctx, cardRecognition); err != nil {
+			skipped++
+			continue
+		}
+
+		cardProduction := &model.Dictionary{
+			UserID:		userID,
+			Word:		word,
+			Translation:	translation,
+			Context:	contextStr,
+			Source:		resourceName,
+			Status:		"new",
+			EaseFactor:	2.5,
+			Interval:	0,
+			CreatedAt:	now,
+			UpdatedAt:	now,
+			Definition:	definition,
+			CardType:	1,
+			Note:		note,
+		}
+		if err := s.repo.Save(ctx, cardProduction); err != nil {
+			s.logger.Warn("Failed to save production card during import", zap.String("word", word), zap.Error(err))
+		}
+		imported++
+	}
+
+	if imported > 0 {
+		s.learningService.InvalidateCache(ctx, userID)
+		s.InvalidateSRSStatsCache(ctx, userID)
+		if s.redis != nil {
+			_ = s.EnsureGroupCountsCache(ctx, userID)
+		}
+	}
+
+	return &dto.ImportWordsResponseDto{
+		ImportedCount:	imported,
+		SkippedCount:	skipped,
+	}, nil
 }
 
 

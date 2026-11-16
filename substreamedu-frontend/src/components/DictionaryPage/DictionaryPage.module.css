@@ -1329,3 +1329,84 @@
     color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
 }
+
+.timestampJumpLink,
+.timestampBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    background: #f5f3ef;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    color: var(--text-secondary);
+}
+
+.timestampJumpLink {
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.timestampJumpLink:hover {
+    background: #0a0a0a;
+    border-color: #0a0a0a;
+    color: #f5f3ef;
+}
+
+.wordNoteBox {
+    margin: 6px 0 0;
+    padding: 6px 10px;
+    border-left: 2px solid rgba(10, 10, 10, 0.25);
+    background: #f5f3ef;
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+.importFileInput {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.importTextarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(10, 10, 10, 0.14);
+    background: #f5f3ef;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+}
+
+.importTextarea:focus {
+    border-color: #0a0a0a;
+}
+
+.importPreviewMeta {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.importErrorText {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--color-danger, #dc2626);
+}
+
+.importSuccessText {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+

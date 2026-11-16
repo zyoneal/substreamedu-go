@@ -84,7 +84,7 @@ func (s *AIService) TranslateWithContext(ctx context.Context, req dto.Dictionary
 		resolvedSource = val
 	}
 
-	cacheKey := fmt.Sprintf("ai:translation:v3.4:%s:%s:%s:%s:%s", req.LearningLanguage, req.FluentLanguage, req.HighlightedText, req.Context, req.ExtendedContext)
+	cacheKey := fmt.Sprintf("ai:translation:v3.4:%s:%s:%s:%s:%s:%t", req.LearningLanguage, req.FluentLanguage, req.HighlightedText, req.Context, req.ExtendedContext, req.DisableLemmatization)
 	if s.redis != nil {
 		if val, err := s.redis.Get(ctx, cacheKey).Result(); err == nil {
 			s.logger.Info("AI Cache Hit", zap.String("key", cacheKey))
@@ -118,13 +118,14 @@ func (s *AIService) TranslateWithContext(ctx context.Context, req dto.Dictionary
 		isPartial = !isFullMatch
 	}
 
-	systemPrompt, userPrompt := s.createTranslationPrompt(
+	systemPrompt, userPrompt := s.createTranslationPromptWithOptions(
 		req.HighlightedText,
 		resolvedSource,
 		resolvedTarget,
 		req.Context,
 		req.ExtendedContext,
 		isPartial,
+		req.DisableLemmatization,
 	)
 
 	dsReq := dto.DeepSeekRequest{
@@ -926,6 +927,9 @@ func (s *AIService) AnalyzeGrammar(ctx context.Context, req dto.AnalyzeGrammarRe
 	fmt.Fprintf(&prompt, "You are a master linguistic professor and communicative grammar teacher.\n")
 	fmt.Fprintf(&prompt, "Analyze the following %s sentence from authentic video subtitles:\n", resolvedLearning)
 	fmt.Fprintf(&prompt, "Sentence: \"%s\"\n", req.Sentence)
+	if ext := strings.TrimSpace(req.ExtendedContext); ext != "" && ext != strings.TrimSpace(req.Sentence) {
+		fmt.Fprintf(&prompt, "Surrounding Dialogue Context: \"%s\"\n", ext)
+	}
 	if req.RuleHint != "" {
 		fmt.Fprintf(&prompt, "Detected Pattern Hint: %s\n", req.RuleHint)
 	}

@@ -166,7 +166,12 @@ func (h *DictionaryHandler) GetDailyCards(c *gin.Context) {
 	}
 
 	loc := h.resolveLocation(c)
-	res, err := h.learningService.GetDailyCards(c.Request.Context(), *userID, loc)
+	filter := dto.SessionFilter{
+		ResourceName:	c.Query("resource"),
+		Category:	c.Query("category"),
+		ItemKind:	c.Query("kind"),
+	}.Normalize()
+	res, err := h.learningService.GetDailyCardsWithFilter(c.Request.Context(), *userID, loc, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
 		return
@@ -429,6 +434,58 @@ func (h *DictionaryHandler) GetDictionaryStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: stats})
+}
+
+func (h *DictionaryHandler) UpdateWord(c *gin.Context) {
+	userID, ok := h.getUserId(c)
+	if !ok {
+		return
+	}
+
+	wordID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ApiResponse{Status: "error", Message: "Invalid wordId"})
+		return
+	}
+
+	var req dto.UpdateWordRequestDto
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+
+	res, err := h.vocabularyService.UpdateWord(c.Request.Context(), userID, wordID, req)
+	if err != nil {
+		if strings.Contains(err.Error(), "unauthorized") {
+			c.JSON(http.StatusForbidden, dto.ApiResponse{Status: "error", Message: "Forbidden"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{Status: "success", Data: res})
+}
+
+func (h *DictionaryHandler) ImportWords(c *gin.Context) {
+	userID, ok := h.getUserId(c)
+	if !ok {
+		return
+	}
+
+	var req dto.ImportWordsRequestDto
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+
+	res, err := h.vocabularyService.ImportWords(c.Request.Context(), userID, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ApiResponse{Status: "error", Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, dto.ApiResponse{Status: "success", Data: res})
 }
 
 func (h *DictionaryHandler) DeleteWord(c *gin.Context) {

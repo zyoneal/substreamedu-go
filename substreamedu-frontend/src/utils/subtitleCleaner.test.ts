@@ -1,4 +1,4 @@
-import { cleanSubtitleText, cleanSubtitleSelection } from './subtitleCleaner';
+import { cleanSubtitleText, cleanSubtitleSelection, stripClosedCaptions } from './subtitleCleaner';
 
 describe('subtitleCleaner', () => {
     describe('cleanSubtitleText', () => {
@@ -68,6 +68,20 @@ describe('subtitleCleaner', () => {
             expect(cleanSubtitleSelection(input)).toBe(
                 '- Go, Teagan, whoo! - ...tries.'
             );
+        });
+    });
+
+    describe('stripClosedCaptions', () => {
+        it('removes bracketed, parenthetical, and musical annotations', () => {
+            expect(stripClosedCaptions('[music] Hello there (laughs)')).toBe('Hello there');
+            expect(stripClosedCaptions('♪ Never gonna give you up ♪')).toBe('');
+            expect(stripClosedCaptions('[sighs]')).toBe('');
+        });
+
+        it('removes uppercase speaker labels while preserving normal prose colons', () => {
+            expect(stripClosedCaptions('NARRATOR: The story begins.')).toBe('The story begins.');
+            expect(stripClosedCaptions('- JOHN: Are you ready?\n- SARAH: Yes!')).toBe('- Are you ready?\n- Yes!');
+            expect(stripClosedCaptions('Wait: what did you say?')).toBe('Wait: what did you say?');
         });
     });
 });

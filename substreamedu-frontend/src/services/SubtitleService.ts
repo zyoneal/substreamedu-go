@@ -175,6 +175,8 @@ const SubtitleService = {
         transcription: string | null;
         definition: string | null;
         imageUrl: string | null;
+        timestampSec?: number;
+        sourceUrl?: string;
     }) {
         try {
             const response = await axiosService.post(`${baseURL}${urls.dictionary}/translated`, data);
@@ -214,7 +216,8 @@ const SubtitleService = {
         context: string,
         extendedContext?: string,
         learningLanguage: string,
-        fluentLanguage: string
+        fluentLanguage: string,
+        disableLemmatization?: boolean
     }): Promise<TranslationProdResponse> {
         if (!GuestLimitService.checkGuestTranslationAllowed()) {
             throw new Error('GUEST_LIMIT_REACHED');

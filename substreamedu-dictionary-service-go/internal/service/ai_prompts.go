@@ -7,6 +7,10 @@ import (
 )
 
 func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, context, extendedContext string, isPartial bool) (string, string) {
+	return s.createTranslationPromptWithOptions(text, sourceLang, targetLang, context, extendedContext, isPartial, false)
+}
+
+func (s *AIService) createTranslationPromptWithOptions(text, sourceLang, targetLang, context, extendedContext string, isPartial bool, disableLemmatization bool) (string, string) {
 	words := strings.Fields(strings.TrimSpace(text))
 	wordCount := len(words)
 	wordOrPhrase := "word"
@@ -50,9 +54,14 @@ func (s *AIService) createTranslationPrompt(text, sourceLang, targetLang, contex
 		sb.WriteString("6. 'register': formal|informal|slang|neutral|academic|literary — the sociolinguistic register of this expression.\n")
 		sb.WriteString("7. 'chunks', 'alternatives', 'typical_contexts' MUST be empty ([], [], []).\n\n")
 	} else if isPartial || wordOrPhrase == "word" {
-		sb.WriteString("!!! LEMMA PRIORITY: ON !!!\n")
-		sb.WriteString("1. BASE FORM REQUIREMENT: The highlight is a SINGLE WORD or ROOT. You MUST return the absolute BASE DICTIONARY FORM in 'translation' (Infinitive for verbs, Nominative Singular for nouns/adjectives).\n")
-		sb.WriteString("2. CONTEXT IS ONLY FOR MEANING: Use sentence context strictly to resolve semantic meaning (word sense disambiguation), but NEVER inflect the translation into the grammatical case, tense, or number of the sentence.\n")
+		if disableLemmatization {
+			sb.WriteString("!!! EXACT SURFACE FORM MODE: ON !!!\n")
+			sb.WriteString("1. EXACT FORM REQUIREMENT: Translate the EXACT inflected surface form as highlighted (preserve tense, plurality, comparative/superlative, or grammatical form in 'translation' rather than converting to an infinitive/lemma).\n")
+		} else {
+			sb.WriteString("!!! LEMMA PRIORITY: ON !!!\n")
+			sb.WriteString("1. BASE FORM REQUIREMENT: The highlight is a SINGLE WORD or ROOT. You MUST return the absolute BASE DICTIONARY FORM in 'translation' (Infinitive for verbs, Nominative Singular for nouns/adjectives).\n")
+			sb.WriteString("2. CONTEXT IS ONLY FOR MEANING: Use sentence context strictly to resolve semantic meaning (word sense disambiguation), but NEVER inflect the translation into the grammatical case, tense, or number of the sentence.\n")
+		}
 		sb.WriteString("3. LITERAL MATCH: Match characters exactly. If highlight is 'idiot' in 'idiots', translate 'idiot' (singular). If 'want' in 'wanted', translate 'want' (infinitive).\n")
 		sb.WriteString("4. TRANSCRIPTION: Provide exact, accurate IPA for the highlighted " + sourceLang + " text.\n")
 		sb.WriteString("5. VISUAL KEYWORD: Exactly ONE concrete, physically drawable English noun representing the specific contextual meaning (e.g., 'runner' for 'running', 'sword' for 'betrayal', 'gavel' for 'verdict'). Return \"\" for abstract or grammatical words (e.g., 'however', 'almost', 'because', 'furthermore').\n")

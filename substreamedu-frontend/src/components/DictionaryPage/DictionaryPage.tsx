@@ -19,6 +19,7 @@ import X from 'lucide-react/dist/esm/icons/x';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Tag from 'lucide-react/dist/esm/icons/tag';
+import { Upload } from 'lucide-react';
 
 import { Card, CardContent } from '../ui/card';
 import { Input } from '../ui/input';
@@ -30,11 +31,13 @@ import { DictionaryResourceCard } from './components/DictionaryResourceCard';
 import { DictionaryWordCard } from './components/DictionaryWordCard';
 import { DictionaryPagination } from './components/DictionaryPagination';
 import { DictionaryEditModal } from './components/DictionaryEditModal';
+import { DictionaryImportModal } from './components/DictionaryImportModal';
 import styles from './DictionaryPage.module.css';
 
 const DictionaryPage: React.FC = () => {
     usePixzenTheme();
     const intl = useIntl();
+    const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -80,6 +83,7 @@ const DictionaryPage: React.FC = () => {
         handleQuickEdit,
         handleCancelEdit,
         handleExport,
+        reloadDictionary,
     } = useDictionaryData({ viewMode: viewModeState });
 
     // 2. Search, Layout & Pagination Hook
@@ -201,6 +205,17 @@ const DictionaryPage: React.FC = () => {
                                 <span>{intl.formatMessage({ id: 'allWords', defaultMessage: 'All Words' })}</span>
                             </button>
                         </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsImportModalOpen(true)}
+                            className={styles.exportButton}
+                            title="Import words from CSV or TXT"
+                            aria-label="Import words from CSV or TXT"
+                        >
+                            <Upload size={14} />
+                            <span>Import</span>
+                        </button>
 
                         <button
                             onClick={handleExport}
@@ -602,6 +617,12 @@ const DictionaryPage: React.FC = () => {
                     isOpen={Boolean(editingWord)}
                     onClose={handleCancelEdit}
                     onSave={handleSaveWord}
+                />
+
+                <DictionaryImportModal
+                    isOpen={isImportModalOpen}
+                    onClose={() => setIsImportModalOpen(false)}
+                    onImportComplete={reloadDictionary}
                 />
             </div>
         </motion.div>

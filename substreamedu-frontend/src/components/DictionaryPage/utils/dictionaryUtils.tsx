@@ -19,6 +19,8 @@ export interface DictionaryItem {
     definition: string | null;
     imageUrl: string | null;
     transcription: string | null;
+    timestampSec?: number | null;
+    sourceUrl?: string;
     tags?: string[];
     difficulty?: 'easy' | 'medium' | 'hard';
     lastReviewed?: string;

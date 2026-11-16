@@ -30,6 +30,7 @@ export interface UseDictionaryDataReturn {
     handleQuickEdit: (word: DictionaryItem) => void;
     handleCancelEdit: () => void;
     handleExport: () => Promise<void>;
+    reloadDictionary: () => Promise<void>;
 }
 
 export const useDictionaryData = ({ viewMode }: UseDictionaryDataOptions): UseDictionaryDataReturn => {
@@ -48,42 +49,43 @@ export const useDictionaryData = ({ viewMode }: UseDictionaryDataOptions): UseDi
     const [categorizeProgress, setCategorizeProgress] = useState<{ processed: number; total: number; remaining: number } | null>(null);
     const [categorizeMessage, setCategorizeMessage] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!AuthService.getUserEmail()) {
-                setResources([]);
-                setCategories([]);
-                setAllWords([]);
-                setStatus('success');
-                setIsLoadingWords(false);
-                return;
+    const fetchData = useCallback(async () => {
+        if (!AuthService.getUserEmail()) {
+            setResources([]);
+            setCategories([]);
+            setAllWords([]);
+            setStatus('success');
+            setIsLoadingWords(false);
+            return;
+        }
+        setStatus('loading');
+        try {
+            if (viewMode === 'groups') {
+                const data = await DictionaryService.fetchDictionaryResources();
+                setResources(Array.isArray(data) ? data : []);
+            } else if (viewMode === 'categories') {
+                const data = await DictionaryService.fetchDictionaryCategories();
+                setCategories(Array.isArray(data) ? data : []);
+            } else if (viewMode === 'words') {
+                setIsLoadingWords(true);
+                const words = await DictionaryService.fetchDictionaryItemsByUser();
+                setAllWords(Array.isArray(words) ? words : []);
             }
-            setStatus('loading');
-            try {
-                if (viewMode === 'groups') {
-                    const data = await DictionaryService.fetchDictionaryResources();
-                    setResources(Array.isArray(data) ? data : []);
-                } else if (viewMode === 'categories') {
-                    const data = await DictionaryService.fetchDictionaryCategories();
-                    setCategories(Array.isArray(data) ? data : []);
-                } else if (viewMode === 'words') {
-                    setIsLoadingWords(true);
-                    const words = await DictionaryService.fetchDictionaryItemsByUser();
-                    setAllWords(Array.isArray(words) ? words : []);
-                }
-                setStatus('success');
-            } catch (error) {
-                debugError('Failed to fetch data', error);
-                setResources([]);
-                setCategories([]);
-                setAllWords([]);
-                setStatus('error');
-            } finally {
-                setIsLoadingWords(false);
-            }
-        };
-        fetchData();
+            setStatus('success');
+        } catch (error) {
+            debugError('Failed to fetch data', error);
+            setResources([]);
+            setCategories([]);
+            setAllWords([]);
+            setStatus('error');
+        } finally {
+            setIsLoadingWords(false);
+        }
     }, [viewMode]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const handleDelete = useCallback(async (groupName: string) => {
         try {
@@ -106,6 +108,14 @@ export const useDictionaryData = ({ viewMode }: UseDictionaryDataOptions): UseDi
 
     const handleSaveWord = useCallback(async (updatedWord: DictionaryItem) => {
         try {
+            if (typeof DictionaryService.updateDictionaryItem === 'function' && updatedWord.id) {
+                await DictionaryService.updateDictionaryItem(updatedWord.id, {
+                    translatedText: updatedWord.translatedText || '',
+                    definition: updatedWord.definition || '',
+                    context: updatedWord.context || '',
+                    note: updatedWord.note || '',
+                });
+            }
             setAllWords(prev => prev.map(word =>
                 word.id === updatedWord.id ? updatedWord : word
             ));
@@ -240,5 +250,6 @@ export const useDictionaryData = ({ viewMode }: UseDictionaryDataOptions): UseDi
         handleQuickEdit,
         handleCancelEdit,
         handleExport,
+        reloadDictionary: fetchData,
     };
 };

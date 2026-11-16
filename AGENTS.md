@@ -57,6 +57,17 @@ Do not ingest unnecessary files. Load context strictly based on your task domain
 10. **Progress Tracker Synchronization**:
     - **Start**: Update `In Progress` in `/context/progress_tracker.md`.
     - **Finish**: Move to `Recent Completed` and log ADR.
+11. **Fresh-Session Review Loop (`/review-loop`)**:
+    - Non-trivial Ship tasks must be reviewed by an isolated fresh-context reviewer subagent (`.agents/workflows/review-loop.md`) that sees only the active spec + `git diff`.
+    - Reuse one reviewer per task (`send_message`), triage findings as `blocker` / `must-fix` / `minor`, allow evidence-based rebuttals, and escalate to the user after at most **5 rounds**.
+12. **Mutation Check (Test Proof)**:
+    - A green test alone proves nothing. For every new or modified test, temporarily break the target behavior to confirm the test turns **RED**, restore the implementation, and confirm **GREEN**.
+13. **Commit-SHA Verification**:
+    - Never report `./verify.sh` or CI as "green" based on an earlier run. Verification is valid **only** for the current `git rev-parse HEAD` after the final edit.
+14. **Pilot-First Localization**:
+    - When adding or updating multi-language UI copy (`react-intl`), translate **one pilot language** first, audit for truncated `...` strings, untranslatable brand/legal terms, and punctuation/link collisions, codify the findings, then scale to remaining languages.
+15. **Value-Unit Reporting**:
+    - Report completed work as verified **units of value** (concrete working behaviors + negative/edge checks verified), not raw PR, commit, or LOC counts.
 
 ---
 
