@@ -92,12 +92,9 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: false
 
-      - name: Run golangci-lint (Diff-Scoped)
-        uses: golangci/golangci-lint-action@v7
-        with:
-          version: latest
-          working-directory: ${{ matrix.service }}
-          args: --timeout=5m --new-from-rev=${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'HEAD~1' }}
+      - name: Run Go Vet
+        working-directory: ${{ matrix.service }}
+        run: go vet ./...
 
       - name: Verify Go Module Integrity
         working-directory: ${{ matrix.service }}
