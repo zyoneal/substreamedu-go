@@ -24,7 +24,6 @@ export interface SubtitleOverlayProps {
     showOnboardingPointer?: boolean;
     isOnboardingMode?: boolean;
     hasSelectedText?: boolean;
-    subtitleBgOpacity?: number;
 }
 
 export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -47,7 +46,6 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     showOnboardingPointer = false,
     isOnboardingMode = false,
     hasSelectedText = false,
-    subtitleBgOpacity,
 }) => {
     const [isTouchRevealed, setIsTouchRevealed] = useState<boolean>(false);
     const touchRevealTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -155,11 +153,6 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
 
             <div
                 className={`${styles.currentSubtitleContainer} ${isLoadingSubtitles ? styles.loading : ''} ${!currentSubtitle ? styles.isEmpty : styles.hasContent}`}
-                style={
-                    currentSubtitle && typeof subtitleBgOpacity === 'number'
-                        ? { backgroundColor: `rgba(20, 19, 18, ${subtitleBgOpacity})` }
-                        : undefined
-                }
                 ref={containerRef}
                 onMouseUp={(e) => {
                     e.stopPropagation();

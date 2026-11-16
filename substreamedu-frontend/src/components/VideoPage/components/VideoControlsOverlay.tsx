@@ -11,7 +11,6 @@ import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
 import Play from 'lucide-react/dist/esm/icons/play';
 import Pause from 'lucide-react/dist/esm/icons/pause';
-import { SlidersHorizontal } from 'lucide-react';
 import styles from '../css/VideoPlayerPopover.module.css';
 
 export interface VideoControlsOverlayProps {
@@ -27,14 +26,7 @@ export interface VideoControlsOverlayProps {
     showSubtitles: boolean;
     blurSubtitles: boolean;
     delay: number;
-    autoPause?: boolean;
-    autoLoop?: boolean;
-    filterCC?: boolean;
     skipSilence?: boolean;
-    shortcutsDisabled?: boolean;
-    subtitleOnly?: boolean;
-    disableLemmatization?: boolean;
-    subtitleBgOpacity?: number;
     formatTime?: (seconds: number) => string;
     onVideoClick: () => void;
     onTogglePlayPause: () => void;
@@ -44,14 +36,7 @@ export interface VideoControlsOverlayProps {
     onToggleBlur: () => void;
     onDelayChange: (delaySeconds: number) => void;
     onRepeatCurrentSubtitle: () => void;
-    onToggleAutoPause?: () => void;
-    onToggleAutoLoop?: () => void;
-    onToggleFilterCC?: () => void;
     onToggleSkipSilence?: () => void;
-    onToggleShortcutsDisabled?: () => void;
-    onToggleSubtitleOnly?: () => void;
-    onToggleDisableLemmatization?: () => void;
-    onSubtitleBgOpacityChange?: (opacity: number) => void;
     onToggleMute: () => void;
     onVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -81,14 +66,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     showSubtitles,
     blurSubtitles,
     delay,
-    autoPause = false,
-    autoLoop = false,
-    filterCC = false,
     skipSilence = false,
-    shortcutsDisabled = false,
-    subtitleOnly = false,
-    disableLemmatization = false,
-    subtitleBgOpacity = 0.92,
     formatTime = defaultFormatTime,
     onVideoClick,
     onTogglePlayPause,
@@ -98,14 +76,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     onToggleBlur,
     onDelayChange,
     onRepeatCurrentSubtitle,
-    onToggleAutoPause,
-    onToggleAutoLoop,
-    onToggleFilterCC,
     onToggleSkipSilence,
-    onToggleShortcutsDisabled,
-    onToggleSubtitleOnly,
-    onToggleDisableLemmatization,
-    onSubtitleBgOpacityChange,
     onToggleMute,
     onVolumeChange,
     onSeek,
@@ -115,15 +86,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
     hideTopControls = false,
 }) => {
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const volumeControlRef = useRef<HTMLDivElement>(null);
-    const settingsRef = useRef<HTMLDivElement>(null);
-    const hasPlayerSettings = Boolean(
-        onToggleShortcutsDisabled ||
-        onToggleSubtitleOnly ||
-        onToggleDisableLemmatization ||
-        onSubtitleBgOpacityChange
-    );
 
     // 1:1 Apple-style Scrubber Direct Manipulation
     const [isScrubbing, setIsScrubbing] = useState(false);
@@ -292,49 +255,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                             <span>3x</span>
                         </button>
 
-                        {/* 4. Auto-Pause at end of each subtitle */}
-                        {onToggleAutoPause && (
-                            <button
-                                type="button"
-                                className={`${styles.quickPillButton} ${autoPause ? styles.activePill : ''}`}
-                                onClick={onToggleAutoPause}
-                                aria-pressed={autoPause}
-                                title={autoPause ? "Auto-Pause active — click to disable" : "Pause automatically at the end of each subtitle"}
-                                aria-label="Toggle auto-pause after subtitle"
-                            >
-                                <span>Auto-Pause</span>
-                            </button>
-                        )}
-
-                        {/* 5. Continuous Auto-Loop on current subtitle */}
-                        {onToggleAutoLoop && (
-                            <button
-                                type="button"
-                                className={`${styles.quickPillButton} ${autoLoop ? styles.activePill : ''}`}
-                                onClick={onToggleAutoLoop}
-                                aria-pressed={autoLoop}
-                                title={autoLoop ? "Auto-Loop active — click to disable" : "Continuously loop the current subtitle"}
-                                aria-label="Toggle auto-loop current subtitle"
-                            >
-                                <span>Loop</span>
-                            </button>
-                        )}
-
-                        {/* 6. Filter Closed Captions ([music], (laughs), SPEAKER:) */}
-                        {onToggleFilterCC && (
-                            <button
-                                type="button"
-                                className={`${styles.quickPillButton} ${filterCC ? styles.activePill : ''}`}
-                                onClick={onToggleFilterCC}
-                                aria-pressed={filterCC}
-                                title={filterCC ? "Closed captions filter active — click to show all" : "Hide [music], (laughs), and speaker labels"}
-                                aria-label="Toggle closed captions filter"
-                            >
-                                <span>Clean CC</span>
-                            </button>
-                        )}
-
-                        {/* 7. Speed up during silent gaps without subtitles */}
+                        {/* 4. Speed up during silent gaps without subtitles */}
                         {onToggleSkipSilence && (
                             <button
                                 type="button"
@@ -346,79 +267,6 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                             >
                                 <span>2x Gap</span>
                             </button>
-                        )}
-
-                        {/* 8. Player Settings Popover */}
-                        {hasPlayerSettings && (
-                            <div className={styles.settingsAnchor} ref={settingsRef}>
-                                <button
-                                    type="button"
-                                    className={`${styles.quickPillButton} ${isSettingsOpen ? styles.activePill : ''}`}
-                                    onClick={() => setIsSettingsOpen((prev) => !prev)}
-                                    aria-expanded={isSettingsOpen}
-                                    aria-label="Player settings"
-                                    title="Player settings"
-                                >
-                                    <SlidersHorizontal size={13} />
-                                </button>
-                                {isSettingsOpen && (
-                                    <div
-                                        className={styles.playerSettingsPopover}
-                                        role="dialog"
-                                        aria-label="Player settings menu"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        {onToggleSubtitleOnly && (
-                                            <label className={styles.settingsOptionRow}>
-                                                <span>Subtitle-only mode</span>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={subtitleOnly}
-                                                    onChange={onToggleSubtitleOnly}
-                                                />
-                                            </label>
-                                        )}
-                                        {onToggleShortcutsDisabled && (
-                                            <label className={styles.settingsOptionRow}>
-                                                <span>Disable shortcuts</span>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={shortcutsDisabled}
-                                                    onChange={onToggleShortcutsDisabled}
-                                                />
-                                            </label>
-                                        )}
-                                        {onToggleDisableLemmatization && (
-                                            <label className={styles.settingsOptionRow}>
-                                                <span>Exact word form (no lemma)</span>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={disableLemmatization}
-                                                    onChange={onToggleDisableLemmatization}
-                                                />
-                                            </label>
-                                        )}
-                                        {onSubtitleBgOpacityChange && (
-                                            <div className={styles.settingsSliderBlock}>
-                                                <div className={styles.settingsSliderHeader}>
-                                                    <span>Subtitle background</span>
-                                                    <span>{Math.round(subtitleBgOpacity * 100)}%</span>
-                                                </div>
-                                                <input
-                                                    type="range"
-                                                    min={0}
-                                                    max={1}
-                                                    step={0.1}
-                                                    value={subtitleBgOpacity}
-                                                    aria-label="Subtitle background opacity"
-                                                    onChange={(e) => onSubtitleBgOpacityChange(parseFloat(e.target.value))}
-                                                    className={styles.settingsRange}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
                         )}
                     </div>
                 </div>

@@ -21,9 +21,8 @@ import {
     formatSubtitleForDisplay,
     renderHighlightedSubtitle,
 } from './utils/subtitleHighlightUtils';
-import { evaluateSilenceSpeedup, evaluateSubtitlePlaybackMode, SubtitleCueTiming } from './utils/subtitlePlaybackModes';
+import { evaluateSilenceSpeedup } from './utils/subtitlePlaybackModes';
 import { getExtendedSubtitleContext } from './utils/subtitleTranslationUtils';
-import { stripClosedCaptions } from '../../utils/subtitleCleaner';
 import styles from './css/VideoPlayerPopover.module.css';
 import { LanguageContext } from '../LanguageContext';
 import { AuthContext } from '../../store/AuthContext';
@@ -74,49 +73,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const [dictionaryItems, setDictionaryItems] = useState<DictionaryItem[]>([]);
     const [highlightedWords, setHighlightedWords] = useState<DictionaryItem[]>([]);
     const [showMobileHint, setShowMobileHint] = useState(true);
-    const [autoPause, setAutoPause] = useState(false);
-    const [autoLoop, setAutoLoop] = useState(false);
     const [skipSilence, setSkipSilence] = useState(false);
-    const [shortcutsDisabled, setShortcutsDisabled] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem('substreamedu_disable_shortcuts') === 'true';
-        } catch {
-            return false;
-        }
-    });
-    const [subtitleOnly, setSubtitleOnly] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem('substreamedu_subtitle_only') === 'true';
-        } catch {
-            return false;
-        }
-    });
-    const [disableLemmatization, setDisableLemmatization] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem('substreamedu_disable_lemmatization') === 'true';
-        } catch {
-            return false;
-        }
-    });
-    const [subtitleBgOpacity, setSubtitleBgOpacity] = useState<number>(() => {
-        try {
-            const raw = localStorage.getItem('substreamedu_subtitle_bg_opacity');
-            const parsed = raw !== null ? parseFloat(raw) : 0.92;
-            return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0.92;
-        } catch {
-            return 0.92;
-        }
-    });
     const lastAppliedPlaybackRateRef = useRef<number>(1);
-    const [filterCC, setFilterCC] = useState<boolean>(() => {
-        try {
-            return localStorage.getItem('substreamedu_filter_cc') === 'true';
-        } catch {
-            return false;
-        }
-    });
-    const trackedCueRef = useRef<SubtitleCueTiming | null>(null);
-    const lastPausedCueEndMsRef = useRef<number | null>(null);
     const cardContainerRef = useRef<HTMLDivElement>(null);
     const lastFetchedResourceRef = useRef<string | null>(null);
 
@@ -366,7 +324,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         onRequireLanguageSelection: () => setShowLanguageOverlay(true),
         isPopoverOpen,
         setIsPopoverOpen,
-        disableLemmatization,
     });
 
     // 10. Video Keyboard Shortcuts hook
@@ -381,39 +338,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         toggleMaxFit,
         subtitlesForVideo,
         currentSubtitle,
-        disabled: shortcutsDisabled,
     });
-
-    // Auto-Pause & Auto-Loop cue boundary enforcement
-    useEffect(() => {
-        if ((!autoPause && !autoLoop) || !Array.isArray(subtitlesForVideo) || subtitlesForVideo.length === 0) {
-            return;
-        }
-        const currentTimeMs = (currentTime + effectiveDelay) * 1000;
-        const activeCue = subtitlesForVideo.find(
-            (sub) => currentTimeMs >= sub.startTimeMs && currentTimeMs <= sub.endTimeMs
-        );
-        if (activeCue) {
-            if (filterCC && stripClosedCaptions(activeCue.text) === '') {
-                return;
-            }
-            trackedCueRef.current = activeCue;
-        }
-        const decision = evaluateSubtitlePlaybackMode({
-            currentTimeMs,
-            isPlaying,
-            autoPause,
-            autoLoop,
-            trackedCue: trackedCueRef.current,
-            lastPausedCueEndMs: lastPausedCueEndMsRef.current,
-        });
-        if (decision.action === 'seek' && typeof decision.seekTimeSec === 'number') {
-            seekTo(decision.seekTimeSec);
-        } else if (decision.action === 'pause' && typeof decision.pausedCueEndMs === 'number') {
-            lastPausedCueEndMsRef.current = decision.pausedCueEndMs;
-            pauseVideo();
-        }
-    }, [currentTime, isPlaying, autoPause, autoLoop, filterCC, subtitlesForVideo, effectiveDelay, seekTo, pauseVideo]);
 
     // 2x Silence Speed-Up during long gaps without subtitles
     useEffect(() => {
@@ -433,13 +358,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }
         }
     }, [currentTime, isPlaying, skipSilence, subtitlesForVideo, effectiveDelay, videoId, youtubePlayerRef, videoRef]);
-
-    const displayedSubtitle = useMemo(() => {
-        if (!currentSubtitle) return null;
-        if (!filterCC) return currentSubtitle;
-        const stripped = stripClosedCaptions(currentSubtitle);
-        return stripped || null;
-    }, [currentSubtitle, filterCC]);
 
     // Subtitle card loading on filename/videoId change
     useEffect(() => {
@@ -796,14 +714,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 showSubtitles={showSubtitles}
                                 blurSubtitles={effectiveBlur}
                                 delay={effectiveDelay}
-                                autoPause={autoPause}
-                                autoLoop={autoLoop}
-                                filterCC={filterCC}
                                 skipSilence={skipSilence}
-                                shortcutsDisabled={shortcutsDisabled}
-                                subtitleOnly={subtitleOnly}
-                                disableLemmatization={disableLemmatization}
-                                subtitleBgOpacity={subtitleBgOpacity}
                                 hideTopControls={isOnboardingMode}
                                 formatTime={formatTime}
                                 onVideoClick={handleVideoClick}
@@ -820,56 +731,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 onToggleBlur={() => setBlurSubtitles(prev => !prev)}
                                 onDelayChange={handleDelayChange}
                                 onRepeatCurrentSubtitle={handleRepeatCurrentSubtitle}
-                                onToggleAutoPause={() => {
-                                    setAutoPause(prev => {
-                                        const next = !prev;
-                                        if (next) setAutoLoop(false);
-                                        lastPausedCueEndMsRef.current = null;
-                                        return next;
-                                    });
-                                }}
-                                onToggleAutoLoop={() => {
-                                    setAutoLoop(prev => {
-                                        const next = !prev;
-                                        if (next) setAutoPause(false);
-                                        return next;
-                                    });
-                                }}
-                                onToggleFilterCC={() => {
-                                    setFilterCC(prev => {
-                                        const next = !prev;
-                                        try {
-                                            localStorage.setItem('substreamedu_filter_cc', String(next));
-                                        } catch {}
-                                        return next;
-                                    });
-                                }}
                                 onToggleSkipSilence={() => setSkipSilence(prev => !prev)}
-                                onToggleShortcutsDisabled={() => {
-                                    setShortcutsDisabled(prev => {
-                                        const next = !prev;
-                                        try { localStorage.setItem('substreamedu_disable_shortcuts', String(next)); } catch {}
-                                        return next;
-                                    });
-                                }}
-                                onToggleSubtitleOnly={() => {
-                                    setSubtitleOnly(prev => {
-                                        const next = !prev;
-                                        try { localStorage.setItem('substreamedu_subtitle_only', String(next)); } catch {}
-                                        return next;
-                                    });
-                                }}
-                                onToggleDisableLemmatization={() => {
-                                    setDisableLemmatization(prev => {
-                                        const next = !prev;
-                                        try { localStorage.setItem('substreamedu_disable_lemmatization', String(next)); } catch {}
-                                        return next;
-                                    });
-                                }}
-                                onSubtitleBgOpacityChange={(opacity) => {
-                                    setSubtitleBgOpacity(opacity);
-                                    try { localStorage.setItem('substreamedu_subtitle_bg_opacity', String(opacity)); } catch {}
-                                }}
                                 onToggleMute={toggleMute}
                                 onVolumeChange={handleVolumeChange}
                                 onSeek={handleSeek}
@@ -883,10 +745,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             <SubtitleOverlay
                                 isFullscreen={isFullscreen}
                                 showSubtitles={showSubtitles}
-                                currentSubtitle={displayedSubtitle}
+                                currentSubtitle={currentSubtitle}
                                 isLoadingSubtitles={isYoutubeSubsLoading || isSearchingSubtitles}
                                 hasNoSubtitlesForVideo={Boolean(videoId && (!subtitlesForVideo || subtitlesForVideo.length === 0))}
-                                activeGrammarPoint={subtitleOnly ? null : activeGrammarPoint}
+                                activeGrammarPoint={activeGrammarPoint}
                                 blurSubtitles={effectiveBlur}
                                 isMobile={isMobile}
                                 isPopoverOpen={isPopoverOpen}
@@ -901,12 +763,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 }}
                                 onPauseVideo={pauseVideo}
                                 onPlayVideo={playVideo}
-                                subtitleBgOpacity={subtitleBgOpacity}
                                 renderedSubtitle={renderHighlightedSubtitle(
-                                    formatSubtitleForDisplay(displayedSubtitle || ''),
-                                    subtitleOnly ? [] : highlightedWords,
+                                    formatSubtitleForDisplay(currentSubtitle || ''),
+                                    highlightedWords,
                                     undefined,
-                                    subtitleOnly ? [] : onboardingUnderlineWords
+                                    onboardingUnderlineWords
                                 )}
                                 showOnboardingPointer={false}
                                 isOnboardingMode={isOnboardingMode}
