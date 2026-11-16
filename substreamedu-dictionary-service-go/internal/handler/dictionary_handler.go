@@ -75,13 +75,17 @@ func (h *DictionaryHandler) getOptionalUserId(c *gin.Context) *uuid.UUID {
 }
 
 func (h *DictionaryHandler) checkLimit(c *gin.Context, userID uuid.UUID, limitType string) bool {
+	if c.GetBool("isPremium") {
+		return true
+	}
+
 	if h.iamClient == nil {
 		return true
 	}
 
 	usage, err := h.iamClient.GetUsage(c.Request.Context(), userID)
 	if err != nil {
-		c.JSON(http.StatusForbidden, dto.ApiResponse{Status: "error", Message: "Failed to verify usage limits"})
+		c.JSON(http.StatusServiceUnavailable, dto.ApiResponse{Status: "error", Message: "Failed to verify usage limits"})
 		return false
 	}
 

@@ -113,10 +113,10 @@ export const setupInterceptors = (
         const msg = (data?.message || '').toLowerCase();
         const url = error.config?.url || '';
 
-        if (msg.includes('translation limit') || url.includes('translation/prod')) {
+        if (msg.includes('translation limit')) {
           if (globalOnPremiumLimit) globalOnPremiumLimit('translation');
           window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'translation' } }));
-        } else if (msg.includes('save limit') || msg.includes('word save') || url.includes('translated')) {
+        } else if (msg.includes('save limit') || msg.includes('word save')) {
           if (globalOnPremiumLimit) globalOnPremiumLimit('save');
           window.dispatchEvent(new CustomEvent('substreamedu:premium_limit_reached', { detail: { type: 'save' } }));
         }

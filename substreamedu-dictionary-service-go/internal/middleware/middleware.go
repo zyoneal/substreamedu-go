@@ -60,6 +60,7 @@ func AuthMiddleware(secretKey string, internalServiceKey string) gin.HandlerFunc
 		}
 		c.Set("userID", claims.ID)
 		c.Set("userRole", claims.Role)
+		c.Set("isPremium", claims.IsPremium)
 		c.Next()
 	}
 }

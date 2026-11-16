@@ -7,7 +7,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/substreamedu/substreamedu-dictionary-service/internal/client"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -148,4 +151,37 @@ func TestDictionary_GuestAllowed(t *testing.T) {
 
 func TestAnkiExportLimitAllowsLargeDictionaries(t *testing.T) {
 	assert.True(t, maxAnkiExportCards == 0 || maxAnkiExportCards >= 25000, "maxAnkiExportCards should not artificially block dictionaries > 2,500 words")
+}
+
+func TestCheckLimit_PremiumAndIAMFailure(t *testing.T) {
+	iamFailServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer iamFailServer.Close()
+
+	h := &DictionaryHandler{
+		iamClient: client.NewIAMClient(iamFailServer.URL, "", zap.NewNop()),
+	}
+	userID := uuid.New()
+
+	t.Run("JWT isPremium=true bypasses IAM usage check even if IAM errors", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("POST", "/translation/prod", nil)
+		c.Set("isPremium", true)
+
+		allowed := h.checkLimit(c, userID, "translation")
+		assert.True(t, allowed, "Premium user with isPremium=true in JWT must not be blocked")
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("IAM failure returns 503 Service Unavailable instead of 403 Forbidden", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("POST", "/translation/prod", nil)
+
+		allowed := h.checkLimit(c, userID, "translation")
+		assert.False(t, allowed)
+		assert.Equal(t, http.StatusServiceUnavailable, w.Code, "IAM failure must not return 403 Forbidden which triggers paywall modal")
+	})
 }
