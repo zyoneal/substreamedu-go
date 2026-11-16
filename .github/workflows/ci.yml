@@ -67,10 +67,19 @@ jobs:
   # Job 1: Static Code Analysis & Linting (Shift-Left Verification)
   # ----------------------------------------------------------------------------
   lint:
-    name: Code Hygiene & Linter
+    name: Code Hygiene & Linter (${{ matrix.service }})
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - substreamedu-gateway-go
+          - substreamedu-iam-service-go
+          - substreamedu-dictionary-service-go
+          - substreamedu-media-service-go
+          - substreamedu-notification-service-go
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -87,14 +96,12 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          working-directory: ${{ matrix.service }}
           args: --timeout=5m --new-from-rev=${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'HEAD~1' }}
 
       - name: Verify Go Module Integrity
-        run: |
-          for dir in substreamedu-*-go; do
-            echo "Verifying $dir/go.mod..."
-            (cd "$dir" && go mod verify)
-          done
+        working-directory: ${{ matrix.service }}
+        run: go mod verify
 
   # ----------------------------------------------------------------------------
   # Job 2: Security SAST & Vulnerability Scanning
