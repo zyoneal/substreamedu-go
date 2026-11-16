@@ -19,6 +19,7 @@ export const DictionaryImportModal: React.FC<DictionaryImportModalProps> = ({
 }) => {
     const [resourceName, setResourceName] = useState('Imported Vocabulary');
     const [rawText, setRawText] = useState('');
+    const [selectedFileName, setSelectedFileName] = useState('');
     const [isImporting, setIsImporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [resultSummary, setResultSummary] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export const DictionaryImportModal: React.FC<DictionaryImportModalProps> = ({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setSelectedFileName(file.name);
         const reader = new FileReader();
         reader.onload = () => {
             if (typeof reader.result === 'string') {
@@ -86,18 +88,26 @@ export const DictionaryImportModal: React.FC<DictionaryImportModalProps> = ({
                     <label htmlFor="import-file-input" className={styles.modalLabel}>
                         Upload .csv / .txt file (optional)
                     </label>
-                    <input
-                        id="import-file-input"
-                        type="file"
-                        accept=".csv,.txt,.tsv"
-                        onChange={handleFileChange}
-                        className={styles.importFileInput}
-                    />
+                    <div className={styles.importFileRow}>
+                        <input
+                            id="import-file-input"
+                            type="file"
+                            accept=".csv,.txt,.tsv"
+                            onChange={handleFileChange}
+                            className="sr-only"
+                        />
+                        <label htmlFor="import-file-input" className={styles.importFileButton}>
+                            Choose file
+                        </label>
+                        <span className={styles.importFileName}>
+                            {selectedFileName || 'No file selected'}
+                        </span>
+                    </div>
                 </div>
 
                 <div className={styles.modalFieldGroup}>
                     <label htmlFor="import-text-area" className={styles.modalLabel}>
-                        Or paste words (one per line, CSV, or &quot;word - translation&quot;)
+                        Or paste words (one per line, CSV, or &quot;word - meaning&quot;)
                     </label>
                     <textarea
                         id="import-text-area"
@@ -109,7 +119,7 @@ export const DictionaryImportModal: React.FC<DictionaryImportModalProps> = ({
                             setResultSummary(null);
                         }}
                         className={styles.importTextarea}
-                        placeholder={'serendipity - счастливая случайность\ncall it a day, закончить на сегодня\nresilient'}
+                        placeholder={'serendipity - fortunate discovery by chance\ncall it a day, stop working for today\nresilient'}
                     />
                 </div>
 

@@ -1368,9 +1368,37 @@
     color: var(--text-secondary);
 }
 
-.importFileInput {
+.importFileRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.importFileButton {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    border: 1px solid rgba(10, 10, 10, 0.16);
+    background: #eae7e1;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.importFileButton:hover {
+    background: #dedad2;
+    border-color: rgba(10, 10, 10, 0.28);
+}
+
+.importFileName {
     font-size: 13px;
     color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .importTextarea {
