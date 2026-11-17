@@ -2132,7 +2132,7 @@
 
   .heroTitle {
     font-size: clamp(1.85rem, 8.5vw, 3.2rem);
-    min-height: 1.2em;
+    min-height: 2.3em;
     white-space: normal;
     text-wrap: balance;
     margin-bottom: 20px;

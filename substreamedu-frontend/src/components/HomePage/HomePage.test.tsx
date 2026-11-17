@@ -1,4 +1,6 @@
 import React from 'react';
+import fs from 'fs';
+import path from 'path';
 import { render, screen, fireEvent, act, within, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
@@ -203,6 +205,18 @@ describe('HomePage Demo Modal', () => {
     });
     expect(within(heroPlayer).getByText(/suits & style/i)).toBeInTheDocument();
     expect(within(heroPlayer).getAllByText(/suit/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('locks mobile hero headline to a consistent 2-line height to prevent layout jump', () => {
+    const homeCss = fs.readFileSync(path.join(__dirname, 'HomePage.module.css'), 'utf8');
+    const pixzenCss = fs.readFileSync(path.join(__dirname, 'pixzen', 'pixzen.module.css'), 'utf8');
+
+    const mobileHeroBlock = homeCss.slice(homeCss.indexOf('@media (max-width: 768px)'));
+    expect(mobileHeroBlock).toMatch(/\.heroTitle\s*\{[^}]*min-height:\s*2\.3em/);
+
+    const mobilePixzenBlock = pixzenCss.slice(pixzenCss.indexOf('@media (max-width: 768px)'));
+    expect(mobilePixzenBlock).toMatch(/\.headlineCycler\s*\{[^}]*min-height:\s*2\.3em/);
+    expect(mobilePixzenBlock).toMatch(/\.headlineItem\s*\{[^}]*max-width:\s*9\.5em/);
   });
 });
 

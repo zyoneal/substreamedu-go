@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import DictionaryPage from './DictionaryPage';
@@ -30,6 +30,7 @@ jest.mock('lucide-react/dist/esm/icons/x', () => () => <span data-testid="icon-x
 jest.mock('lucide-react/dist/esm/icons/arrow-left', () => () => <span data-testid="icon-arrow-left" />);
 jest.mock('lucide-react/dist/esm/icons/refresh-cw', () => () => <span data-testid="icon-refresh-cw" />);
 jest.mock('lucide-react/dist/esm/icons/tag', () => () => <span data-testid="icon-tag" />);
+jest.mock('lucide-react/dist/esm/icons/check-circle-2', () => () => <span data-testid="icon-check-circle" />);
 
 jest.mock('../../services/DictionaryService', () => ({
   DictionaryService: {
@@ -126,5 +127,34 @@ describe('DictionaryPage Empty State (0 words)', () => {
     expect(container.querySelector('.statsGrid')).toBeInTheDocument();
     expect(container.querySelector('.controlsContainer')).toBeInTheDocument();
     expect(container.querySelector('.mainContentArea')).toBeInTheDocument();
+  });
+
+  it('hides Categorize Vocabulary button and shows up-to-date completion status when categorization finishes', async () => {
+    jest.spyOn(AuthService, 'getUserEmail').mockReturnValue('test@example.com');
+    (DictionaryService.fetchDictionaryResources as jest.Mock).mockResolvedValue([]);
+    (DictionaryService.fetchDictionaryCategories as jest.Mock).mockResolvedValue([
+      { categoryName: 'Daily Life', numberOfWords: 12 },
+    ]);
+    (DictionaryService.categorizeUserVocabulary as jest.Mock).mockResolvedValue({
+      categorized: 12,
+      remaining: 0,
+      total: 12,
+    });
+
+    renderComponent();
+
+    const viewModeTabs = screen.getByRole('tablist', { name: 'View mode' });
+    const themesTab = within(viewModeTabs).getByRole('tab', { name: /themes|categories/i });
+    fireEvent.click(themesTab);
+
+    const categorizeBtn = await screen.findByRole('button', { name: /categorize vocabulary/i });
+    fireEvent.click(categorizeBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent(/up to date/i);
+    });
+
+    expect(screen.queryByRole('button', { name: /categorize/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/all 12 words categorized/i)).toBeInTheDocument();
   });
 });

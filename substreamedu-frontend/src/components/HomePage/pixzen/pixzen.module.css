@@ -15,7 +15,12 @@
 }
 
 @media (max-width: 768px) {
+  .headlineCycler {
+    min-height: 2.3em;
+  }
+
   .headlineItem {
+    max-width: 9.5em;
     white-space: normal;
     text-wrap: balance;
   }

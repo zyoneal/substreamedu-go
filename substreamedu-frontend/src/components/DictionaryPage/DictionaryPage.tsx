@@ -19,6 +19,7 @@ import X from 'lucide-react/dist/esm/icons/x';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Tag from 'lucide-react/dist/esm/icons/tag';
+import CheckCircle2 from 'lucide-react/dist/esm/icons/check-circle-2';
 import { Upload } from 'lucide-react';
 
 import { Card, CardContent } from '../ui/card';
@@ -473,42 +474,61 @@ const DictionaryPage: React.FC = () => {
                             </div>
                         ) : (
                             <div className={styles.themesContainer}>
-                                <div className={styles.categorizeBanner}>
-                                    <div className={styles.categorizeBannerText}>
-                                        <h3 className={styles.categorizeBannerTitle}>AI Semantic Categorization</h3>
-                                        <p className={styles.categorizeBannerSubtitle}>
-                                            Automatically clusters your phrasal verbs, idioms, and vocabulary into 12 semantic themes.
-                                        </p>
-                                        {categorizeProgress && (
-                                            <div>
-                                                <div className={styles.categorizeProgressBar}>
-                                                    <div
-                                                        className={styles.categorizeProgressFill}
-                                                        style={{
-                                                            width: `${Math.min(100, Math.round((categorizeProgress.processed / Math.max(1, categorizeProgress.total)) * 100))}%`
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span className={styles.categorizeStatusText}>
-                                                    Processed {categorizeProgress.processed} / {categorizeProgress.total} words ({categorizeProgress.remaining} remaining)
-                                                </span>
+                                {(() => {
+                                    const isCategorizeUpToDate =
+                                        !isCategorizing &&
+                                        categorizeProgress !== null &&
+                                        categorizeProgress.remaining === 0;
+                                    return (
+                                        <div className={styles.categorizeBanner}>
+                                            <div className={styles.categorizeBannerText}>
+                                                <h3 className={styles.categorizeBannerTitle}>AI Semantic Categorization</h3>
+                                                <p className={styles.categorizeBannerSubtitle}>
+                                                    Automatically clusters your phrasal verbs, idioms, and vocabulary into 12 semantic themes.
+                                                </p>
+                                                {categorizeProgress && (
+                                                    <div>
+                                                        <div className={styles.categorizeProgressBar}>
+                                                            <div
+                                                                className={styles.categorizeProgressFill}
+                                                                style={{
+                                                                    width: `${Math.min(100, Math.round((categorizeProgress.processed / Math.max(1, categorizeProgress.total)) * 100))}%`
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span className={styles.categorizeStatusText}>
+                                                            {isCategorizeUpToDate
+                                                                ? categorizeProgress.total > 0
+                                                                    ? `All ${categorizeProgress.total} words categorized — up to date.`
+                                                                    : 'Your vocabulary is already up to date.'
+                                                                : `Processed ${categorizeProgress.processed} / ${categorizeProgress.total} words (${categorizeProgress.remaining} remaining)`}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {categorizeMessage && !categorizeProgress && (
+                                                    <span className={styles.categorizeStatusText}>
+                                                        {categorizeMessage}
+                                                    </span>
+                                                )}
                                             </div>
-                                        )}
-                                        {categorizeMessage && !categorizeProgress && (
-                                            <span className={styles.categorizeStatusText}>
-                                                {categorizeMessage}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={handleRunCategorize}
-                                        disabled={isCategorizing}
-                                        className={styles.categorizeBtn}
-                                    >
-                                        <RefreshCw size={14} className={isCategorizing ? 'animate-spin' : ''} />
-                                        <span>{isCategorizing ? 'Categorizing…' : 'Categorize Vocabulary'}</span>
-                                    </button>
-                                </div>
+                                            {isCategorizeUpToDate ? (
+                                                <div className={styles.categorizeDoneBadge} role="status">
+                                                    <CheckCircle2 size={15} />
+                                                    <span>Up to date</span>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={handleRunCategorize}
+                                                    disabled={isCategorizing}
+                                                    className={styles.categorizeBtn}
+                                                >
+                                                    <RefreshCw size={14} className={isCategorizing ? 'animate-spin' : ''} />
+                                                    <span>{isCategorizing ? 'Categorizing…' : 'Categorize Vocabulary'}</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
 
                                 {filteredCategoryList.length > 0 ? (
                                     <div className={styles.groupsGrid}>
