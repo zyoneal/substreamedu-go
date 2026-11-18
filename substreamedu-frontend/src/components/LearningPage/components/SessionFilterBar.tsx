@@ -5,9 +5,16 @@ import { DictionaryService, SRSItemKind, SRSSessionFilters } from '../../../serv
 import styles from '../Flashcards.module.css';
 
 interface ResourceOption {
+    groupName?: string;
+    numberOfWords?: number;
     resourceName?: string;
     name?: string;
     source?: string;
+}
+
+interface NormalizedResourceOption {
+    name: string;
+    numberOfWords?: number;
 }
 
 interface CategoryOption {
@@ -37,7 +44,7 @@ export const SessionFilterBar: React.FC<SessionFilterBarProps> = ({
     onResetFilters,
 }) => {
     const intl = useIntl();
-    const [resources, setResources] = useState<string[]>([]);
+    const [resources, setResources] = useState<NormalizedResourceOption[]>([]);
     const [categories, setCategories] = useState<CategoryOption[]>([]);
 
     useEffect(() => {
@@ -53,16 +60,20 @@ export const SessionFilterBar: React.FC<SessionFilterBarProps> = ({
                     hasCatFn ? DictionaryService.fetchDictionaryCategories().catch(() => []) : Promise.resolve([]),
                 ]);
                 if (!mounted) return;
-                const names = Array.isArray(resList)
-                    ? Array.from(
-                        new Set(
-                            (resList as ResourceOption[])
-                                .map((r) => (r.resourceName || r.name || r.source || '').trim())
-                                .filter(Boolean)
-                        )
-                    )
+                const seenNames = new Set<string>();
+                const normalizedResources: NormalizedResourceOption[] = Array.isArray(resList)
+                    ? (resList as ResourceOption[]).reduce<NormalizedResourceOption[]>((acc, r) => {
+                        const name = (r.groupName || r.resourceName || r.name || r.source || '').trim();
+                        if (!name || seenNames.has(name)) return acc;
+                        seenNames.add(name);
+                        acc.push({
+                            name,
+                            numberOfWords: typeof r.numberOfWords === 'number' ? r.numberOfWords : undefined,
+                        });
+                        return acc;
+                    }, [])
                     : [];
-                if (names.length > 0) setResources(names);
+                if (normalizedResources.length > 0) setResources(normalizedResources);
                 const validCats = Array.isArray(catList) ? catList.filter((c) => c.categoryName) : [];
                 if (validCats.length > 0) setCategories(validCats);
             } catch {
@@ -112,9 +123,9 @@ export const SessionFilterBar: React.FC<SessionFilterBarProps> = ({
                     <option value="">
                         {intl.formatMessage({ id: 'flashcards.filter.allSources', defaultMessage: 'All sources' })}
                     </option>
-                    {resources.map((name) => (
-                        <option key={name} value={name}>
-                            {name}
+                    {resources.map((res) => (
+                        <option key={res.name} value={res.name}>
+                            {res.numberOfWords !== undefined ? `${res.name} (${res.numberOfWords})` : res.name}
                         </option>
                     ))}
                 </select>

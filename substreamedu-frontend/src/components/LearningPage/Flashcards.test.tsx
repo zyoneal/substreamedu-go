@@ -564,5 +564,50 @@ describe('Flashcards SRS Session Queue Invariants', () => {
         delete (DictionaryService as any).fetchDictionaryCategories;
       }
     });
+
+    it('insets the filterSelect dropdown chevron away from the pill edge', () => {
+      const cssContent = fs.readFileSync(path.resolve(__dirname, 'Flashcards.module.css'), 'utf-8');
+      const filterSelectMatch = cssContent.match(/\.filterSelect\s*\{([^}]*)\}/);
+      expect(filterSelectMatch).not.toBeNull();
+      const ruleBody = filterSelectMatch![1];
+      expect(ruleBody).toMatch(/appearance:\s*none/);
+      expect(ruleBody).toMatch(/background-image:\s*url\(/);
+      expect(ruleBody).toMatch(/background-position:\s*right\s+12px\s+center/);
+      expect(ruleBody).toMatch(/padding:\s*0\s+32px\s+0\s+14px/);
+    });
+
+    it('renders source selector from backend groupName resource shape and filters by it', async () => {
+      (DictionaryService as any).fetchDictionaryResources = jest.fn().mockResolvedValue([
+        { groupName: 'Breaking Bad S01E01', numberOfWords: 12 },
+      ]);
+      (DictionaryService as any).fetchDictionaryCategories = jest.fn().mockResolvedValue([]);
+
+      try {
+        renderComponent();
+        await screen.findByRole('heading', { level: 1, name: 'tenure' });
+
+        const sourceSelect = await screen.findByLabelText(/Filter by source/i);
+        expect(sourceSelect).toBeInTheDocument();
+        expect(screen.getByRole('option', { name: /Breaking Bad S01E01/i })).toHaveValue('Breaking Bad S01E01');
+
+        (DictionaryService.fetchSRSToday as jest.Mock).mockResolvedValueOnce({
+          cards: [mockCards[1]],
+          totalDictionarySize: 1,
+        });
+
+        fireEvent.change(sourceSelect, { target: { value: 'Breaking Bad S01E01' } });
+
+        await waitFor(() => {
+          expect(DictionaryService.fetchSRSToday).toHaveBeenCalledWith({
+            resource: 'Breaking Bad S01E01',
+            category: '',
+            kind: 'all',
+          });
+        });
+      } finally {
+        delete (DictionaryService as any).fetchDictionaryResources;
+        delete (DictionaryService as any).fetchDictionaryCategories;
+      }
+    });
   });
 });
