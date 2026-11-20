@@ -1,0 +1,100 @@
+/* Spring-animated Swipe Deck adapted to SubStreamEdu Pixzen Monochrome Editorial theme.
+   Springs: drag (900, 50), return (280, 16), depth (260, 22), fling (70, 17), threshold 110px. */
+
+.deck {
+    position: relative;
+    width: 100%;
+    padding-bottom: 28px;
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
+}
+
+.backCard {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 28px;
+    background: #eae7e1;
+    border-radius: 20px;
+    border: 1px solid rgba(10, 10, 10, 0.11);
+    pointer-events: none;
+    will-change: transform, opacity, filter;
+    transform-origin: center top;
+}
+
+.topCard {
+    position: relative;
+    z-index: 40;
+    width: 100%;
+    will-change: transform;
+    user-select: none;
+}
+
+.swipeable {
+    touch-action: pan-y;
+    cursor: grab;
+}
+
+.dragging {
+    cursor: grabbing;
+    touch-action: none;
+}
+
+.flyingGhost {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 28px;
+    z-index: 50;
+    background: #eae7e1;
+    border-radius: 20px;
+    border: 1px solid rgba(10, 10, 10, 0.14);
+    pointer-events: none;
+    will-change: transform, opacity;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stamp {
+    position: absolute;
+    top: 20px;
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: var(--rounded-full, 9999px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 45;
+    will-change: opacity;
+}
+
+.stampRight {
+    left: 20px;
+    background: var(--color-success, #22c55e);
+    color: #0a0a0a;
+    transform: rotate(-10deg);
+}
+
+.stampLeft {
+    right: 20px;
+    background: #0a0a0a;
+    color: #f5f3ef;
+    transform: rotate(10deg);
+}
+
+.swipeHint {
+    margin: 10px 0 0;
+    text-align: center;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8e8e8e;
+    user-select: none;
+    opacity: 0.85;
+}

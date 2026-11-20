@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback, useContext } from 'rea
 import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import BookOpen from 'lucide-react/dist/esm/icons/book-open';
@@ -18,6 +17,7 @@ import { DictionaryService } from '../../services/DictionaryService';
 import { LanguageContext } from '../LanguageContext';
 import { useTTS } from '../../hooks/useTTS';
 import Flashcard from './Flashcard';
+import { SwipeDeck, SwipeDeckHandle } from '../ui/SwipeDeck';
 import { SessionFilterBar } from './components/SessionFilterBar';
 import { useFlashcardsSession, DictionaryItem, Rating } from './hooks/useFlashcardsSession';
 import { useFlashcardsKeyboard } from './hooks/useFlashcardsKeyboard';
@@ -35,6 +35,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
     const navigate = useNavigate();
     const { play: playTTS, playingItemId } = useTTS();
     const { learningLanguage, fluentLanguage } = useContext(LanguageContext);
+    const swipeDeckRef = useRef<SwipeDeckHandle>(null);
 
     // 1. Session Domain Hook (Humble Object pattern)
     const {
@@ -49,7 +50,6 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         sessionTotal,
         ratingsCount,
         showCheckpoint,
-        direction,
         answeredIds,
         sessionWords,
         completionStage,
@@ -257,24 +257,14 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         );
     }
 
-    const variants = {
-        enter: (dir: number) => ({
-            x: dir > 0 ? 40 : -40,
-            opacity: 0,
-        }),
-        center: {
-            zIndex: 1,
-            x: 0,
-            opacity: 1,
-        },
-        exit: (dir: number) => ({
-            zIndex: 0,
-            x: dir < 0 ? 40 : -40,
-            opacity: 0,
-        })
-    };
-
     const progressPercent = sessionTotal > 0 ? Math.min(100, (goodIds.size / sessionTotal) * 100) : 0;
+    const upcomingCount = Math.min(2, Math.max(0, reviewWords.length - currentIndex - 1));
+    const canSwipeCurrent = Boolean(currentWord && revealLevel >= 1 && !isCardInFlight(currentWord.id));
+
+    const handleButtonRating = (rating: Rating) => {
+        swipeDeckRef.current?.fling(rating === 'good' ? 1 : -1);
+        handleRating(rating);
+    };
 
     return (
         <div className={styles.pageContainer}>
@@ -338,43 +328,40 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                     </p>
                                 )}
                             </div>
-                            <div className="grid place-items-center">
-                                <AnimatePresence initial={false} custom={direction}>
-                                    <motion.div
-                                        key={currentWord.id}
-                                        custom={direction}
-                                        variants={variants}
-                                        initial="enter"
-                                        animate="center"
-                                        exit="exit"
-                                        transition={{ duration: 0.15, ease: 'easeOut' }}
-                                        className="w-full col-start-1 row-start-1"
-                                    >
-                                        <div className="relative w-full h-full">
-                                            <Flashcard
-                                                word={currentWord.highlightedText || ''}
-                                                transcription={currentWord.transcription || ''}
-                                                definition={currentWord.definition || ''}
-                                                translatedText={currentWord.translatedText || ''}
-                                                context={currentWord.context || ''}
-                                                note={currentWord.note || ''}
-                                                imageUrl={currentWord.imageUrl || ''}
-                                                revealLevel={revealLevel}
-                                                cardType={currentWord.cardType}
-                                                isPlaying={playingItemId === currentWord.id}
-                                                onRevealNext={revealNext}
-                                                onPlayPronunciation={() => currentWord.highlightedText && playTTS(decodeHtmlEntities(currentWord.highlightedText), currentWord.id, learningLanguage || 'en')}
-                                                onWordClick={() => currentWord.highlightedText && redirectToYouglish(currentWord.highlightedText)}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                </AnimatePresence>
+                            <div className="w-full">
+                                <SwipeDeck
+                                    ref={swipeDeckRef}
+                                    cardKey={currentWord.id}
+                                    upcomingCount={upcomingCount}
+                                    canSwipe={canSwipeCurrent}
+                                    rightLabel={intl.formatMessage({ id: 'flashcards.good', defaultMessage: 'Good' })}
+                                    leftLabel={intl.formatMessage({ id: 'flashcards.again', defaultMessage: 'Again' })}
+                                    swipeHint={intl.formatMessage({ id: 'flashcards.swipeHint', defaultMessage: '← Swipe Again · Swipe Good →' })}
+                                    onSwipeRight={() => handleRating('good')}
+                                    onSwipeLeft={() => handleRating('again')}
+                                >
+                                    <Flashcard
+                                        word={currentWord.highlightedText || ''}
+                                        transcription={currentWord.transcription || ''}
+                                        definition={currentWord.definition || ''}
+                                        translatedText={currentWord.translatedText || ''}
+                                        context={currentWord.context || ''}
+                                        note={currentWord.note || ''}
+                                        imageUrl={currentWord.imageUrl || ''}
+                                        revealLevel={revealLevel}
+                                        cardType={currentWord.cardType}
+                                        isPlaying={playingItemId === currentWord.id}
+                                        onRevealNext={revealNext}
+                                        onPlayPronunciation={() => currentWord.highlightedText && playTTS(decodeHtmlEntities(currentWord.highlightedText), currentWord.id, learningLanguage || 'en')}
+                                        onWordClick={() => currentWord.highlightedText && redirectToYouglish(currentWord.highlightedText)}
+                                    />
+                                </SwipeDeck>
                             </div>
 
                             <div className="mt-3 z-10">
                                 <div className="grid grid-cols-2 gap-3 mb-2">
                                     <button
-                                        onClick={() => handleRating('again')}
+                                        onClick={() => handleButtonRating('again')}
                                         disabled={revealLevel < 1 || isCardInFlight(currentWord.id)}
                                         className={styles.ratingButtonAgain}
                                         aria-label={intl.formatMessage({ id: 'flashcards.again', defaultMessage: 'Again' })}
@@ -384,7 +371,7 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                         <span className={styles.ratingLabel}>Again</span>
                                     </button>
                                     <button
-                                        onClick={() => handleRating('good')}
+                                        onClick={() => handleButtonRating('good')}
                                         disabled={revealLevel < 1 || isCardInFlight(currentWord.id)}
                                         className={styles.ratingButtonGood}
                                         aria-label={intl.formatMessage({ id: 'flashcards.good', defaultMessage: 'Good' })}
