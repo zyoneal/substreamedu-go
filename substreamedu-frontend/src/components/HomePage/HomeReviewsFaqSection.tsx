@@ -28,68 +28,6 @@ export const HomeReviewsFaqSection: React.FC = () => {
 
   return (
     <>
-      <section className={styles.reviewsSection}>
-        <div className={styles.container}>
-          <motion.div className={styles.pricingSectionHeader} {...fadeUp}>
-            <span className={styles.sectionEyebrow}>User reviews</span>
-            <h2 className={styles.sectionTitle}>People learning English with us.</h2>
-          </motion.div>
-          <div className={styles.reviewsGrid}>
-            <motion.div className={styles.reviewCard} {...fadeUp}>
-              <p className={styles.reviewContent}>
-                &quot;I used to get lost whenever actors spoke fast or used slang. With SubStreamEdu, the moment I
-                don&apos;t understand something, I highlight the phrase and get the exact meaning in context without
-                pausing to search idioms.&quot;
-              </p>
-              <div className={styles.reviewAuthor}>
-                <div className={styles.reviewAvatar}>M</div>
-                <div className={styles.reviewAuthorInfo}>
-                  <span className={styles.reviewAuthorName}>Maria K.</span>
-                  <span className={styles.reviewAuthorRole}>B2 English Learner</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className={styles.reviewCard}
-              {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.1 }}
-            >
-              <p className={styles.reviewContent}>
-                &quot;The spaced repetition system works reliably. I save a word from a movie, and the next morning
-                it appears in my Telegram bot. I built a vocabulary of 540 words that I use at work.&quot;
-              </p>
-              <div className={styles.reviewAuthor}>
-                <div className={styles.reviewAvatar}>A</div>
-                <div className={styles.reviewAuthorInfo}>
-                  <span className={styles.reviewAuthorName}>Alex D.</span>
-                  <span className={styles.reviewAuthorRole}>Software Engineer</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className={styles.reviewCard}
-              {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.2 }}
-            >
-              <p className={styles.reviewContent}>
-                &quot;Blurred subtitles helped my listening comprehension immediately. I listen first instead of
-                glancing at the text. My comprehension improved faster in two months than in two years of
-                textbooks.&quot;
-              </p>
-              <div className={styles.reviewAuthor}>
-                <div className={styles.reviewAvatar}>S</div>
-                <div className={styles.reviewAuthorInfo}>
-                  <span className={styles.reviewAuthorName}>Sarah T.</span>
-                  <span className={styles.reviewAuthorRole}>C1 Advanced</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       <section className={styles.faqSection}>
         <div className={styles.container}>
           <div className={styles.faqGrid}>
