@@ -4,7 +4,7 @@
 }
 
 .sectionTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-weight: 700;
     font-size: 17px;
     line-height: 1.3;
@@ -79,7 +79,7 @@
 }
 
 .channelName {
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-weight: 600;
     font-size: 14.5px;
     line-height: 1.4;

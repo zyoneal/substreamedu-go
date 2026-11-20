@@ -1,13 +1,13 @@
 /* ================================================
-   DESIGN TOKENS — Pixzen monochrome editorial (Satoshi)
+   DESIGN TOKENS — Pixzen monochrome editorial (e-Ukraine)
    Legacy variable names are kept to avoid touching every rule:
    --black = page background, --cream = ink, --cream-dim = body text.
    ================================================ */
 .page {
-  --font-display: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
-  --font-sans: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
-  --font-body: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  --font-display: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  --font-serif: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  --font-sans: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  --font-body: 'e-Ukraine', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --black: #f5f3ef;
@@ -1878,7 +1878,7 @@
   --white: #0a0a0a;
   --accent: #0a0a0a;
   --accent-hover: #2a2a28;
-  --font-sans: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
+  --font-sans: 'e-Ukraine', system-ui, -apple-system, sans-serif;
 
   width: -moz-fit-content !important;
   width: fit-content !important;

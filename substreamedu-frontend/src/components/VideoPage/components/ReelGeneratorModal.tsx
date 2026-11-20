@@ -297,7 +297,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
                     'Preparing HD Clip...',
                     W / 2,
                     videoY + videoH / 2,
-                    '600 13px -apple-system, BlinkMacSystemFont, "Inter", sans-serif',
+                    '600 13px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif',
                     '#ffffff',
                     'rgba(13, 14, 18, 0.75)',
                     18,
@@ -310,7 +310,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.fillStyle = '#14151c';
             ctx.fillRect(videoX, videoY, videoW, videoH);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.font = '500 16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.font = '500 16px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('Cinema Scene', W / 2, videoY + videoH / 2);
         }
@@ -372,33 +372,33 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
         if (isCinemaFocus) {
             // Compact, stylish header positioned in Y: 150 to 255
-            ctx.font = '700 13.5px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.font = '700 13.5px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.fillStyle = themeConfig.badgeColor;
             (ctx as any).letterSpacing = '2.5px';
             ctx.fillText('LEARN ENGLISH', W / 2, 168);
 
             const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
-            ctx.font = '800 44px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.font = '800 44px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.fillStyle = themeConfig.wordColor;
             (ctx as any).letterSpacing = '-0.5px';
             ctx.fillText(wordText, W / 2, 210);
 
             if (displayTrans) {
                 const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
-                ctx.font = '700 26px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+                ctx.font = '700 26px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
                 ctx.fillStyle = themeConfig.transColor;
                 (ctx as any).letterSpacing = '0px';
                 ctx.fillText(transText, W / 2, 248);
             }
         } else {
             // Wide-fit header centered in Y: 180 to 420
-            ctx.font = '700 15px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.font = '700 15px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.fillStyle = themeConfig.badgeColor;
             (ctx as any).letterSpacing = '2.5px';
             ctx.fillText('LEARN ENGLISH', W / 2, transcription ? 215 : 228);
 
             const wordText = cleanWord.length > 20 ? cleanWord.slice(0, 19) + '…' : cleanWord;
-            ctx.font = '800 52px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ctx.font = '800 52px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.fillStyle = themeConfig.wordColor;
             (ctx as any).letterSpacing = '-0.5px';
             ctx.fillText(wordText, W / 2, transcription ? 272 : 285);
@@ -412,7 +412,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
 
             if (displayTrans) {
                 const transText = displayTrans.length > 30 ? displayTrans.slice(0, 29) + '…)' : displayTrans;
-                ctx.font = '700 32px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+                ctx.font = '700 32px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
                 ctx.fillStyle = themeConfig.transColor;
                 (ctx as any).letterSpacing = '0px';
                 ctx.fillText(transText, W / 2, transcription ? 368 : 348);
@@ -434,11 +434,11 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         const maxTextW = 560; // Leaves comfortable margins for mobile social buttons
         const lineSpacing = isCinemaFocus ? 33 : 36;
         const normalFont = isCinemaFocus
-            ? '500 22px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif'
-            : '500 23px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+            ? '500 22px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif'
+            : '500 23px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         const matchFont = isCinemaFocus
-            ? '700 23px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
-            : '700 24px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
+            ? '700 23px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif'
+            : '700 24px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
 
         // 1. Calculate target fixed position for subtitles and watermark to avoid jumping
         let targetLinesCount = 1;
@@ -532,8 +532,8 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
         const brandText = "SubStreamEdu";
         const sloganText = "Highlight • Save • Learn";
         
-        const brandFont = '700 13px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
-        const sloganFont = '500 13px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
+        const brandFont = '700 13px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
+        const sloganFont = '500 13px "e-Ukraine", -apple-system, BlinkMacSystemFont, sans-serif';
         
         // Measure sizes
         ctx.font = brandFont;
@@ -597,7 +597,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.strokeRect(0, 0, W, 140);
 
             ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
-            ctx.font = '600 11px sans-serif';
+            ctx.font = '600 11px "e-Ukraine", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('TikTok Header / Search Zone (Y < 140px)', W / 2, 80);
 
@@ -614,7 +614,7 @@ export const ReelGeneratorModal: React.FC<ReelGeneratorModalProps> = ({
             ctx.strokeRect(W - 110, 480, 110, 470);
 
             ctx.fillStyle = 'rgba(245, 158, 11, 0.8)';
-            ctx.font = '600 10px sans-serif';
+            ctx.font = '600 10px "e-Ukraine", sans-serif';
             ctx.fillText('TikTok Icons', W - 55, 710);
             ctx.restore();
         }

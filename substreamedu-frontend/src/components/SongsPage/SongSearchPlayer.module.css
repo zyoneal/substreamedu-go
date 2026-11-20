@@ -1,6 +1,6 @@
 /* ==========================================================================
    SUBSTREAMEDU — PIXZEN MONOCHROME EDITORIAL SONG STUDIO (/songs)
-   Warm-White Canvas (#F5F3EF), Soft-Gray Cards (#EAE7E1) & Satoshi Typography
+   Warm-White Canvas (#F5F3EF), Soft-Gray Cards (#EAE7E1) & e-Ukraine Typography
    ========================================================================== */
 
 .container {
@@ -13,7 +13,7 @@
     display: flex;
     flex-direction: column;
     background: var(--color-canvas, #f5f3ef);
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     color: var(--color-ink, #0a0a0a);
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
@@ -41,7 +41,7 @@
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-weight: 700;
     font-size: clamp(28px, 2.6vw, 38px);
     line-height: 1.1;
@@ -98,7 +98,7 @@
     line-height: 1.25;
     font-weight: 700;
     margin: 0;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     letter-spacing: -0.025em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -174,7 +174,7 @@
 }
 
 .lyricsTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 19px;
     font-weight: 700;
     letter-spacing: -0.025em;
@@ -183,7 +183,7 @@
 }
 
 .lyricsHint {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -198,7 +198,7 @@
     line-height: 1.95;
     white-space: pre-wrap;
     text-align: left;
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     letter-spacing: 0.002em;
 }
 
@@ -212,7 +212,7 @@
     line-height: 1.95;
     white-space: pre-wrap;
     color: var(--color-ink, #0a0a0a);
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
 }
 
 /* === RECOMMENDED SONGS BENTO SECTION === */
@@ -238,7 +238,7 @@
 }
 
 .recommendedTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 19px;
     font-weight: 700;
     letter-spacing: -0.025em;
@@ -275,7 +275,7 @@
     border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     text-align: center;
     white-space: nowrap;
 }
@@ -392,7 +392,7 @@
     line-height: 1.3;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     letter-spacing: -0.01em;
     margin: 0;
     overflow: hidden;
@@ -405,7 +405,7 @@
     line-height: 1.35;
     font-weight: 400;
     color: var(--color-body, #4a4a48);
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -420,7 +420,7 @@
     min-height: 180px;
     color: var(--color-body, #4a4a48);
     font-size: 15px;
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
 }
 
 .highlightedText {
@@ -460,7 +460,7 @@
     white-space: nowrap;
     border: 1px solid rgba(10, 10, 10, 0.2);
     box-shadow: 0 10px 24px rgba(10, 10, 10, 0.18);
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
 }
 
 /* === LANGUAGE OVERLAY MODAL === */
@@ -473,7 +473,7 @@
     margin: 0 0 20px;
     color: var(--color-ink, #0a0a0a);
     font-size: 15px;
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
 }
 
 .languageOverlayButton {
@@ -487,7 +487,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.15s ease;
 }

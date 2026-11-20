@@ -84,7 +84,7 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-family: var(--font-display, 'e-Ukraine', sans-serif);
   font-size: 1.25rem;
   font-weight: 700;
   color: #0a0a0a;
@@ -254,7 +254,7 @@
 }
 
 .ruleName {
-  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-family: var(--font-display, 'e-Ukraine', sans-serif);
   font-size: 0.94rem;
   font-weight: 700;
   color: #0a0a0a;
@@ -286,7 +286,7 @@
 /* Dialogue Subtitle Text & Keyword Highlight */
 .itemText {
   margin: 0;
-  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-family: var(--font-body, 'e-Ukraine', sans-serif);
   font-size: 0.94rem;
   line-height: 1.5;
   color: #4a4a48;
@@ -331,7 +331,7 @@
   padding: 48px 24px;
   text-align: center;
   color: #8e8e8e;
-  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-family: var(--font-body, 'e-Ukraine', sans-serif);
   font-size: 0.94rem;
   display: flex;
   flex-direction: column;

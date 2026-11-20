@@ -5,7 +5,7 @@
     color: #0a0a0a;
     position: relative;
     overflow-x: hidden;
-    font-family: 'Satoshi', var(--font-body, 'e-Ukraine', system-ui, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, sans-serif);
     display: flex;
     flex-direction: column;
 }
@@ -51,7 +51,7 @@
     border-radius: 9999px;
     background: #f5f3ef;
     border: 1px solid rgba(10, 10, 10, 0.12);
-    font-family: 'Satoshi', sans-serif;
+    font-family: 'e-Ukraine', sans-serif;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.18em;
@@ -60,7 +60,7 @@
 }
 
 .heroTitle {
-    font-family: 'Satoshi', var(--font-display, 'e-UkraineHead', sans-serif);
+    font-family: var(--font-display, 'e-UkraineHead', sans-serif);
     font-weight: 700;
     font-size: clamp(30px, 4vw, 48px);
     line-height: 1.08;
@@ -71,7 +71,7 @@
 }
 
 .heroSubtitle {
-    font-family: 'Satoshi', sans-serif;
+    font-family: 'e-Ukraine', sans-serif;
     font-weight: 400;
     font-size: 16px;
     line-height: 1.65;
@@ -87,7 +87,7 @@
     gap: 10px;
     padding: 16px 36px;
     margin-top: 6px;
-    font-family: 'Satoshi', sans-serif;
+    font-family: 'e-Ukraine', sans-serif;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -138,7 +138,7 @@
 }
 
 .statNumber {
-    font-family: 'Satoshi', var(--font-display, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-weight: 700;
     font-size: 30px;
     line-height: 1;
@@ -148,7 +148,7 @@
 }
 
 .statLabel {
-    font-family: 'Satoshi', sans-serif;
+    font-family: 'e-Ukraine', sans-serif;
     font-weight: 700;
     font-size: 11px;
     line-height: 1.4;
@@ -167,7 +167,7 @@
 .loading,
 .error {
     text-align: center;
-    font-family: 'Satoshi', sans-serif;
+    font-family: 'e-Ukraine', sans-serif;
     font-size: 15px;
     color: #4a4a48;
     padding: 100px 24px;

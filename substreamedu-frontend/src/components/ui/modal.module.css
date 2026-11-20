@@ -108,7 +108,7 @@
 }
 
 .title {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -118,7 +118,7 @@
 }
 
 .subtitle {
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-size: 0.85rem;
     color: var(--color-body, #4a4a48);
     margin: 4px 0 0 0;
@@ -167,7 +167,7 @@
     padding: 20px 24px;
     overflow-y: auto;
     color: var(--color-ink, #0a0a0a);
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     flex: 1;
 }
 
@@ -197,7 +197,7 @@
     padding: 0 18px;
     height: 38px;
     border-radius: 9999px;
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -222,7 +222,7 @@
     padding: 0 20px;
     height: 38px;
     border-radius: 9999px;
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -248,7 +248,7 @@
     padding: 0 20px;
     height: 38px;
     border-radius: 9999px;
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;

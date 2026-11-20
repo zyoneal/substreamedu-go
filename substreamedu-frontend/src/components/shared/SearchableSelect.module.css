@@ -35,7 +35,7 @@
     outline: none;
     color: var(--color-ink, #0a0a0a);
     font-size: 13.5px;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-weight: 500;
     width: 100%;
     text-overflow: ellipsis;
@@ -147,7 +147,7 @@
     cursor: pointer;
     transition: background-color 0.14s ease, color 0.14s ease;
     font-size: 13.5px;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

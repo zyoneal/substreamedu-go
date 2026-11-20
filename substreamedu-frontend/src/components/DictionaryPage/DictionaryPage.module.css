@@ -78,7 +78,7 @@
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: clamp(1.75rem, 2.5vw, 2.25rem);
     font-weight: 700;
     color: var(--text-primary);
@@ -242,7 +242,7 @@
 }
 
 .statValue {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 38px;
     font-weight: 700;
     letter-spacing: -0.035em;
@@ -566,7 +566,7 @@
 }
 
 .groupTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
@@ -761,7 +761,7 @@
 }
 
 .wordClickableTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
@@ -1111,7 +1111,7 @@
 }
 
 .emptyStateTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
@@ -1219,7 +1219,7 @@
 }
 
 .categorizeBannerTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
@@ -1323,7 +1323,7 @@
 }
 
 .categoryHeading {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);

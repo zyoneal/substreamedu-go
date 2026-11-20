@@ -16,8 +16,8 @@
     --text-primary: #0a0a0a;
     --text-secondary: #4a4a48;
     --text-meta: #8e8e8e;
-    --font-display: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
-    --font-body: 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    --font-display: 'e-Ukraine', system-ui, -apple-system, sans-serif;
+    --font-body: 'e-Ukraine', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
     display: flex;

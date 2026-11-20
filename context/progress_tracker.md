@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 85: Global `e-Ukraine` Typography Enforcement (ADR-161): Removed Fontshare `Satoshi` and unused Google Fonts `Nunito` from `public/index.html`; updated `body.pixzen` (`src/styles/pixzen.css`), 40 CSS modules/TSX files, and `ReelGeneratorModal.tsx` canvas font strings to use `'e-Ukraine'` uniformly across the application (preserving `JetBrains Mono` for `--font-mono` metrics/timecodes/code per `ui_context.md`); added regression guard `src/typography.test.ts`.
   - Spec 84: Player Settings — Disable Lemmatization, Shortcuts Toggle, Subtitle Background Opacity & Subtitle-Only Mode (ADR-160): Added `DisableLemmatization` to `dto.DictionaryRequest`, `ai_service.go` cache key, and `createTranslationPromptWithOptions` in `ai_prompts.go`; added unified `Player settings` popover in `VideoControlsOverlay.tsx` + `VideoPlayerPopover.module.css` with `Subtitle-only mode`, `Disable shortcuts`, `Exact word form (no lemma)`, and `Subtitle background` opacity slider; persisted settings in `localStorage` inside `VideoPlayer.tsx` and wired `subtitleBgOpacity` into `SubtitleOverlay.tsx` + `VideoControlsOverlay.test.tsx`.
   - Spec 83: Video Silence Speed-Up (`2x Gap`) (ADR-159): Added `evaluateSilenceSpeedup` to `subtitlePlaybackModes.ts` + unit tests (`subtitlePlaybackModes.test.ts`), `skipSilence` playbackRate controller (`2x` in gaps >= 2.5s with `350ms` lead-in, `1x` inside cues/when disabled) for both HTML5 `<video>` and YouTube in `VideoPlayer.tsx`, and the `2x Gap` quick pill with `aria-pressed` in `VideoControlsOverlay.tsx` + `VideoControlsOverlay.test.tsx`.
   - Spec 82: SRS-Status Color Coding in Subtitles & Books (ADR-158): Extended `LexemeLightDto` (`status`, `repetitionLevel`) in `dto.go` and `FindAllLexemesLight` / `FindAllLexemesLightPaginated` in `dictionary_repository.go`; added `getSrsTier` (`new` | `learning` | `mastered`) in `srsStatusUtils.ts` + `srsStatusUtils.test.ts`; wired tier-specific underline/highlight classes and `data-srs-tier` attributes into `subtitleHighlightUtils.tsx` (`VideoPlayerPopover.module.css`) and `BookContent.tsx` (`BookReader.module.css`).
@@ -51,6 +52,15 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-161: Global `e-Ukraine` Typography Enforcement (Spec 85)
+- **Status**: Accepted
+- **Context**: `body.pixzen` (`src/styles/pixzen.css`), `public/index.html`, 40 CSS modules/TSX files, and `ReelGeneratorModal.tsx` overrode or fell back to `Satoshi`, `Nunito`, or `SF Pro / Inter` instead of the design system's primary `e-Ukraine` font.
+- **Decision**:
+  1. Removed Fontshare `Satoshi` and Google Fonts `Nunito` links from [`public/index.html`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/public/index.html) and updated `body.pixzen` in [`pixzen.css`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/styles/pixzen.css) to set `--font-display` and `--font-body` to `'e-Ukraine', system-ui, -apple-system, sans-serif`.
+  2. Replaced all `'Satoshi'` references across 40 component CSS/TSX files and `SF Pro / Inter` canvas fonts in [`ReelGeneratorModal.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/VideoPage/components/ReelGeneratorModal.tsx) with `'e-Ukraine'` while keeping `JetBrains Mono` for `--font-mono` metrics/timecodes/code per `ui_context.md`.
+  3. Added [`typography.test.ts`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/typography.test.ts) as an automated regression guard.
+- **Consequences**: All UI surfaces across dark Espresso and light Pixzen themes render consistently in `e-Ukraine`, with zero external Fontshare requests.
 
 ### ADR-160: Player Settings — Disable Lemmatization, Shortcuts, Opacity & Subtitle-Only Mode (Spec 84)
 - **Status**: Accepted

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   LOGIN PAGE — Pixzen Monochrome Editorial Aesthetic (Satoshi)
+   LOGIN PAGE — Pixzen Monochrome Editorial Aesthetic (e-Ukraine)
    ========================================================================== */
 
 .overlay {
@@ -30,7 +30,7 @@
     width: 100%;
     max-width: 460px;
     overflow: hidden;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     color: var(--color-ink, #0a0a0a);
 }
 
@@ -89,7 +89,7 @@
 
 .brandEyebrow {
     display: inline-block;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.28em;
@@ -99,7 +99,7 @@
 }
 
 .brandTitle {
-    font-family: var(--font-display, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 32px;
     font-weight: 500;
     letter-spacing: -0.035em;
@@ -109,7 +109,7 @@
 }
 
 .brandSubtitle {
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 14px;
     font-weight: 400;
     color: var(--color-body, #4a4a48);
@@ -185,7 +185,7 @@
 
 .dividerText {
     padding: 0 14px;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 500;
     color: var(--color-mute, #8e8e8e);
@@ -221,7 +221,7 @@
     color: var(--color-ink, #0a0a0a);
     border: 1px solid var(--color-hairline-strong, rgba(10, 10, 10, 0.2));
     border-radius: 100px;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.06em;
@@ -268,7 +268,7 @@
 }
 
 .otpTitle {
-    font-family: var(--font-display, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 26px;
     font-weight: 500;
     color: var(--color-ink, #0a0a0a);
@@ -278,7 +278,7 @@
 }
 
 .otpHelper {
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13px;
     font-weight: 400;
     color: var(--color-body, #4a4a48);
@@ -371,7 +371,7 @@
     padding: 0 24px;
     background: var(--color-ink, #0a0a0a);
     color: var(--color-canvas, #f5f3ef);
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.1em;
@@ -435,7 +435,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13px;
 }
 
@@ -471,7 +471,7 @@
 .resendButton {
     background: none;
     border: none;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.2em;
@@ -500,7 +500,7 @@
     border: 1px solid rgba(220, 38, 38, 0.28);
     border-radius: 10px;
     color: #dc2626;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13px;
     font-weight: 400;
     text-align: center;

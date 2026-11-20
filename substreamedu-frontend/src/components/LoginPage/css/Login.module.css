@@ -1,5 +1,5 @@
 /* ==========================================================================
-   EMAIL LOGIN FORM — Pixzen Monochrome Editorial Aesthetic (Satoshi)
+   EMAIL LOGIN FORM — Pixzen Monochrome Editorial Aesthetic (e-Ukraine)
    ========================================================================== */
 
 .loginContainer {
@@ -24,7 +24,7 @@
 }
 
 .label {
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.22em;
@@ -38,7 +38,7 @@
     padding: 0 16px;
     border: 1px solid var(--color-hairline-strong, rgba(10, 10, 10, 0.2));
     border-radius: 12px;
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 15px;
     font-weight: 400;
     line-height: 1.5;
@@ -95,7 +95,7 @@
 }
 
 .helperText {
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 400;
     color: var(--color-mute, #8e8e8e);
@@ -125,7 +125,7 @@
     padding: 0 28px;
     background: var(--color-ink, #0a0a0a);
     color: var(--color-canvas, #f5f3ef);
-    font-family: var(--font-body, 'Satoshi', 'e-Ukraine', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.1em;

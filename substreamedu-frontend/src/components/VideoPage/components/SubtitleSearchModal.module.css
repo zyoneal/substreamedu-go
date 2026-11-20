@@ -62,7 +62,7 @@
 }
 
 .modalTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 1.65rem;
     font-weight: 800;
     color: #0a0a0a;
@@ -78,7 +78,7 @@
     margin-top: 8px;
     font-size: 0.92rem;
     color: #4a4a48;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-weight: 500;
 }
 
@@ -103,7 +103,7 @@
     border: 1px solid rgba(10, 10, 10, 0.14);
     border-radius: 9999px;
     color: #0a0a0a;
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -176,7 +176,7 @@
 }
 
 .emptyTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 1.5rem;
     font-weight: 700;
     color: #0a0a0a;
@@ -184,7 +184,7 @@
 }
 
 .emptyDescription {
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-size: 1rem;
     color: #8e8e8e;
     margin: 0;
@@ -239,7 +239,7 @@
 }
 
 .subtitleName {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 1.15rem;
     font-weight: 700;
     color: #0a0a0a;
@@ -284,7 +284,7 @@
 }
 
 .syncReason {
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-size: 0.78rem;
     color: #4a4a48;
     margin: 0 0 12px 0;
@@ -306,7 +306,7 @@
     border-radius: 9999px;
     font-size: 11px;
     font-weight: 700;
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     -webkit-font-smoothing: antialiased;
@@ -340,7 +340,7 @@
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-size: 0.88rem;
     color: #4a4a48;
     font-weight: 500;
@@ -411,7 +411,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
 }
 
 .actionButton:hover .tooltip {
@@ -638,7 +638,7 @@
     border-radius: 9999px;
     background: #0a0a0a;
     color: #f5f3ef;
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.08em;

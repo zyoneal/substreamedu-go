@@ -1296,7 +1296,7 @@ const TextPasteHighlighter: React.FC = () => {
                 size="sm"
             >
                 <Modal.Body style={{ textAlign: 'center', padding: '28px 24px 20px' }}>
-                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #0a0a0a)', fontSize: '15px', fontFamily: "var(--font-body, 'Satoshi', sans-serif)" }}>
+                    <p style={{ margin: '0 0 20px', color: 'var(--color-ink, #0a0a0a)', fontSize: '15px', fontFamily: "var(--font-body, 'e-Ukraine', sans-serif)" }}>
                         {intl.formatMessage({ id: 'selectLanguageToTranslate', defaultMessage: 'Select a language in the header to translate' })}
                     </p>
                     <button
@@ -1313,7 +1313,7 @@ const TextPasteHighlighter: React.FC = () => {
                             letterSpacing: '0.14em',
                             textTransform: 'uppercase',
                             cursor: 'pointer',
-                            fontFamily: "var(--font-display, 'Satoshi', sans-serif)"
+                            fontFamily: "var(--font-display, 'e-Ukraine', sans-serif)"
                         }}
                     >
                         OK

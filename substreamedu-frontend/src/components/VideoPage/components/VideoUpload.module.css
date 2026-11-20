@@ -28,7 +28,7 @@
 }
 
 .title {
-  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-family: var(--font-display, 'e-Ukraine', sans-serif);
   font-weight: 700;
   font-size: 22px;
   line-height: 1.25;
@@ -49,7 +49,7 @@
 }
 
 .descriptionMain {
-  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-family: var(--font-body, 'e-Ukraine', sans-serif);
   font-weight: 400;
   font-size: 14px;
   line-height: 1.5;
@@ -64,7 +64,7 @@
 }
 
 .formatLine {
-  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-family: var(--font-body, 'e-Ukraine', sans-serif);
   font-weight: 500;
   font-size: 13.5px;
   line-height: 1.5;
@@ -106,7 +106,7 @@
   height: 48px;
   padding: 0 32px;
   border-radius: 9999px;
-  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-family: var(--font-display, 'e-Ukraine', sans-serif);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;

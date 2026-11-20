@@ -140,7 +140,7 @@
 }
 
 .checkpointTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 1.75rem;
     font-weight: 700;
     color: #0a0a0a;
@@ -224,7 +224,7 @@
 }
 
 .cardCounter {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 14px;
     font-weight: 700;
     color: #0a0a0a;
@@ -272,7 +272,7 @@
 }
 
 .completionTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 24px;
     line-height: 1.2;
     font-weight: 700;
@@ -283,7 +283,7 @@
 }
 
 .completionDescription {
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-size: 15px;
     line-height: 1.55;
     font-weight: 400;
@@ -308,7 +308,7 @@
     background: #0a0a0a;
     color: #f5f3ef;
     border-radius: 9999px;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-weight: 600;
     font-size: 13px;
     letter-spacing: 0.03em;
@@ -335,7 +335,7 @@
     color: #0a0a0a;
     border: 1px solid rgba(10, 10, 10, 0.12);
     border-radius: 9999px;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-weight: 600;
     font-size: 13px;
     letter-spacing: 0.03em;
@@ -464,7 +464,7 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: pre-wrap;
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
 }
 
 .dictionaryWord {
@@ -561,7 +561,7 @@
 }
 
 .emptyTitle {
-    font-family: var(--font-display, 'Satoshi', sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', sans-serif);
     font-size: 24px;
     line-height: 1.2;
     font-weight: 700;
@@ -572,7 +572,7 @@
 }
 
 .emptyDescription {
-    font-family: var(--font-body, 'Satoshi', sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
     font-size: 15px;
     line-height: 1.55;
     font-weight: 400;

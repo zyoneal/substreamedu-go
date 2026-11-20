@@ -17,7 +17,7 @@
 }
 
 .description {
-  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-family: var(--font-body, 'e-Ukraine', sans-serif);
   font-weight: 500;
   font-size: 15px;
   line-height: 1.5;
@@ -47,7 +47,7 @@
 }
 
 .fieldLabel {
-  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-family: var(--font-display, 'e-Ukraine', sans-serif);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -120,7 +120,7 @@
   background: transparent;
   border: none;
   outline: none;
-  font-family: var(--font-body, 'Satoshi', sans-serif);
+  font-family: var(--font-body, 'e-Ukraine', sans-serif);
   font-weight: 400;
   font-size: 14.5px;
   line-height: 1.5;
@@ -211,7 +211,7 @@
   height: 46px;
   padding: 0 32px;
   border-radius: 9999px;
-  font-family: var(--font-display, 'Satoshi', sans-serif);
+  font-family: var(--font-display, 'e-Ukraine', sans-serif);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.12em;

@@ -1,7 +1,7 @@
 /* ==========================================================================
    SUBSTREAMEDU — PIXZEN EDITORIAL LITERARY STUDIO (/books)
    Warm-White Canvas (#F5F3EF), Soft-Stone Bento Cards (#EAE7E1),
-   Tactile 3D Hardcover Folios & Satoshi Typography
+   Tactile 3D Hardcover Folios & e-Ukraine Typography
    ========================================================================== */
 
 .catalogContainer {
@@ -12,7 +12,7 @@
     position: relative;
     overflow-x: hidden;
     box-sizing: border-box;
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -55,12 +55,12 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     margin-bottom: 14px;
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: clamp(2.1rem, 3vw, 2.85rem);
     font-weight: 700;
     letter-spacing: -0.032em;
@@ -102,7 +102,7 @@
 }
 
 .statChipValue {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 20px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -112,7 +112,7 @@
 }
 
 .statChipLabel {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
@@ -204,7 +204,7 @@
 }
 
 .coverMiniTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 700;
     line-height: 1.2;
@@ -250,7 +250,7 @@
     border-radius: 9999px;
     background: #0a0a0a;
     color: #f5f3ef;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
@@ -258,7 +258,7 @@
 }
 
 .deskLevelBadge {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 700;
     padding: 3.5px 10px;
@@ -279,7 +279,7 @@
 }
 
 .deskBookTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: clamp(1.25rem, 1.8vw, 1.55rem);
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -289,7 +289,7 @@
 }
 
 .deskBookAuthor {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
@@ -315,7 +315,7 @@
     background: #0a0a0a;
     color: #f5f3ef;
     text-decoration: none;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -339,7 +339,7 @@
     background: #f5f3ef;
     border: 1px solid rgba(10, 10, 10, 0.16);
     color: var(--color-ink, #0a0a0a);
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
@@ -409,7 +409,7 @@
 }
 
 .excerptChapterTag {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -463,7 +463,7 @@
     border-radius: 9999px;
     font-size: 13px;
     font-weight: 600;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     border: 1px solid rgba(10, 10, 10, 0.12);
     background-color: #eae7e1;
     color: var(--color-body, #4a4a48);
@@ -514,7 +514,7 @@
     padding: 9px 18px 9px 38px;
     font-size: 13px;
     color: var(--color-ink, #0a0a0a);
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     width: 250px;
     box-sizing: border-box;
     transition:
@@ -546,7 +546,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     border: 1px solid #0a0a0a;
     cursor: pointer;
     transition:
@@ -606,7 +606,7 @@
 }
 
 .dropzoneTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 15px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -706,7 +706,7 @@
 }
 
 .bookLevelPill {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 10.5px;
     font-weight: 700;
     padding: 3px 9px;
@@ -721,7 +721,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11.5px;
     font-weight: 600;
     color: var(--color-body, #4a4a48);
@@ -735,7 +735,7 @@
 }
 
 .bookTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 19px;
     font-weight: 700;
     line-height: 1.22;
@@ -750,7 +750,7 @@
 }
 
 .bookAuthor {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -760,7 +760,7 @@
 }
 
 .bookDescription {
-    font-family: var(--font-body, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 13.5px;
     line-height: 1.54;
     color: var(--color-body, #4a4a48);
@@ -822,7 +822,7 @@
 }
 
 .progressLabel {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -864,7 +864,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     text-decoration: none;
     transition:
         background-color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
@@ -915,7 +915,7 @@
 }
 
 .emptyStateTitle {
-    font-family: var(--font-display, 'Satoshi', system-ui, -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', system-ui, -apple-system, sans-serif);
     font-size: 20px;
     font-weight: 700;
     margin: 0 0 6px;

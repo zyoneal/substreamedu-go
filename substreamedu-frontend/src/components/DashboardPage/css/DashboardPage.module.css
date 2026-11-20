@@ -1,6 +1,6 @@
 /* ==========================================================================
    SUBSTREAMEDU — PIXZEN MONOCHROME EDITORIAL BENTO DASHBOARD
-   Warm-White Canvas (#F5F3EF), Soft-Gray Bento Cards (#EAE7E1) & Satoshi Type
+   Warm-White Canvas (#F5F3EF), Soft-Gray Bento Cards (#EAE7E1) & e-Ukraine Type
    ========================================================================== */
 
 .dashboardContainer {
@@ -11,7 +11,7 @@
     justify-content: center;
     align-items: center;
     background-color: var(--color-canvas, #f5f3ef);
-    font-family: var(--font-body, 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', -apple-system, BlinkMacSystemFont, sans-serif);
     color: var(--color-ink, #0a0a0a);
     -webkit-font-smoothing: antialiased;
     box-sizing: border-box;
@@ -41,7 +41,7 @@
 }
 
 .pageTitle {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: clamp(2rem, 2.8vw, 2.75rem);
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -176,7 +176,7 @@
 }
 
 .metricValue {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 44px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -212,7 +212,7 @@
 }
 
 .metricLabel {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -229,7 +229,7 @@
     background: rgba(10, 10, 10, 0.05);
     border: 1px solid rgba(10, 10, 10, 0.12);
     color: var(--color-body, #4a4a48);
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -263,7 +263,7 @@
 }
 
 .weekDayLetter {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -308,7 +308,7 @@
 }
 
 .zeroStateHeading {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 22px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -342,7 +342,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -354,7 +354,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -413,7 +413,7 @@
 }
 
 .heroTitle {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 24px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -423,7 +423,7 @@
 }
 
 .heroDescription {
-    font-family: var(--font-body, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 15px;
     font-weight: 400;
     line-height: 1.6;
@@ -446,7 +446,7 @@
     background: #0a0a0a;
     color: #f5f3ef;
     border-radius: 9999px;
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -504,7 +504,7 @@
 }
 
 .cardTitle {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 20px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -514,7 +514,7 @@
 }
 
 .cardDescription {
-    font-family: var(--font-body, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 14.5px;
     font-weight: 400;
     line-height: 1.56;
@@ -871,7 +871,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    font-family: var(--font-body, 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', -apple-system, BlinkMacSystemFont, sans-serif);
     box-sizing: border-box;
 }
 
@@ -913,7 +913,7 @@
 }
 
 .welcomeModalTitle {
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 24px;
     font-weight: 700;
     color: var(--color-ink, #0a0a0a);
@@ -977,7 +977,7 @@
     border: none;
     padding: 15px 28px;
     border-radius: 9999px;
-    font-family: var(--font-display, 'Satoshi', -apple-system, sans-serif);
+    font-family: var(--font-display, 'e-Ukraine', -apple-system, sans-serif);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.14em;

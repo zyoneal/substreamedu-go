@@ -944,7 +944,7 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
-    font-family: 'Satoshi', var(--font-body, system-ui, -apple-system, sans-serif);
+    font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
 }
 
 .dragHandleContainer {
