@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Modal, ConfirmModal } from '../ui/modal';
 import { TranslationPopover } from '../shared/TranslationPopover';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
+import { findPhraseMatch, findWordMatch } from '../../utils/englishMorphology';
 
 interface SelectionPosition {
     x: number;
@@ -556,7 +557,7 @@ const TextPasteHighlighter: React.FC = () => {
 
                 if (!matchResult.found) break;
 
-                if (matchResult.isValid && !isRangeOverlapping(matchResult.start, matchResult.end, allMatches)) {
+                if (matchResult.isValid && matchResult.start !== undefined && matchResult.end !== undefined && !isRangeOverlapping(matchResult.start, matchResult.end, allMatches)) {
                     const originalWord = text.slice(matchResult.start, matchResult.end);
                     allMatches.push({
                         start: matchResult.start,
@@ -632,118 +633,6 @@ const TextPasteHighlighter: React.FC = () => {
 
         return foundUniqueWords.size;
     };
-
-    function findPhraseMatch(text: string, searchPhrase: string, startIndex: number) {
-        const foundIndex = text.toLowerCase().indexOf(searchPhrase.toLowerCase(), startIndex);
-        if (foundIndex === -1) {
-            return { found: false, nextSearchIndex: text.length };
-        }
-        const isWordStart = foundIndex === 0 || !/[a-zA-Z]/.test(text[foundIndex - 1]);
-        if (!isWordStart) {
-            return {
-                found: true,
-                isValid: false,
-                start: foundIndex,
-                end: foundIndex + searchPhrase.length,
-                nextSearchIndex: foundIndex + 1
-            };
-        }
-        const endIndex = foundIndex + searchPhrase.length;
-        const remainingText = text.slice(endIndex);
-        let punctuationLength = 0;
-        let hasValidEnd = false;
-        if (remainingText.length === 0) {
-            hasValidEnd = true;
-        } else {
-            for (let i = 0; i < remainingText.length; i++) {
-                const char = remainingText[i];
-                if (/[.,!?;:'"]/.test(char)) {
-                    punctuationLength++;
-                } else if (/\\s/.test(char)) {
-                    hasValidEnd = true;
-                    break;
-                } else if (/[a-zA-Z]/.test(char)) {
-                    break;
-                } else {
-                    hasValidEnd = true;
-                    break;
-                }
-            }
-            if (punctuationLength > 0 && punctuationLength === remainingText.length) {
-                hasValidEnd = true;
-            }
-        }
-        return {
-            found: true,
-            isValid: hasValidEnd,
-            start: foundIndex,
-            end: endIndex + punctuationLength,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
-
-    function findWordMatch(text: string, searchTerm: string, startIndex: number) {
-        const VALID_ENDINGS = [
-            "s", "es", "’s", "ed", "d", "ing",
-            "er", "r", "est",
-
-            "ly",
-
-            "ness", "ment", "ion", "tion", "sion", "ity",
-            "or", "ist", "ship", "hood", "dom",
-
-            "able", "ible", "ous", "ful", "less", "al", "ic", "ish", "y",
-
-            "ize", "ise", "en", "ify",
-
-            "ward", "wards", "wise"
-        ];
-        const foundIndex = text.toLowerCase().indexOf(searchTerm.toLowerCase(), startIndex);
-        if (foundIndex === -1) {
-            return { found: false, nextSearchIndex: text.length };
-        }
-        const isWordStart = foundIndex === 0 || !/[a-zA-Z]/.test(text[foundIndex - 1]);
-        if (!isWordStart) {
-            return {
-                found: true,
-                isValid: false,
-                start: foundIndex,
-                end: foundIndex + searchTerm.length,
-                nextSearchIndex: foundIndex + 1
-            };
-        }
-        const remainingText = text.slice(foundIndex + searchTerm.length);
-        if (remainingText.length === 0 || !/[a-zA-Z]/.test(remainingText[0])) {
-            return {
-                found: true,
-                isValid: true,
-                start: foundIndex,
-                end: foundIndex + searchTerm.length,
-                nextSearchIndex: foundIndex + 1
-            };
-        }
-        for (const ending of VALID_ENDINGS) {
-            if (remainingText.toLowerCase().startsWith(ending)) {
-                const afterEnding = remainingText.slice(ending.length);
-                if (afterEnding.length === 0 || !/[a-zA-Z]/.test(afterEnding[0])) {
-                    return {
-                        found: true,
-                        isValid: true,
-                        start: foundIndex,
-                        end: foundIndex + searchTerm.length,
-                        nextSearchIndex: foundIndex + searchTerm.length + ending.length
-                    };
-                }
-            }
-        }
-        return {
-            found: true,
-            isValid: false,
-            start: foundIndex,
-            end: foundIndex + searchTerm.length,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
 
     function isRangeOverlapping(start: number, end: number, existingRanges: Array<{ start: number, end: number }>): boolean {
         return existingRanges.some(range => start < range.end && end > range.start);

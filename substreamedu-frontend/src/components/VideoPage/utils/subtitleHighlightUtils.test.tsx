@@ -73,6 +73,38 @@ describe('subtitleHighlightUtils', () => {
             expect(container.textContent).toContain('input');
         });
 
+        it('highlights CVC-doubled, silent-e, y-to-i, irregular, and inflected phrasal verb forms', () => {
+            const items: DictionaryItem[] = [
+                { id: 1, resourceName: 'test', highlightedText: 'stem', translatedText: 'виникати', context: '', definition: '' },
+                { id: 2, resourceName: 'test', highlightedText: 'study', translatedText: 'вчити', context: '', definition: '' },
+                { id: 3, resourceName: 'test', highlightedText: 'make', translatedText: 'робити', context: '', definition: '' },
+                { id: 4, resourceName: 'test', highlightedText: 'go', translatedText: 'йти', context: '', definition: '' },
+            ];
+            const node = renderHighlightedSubtitle(
+                'It stemmed from studies while making plans and she went home.',
+                items,
+                'testWord'
+            );
+            const { container } = render(<>{node}</>);
+            const matched = Array.from(container.querySelectorAll('.testWord')).map(el => el.textContent);
+            expect(matched).toEqual(['stemmed', 'studies', 'making', 'went']);
+        });
+
+        it('highlights inflected multi-word phrasal verbs cleanly', () => {
+            const items: DictionaryItem[] = [
+                { id: 1, resourceName: 'test', highlightedText: 'stem from', translatedText: 'походити з', context: '', definition: '' },
+            ];
+            const node = renderHighlightedSubtitle(
+                'Her curiosity stemmed from early exposure.',
+                items,
+                'testWord'
+            );
+            const { container } = render(<>{node}</>);
+            const span = container.querySelector('.testWord');
+            expect(span?.textContent).toBe('stemmed from');
+            expect(span?.getAttribute('data-translation')).toBe('походити з');
+        });
+
         it('returns null if text is empty', () => {
             expect(renderHighlightedSubtitle('', mockItems)).toBeNull();
         });

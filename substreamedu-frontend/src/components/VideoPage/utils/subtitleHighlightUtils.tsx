@@ -1,8 +1,16 @@
 import React from 'react';
 import { cleanSubtitleText } from '../../../utils/subtitleCleaner';
 import { getSrsTier, SrsTier } from '../../../utils/srsStatusUtils';
+import {
+    MatchResult,
+    findPhraseMatch,
+    findWordMatch,
+} from '../../../utils/englishMorphology';
 import { DictionaryItem } from '../types';
 import styles from '../css/VideoPlayerPopover.module.css';
+
+export type { MatchResult };
+export { findPhraseMatch, findWordMatch };
 
 /**
  * Formats raw subtitle text for display: strips ASS tags, collapses duplicate whitespace,
@@ -24,138 +32,6 @@ export const formatSubtitleForDisplay = (text: string): string => {
     // 4. Collapse duplicate horizontal spaces and trim
     return formatted.replace(/[ \t]{2,}/g, ' ').trim();
 };
-
-export interface MatchResult {
-    found: boolean;
-    isValid?: boolean;
-    start?: number;
-    end?: number;
-    nextSearchIndex: number;
-}
-
-export function findPhraseMatch(text: string, searchPhrase: string, startIndex: number): MatchResult {
-    const foundIndex = text.toLowerCase().indexOf(searchPhrase.toLowerCase(), startIndex);
-
-    if (foundIndex === -1) {
-        return { found: false, nextSearchIndex: text.length };
-    }
-
-    const isWordStart = foundIndex === 0 || !/[a-zA-Z]/.test(text[foundIndex - 1]);
-
-    if (!isWordStart) {
-        return {
-            found: true,
-            isValid: false,
-            start: foundIndex,
-            end: foundIndex + searchPhrase.length,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
-
-    const endIndex = foundIndex + searchPhrase.length;
-    const remainingText = text.slice(endIndex);
-
-    let punctuationLength = 0;
-    let hasValidEnd = false;
-
-    if (remainingText.length === 0) {
-        hasValidEnd = true;
-    } else {
-        for (let i = 0; i < remainingText.length; i++) {
-            const char = remainingText[i];
-            if (/[.,!?;:"']/.test(char)) {
-                punctuationLength++;
-            } else if (/\s/.test(char)) {
-                hasValidEnd = true;
-                break;
-            } else if (/[a-zA-Z]/.test(char)) {
-                break;
-            } else {
-                hasValidEnd = true;
-                break;
-            }
-        }
-
-        if (punctuationLength > 0 && punctuationLength === remainingText.length) {
-            hasValidEnd = true;
-        }
-    }
-
-    return {
-        found: true,
-        isValid: hasValidEnd,
-        start: foundIndex,
-        end: endIndex + punctuationLength,
-        nextSearchIndex: foundIndex + 1
-    };
-}
-
-const VALID_ENDINGS = [
-    "s", "es", "’s", "ed", "d", "ing",
-    "er", "r", "est",
-    "ly",
-    "ness", "ment", "ion", "tion", "sion", "ity",
-    "or", "ist", "ship", "hood", "dom",
-    "able", "ible", "ous", "ful", "less", "al", "ic", "ish", "y",
-    "ize", "ise", "en", "ify",
-    "ward", "wards", "wise"
-];
-
-export function findWordMatch(text: string, searchTerm: string, startIndex: number): MatchResult {
-    const foundIndex = text.toLowerCase().indexOf(searchTerm.toLowerCase(), startIndex);
-
-    if (foundIndex === -1) {
-        return { found: false, nextSearchIndex: text.length };
-    }
-
-    const isWordStart = foundIndex === 0 || !/[a-zA-Z]/.test(text[foundIndex - 1]);
-
-    if (!isWordStart) {
-        return {
-            found: true,
-            isValid: false,
-            start: foundIndex,
-            end: foundIndex + searchTerm.length,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
-
-    const remainingText = text.slice(foundIndex + searchTerm.length);
-
-    if (remainingText.length === 0 || !/[a-zA-Z]/.test(remainingText[0])) {
-        return {
-            found: true,
-            isValid: true,
-            start: foundIndex,
-            end: foundIndex + searchTerm.length,
-            nextSearchIndex: foundIndex + 1
-        };
-    }
-
-    for (const ending of VALID_ENDINGS) {
-        if (remainingText.toLowerCase().startsWith(ending)) {
-            const afterEnding = remainingText.slice(ending.length);
-
-            if (afterEnding.length === 0 || !/[a-zA-Z]/.test(afterEnding[0])) {
-                return {
-                    found: true,
-                    isValid: true,
-                    start: foundIndex,
-                    end: foundIndex + searchTerm.length,
-                    nextSearchIndex: foundIndex + searchTerm.length + ending.length
-                };
-            }
-        }
-    }
-
-    return {
-        found: true,
-        isValid: false,
-        start: foundIndex,
-        end: foundIndex + searchTerm.length,
-        nextSearchIndex: foundIndex + 1
-    };
-}
 
 export function isRangeOverlapping(
     start: number,
