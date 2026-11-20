@@ -300,12 +300,20 @@ describe('englishMorphology', () => {
     });
 
     describe('findWordMatch & findPhraseMatch', () => {
-        it('highlights the full inflected word stemmed for saved stem', () => {
-            const text = 'This issue stemmed from early exposure.';
-            const match = findWordMatch(text, 'stem', 0);
-            expect(match.found).toBe(true);
-            expect(match.isValid).toBe(true);
-            expect(text.slice(match.start, match.end)).toBe('stemmed');
+        it('highlights only the saved base prefix stem inside stemmed, and full word when stem mutates', () => {
+            const text = 'This issue stemmed from studies and went far.';
+            const mStem = findWordMatch(text, 'stem', 0);
+            expect(mStem.found).toBe(true);
+            expect(mStem.isValid).toBe(true);
+            expect(text.slice(mStem.start, mStem.end)).toBe('stem');
+
+            const mStudy = findWordMatch(text, 'study', 0);
+            expect(mStudy.found).toBe(true);
+            expect(text.slice(mStudy.start, mStudy.end)).toBe('studies');
+
+            const mGo = findWordMatch(text, 'go', 0);
+            expect(mGo.found).toBe(true);
+            expect(text.slice(mGo.start, mGo.end)).toBe('went');
         });
 
         it('trims possessive apostrophe-s from highlight span', () => {

@@ -87,7 +87,7 @@ describe('subtitleHighlightUtils', () => {
             );
             const { container } = render(<>{node}</>);
             const matched = Array.from(container.querySelectorAll('.testWord')).map(el => el.textContent);
-            expect(matched).toEqual(['stemmed', 'studies', 'making', 'went']);
+            expect(matched).toEqual(['stem', 'studies', 'making', 'went']);
         });
 
         it('highlights inflected multi-word phrasal verbs cleanly', () => {

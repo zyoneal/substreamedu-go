@@ -611,10 +611,35 @@ function tokenizeText(text: string): TextToken[] {
 }
 
 /**
- * Computes the highlight end offset for a matched token, trimming trailing possessive
- * ('s / ’s) when the saved term itself does not include an apostrophe.
+ * Computes the highlight end offset for a matched single-word token:
+ * - When the token starts with the exact saved base word (e.g. "stemmed" for "stem",
+ *   "jumping" for "jump", "panicked" for "panic", "stem's" for "stem"), highlights
+ *   only the saved word prefix ("stem" in "stemmed").
+ * - When the stem itself changed (e.g. "studies" for "study", "making" for "make",
+ *   "went" for "go"), highlights the full word (trimming any trailing possessive 's/’s).
  */
-function getTokenHighlightEnd(token: TextToken, savedTerm: string): number {
+function getWordHighlightEnd(token: TextToken, savedTerm: string): number {
+    const lowerToken = token.text.toLowerCase();
+    const lowerSaved = savedTerm.toLowerCase();
+
+    if (lowerToken.startsWith(lowerSaved)) {
+        return token.start + lowerSaved.length;
+    }
+
+    if (savedTerm.includes("'") || savedTerm.includes('\u2019')) {
+        return token.end;
+    }
+    if (lowerToken.endsWith("'s") || lowerToken.endsWith('\u2019s')) {
+        return token.end - 2;
+    }
+    return token.end;
+}
+
+/**
+ * Computes the highlight end offset for the last token of a matched phrase,
+ * trimming trailing possessive ('s / ’s) when the saved term has no apostrophe.
+ */
+function getPhraseEndOffset(token: TextToken, savedTerm: string): number {
     if (savedTerm.includes("'") || savedTerm.includes('\u2019')) {
         return token.end;
     }
@@ -640,7 +665,7 @@ export function findWordMatch(text: string, searchTerm: string, startIndex: numb
         if (token.start < startIndex) continue;
 
         if (matchesEnglishWord(token.text, trimmed)) {
-            const end = getTokenHighlightEnd(token, trimmed);
+            const end = getWordHighlightEnd(token, trimmed);
             return {
                 found: true,
                 isValid: true,
@@ -699,7 +724,7 @@ export function findPhraseMatch(text: string, searchPhrase: string, startIndex: 
             const firstToken = textTokens[i];
             const lastToken = textTokens[i + phraseTokens.length - 1];
             const lastPhraseToken = phraseTokens[phraseTokens.length - 1];
-            const end = getTokenHighlightEnd(lastToken, lastPhraseToken.text);
+            const end = getPhraseEndOffset(lastToken, lastPhraseToken.text);
 
             return {
                 found: true,
