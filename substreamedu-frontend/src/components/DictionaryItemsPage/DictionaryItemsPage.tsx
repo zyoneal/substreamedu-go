@@ -9,11 +9,8 @@ import Play from 'lucide-react/dist/esm/icons/play';
 import { useTTS } from '../../hooks/useTTS';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { DictionaryTermsList } from './DictionaryTermsList';
-import {
-    useDictionaryItemsSession,
-    cleanTranscription,
-    highlightContext,
-} from './useDictionaryItemsSession';
+import { ParallaxFlashcardTicket } from './ParallaxFlashcardTicket';
+import { useDictionaryItemsSession } from './useDictionaryItemsSession';
 import styles from './css/DictionaryItemsPage.module.css';
 
 const containerVariants = {
@@ -92,72 +89,21 @@ const DictionaryItemsPage: React.FC = () => {
             ) : dictionaryItems.length > 0 && activeCard ? (
                 <motion.div className={styles.contentWrapper} variants={itemVariants}>
                     <div className={styles.flashcardSection}>
-                        <div className={styles.cardWrapper}>
-                            <div
-                                className={`${styles.card} ${flipped ? styles.flipped : ''} ${styles[animationState] || ''}`}
-                                onClick={toggleCardFlip}
-                                onTouchStart={onTouchStart}
-                                onTouchMove={onTouchMove}
-                                onTouchEnd={onTouchEnd}
-                                role="button"
-                                tabIndex={0}
-                                aria-label={`Flashcard for ${activeCard.highlightedText}. Side: ${flipped ? 'Definition' : 'Term'}. Click or press space to flip.`}
-                                onKeyDown={e => {
-                                    if (e.key === ' ' || e.key === 'Enter') {
-                                        e.preventDefault();
-                                        toggleCardFlip();
-                                    }
-                                }}
-                            >
-                                <div className={styles.cardInner}>
-                                    <div className={styles.cardFront}>
-                                        <div className={styles.cardContent}>
-                                            <h2
-                                                className={styles.wordTitle}
-                                                onClick={e => {
-                                                    e.stopPropagation();
-                                                    redirectToYouglish(activeCard.highlightedText);
-                                                }}
-                                                title="Click to go to YouGlish"
-                                            >
-                                                {activeCard.highlightedText}
-                                            </h2>
-                                            {cleanTranscription(activeCard.transcription) && (
-                                                <span className={styles.transcription}>[{cleanTranscription(activeCard.transcription)}]</span>
-                                            )}
-                                            {activeCard.context && (
-                                                <p
-                                                    className={styles.contextFlashcard}
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: highlightContext(activeCard.context, activeCard.highlightedText, styles.highlight),
-                                                    }}
-                                                />
-                                            )}
-                                            <div className={`${styles.flipHint} ${styles.desktopHint}`}>Click to flip</div>
-                                            <div className={`${styles.flipHint} ${styles.mobileHint}`}>Tap to flip • Swipe to change</div>
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.cardBack}>
-                                        <div className={styles.cardContent}>
-                                            {Boolean(activeCard.imageUrl && activeCard.imageUrl.trim() && !imageFailed) && (
-                                                <div className={styles.imageContainer}>
-                                                    <img src={activeCard.imageUrl} alt="" className={styles.cardImage} onError={handleImageError} />
-                                                </div>
-                                            )}
-                                            <div className={styles.definitionSection}>
-                                                <h3 className={styles.definitionText}>
-                                                    {activeCard.definition || activeCard.translatedText}
-                                                </h3>
-                                                {activeCard.definition && activeCard.translatedText && (
-                                                    <p className={styles.translationText}>{activeCard.translatedText}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <ParallaxFlashcardTicket
+                            card={activeCard}
+                            resourceName={resourceName}
+                            currentIndex={currentIndex}
+                            totalCount={displayTotal}
+                            flipped={flipped}
+                            animationState={animationState}
+                            imageFailed={imageFailed}
+                            onFlip={toggleCardFlip}
+                            onYouGlishClick={redirectToYouglish}
+                            onImageError={handleImageError}
+                            onTouchStart={onTouchStart}
+                            onTouchMove={onTouchMove}
+                            onTouchEnd={onTouchEnd}
+                        />
 
                         <div className={styles.controlsBar}>
                             <div className={styles.controlsLeft}>

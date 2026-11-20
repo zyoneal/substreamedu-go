@@ -235,7 +235,7 @@
 }
 
 /* ============================================================
-   FLASHCARD SECTION (SOFT STONE 3D FLIP STAGE)
+   FLASHCARD SECTION (PARALLAX TICKET 3D SPRING STAGE)
    ============================================================ */
 
 .flashcardSection {
@@ -250,17 +250,27 @@
     width: 100%;
     max-width: 900px;
     isolation: isolate;
+    perspective: 900px;
+    -webkit-perspective: 900px;
+    --ticket-tilt: 14;
+    --ticket-depth: 12;
+    --ticket-flip: 170 15;
 }
 
 .card {
     width: 100%;
     aspect-ratio: 5/2;
-    min-height: 290px;
-    max-height: 370px;
+    min-height: 300px;
+    max-height: 380px;
     cursor: pointer;
     position: relative;
-    perspective: 2000px;
-    -webkit-perspective: 2000px;
+    outline: none;
+}
+
+.card:focus-visible {
+    outline: 2px solid var(--color-focus-ring, rgba(10, 10, 10, 0.55));
+    outline-offset: 6px;
+    border-radius: 26px;
 }
 
 .cardInner {
@@ -268,42 +278,38 @@
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
     will-change: transform;
     transform: translate3d(0, 0, 0);
 }
 
-.card.flipped .cardInner {
-    transform: rotateY(180deg) translate3d(0, 0, 0);
-}
-
 .cardFront,
 .cardBack {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     border-radius: 24px;
     background: #eae7e1;
     border: 1px solid rgba(10, 10, 10, 0.12);
-    box-shadow: 0 16px 40px rgba(10, 10, 10, 0.04);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.65) inset,
+        0 24px 56px -24px rgba(10, 10, 10, 0.14);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 36px;
+    padding: 46px 40px 44px;
     box-sizing: border-box;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
     .card:hover .cardFront,
     .card:hover .cardBack {
-        border-color: rgba(10, 10, 10, 0.24);
-        box-shadow: 0 20px 48px rgba(10, 10, 10, 0.06);
+        border-color: rgba(10, 10, 10, 0.22);
     }
 }
 
@@ -313,6 +319,83 @@
 
 .cardBack {
     transform: rotateY(180deg);
+    background: #e5e1d9;
+}
+
+.ticketBgLayer {
+    position: absolute;
+    inset: -24px;
+    pointer-events: none;
+    will-change: transform;
+    background-image:
+        linear-gradient(rgba(10, 10, 10, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(10, 10, 10, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.ticketShade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(245, 243, 239, 0.35) 0%, transparent 45%, rgba(10, 10, 10, 0.045) 100%);
+}
+
+.ticketGlare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--g, 0);
+    background: radial-gradient(
+        280px circle at var(--gx, 50%) var(--gy, 30%),
+        rgba(255, 255, 255, 0.55),
+        transparent 62%
+    );
+    mix-blend-mode: soft-light;
+    z-index: 3;
+}
+
+.ticketMetaTop {
+    position: absolute;
+    top: 18px;
+    left: 26px;
+    right: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 2;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.ticketCollectionName {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: #8e8e8e;
+    letter-spacing: 0.04em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 65%;
+}
+
+.ticketNumber {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: #4a4a48;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+}
+
+.ticketNote {
+    font-size: 13px;
+    font-style: italic;
+    color: #8e8e8e;
+    margin: 4px 0 0;
+    line-height: 1.45;
 }
 
 .cardContent {
@@ -325,6 +408,7 @@
     z-index: 2;
     position: relative;
     gap: 8px;
+    will-change: transform;
 }
 
 .wordTitle {

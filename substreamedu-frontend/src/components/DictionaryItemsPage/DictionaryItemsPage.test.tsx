@@ -96,9 +96,14 @@ describe('DictionaryItemsPage Pixzen Light Editorial Redesign', () => {
         expect(screen.getByText(/sad or dejected because of a lack of companionship \(одинокий\)/i)).toBeInTheDocument();
 
         const flashcard = screen.getByRole('button', { name: /flashcard for lonesome/i });
+        expect(flashcard).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByText(/No\. 0001 · 2/i)).toBeInTheDocument();
+        expect(flashcard.querySelectorAll('[data-depth]').length).toBeGreaterThanOrEqual(4);
+
         fireEvent.click(flashcard);
         await waitFor(() => {
             expect(flashcard).toHaveAttribute('aria-label', expect.stringContaining('Side: Definition'));
+            expect(flashcard).toHaveAttribute('aria-pressed', 'true');
         });
     });
 
