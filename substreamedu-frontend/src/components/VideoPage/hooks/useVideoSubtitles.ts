@@ -55,9 +55,9 @@ export const useVideoSubtitles = ({
     const [currentSubtitle, setCurrentSubtitle] = useState<string | null>(null);
     const [delay, setDelay] = useState<number>(0);
     const [showSubtitles, setShowSubtitles] = useState(true);
-    const [blurSubtitles, setBlurSubtitles] = useState<boolean>(true);
-    const effectiveBlur = isOnboardingMode ? false : blurSubtitles;
-    const effectiveDelay = isOnboardingMode ? 0 : delay;
+    const [blurSubtitles, setBlurSubtitles] = useState<boolean>(() => !isOnboardingMode);
+    const effectiveBlur = blurSubtitles;
+    const effectiveDelay = delay;
     const [isYoutubeSubsLoading, setIsYoutubeSubsLoading] = useState(false);
     const subtitleInputRef = useRef<HTMLInputElement>(null);
 

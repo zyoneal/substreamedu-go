@@ -11,6 +11,7 @@ import Maximize from 'lucide-react/dist/esm/icons/maximize';
 import Minimize from 'lucide-react/dist/esm/icons/minimize';
 import Play from 'lucide-react/dist/esm/icons/play';
 import Pause from 'lucide-react/dist/esm/icons/pause';
+import { ToggleSwitch } from '../../ui/ToggleSwitch';
 import styles from '../css/VideoPlayerPopover.module.css';
 
 export interface VideoControlsOverlayProps {
@@ -118,7 +119,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
         if (typeof e.currentTarget.setPointerCapture === 'function') {
             try {
                 e.currentTarget.setPointerCapture(e.pointerId);
-            } catch {}
+            } catch { }
         }
         const { percent, time } = calculateSeekPos(getClientX(e), e.currentTarget);
         setIsScrubbing(true);
@@ -138,7 +139,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
         if (typeof e.currentTarget.releasePointerCapture === 'function') {
             try {
                 e.currentTarget.releasePointerCapture(e.pointerId);
-            } catch {}
+            } catch { }
         }
         const { time } = calculateSeekPos(getClientX(e), e.currentTarget);
         setIsScrubbing(false);
@@ -152,7 +153,7 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
         if (typeof e.currentTarget.releasePointerCapture === 'function') {
             try {
                 e.currentTarget.releasePointerCapture(e.pointerId);
-            } catch {}
+            } catch { }
         }
         setIsScrubbing(false);
     };
@@ -219,31 +220,41 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                             {showSubtitles ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
 
-                        {/* 1. Subtitle Blur Toggle */}
-                        <button
-                            type="button"
-                            className={`${styles.quickPillButton} ${blurSubtitles ? styles.activePill : ''}`}
-                            onClick={onToggleBlur}
-                            aria-pressed={blurSubtitles}
-                            title={blurSubtitles ? "Subtitles blurred (Listening practice active) — click to show plain" : "Blur subtitles (Listening practice)"}
-                            aria-label="Toggle blur subtitles"
-                        >
-                            Blur
-                        </button>
+                        <div className={styles.featureTogglesGroup}>
+                            {/* 1. Subtitle Blur Toggle */}
+                            <ToggleSwitch
+                                checked={blurSubtitles}
+                                onChange={onToggleBlur}
+                                label="Blur"
+                                size="sm"
+                                title={blurSubtitles ? "Subtitles blurred (Listening practice active) — click to show plain" : "Blur subtitles (Listening practice)"}
+                                ariaLabel="Toggle blur subtitles"
+                            />
 
-                        {/* 2. Subtitle Delay Toggle */}
-                        <button
-                            type="button"
-                            className={`${styles.quickPillButton} ${delay === -2 ? styles.activePill : ''}`}
-                            onClick={() => onDelayChange(delay === -2 ? 0 : -2)}
-                            aria-pressed={delay === -2}
-                            title={delay === -2 ? "Subtitle delay: -2s active — click for 0s" : "Delay subtitles by 2s (Listening practice)"}
-                            aria-label="Toggle subtitle delay -2s"
-                        >
-                            {delay === -2 ? "-2s" : "Delay"}
-                        </button>
+                            {/* 2. Subtitle Delay Toggle */}
+                            <ToggleSwitch
+                                checked={delay === -2}
+                                onChange={() => onDelayChange(delay === -2 ? 0 : -2)}
+                                label={delay === -2 ? "-2s" : "Delay"}
+                                size="sm"
+                                title={delay === -2 ? "Subtitle delay: -2s active — click for 0s" : "Delay subtitles by 2s (Listening practice)"}
+                                ariaLabel="Toggle subtitle delay -2s"
+                            />
 
-                        {/* 3. Repeat Subtitle 3x */}
+                            {/* 3. Speed up during silent gaps without subtitles */}
+                            {onToggleSkipSilence && (
+                                <ToggleSwitch
+                                    checked={skipSilence}
+                                    onChange={onToggleSkipSilence}
+                                    label="2x Gap"
+                                    size="sm"
+                                    title={skipSilence ? "2x silence speed-up active — click to disable" : "Speed up to 2x during gaps without subtitles"}
+                                    ariaLabel="Toggle 2x speed during silent gaps"
+                                />
+                            )}
+                        </div>
+
+                        {/* 4. Repeat Subtitle 3x */}
                         <button
                             type="button"
                             className={styles.quickPillButton}
@@ -254,20 +265,6 @@ export const VideoControlsOverlay: React.FC<VideoControlsOverlayProps> = ({
                             <RotateCcw size={13} />
                             <span>3x</span>
                         </button>
-
-                        {/* 4. Speed up during silent gaps without subtitles */}
-                        {onToggleSkipSilence && (
-                            <button
-                                type="button"
-                                className={`${styles.quickPillButton} ${skipSilence ? styles.activePill : ''}`}
-                                onClick={onToggleSkipSilence}
-                                aria-pressed={skipSilence}
-                                title={skipSilence ? "2x silence speed-up active — click to disable" : "Speed up to 2x during gaps without subtitles"}
-                                aria-label="Toggle 2x speed during silent gaps"
-                            >
-                                <span>2x Gap</span>
-                            </button>
-                        )}
                     </div>
                 </div>
             )}

@@ -1086,7 +1086,13 @@
     }
 }
 
-/* QUICK TOGGLES (Netflix-style borderless text controls: Blur, Delay, 3x) */
+/* QUICK TOGGLES (Spring toggle switches + 3x repeat action) */
+.featureTogglesGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .quickPillButton {
     background: transparent;
     border: none;
@@ -1163,6 +1169,10 @@
 
     .topControlsRight {
         gap: 10px;
+    }
+
+    .featureTogglesGroup {
+        gap: 8px;
     }
 
     .quickPillButton {

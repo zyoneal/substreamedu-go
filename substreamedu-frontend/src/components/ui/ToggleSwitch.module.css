@@ -1,0 +1,131 @@
+/* Spring-animated Toggle Switch adapted to SubStreamEdu Warm Cinematic Espresso tokens.
+   Physics: position spring (320, 18) + stretch spring (300, 20) driven in ToggleSwitch.tsx. */
+
+.toggleButton {
+    --toggle-track-off: rgba(237, 232, 224, 0.22);
+    --toggle-track-on: var(--color-success, #22c55e);
+    --toggle-knob-bg: var(--color-on-primary, #ffffff);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 0;
+    padding: 3px 4px;
+    margin: 0;
+    border-radius: var(--rounded-md, 8px);
+    cursor: pointer;
+    user-select: none;
+    color: rgba(237, 232, 224, 0.78);
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.toggleButton.checked {
+    color: var(--color-on-primary, #ffffff);
+}
+
+.toggleButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.toggleButton:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .toggleButton:hover:not(:disabled) {
+        color: var(--color-on-primary, #ffffff);
+    }
+}
+
+.labelGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.labelText {
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(13, 12, 11, 0.7);
+}
+
+.descriptionText {
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--color-body, #9e988f);
+    margin-top: 2px;
+}
+
+.track {
+    position: relative;
+    flex: none;
+    border-radius: var(--rounded-full, 9999px);
+    background: var(--toggle-track-off);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.trackMd {
+    width: 52px;
+    height: 32px;
+}
+
+.trackSm {
+    width: 34px;
+    height: 20px;
+}
+
+.knob {
+    position: absolute;
+    display: block;
+    border-radius: var(--rounded-full, 9999px);
+    background: var(--toggle-knob-bg);
+    will-change: transform, width;
+    pointer-events: none;
+}
+
+.knobMd {
+    left: 3px;
+    top: 3px;
+    width: 26px;
+    height: 26px;
+}
+
+.knobSm {
+    left: 2px;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+}
+
+@media (max-width: 768px) {
+    .toggleButton {
+        gap: 6px;
+        font-size: 12px;
+        min-height: 32px;
+        padding: 3px 2px;
+    }
+
+    .trackSm {
+        width: 30px;
+        height: 18px;
+    }
+
+    .knobSm {
+        left: 2px;
+        top: 2px;
+        width: 14px;
+        height: 14px;
+    }
+}

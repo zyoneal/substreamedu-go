@@ -93,7 +93,7 @@ describe('VideoControlsOverlay Component', () => {
         fireEvent.click(screen.getByRole('button', { name: /hide subtitles/i }));
         expect(onToggleSubtitles).toHaveBeenCalledTimes(1);
 
-        fireEvent.click(screen.getByRole('button', { name: /toggle blur subtitles/i }));
+        fireEvent.click(screen.getByRole('switch', { name: /toggle blur subtitles/i }));
         expect(onToggleBlur).toHaveBeenCalledTimes(1);
 
         fireEvent.click(screen.getByRole('button', { name: /repeat subtitle 3 times/i }));
@@ -103,7 +103,7 @@ describe('VideoControlsOverlay Component', () => {
         expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
     });
 
-    it('renders 2x Gap toggle with aria-pressed and fires callback', () => {
+    it('renders 2x Gap toggle switch with aria-checked and fires callback', () => {
         const onToggleSkipSilence = jest.fn();
 
         render(
@@ -114,10 +114,14 @@ describe('VideoControlsOverlay Component', () => {
             />
         );
 
-        const skipSilenceBtn = screen.getByRole('button', { name: /toggle 2x speed during silent gaps/i });
-        expect(skipSilenceBtn).toHaveAttribute('aria-pressed', 'true');
+        const skipSilenceSwitch = screen.getByRole('switch', { name: /toggle 2x speed during silent gaps/i });
+        const repeatBtn = screen.getByRole('button', { name: /repeat subtitle 3 times/i });
+        expect(skipSilenceSwitch).toHaveAttribute('aria-checked', 'true');
+        expect(
+            skipSilenceSwitch.compareDocumentPosition(repeatBtn) & Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
 
-        fireEvent.click(skipSilenceBtn);
+        fireEvent.click(skipSilenceSwitch);
         expect(onToggleSkipSilence).toHaveBeenCalledTimes(1);
     });
 
@@ -131,22 +135,24 @@ describe('VideoControlsOverlay Component', () => {
         expect(screen.queryByTestId('icon-play')).not.toBeInTheDocument();
     });
 
-    it('triggers delay toggle correctly between 0s and -2s', () => {
+    it('triggers delay toggle switch correctly between 0s and -2s', () => {
         const onDelayChange = jest.fn();
         const { rerender } = render(
             <VideoControlsOverlay {...defaultProps} delay={0} onDelayChange={onDelayChange} />
         );
 
-        const delayBtn = screen.getByRole('button', { name: /toggle subtitle delay/i });
-        expect(delayBtn).toHaveTextContent('Delay');
-        fireEvent.click(delayBtn);
+        const delaySwitch = screen.getByRole('switch', { name: /toggle subtitle delay/i });
+        expect(delaySwitch).toHaveTextContent('Delay');
+        expect(delaySwitch).toHaveAttribute('aria-checked', 'false');
+        fireEvent.click(delaySwitch);
         expect(onDelayChange).toHaveBeenCalledWith(-2);
 
         rerender(
             <VideoControlsOverlay {...defaultProps} delay={-2} onDelayChange={onDelayChange} />
         );
-        expect(delayBtn).toHaveTextContent('-2s');
-        fireEvent.click(delayBtn);
+        expect(delaySwitch).toHaveTextContent('-2s');
+        expect(delaySwitch).toHaveAttribute('aria-checked', 'true');
+        fireEvent.click(delaySwitch);
         expect(onDelayChange).toHaveBeenCalledWith(0);
     });
 
@@ -210,22 +216,22 @@ describe('VideoControlsOverlay Component', () => {
         expect(screen.queryByLabelText(/volume slider/i)).not.toBeInTheDocument();
     });
 
-    it('renders Blur quick pill button with activePill when blurSubtitles is true and without it when false', () => {
+    it('renders Blur toggle switch with checked state when blurSubtitles is true and unchecked when false', () => {
         const { rerender } = render(<VideoControlsOverlay {...defaultProps} blurSubtitles={true} />);
-        const blurBtn = screen.getByRole('button', { name: /toggle blur subtitles/i });
-        expect(blurBtn).toHaveClass('quickPillButton');
-        expect(blurBtn).toHaveClass('activePill');
+        const blurSwitch = screen.getByRole('switch', { name: /toggle blur subtitles/i });
+        expect(blurSwitch).toHaveAttribute('aria-checked', 'true');
+        expect(blurSwitch).toHaveClass('checked');
 
         rerender(<VideoControlsOverlay {...defaultProps} blurSubtitles={false} />);
-        expect(blurBtn).toHaveClass('quickPillButton');
-        expect(blurBtn).not.toHaveClass('activePill');
+        expect(blurSwitch).toHaveAttribute('aria-checked', 'false');
+        expect(blurSwitch).not.toHaveClass('checked');
     });
 
     it('hides all top controls during onboarding when hideTopControls is true', () => {
         render(<VideoControlsOverlay {...defaultProps} hideTopControls={true} />);
         expect(screen.queryByTestId('icon-sparkles')).not.toBeInTheDocument();
         expect(screen.queryByTestId('icon-graduation-cap')).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /toggle blur subtitles/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('switch', { name: /toggle blur subtitles/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /repeat subtitle 3 times/i })).not.toBeInTheDocument();
         // Bottom controls like play button should still be present
         expect(screen.getByTestId('icon-play')).toBeInTheDocument();
@@ -248,7 +254,7 @@ describe('VideoControlsOverlay Component', () => {
             height: 32,
             x: 0,
             y: 0,
-            toJSON: () => {},
+            toJSON: () => { },
         });
 
         // 1. Pointer Down at 50px (25% -> 50s)
@@ -273,7 +279,7 @@ describe('VideoControlsOverlay Component', () => {
         expect(onSeekTo).toHaveBeenCalledWith(100);
     });
 
-    it('exposes aria-pressed state on Blur, Delay, and Subtitle visibility toggles', () => {
+    it('exposes aria-checked state on Blur and Delay switches and aria-pressed on Subtitle visibility', () => {
         render(
             <VideoControlsOverlay
                 {...defaultProps}
@@ -283,8 +289,8 @@ describe('VideoControlsOverlay Component', () => {
             />
         );
 
-        expect(screen.getByRole('button', { name: /toggle blur subtitles/i })).toHaveAttribute('aria-pressed', 'true');
-        expect(screen.getByRole('button', { name: /toggle subtitle delay -2s/i })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('switch', { name: /toggle blur subtitles/i })).toHaveAttribute('aria-checked', 'true');
+        expect(screen.getByRole('switch', { name: /toggle subtitle delay -2s/i })).toHaveAttribute('aria-checked', 'true');
         expect(screen.getByRole('button', { name: /hide subtitles/i })).toHaveAttribute('aria-pressed', 'true');
     });
 });

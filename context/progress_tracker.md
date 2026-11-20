@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 86: Animated Spring Toggle Switches for Video Player Features (ADR-162): Built reusable `ToggleSwitch` (`src/components/ui/ToggleSwitch.tsx`, `ToggleSwitch.module.css`, `ToggleSwitch.test.tsx`) using the dual-spring physics (`p: k=320, c=18`, `w: k=300, c=20`, stretch kick `60`, 4 substeps) and SubStreamEdu Warm Cinematic Espresso tokens (`e-Ukraine`, `--color-success`, `--rounded-full`, `prefers-reduced-motion`); replaced the `Blur`, `Delay` (`-2s`), and `2x Gap` text buttons in `VideoControlsOverlay.tsx` with compact animated `ToggleSwitch` controls while keeping `3x` repeat as an action button.
   - Spec 85: Global `e-Ukraine` Typography Enforcement (ADR-161): Removed Fontshare `Satoshi` and unused Google Fonts `Nunito` from `public/index.html`; updated `body.pixzen` (`src/styles/pixzen.css`), 40 CSS modules/TSX files, and `ReelGeneratorModal.tsx` canvas font strings to use `'e-Ukraine'` uniformly across the application (preserving `JetBrains Mono` for `--font-mono` metrics/timecodes/code per `ui_context.md`); added regression guard `src/typography.test.ts`.
   - Spec 84: Player Settings — Disable Lemmatization, Shortcuts Toggle, Subtitle Background Opacity & Subtitle-Only Mode (ADR-160): Added `DisableLemmatization` to `dto.DictionaryRequest`, `ai_service.go` cache key, and `createTranslationPromptWithOptions` in `ai_prompts.go`; added unified `Player settings` popover in `VideoControlsOverlay.tsx` + `VideoPlayerPopover.module.css` with `Subtitle-only mode`, `Disable shortcuts`, `Exact word form (no lemma)`, and `Subtitle background` opacity slider; persisted settings in `localStorage` inside `VideoPlayer.tsx` and wired `subtitleBgOpacity` into `SubtitleOverlay.tsx` + `VideoControlsOverlay.test.tsx`.
   - Spec 83: Video Silence Speed-Up (`2x Gap`) (ADR-159): Added `evaluateSilenceSpeedup` to `subtitlePlaybackModes.ts` + unit tests (`subtitlePlaybackModes.test.ts`), `skipSilence` playbackRate controller (`2x` in gaps >= 2.5s with `350ms` lead-in, `1x` inside cues/when disabled) for both HTML5 `<video>` and YouTube in `VideoPlayer.tsx`, and the `2x Gap` quick pill with `aria-pressed` in `VideoControlsOverlay.tsx` + `VideoControlsOverlay.test.tsx`.
@@ -52,6 +53,14 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-162: Animated Spring Toggle Switches for Video Player Features (Spec 86)
+- **Status**: Accepted
+- **Context**: Boolean listening-practice features in `VideoControlsOverlay.tsx` (`Blur`, `Delay`, `2x Gap`) were rendered as underlined text buttons, making active/inactive states less scannable over video frames.
+- **Decision**:
+  1. Added a reusable [`ToggleSwitch.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/ToggleSwitch.tsx) (`ToggleSwitch.module.css`, `ToggleSwitch.test.tsx`) implementing the exact dual-spring physics (position `k=320, c=18`, stretch `k=300, c=20`, velocity kick `60`, 4 substeps per frame) with idle-stopped `rAF`, `prefers-reduced-motion` support, `role="switch"`, and Warm Cinematic Espresso design tokens (`e-Ukraine`, `--color-success`, `--rounded-full`).
+  2. Replaced the `Blur`, `Delay` (`-2s`), and `2x Gap` controls in [`VideoControlsOverlay.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/VideoPage/components/VideoControlsOverlay.tsx) with compact (`size="sm"`) `ToggleSwitch` instances while preserving `3x` repeat as a one-shot action button.
+- **Consequences**: Player feature states are immediately recognizable and tactile without adding extra menu clicks or idle animation overhead.
 
 ### ADR-161: Global `e-Ukraine` Typography Enforcement (Spec 85)
 - **Status**: Accepted

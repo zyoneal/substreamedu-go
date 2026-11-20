@@ -448,13 +448,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleYoutubePlay = useCallback(() => {
         setIsPlaying(true);
         if (youtubePlayerRef.current?.unloadModule) {
-            try { youtubePlayerRef.current.unloadModule('captions'); } catch {}
+            try { youtubePlayerRef.current.unloadModule('captions'); } catch { }
         }
     }, [setIsPlaying, youtubePlayerRef]);
 
     const handleYoutubeStateChange = useCallback((event: { target: YouTubePlayer }) => {
         if (event.target?.unloadModule) {
-            try { event.target.unloadModule('captions'); } catch {}
+            try { event.target.unloadModule('captions'); } catch { }
         }
     }, []);
 
@@ -715,7 +715,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 blurSubtitles={effectiveBlur}
                                 delay={effectiveDelay}
                                 skipSilence={skipSilence}
-                                hideTopControls={isOnboardingMode}
                                 formatTime={formatTime}
                                 onVideoClick={handleVideoClick}
                                 onTogglePlayPause={togglePlayPause}
