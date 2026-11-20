@@ -70,5 +70,12 @@ describe('LoginPage (Pixzen Editorial)', () => {
       expect(AuthService.login).toHaveBeenCalledWith('learner@substreamedu.com');
       expect(screen.getByLabelText(/confirmation code/i)).toBeInTheDocument();
     });
+
+    const otpInput = screen.getByLabelText(/confirmation code/i);
+    fireEvent.change(otpInput, { target: { value: '48a2916' } });
+    expect(otpInput).toHaveValue('482916');
+
+    const verifyBtn = screen.getByRole('button', { name: /verify/i });
+    expect(verifyBtn).not.toBeDisabled();
   });
 });

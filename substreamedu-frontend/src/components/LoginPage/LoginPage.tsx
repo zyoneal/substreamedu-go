@@ -13,6 +13,7 @@ import { AnalyticsService } from "../../services/AnalyticsService";
 import { GuestLimitService } from "../../services/GuestLimitService";
 import { AuthContext } from "../../store/AuthContext";
 import Login from "./Login/Login";
+import { OtpCodeInput } from "./OtpCodeInput";
 import { useIntl } from "react-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./css/LoginPage.module.css";
@@ -167,8 +168,9 @@ const LoginPage: React.FC = () => {
     const [otpSent, setOtpSent] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [otpLoading, setOtpLoading] = useState<boolean>(false);
+    const [otpVerified, setOtpVerified] = useState<boolean>(false);
+    const [otpShake, setOtpShake] = useState<boolean>(false);
 
-    const verifyButtonRef = useRef<HTMLButtonElement>(null);
     const navigate = useNavigate();
     const location = useLocation();
     const { setIsLoggedIn } = useContext(AuthContext);
@@ -237,28 +239,22 @@ const LoginPage: React.FC = () => {
                     AnalyticsService.checkAndTrackReturnD2(userId);
                 }
 
-                const button = verifyButtonRef.current;
-                if (button) {
-                    button.classList.add(styles.verifyButtonSuccess);
-                    setTimeout(() => {
-                        localStorage.removeItem('emailForOtp');
-                        localStorage.removeItem('waitingForOtp');
-                        setIsLoggedIn(true);
-                        const destination = getPostLoginDestination(location.state);
-                        navigate(destination, { replace: true });
-                    }, 800);
-                }
+                setOtpVerified(true);
+                setTimeout(() => {
+                    localStorage.removeItem('emailForOtp');
+                    localStorage.removeItem('waitingForOtp');
+                    setIsLoggedIn(true);
+                    const destination = getPostLoginDestination(location.state);
+                    navigate(destination, { replace: true });
+                }, 950);
             } else {
                 setLoginError(intl.formatMessage({
                     id: "invalidOtp",
                     defaultMessage: "Invalid code. Please check and try again."
                 }));
 
-                const input = document.querySelector('input[type="text"]') as HTMLElement;
-                if (input) {
-                    input.classList.add(styles.inputShake);
-                    setTimeout(() => input.classList.remove(styles.inputShake), 500);
-                }
+                setOtpShake(true);
+                setTimeout(() => setOtpShake(false), 500);
             }
         } catch (error) {
             debugError("OTP verification error:", error);
@@ -276,6 +272,8 @@ const LoginPage: React.FC = () => {
         localStorage.removeItem('waitingForOtp');
         setOtpSent(false);
         setOtp("");
+        setOtpVerified(false);
+        setOtpShake(false);
         setLoginError("");
     };
 
@@ -410,36 +408,39 @@ const LoginPage: React.FC = () => {
                                         </div>
 
                                         <div className={styles.otpInputGroup}>
-                                            <input
-                                                type="text"
+                                            <OtpCodeInput
                                                 value={otp}
-                                                onChange={(e) => setOtp(e.target.value.slice(0, 6))}
-                                                className={`${styles.otpInput} ${otp.length > 0 ? styles.otpInputFilled : ''}`}
-                                                placeholder={intl.formatMessage({
-                                                    id: "otpPlaceholder",
-                                                    defaultMessage: "Code"
+                                                onChange={(nextOtp) => {
+                                                    setOtp(nextOtp);
+                                                    if (loginError) setLoginError("");
+                                                }}
+                                                onSubmit={handleVerifyOtp}
+                                                isVerifying={otpLoading}
+                                                isVerified={otpVerified}
+                                                hasError={otpShake}
+                                                verifiedLabel={intl.formatMessage({
+                                                    id: "otpVerified",
+                                                    defaultMessage: "Verified"
                                                 })}
-                                                maxLength={6}
-                                                autoComplete="one-time-code"
-                                                aria-label="Confirmation code"
-                                                aria-describedby="otp-helper"
-                                                inputMode="numeric"
-                                                pattern="[0-9]*"
+                                                ariaLabel="Confirmation code"
+                                                ariaDescribedBy="otp-helper"
                                             />
 
                                             <motion.button
-                                                ref={verifyButtonRef}
+                                                type="button"
                                                 onClick={handleVerifyOtp}
-                                                className={`${styles.verifyButton} ${otpLoading ? styles.verifyButtonLoading : ''} ${otp.length === 6 ? styles.verifyButtonReady : ''}`}
-                                                disabled={otpLoading || otp.length < 6}
-                                                whileHover={otp.length === 6 && !otpLoading ? { scale: 1.01 } : {}}
-                                                whileTap={otp.length === 6 && !otpLoading ? { scale: 0.99 } : {}}
+                                                className={`${styles.verifyButton} ${otpLoading ? styles.verifyButtonLoading : ''} ${otpVerified ? styles.verifyButtonSuccess : ''} ${otp.length === 6 ? styles.verifyButtonReady : ''}`}
+                                                disabled={otpLoading || otpVerified || otp.length < 6}
+                                                whileHover={otp.length === 6 && !otpLoading && !otpVerified ? { scale: 1.01 } : {}}
+                                                whileTap={otp.length === 6 && !otpLoading && !otpVerified ? { scale: 0.99 } : {}}
                                             >
                                                 {otpLoading ? (
                                                     <div className={styles.loadingSpinner}>
                                                         <div className={styles.spinner}></div>
                                                         <span>{intl.formatMessage({ id: "verifying", defaultMessage: "Verifying..." })}</span>
                                                     </div>
+                                                ) : otpVerified ? (
+                                                    intl.formatMessage({ id: "otpVerified", defaultMessage: "Verified" })
                                                 ) : (
                                                     intl.formatMessage({ id: "verifyCode", defaultMessage: "Verify" })
                                                 )}
