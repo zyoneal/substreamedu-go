@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 87: Spring-Animated Expand Card for SRS Flashcards (ADR-163): Built reusable `ExpandCard` (`src/components/ui/ExpandCard.tsx`, `ExpandCard.module.css`, `ExpandCard.test.tsx`) using the dual-spring physics (`p: k=240, c=21`, `a: k=260, c=28`, `160ms` details stagger, 4 substeps, `ResizeObserver`, `prefers-reduced-motion`) and Pixzen editorial tokens (`#eae7e1`, `#0a0a0a`, `e-Ukraine`, `20px` radius); integrated into `Flashcard.tsx` for smooth card reveal expansion on `/learning`.
   - Spec 86: Animated Spring Toggle Switches for Video Player Features (ADR-162): Built reusable `ToggleSwitch` (`src/components/ui/ToggleSwitch.tsx`, `ToggleSwitch.module.css`, `ToggleSwitch.test.tsx`) using the dual-spring physics (`p: k=320, c=18`, `w: k=300, c=20`, stretch kick `60`, 4 substeps) and SubStreamEdu Warm Cinematic Espresso tokens (`e-Ukraine`, `--color-success`, `--rounded-full`, `prefers-reduced-motion`); replaced the `Blur`, `Delay` (`-2s`), and `2x Gap` text buttons in `VideoControlsOverlay.tsx` with compact animated `ToggleSwitch` controls while keeping `3x` repeat as an action button.
   - Spec 85: Global `e-Ukraine` Typography Enforcement (ADR-161): Removed Fontshare `Satoshi` and unused Google Fonts `Nunito` from `public/index.html`; updated `body.pixzen` (`src/styles/pixzen.css`), 40 CSS modules/TSX files, and `ReelGeneratorModal.tsx` canvas font strings to use `'e-Ukraine'` uniformly across the application (preserving `JetBrains Mono` for `--font-mono` metrics/timecodes/code per `ui_context.md`); added regression guard `src/typography.test.ts`.
   - Spec 84: Player Settings — Disable Lemmatization, Shortcuts Toggle, Subtitle Background Opacity & Subtitle-Only Mode (ADR-160): Added `DisableLemmatization` to `dto.DictionaryRequest`, `ai_service.go` cache key, and `createTranslationPromptWithOptions` in `ai_prompts.go`; added unified `Player settings` popover in `VideoControlsOverlay.tsx` + `VideoPlayerPopover.module.css` with `Subtitle-only mode`, `Disable shortcuts`, `Exact word form (no lemma)`, and `Subtitle background` opacity slider; persisted settings in `localStorage` inside `VideoPlayer.tsx` and wired `subtitleBgOpacity` into `SubtitleOverlay.tsx` + `VideoControlsOverlay.test.tsx`.
@@ -53,6 +54,14 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-163: Spring-Animated Expand Card for SRS Flashcards (Spec 87)
+- **Status**: Accepted
+- **Context**: Revealing the answer on `/learning` flashcards (`Flashcard.tsx`) previously snapped height and back content instantly without motion choreography.
+- **Decision**:
+  1. Added reusable [`ExpandCard.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/ExpandCard.tsx) (`ExpandCard.module.css`, `ExpandCard.test.tsx`) implementing the exact `designbookmark.com/motion#db-expand-card` dual-spring physics (progress `k=240, c=21`, details `k=260, c=28`, `160ms` details stagger, 4 substeps, `ResizeObserver` height tracking, `prefers-reduced-motion` support) styled with Pixzen monochrome editorial tokens (`#eae7e1`, `#0a0a0a`, `e-Ukraine`, `20px` radius).
+  2. Wrapped `Flashcard.tsx` in `ExpandCard` so tapping anywhere on the collapsed card or `Tap to reveal` smoothly expands the card height and glides in the revealed answer.
+- **Consequences**: Every flashcard reveal feels tactile and physical while keeping all SRS shortcuts, tests, pronunciation controls, and broken-image safeguards intact.
 
 ### ADR-162: Animated Spring Toggle Switches for Video Player Features (Spec 86)
 - **Status**: Accepted

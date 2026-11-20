@@ -1,0 +1,74 @@
+/* Spring-animated Expand Card adapted to SubStreamEdu Pixzen Monochrome Editorial theme.
+   Physics: progress spring (240, 21) + details spring (260, 28) with 160ms reveal stagger. */
+
+.card {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #eae7e1;
+    border-radius: 20px;
+    border: 1px solid rgba(10, 10, 10, 0.12);
+    box-shadow: 0 12px 32px rgba(10, 10, 10, 0.04);
+    overflow: hidden;
+    font-family: var(--font-body, 'e-Ukraine', sans-serif);
+    box-sizing: border-box;
+    will-change: height;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cardInteractive {
+    cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .cardInteractive:hover {
+        border-color: rgba(10, 10, 10, 0.24);
+        box-shadow: 0 16px 36px rgba(10, 10, 10, 0.07);
+    }
+}
+
+.card:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+.inner {
+    width: 100%;
+    padding: 2.25rem 2rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.summary {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 180px;
+    justify-content: space-between;
+}
+
+.expanded .summary {
+    min-height: 0;
+    justify-content: flex-start;
+}
+
+.details {
+    width: 100%;
+    opacity: 0;
+    transform: translateY(10px);
+    will-change: transform, opacity;
+}
+
+@media (max-width: 640px) {
+    .inner {
+        padding: 1.25rem 1rem;
+    }
+
+    .summary {
+        min-height: 160px;
+    }
+}

@@ -6,17 +6,6 @@
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    background: #eae7e1;
-    border-radius: 20px;
-    box-shadow: 0 12px 32px rgba(10, 10, 10, 0.04);
-    border: 1px solid rgba(10, 10, 10, 0.12);
-    padding: 2.25rem 2rem;
-    min-height: 260px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: var(--font-body);
-    box-sizing: border-box;
 }
 
 .frontSide,
@@ -192,11 +181,6 @@
 }
 
 @media (max-width: 640px) {
-    .ankiCard {
-        padding: 1.25rem 1rem;
-        min-height: 220px;
-    }
-
     .word {
         font-size: 30px;
     }

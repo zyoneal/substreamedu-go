@@ -2,6 +2,7 @@ import React from 'react';
 
 import PlayIcon from 'lucide-react/dist/esm/icons/play';
 import { useIntl } from 'react-intl';
+import { ExpandCard } from '../ui/ExpandCard';
 import styles from './Flashcard.module.css';
 
 interface FlashcardProps {
@@ -218,16 +219,19 @@ const Flashcard: React.FC<FlashcardProps> = ({
     );
   };
 
-  return (
-    <div className={styles.ankiCard}>
+  const summaryContent = (
+    <>
       <div className={styles.frontSide}>
         {renderFrontContent()}
       </div>
 
-      {!isRevealed ? (
+      {!isRevealed && (
         <div
           className={styles.revealHint}
-          onClick={onRevealNext}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRevealNext();
+          }}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -241,15 +245,27 @@ const Flashcard: React.FC<FlashcardProps> = ({
             {intl.formatMessage({ id: 'flashcards.tapToReveal', defaultMessage: 'Tap to reveal' })}
           </p>
         </div>
-      ) : (
-        <>
-          <hr className={styles.divider} />
-          <div className={styles.backSide}>
-            {renderBackContent()}
-          </div>
-        </>
       )}
-    </div>
+    </>
+  );
+
+  const detailsContent = (
+    <>
+      <hr className={styles.divider} />
+      <div className={styles.backSide}>
+        {renderBackContent()}
+      </div>
+    </>
+  );
+
+  return (
+    <ExpandCard
+      expanded={isRevealed}
+      onExpand={onRevealNext}
+      summary={summaryContent}
+      details={detailsContent}
+      className={styles.ankiCard}
+    />
   );
 };
 
