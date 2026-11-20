@@ -148,4 +148,35 @@ describe('TranslationPopover Component', () => {
         fireEvent.click(reelButton);
         expect(onOpenReelModal).toHaveBeenCalledTimes(1);
     });
+
+    it('keeps action buttons pinned outside the scrollable popoverContent container', () => {
+        renderPopover({
+            selectionPosition: { x: 100, y: 150, maxHeight: 320, isConstrained: true },
+            showSubmitButton: true,
+            translationData: {
+                ...defaultTranslationData,
+                chunks: ['welcome back to', 'welcome back everyone'],
+                typicalContexts: ['YouTube videos', 'podcasts', 'casual greetings'],
+            },
+            translationOptions: [
+                { text: 'С возвращением', source: 'contextual' },
+                { text: 'Добро пожаловать обратно', source: 'also' },
+            ],
+        });
+
+        const popoverEl = document.getElementById('popover-id');
+        expect(popoverEl).not.toBeNull();
+
+        const contentEl = popoverEl!.querySelector('.popoverContent');
+        const actionsEl = popoverEl!.querySelector('.popoverActions');
+        const saveButton = screen.getByText('SAVE').closest('button');
+        const closeButton = screen.getByRole('button', { name: /close translation/i });
+
+        expect(contentEl).not.toBeNull();
+        expect(actionsEl).not.toBeNull();
+        expect(actionsEl!.parentElement).toBe(popoverEl);
+        expect(contentEl!.contains(actionsEl)).toBe(false);
+        expect(actionsEl!.contains(saveButton)).toBe(true);
+        expect(actionsEl!.contains(closeButton)).toBe(true);
+    });
 });

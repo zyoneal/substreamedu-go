@@ -2122,6 +2122,7 @@
     padding: 0;
     max-width: 320px;
     min-width: 260px;
+    max-height: 75vh;
     z-index: 10000;
     transform-origin: bottom center;
     pointer-events: auto;
@@ -2147,9 +2148,8 @@
 
 /* Popover when there's limited space both above and below */
 .popoverConstrained {
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 12px;
+    overflow: hidden;
+    padding: 0;
 }
 
 .popoverConstrained .popoverContent {
@@ -2188,8 +2188,7 @@
     position: relative;
     line-height: 1.4;
     font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
-    padding: 14px 16px 8px 16px;
-    max-height: inherit;
+    padding: 14px 16px 12px 16px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -2484,7 +2483,7 @@
     .popoverContent {
         gap: 2px;
         font-size: 12px;
-        padding: 12px 14px 6px 14px;
+        padding: 12px 14px 10px 14px;
     }
 
     .selectedTextRow {
@@ -2513,7 +2512,7 @@
     }
 
     .popoverActions {
-        padding: 8px 0 12px 0;
+        padding: 8px 14px 10px 14px;
         gap: 4px;
         width: 100%;
     }
@@ -2580,9 +2579,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
     gap: 6px;
     margin: 0;
-    padding: 12px 0 14px 0;
+    padding: 10px 16px 12px 16px;
+    background: var(--color-canvas, #f5f3ef);
     border-top: 1px solid var(--color-hairline, rgba(10, 10, 10, 0.10));
     width: 100%;
     box-sizing: border-box;

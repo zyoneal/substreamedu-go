@@ -269,6 +269,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                     onSelectOption={handleSelectOption}
                     onChunkClick={onChunkClick || (() => {})}
                 />
+                    </div>
 
                 <div className={styles.popoverActions}>
                     <div className={styles.actionButtons}>
@@ -330,7 +331,6 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                         </button>
                     </div>
                 </div>
-            </div>
         </motion.div>
     )}
 </AnimatePresence>,
