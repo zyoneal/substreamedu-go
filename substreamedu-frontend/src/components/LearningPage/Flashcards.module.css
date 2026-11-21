@@ -161,6 +161,23 @@
     align-items: center;
 }
 
+/* ========== Swipe Instruction ========== */
+.swipeInstruction {
+    margin: 0.25rem 0 0.5rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-family: var(--font-body, 'e-Ukraine', system-ui, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #8e8e8e;
+    transition: color 180ms ease-out;
+}
+
+.swipeInstructionReady {
+    color: #0a0a0a;
+}
+
 /* ========== Rating Buttons ========== */
 .ratingButtonAgain,
 .ratingButtonGood {

@@ -63,13 +63,13 @@ export const useFlashcardsKeyboard = ({
                     break;
                 case '1':
                     event.preventDefault();
-                    if (revealLevel >= maxLevel) {
+                    if (revealLevel >= 1) {
                         onRateAgain();
                     }
                     break;
                 case '2':
                     event.preventDefault();
-                    if (revealLevel >= maxLevel) {
+                    if (revealLevel >= 1) {
                         onRateGood();
                     }
                     break;

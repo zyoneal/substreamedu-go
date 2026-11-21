@@ -80,21 +80,13 @@
     max-width: 580px;
 }
 
-.heroActions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 6px;
-}
-
 .heroCta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     padding: 16px 36px;
+    margin-top: 6px;
     font-family: 'e-Ukraine', sans-serif;
     font-size: 13px;
     font-weight: 700;

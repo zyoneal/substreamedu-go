@@ -9,7 +9,6 @@ import Layout from 'lucide-react/dist/esm/icons/layout';
 import Languages from 'lucide-react/dist/esm/icons/languages';
 import Sparkles from 'lucide-react/dist/esm/icons/sparkles';
 import MessageSquare from 'lucide-react/dist/esm/icons/message-square';
-import Check from 'lucide-react/dist/esm/icons/check';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 
@@ -80,8 +79,14 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
         onPrevCard: prevCard,
         onNextCard: nextCard,
         onRevealNext: revealNext,
-        onRateAgain: () => handleRating('again'),
-        onRateGood: () => handleRating('good'),
+        onRateAgain: () => {
+            swipeDeckRef.current?.fling(-1);
+            handleRating('again');
+        },
+        onRateGood: () => {
+            swipeDeckRef.current?.fling(1);
+            handleRating('good');
+        },
     });
 
     // 3. Audio & Gesture Auto-Unlock
@@ -261,11 +266,6 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
     const upcomingCount = Math.min(2, Math.max(0, reviewWords.length - currentIndex - 1));
     const canSwipeCurrent = Boolean(currentWord && revealLevel >= 1 && !isCardInFlight(currentWord.id));
 
-    const handleButtonRating = (rating: Rating) => {
-        swipeDeckRef.current?.fling(rating === 'good' ? 1 : -1);
-        handleRating(rating);
-    };
-
     return (
         <div className={styles.pageContainer}>
             <div className={styles.ambientGlow} />
@@ -336,7 +336,6 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                                     canSwipe={canSwipeCurrent}
                                     rightLabel={intl.formatMessage({ id: 'flashcards.good', defaultMessage: 'Good' })}
                                     leftLabel={intl.formatMessage({ id: 'flashcards.again', defaultMessage: 'Again' })}
-                                    swipeHint={intl.formatMessage({ id: 'flashcards.swipeHint', defaultMessage: '← Swipe Again · Swipe Good →' })}
                                     onSwipeRight={() => handleRating('good')}
                                     onSwipeLeft={() => handleRating('again')}
                                 >
@@ -359,63 +358,15 @@ const FlashcardsGame: React.FC<FlashcardsProps> = ({ onStartActivePractice }) =>
                             </div>
 
                             <div className="mt-3 z-10">
-                                <div className="grid grid-cols-2 gap-3 mb-2">
-                                    <button
-                                        onClick={() => handleButtonRating('again')}
-                                        disabled={revealLevel < 1 || isCardInFlight(currentWord.id)}
-                                        className={styles.ratingButtonAgain}
-                                        aria-label={intl.formatMessage({ id: 'flashcards.again', defaultMessage: 'Again' })}
-                                        title="Mark as again (Shortcut: 1)"
-                                    >
-                                        <RefreshCw className={styles.ratingIconAgain} />
-                                        <span className={styles.ratingLabel}>Again</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleButtonRating('good')}
-                                        disabled={revealLevel < 1 || isCardInFlight(currentWord.id)}
-                                        className={styles.ratingButtonGood}
-                                        aria-label={intl.formatMessage({ id: 'flashcards.good', defaultMessage: 'Good' })}
-                                        title="Mark as good (Shortcut: 2)"
-                                    >
-                                        <Check className={styles.ratingIconGood} />
-                                        <span className={styles.ratingLabel}>Good</span>
-                                    </button>
-                                </div>
-
-                                <div className="flex items-center justify-between mt-3">
-                                    <button
-                                        onClick={prevCard}
-                                        disabled={currentIndex === 0 || !currentWord}
-                                        className={styles.navButton}
-                                        aria-label={`Previous card, currently on card ${currentIndex + 1} of ${reviewWords.length}`}
-                                        title="Previous (Left Arrow)"
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transition-transform duration-300 ease-in-out hover:scale-120" aria-hidden="true">
-                                            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </button>
-
-                                    <span
-                                        className={styles.cardCounter}
-                                        role="status"
-                                        aria-live="polite"
-                                        aria-label={`${goodIds.size} of ${sessionTotal}`}
-                                    >
-                                        {goodIds.size} / {sessionTotal}
-                                    </span>
-
-                                    <button
-                                        onClick={nextCard}
-                                        disabled={currentIndex >= reviewWords.length - 1 || !currentWord}
-                                        className={styles.navButton}
-                                        aria-label={`Next card, currently on card ${currentIndex + 1} of ${reviewWords.length}`}
-                                        title="Next (Right Arrow)"
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 transition-transform duration-300 ease-in-out hover:scale-120" aria-hidden="true">
-                                            <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                <p
+                                    className={`${styles.swipeInstruction} ${canSwipeCurrent ? styles.swipeInstructionReady : ''}`}
+                                    aria-live="polite"
+                                >
+                                    {intl.formatMessage({
+                                        id: 'flashcards.swipeInstruction',
+                                        defaultMessage: '← Swipe left if you forgot · Swipe right if you remember →',
+                                    })}
+                                </p>
                             </div>
                         </div>
                     ) : reviewWords.length === 0 && answeredIds.size === 0 && hasActiveFilters ? (

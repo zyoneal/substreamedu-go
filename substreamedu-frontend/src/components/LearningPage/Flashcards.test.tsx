@@ -142,7 +142,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     // Card 1: 'tenure'
     expect(screen.getByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     await waitFor(() => {
       expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(101, 'remember', expect.any(Number));
@@ -153,7 +153,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'serendipity' })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     await waitFor(() => {
       expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(102, 'remember', expect.any(Number));
@@ -165,14 +165,14 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     // Card 2: 'serendipity' appears again for round 2
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'serendipity' })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     // Total review calls must be exactly 4 (2 rounds for each of the 2 cards)
     await waitFor(() => {
@@ -223,7 +223,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     // Card 1 ('tenure'): Rate "Again" (Don't know)
     expect(screen.getByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /again/i }));
+    fireEvent.keyDown(window, { key: '1' });
 
     await waitFor(() => {
       expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(101, 'forgot', expect.any(Number));
@@ -234,7 +234,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'serendipity' })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     await waitFor(() => {
       expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(102, 'remember', expect.any(Number));
@@ -247,7 +247,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       expect(screen.getByText(/tap to reveal/i)).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     await waitFor(() => {
       expect(DictionaryService.reviewCard2Button).toHaveBeenCalledTimes(3);
@@ -260,7 +260,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       expect(screen.getByText(/tap to reveal/i)).toBeInTheDocument();
     });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     // Total review calls: 4 (101: forgot, 102: remember, 101: remember, 101: remember)
     // Card 101 took exactly 3 passes!
@@ -291,13 +291,13 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     // Again on card 1: no progress
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /again/i }));
+    fireEvent.keyDown(window, { key: '1' });
     await screen.findByRole('heading', { level: 1, name: 'serendipity' });
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
 
     // Good on card 2: progress 1
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
     await screen.findByRole('heading', { level: 1, name: 'tenure' });
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2');
@@ -317,7 +317,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
     const rateGood = async (index: number) => {
       await screen.findByRole('heading', { level: 1, name: `word${index}` });
       fireEvent.click(screen.getByText(/tap to reveal/i));
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.keyDown(window, { key: '2' });
     };
 
     beforeEach(() => {
@@ -361,10 +361,10 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     await screen.findByRole('heading', { level: 1, name: 'tenure' });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
     await screen.findByRole('heading', { level: 1, name: 'serendipity' });
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     fireEvent.click(await screen.findByRole('button', { name: /skip/i }));
 
@@ -416,7 +416,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
       // User confirms the translation on the back and clicks Good 700ms later
       fakeNow += 700;
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.keyDown(window, { key: '2' });
 
       await waitFor(() => {
         expect(DictionaryService.reviewCard2Button).toHaveBeenCalledWith(101, 'remember', 4500);
@@ -452,7 +452,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
       fireEvent.click(screen.getByText(/tap to reveal/i));
 
       fakeNow += 600;
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.keyDown(window, { key: '2' });
 
       await waitFor(() => {
         // 4500ms - 2000ms reading allowance = 2500ms (< 3000ms -> EASY)
@@ -469,7 +469,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     // Rate card 101 ('tenure') as "Again" -> moves to end of session queue, backend marks last_reviewed = today
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /again/i }));
+    fireEvent.keyDown(window, { key: '1' });
 
     await screen.findByRole('heading', { level: 1, name: 'serendipity' });
 
@@ -485,7 +485,7 @@ describe('Flashcards SRS Session Queue Invariants', () => {
 
     // Finish card 102 ('serendipity') with "Good"
     fireEvent.click(screen.getByText(/tap to reveal/i));
-    fireEvent.click(screen.getByRole('button', { name: /good/i }));
+    fireEvent.keyDown(window, { key: '2' });
 
     // Card 101 ('tenure') rated "Again" earlier today MUST still be in the session queue!
     expect(await screen.findByRole('heading', { level: 1, name: 'tenure' })).toBeInTheDocument();
