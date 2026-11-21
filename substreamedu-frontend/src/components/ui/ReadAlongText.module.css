@@ -1,0 +1,34 @@
+.root {
+  display: inline;
+}
+
+.word {
+  transition: opacity 160ms ease-out, color 160ms ease-out, transform 160ms ease-out;
+  display: inline-block;
+}
+
+.upcoming {
+  opacity: 0.48;
+}
+
+.active {
+  opacity: 1;
+  transform: translateY(-1px);
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary, #0045e6);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+.spoken {
+  opacity: 0.96;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    transition: none;
+  }
+  .active {
+    transform: none;
+  }
+}

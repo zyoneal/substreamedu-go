@@ -9,6 +9,7 @@ import { parsePlainText } from './services/txtParser';
 import { parseEpubFile } from './services/epubParser';
 import { BookContinueDesk } from './components/BookContinueDesk';
 import { BookFolioCard } from './components/BookFolioCard';
+import { FileDropZone } from '../ui/FileDropZone';
 import styles from './css/BooksCatalog.module.css';
 
 type FilterTab = 'ALL' | CEFRLevel | 'MY_BOOKS';
@@ -172,30 +173,19 @@ export const BooksCatalogPage: React.FC = () => {
                 )}
 
                 {(isDragging || isUploadExpanded) && (
-                    <div
-                        className={`${styles.dropzoneBanner} ${isDragging ? styles.dropzoneBannerActive : ''}`}
-                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
-                        onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFileUpload(e.dataTransfer.files); }}
-                        onClick={() => fileInputRef.current?.click()}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
-                    >
-                        <div className={styles.dropzoneIconSquircle}>
-                            <Upload size={20} strokeWidth={2} />
-                        </div>
-                        <h3 className={styles.dropzoneTitle}>
-                            {isUploading ? (
-                                <FormattedMessage id="books.uploading" defaultMessage="Parsing and importing book..." />
-                            ) : (
-                                <FormattedMessage id="books.dropzonePrompt" defaultMessage="Drop your EPUB or TXT file here, or click to browse" />
-                            )}
-                        </h3>
-                        <p className={styles.dropzoneHint}>
-                            <FormattedMessage id="books.dropzoneSupported" defaultMessage="Supports .epub and .txt with automatic chapter separation" />
-                        </p>
-                        {errorMessage && <p className={styles.uploadErrorText}>{errorMessage}</p>}
+                    <div style={{ marginBottom: 20 }}>
+                        <FileDropZone
+                            accept=".epub,.txt"
+                            variant="light"
+                            forceActive={isDragging}
+                            isBusy={isUploading}
+                            busyTitle={<FormattedMessage id="books.uploading" defaultMessage="Parsing and importing book..." />}
+                            title={<FormattedMessage id="books.dropzonePrompt" defaultMessage="Drop your EPUB or TXT file here, or click to browse" />}
+                            hint={<FormattedMessage id="books.dropzoneSupported" defaultMessage="Supports .epub and .txt with automatic chapter separation" />}
+                            error={errorMessage}
+                            onFilesSelected={(files) => handleFileUpload(files)}
+                            onDragStateChange={setIsDragging}
+                        />
                     </div>
                 )}
 

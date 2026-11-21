@@ -9,6 +9,7 @@ import { BookStorage } from './services/bookStorage';
 import { BookReaderHeader } from './components/BookReaderHeader';
 import { BookContent } from './components/BookContent';
 import { ChapterDrawer } from './components/ChapterDrawer';
+import { FocusModeToggle } from '../ui/FocusModeToggle';
 import styles from './css/BookReader.module.css';
 
 export const BookReaderPage: React.FC = () => {
@@ -21,7 +22,19 @@ export const BookReaderPage: React.FC = () => {
     const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
     const [fontSize, setFontSize] = useState<number>(18);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isFocusMode, setIsFocusMode] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!isFocusMode) return undefined;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsFocusMode(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isFocusMode]);
 
     const loadBook = useCallback(async () => {
         if (!bookId) return;
@@ -127,15 +140,26 @@ export const BookReaderPage: React.FC = () => {
     const progressPercentage = Math.round(((currentChapterIndex + 1) / totalChapters) * 100);
 
     return (
-        <div className={styles.readerContainer}>
-            <BookReaderHeader
-                bookTitle={book.title}
-                chapterTitle={currentChapter.title}
-                fontSize={fontSize}
-                onChangeFontSize={handleChangeFontSize}
-                onToggleDrawer={() => setIsDrawerOpen(true)}
-                progressPercentage={progressPercentage}
-            />
+        <div className={`${styles.readerContainer} ${isFocusMode ? styles.focusModeActive : ''}`}>
+            {!isFocusMode ? (
+                <BookReaderHeader
+                    bookTitle={book.title}
+                    chapterTitle={currentChapter.title}
+                    fontSize={fontSize}
+                    onChangeFontSize={handleChangeFontSize}
+                    onToggleDrawer={() => setIsDrawerOpen(true)}
+                    progressPercentage={progressPercentage}
+                    isFocusMode={isFocusMode}
+                    onToggleFocusMode={() => setIsFocusMode((prev) => !prev)}
+                />
+            ) : (
+                <div className={styles.focusExitFloating}>
+                    <FocusModeToggle
+                        active={isFocusMode}
+                        onToggle={() => setIsFocusMode(false)}
+                    />
+                </div>
+            )}
 
             <BookContent
                 bookTitle={book.title}

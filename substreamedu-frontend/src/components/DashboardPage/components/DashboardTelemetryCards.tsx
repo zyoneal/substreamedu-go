@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { VectorFlameIcon } from './StreakShareModal';
 import { AnimatedStatValue } from '../../ui/AnimatedStatValue';
+import { StorageMeter } from '../../ui/StorageMeter';
 import {
     DAYS_LETTERS,
     DashboardStats,
@@ -254,6 +255,34 @@ export const DashboardTelemetryCards: React.FC<DashboardTelemetryCardsProps> = (
                                 {statsLoading ? '–' : <AnimatedStatValue value={learningWords} />}{' '}
                                 <FormattedMessage id="dashboard.stats.learning" defaultMessage="in progress" />
                             </span>
+                            {!statsLoading && totalWords > 0 && (
+                                <StorageMeter
+                                    compact
+                                    showLegend={false}
+                                    total={totalWords}
+                                    ariaLabel="Vocabulary mastery breakdown"
+                                    segments={[
+                                        {
+                                            id: 'mastered',
+                                            label: 'Mastered',
+                                            value: Math.max(0, totalWords - learningWords - (stats?.newWords ?? 0)),
+                                            tone: 'mastered',
+                                        },
+                                        {
+                                            id: 'learning',
+                                            label: 'In progress',
+                                            value: learningWords,
+                                            tone: 'learning',
+                                        },
+                                        {
+                                            id: 'new',
+                                            label: 'New',
+                                            value: stats?.newWords ?? 0,
+                                            tone: 'new',
+                                        },
+                                    ]}
+                                />
+                            )}
                         </>
                     )}
                 </div>

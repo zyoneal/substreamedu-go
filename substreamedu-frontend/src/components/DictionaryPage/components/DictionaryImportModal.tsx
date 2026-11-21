@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Modal } from '../../ui/modal';
 import { Input } from '../../ui/input';
+import { FileDropZone } from '../../ui/FileDropZone';
 import { DictionaryService } from '../../../services/DictionaryService';
 import { parseImportText } from '../utils/importParser';
 import styles from '../DictionaryPage.module.css';
@@ -28,8 +29,8 @@ export const DictionaryImportModal: React.FC<DictionaryImportModalProps> = ({
 
     if (!isOpen) return null;
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleFilesSelected = (files: FileList) => {
+        const file = files[0];
         if (!file) return;
         setSelectedFileName(file.name);
         const reader = new FileReader();
@@ -88,21 +89,17 @@ export const DictionaryImportModal: React.FC<DictionaryImportModalProps> = ({
                     <label htmlFor="import-file-input" className={styles.modalLabel}>
                         Upload .csv / .txt file (optional)
                     </label>
-                    <div className={styles.importFileRow}>
-                        <input
-                            id="import-file-input"
-                            type="file"
-                            accept=".csv,.txt,.tsv"
-                            onChange={handleFileChange}
-                            className="sr-only"
-                        />
-                        <label htmlFor="import-file-input" className={styles.importFileButton}>
-                            Choose file
-                        </label>
-                        <span className={styles.importFileName}>
-                            {selectedFileName || 'No file selected'}
-                        </span>
-                    </div>
+                    <FileDropZone
+                        inputId="import-file-input"
+                        accept=".csv,.txt,.tsv"
+                        compact
+                        variant="light"
+                        title="Drop .csv or .txt file here, or click to browse"
+                        hint="Supports comma, tab, semicolon, or dash-separated lists"
+                        selectedFileName={selectedFileName}
+                        isBusy={isImporting}
+                        onFilesSelected={handleFilesSelected}
+                    />
                 </div>
 
                 <div className={styles.modalFieldGroup}>

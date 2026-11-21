@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import X from 'lucide-react/dist/esm/icons/x';
 import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
 import { useIntl } from 'react-intl';
@@ -8,6 +8,7 @@ import styles from '../VideoPage/css/VideoPlayerPopover.module.css';
 import { TranslationData, SelectionPosition, TranslationOption } from '../VideoPage/types';
 import { TranslationOptionsGrid } from '../VideoPage/components/TranslationOptionsGrid';
 import { CopyButton } from '../ui/CopyButton';
+import { StreamingText } from '../ui/StreamingText';
 
 export interface TranslationPopoverProps {
     selectionPosition: SelectionPosition | null;
@@ -93,6 +94,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
     onRemoveImage,
 }) => {
     const intl = useIntl();
+    const prefersReducedMotion = useReducedMotion();
 
     const activeTranslation = translationData?.translation ?? translation ?? null;
     const activeDefinition = translationData?.definition ?? definition ?? null;
@@ -151,27 +153,33 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                     className={`${styles.popover} ${styles.glass3d} ${selectionPosition.showBelow ? styles.popoverBelow : ''} ${selectionPosition.isConstrained ? styles.popoverConstrained : ''}`}
                     initial={{
                         opacity: 0,
-                        scale: 0.94,
+                        scale: prefersReducedMotion ? 1 : 0.94,
                         x: '-50%',
                         y: selectionPosition.showBelow ? 0 : '-100%',
+                        left: `${isMobile ? window.innerWidth / 2 : selectionPosition.x}px`,
+                        top: `${selectionPosition.y}px`,
                     }}
                     animate={{
                         opacity: 1,
                         scale: 1,
                         x: '-50%',
                         y: selectionPosition.showBelow ? 0 : '-100%',
+                        left: `${isMobile ? window.innerWidth / 2 : selectionPosition.x}px`,
+                        top: `${selectionPosition.y}px`,
                     }}
                     exit={{
                         opacity: 0,
-                        scale: 0.94,
+                        scale: prefersReducedMotion ? 1 : 0.94,
                         x: '-50%',
                         y: selectionPosition.showBelow ? 0 : '-100%',
                     }}
-                    transition={{ type: 'spring', bounce: 0, duration: 0.25 }}
+                    transition={
+                        prefersReducedMotion
+                            ? { duration: 0 }
+                            : { type: 'spring', stiffness: 380, damping: 32 }
+                    }
                     style={{
                         position: 'absolute',
-                        left: `${isMobile ? window.innerWidth / 2 : selectionPosition.x}px`,
-                        top: `${selectionPosition.y}px`,
                         transformOrigin: selectionPosition.showBelow ? 'top center' : 'bottom center',
                         ...(typeof CSS !== 'undefined' && CSS.supports && CSS.supports('backdrop-filter', 'blur(25px)')
                             ? {
@@ -216,7 +224,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                         {activeTranslation?.trim() && (
                             <div className={styles.mainTranslationRow}>
                                 <span className={`${styles.mainTranslationText} ${isErrorTranslation ? styles.errorText : ''}`}>
-                                    {activeTranslation}
+                                    <StreamingText text={activeTranslation} />
                                 </span>
                                 {(activePartOfSpeech || activeRegister) && (
                                     <div className={styles.inlineBadges}>
@@ -235,7 +243,7 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
 
                         {activeDefinition && activeDefinition.trim() !== '' && activeDefinition !== activeTranslation && (
                             <div className={styles.popoverDefinitionSubtitle}>
-                                {activeDefinition}
+                                <StreamingText text={activeDefinition} />
                             </div>
                         )}
                     </div>

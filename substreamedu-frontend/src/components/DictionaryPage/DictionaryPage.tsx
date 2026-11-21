@@ -27,6 +27,7 @@ import { Input } from '../ui/input';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { LoadingToSuccessButton, LoadingButtonState } from '../ui/LoadingToSuccessButton';
 import { AnimatedStatValue } from '../ui/AnimatedStatValue';
+import { StorageMeter } from '../ui/StorageMeter';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { parseDoTags } from '../../utils/textUtils';
 import { useDictionaryData } from './hooks/useDictionaryData';
@@ -298,6 +299,24 @@ const DictionaryPage: React.FC = () => {
                         </div>
                     </div>
                 </motion.div>
+
+                {totalWordsCount > 0 && (
+                    <motion.div variants={itemVariants} style={{ marginBottom: 16 }}>
+                        <StorageMeter
+                            total={totalWordsCount}
+                            ariaLabel="Dictionary retention breakdown"
+                            segments={[
+                                { id: 'mastered', label: 'Mastered', value: masteredCount, tone: 'mastered' },
+                                {
+                                    id: 'learning',
+                                    label: 'Learning',
+                                    value: Math.max(0, totalWordsCount - masteredCount),
+                                    tone: 'learning',
+                                },
+                            ]}
+                        />
+                    </motion.div>
+                )}
 
                 {/* Single-Row Filter & Search Toolbar */}
                 <motion.div className={styles.controlsContainer} variants={itemVariants}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, List, Minus, Plus } from 'lucide-react';
+import { FocusModeToggle } from '../../ui/FocusModeToggle';
 import styles from '../css/BookReader.module.css';
 
 interface BookReaderHeaderProps {
@@ -10,6 +11,8 @@ interface BookReaderHeaderProps {
     onChangeFontSize: (delta: number) => void;
     onToggleDrawer: () => void;
     progressPercentage: number;
+    isFocusMode?: boolean;
+    onToggleFocusMode?: () => void;
 }
 
 export const BookReaderHeader: React.FC<BookReaderHeaderProps> = ({
@@ -18,7 +21,9 @@ export const BookReaderHeader: React.FC<BookReaderHeaderProps> = ({
     fontSize,
     onChangeFontSize,
     onToggleDrawer,
-    progressPercentage
+    progressPercentage,
+    isFocusMode = false,
+    onToggleFocusMode,
 }) => {
     return (
         <header className={styles.readerHeader}>
@@ -55,6 +60,14 @@ export const BookReaderHeader: React.FC<BookReaderHeaderProps> = ({
                 >
                     <Plus size={13} />
                 </button>
+
+                {/* Focus Mode Toggle */}
+                {onToggleFocusMode && (
+                    <FocusModeToggle
+                        active={isFocusMode}
+                        onToggle={onToggleFocusMode}
+                    />
+                )}
 
                 {/* Table of Contents Drawer Toggle */}
                 <button

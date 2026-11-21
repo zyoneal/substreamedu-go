@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 92: Top-Candidate Spring Motion Components (`StorageMeter`, `FileDropZone`, `StreamingText`, `FocusModeToggle`, `ReadAlongText`, `MorphPopover`) (ADR-168): Built reusable `StorageMeter` (proportional spring-animated multi-segment bar with hover focus and `tabular-nums` legend), `FileDropZone` (tactile drag-and-drop upload surface with spring lift and file chip), `StreamingText` (word-by-word streaming reveal with capped stagger window), `FocusModeToggle` (spring icon morph + `Escape` exit), and `ReadAlongText` (word-by-word synchronized reading highlight); upgraded `TranslationPopover` with spring position morphing + `StreamingText`; integrated across `DashboardTelemetryCards`, `DictionaryPage`, `DictionaryImportModal`, `BooksCatalogPage`, `BookReaderPage`, and `BookReaderHeader` with full unit tests.
   - Spec 91: Quick-Win Spring Motion Components (`SegmentedControl`, `CopyButton`, `LoadingToSuccessButton`, `AnimatedStatValue`, `SpringDropdown`) (ADR-167): Built reusable `SegmentedControl` (dual-spring sliding pill `x: 380/28, w: 360/28`, idle-stopped `rAF`, `ResizeObserver`, keyboard nav), `CopyButton` (spring `Copy`/`Check` morph, clipboard + fallback, auto-reset), `LoadingToSuccessButton` (`idle -> loading -> success` spring state transitions), and `AnimatedStatValue` (spring count-up `160/24`, `tabular-nums`, `prefers-reduced-motion`); upgraded `LanguageSelector` to spring dropdown physics (`420/28/0.7` + rotating chevron); integrated across `DictionaryPage`, `SessionFilterBar`, `TelegramBotPage`, `TranslationPopover`, `PromoSection`, and `DashboardTelemetryCards` with unit tests.
   - Spec 90: Spring-Animated Pagination Dots for `HeroCinemaPlayer` Showcase (ADR-166): Built reusable `PaginationDots` (`src/components/ui/PaginationDots.tsx`, `PaginationDots.module.css`, `PaginationDots.test.tsx`) using the exact `designbookmark.com/motion#db-pagination-dots` springs (strip `k=170, c=22`, leading edge `k=520, c=34`, trailing edge `k=140, c=18`, `20px` droplet pill, 4 substeps, idle-stopped `rAF`, `prefers-reduced-motion`); integrated into `HeroCinemaPlayer` to glide between Slide 1 (*Highlight & save in context*) and Slide 2 (*Review as FSRS flashcard* with interactive reveal & rating).
   - Spec 89: Kokonut UI `DynamicText` Animated Hero Headline (ADR-165): Built reusable `DynamicText` (`src/components/ui/DynamicText.tsx`, `DynamicText.module.css`, `DynamicText.test.tsx`) from Kokonut UI v2.0.0 (MIT) preserving exact spring-arc letter morphing, gravity fall, landing squash, counter digit roll, `decode`, and `cycle` modes with SubStreamEdu `e-Ukraine`/`JetBrains Mono` tokens and product copy; replaced `TypingHeadline` inside `HomePage.tsx`'s `h1.heroTitle`.
@@ -58,6 +59,14 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-168: Top-Candidate Spring Motion Components (Spec 92)
+- **Status**: Accepted
+- **Context**: High-impact interactive workflows (vocabulary mastery visualization, file uploads for `.epub`/`.txt`/`.csv`, AI translation reveal & popover repositioning, distraction-free book reading, and word-level read-along highlighting) needed cohesive spring motion primitives matching Specs 86–91.
+- **Decision**:
+  1. Built five reusable primitives under `src/components/ui/`: [`StorageMeter.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/StorageMeter.tsx), [`FileDropZone.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/FileDropZone.tsx), [`StreamingText.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/StreamingText.tsx), [`FocusModeToggle.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/FocusModeToggle.tsx), and [`ReadAlongText.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/ReadAlongText.tsx), each with `prefers-reduced-motion` safeguards and unit tests.
+  2. Integrated `StorageMeter` into `DashboardTelemetryCards` and `DictionaryPage`, `FileDropZone` into `DictionaryImportModal` and `BooksCatalogPage`, `FocusModeToggle` into `BookReaderPage`/`BookReaderHeader`, and upgraded `TranslationPopover` with spring position morphing (`MorphPopover`) + `StreamingText`.
+- **Consequences**: Core reading, discovery, import, and telemetry surfaces now share consistent physical motion with zero new dependencies.
 
 ### ADR-167: Quick-Win Spring Motion Components (Spec 91)
 - **Status**: Accepted
