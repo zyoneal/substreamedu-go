@@ -9,7 +9,7 @@ import {
   useSpring,
   useMotionValueEvent,
 } from 'framer-motion';
-import { ArrowRight, Film, Play, Music, Sparkles, BookOpen } from 'lucide-react';
+import { ArrowRight, Film, Play, Music, Sparkles } from 'lucide-react';
 import { SEO } from '../SEO/SEO';
 import ScrollingTextWall from './ScrollingTextWall';
 import HeroCinemaPlayer from './HeroCinemaPlayer';
@@ -100,6 +100,7 @@ const HomePage: React.FC = () => {
               <DynamicText
                 mode="morph"
                 words={HERO_PHRASES}
+                interval={1900}
                 className={styles.heroDynamicText}
               />
             </h1>
@@ -207,10 +208,6 @@ const HomePage: React.FC = () => {
               <Link to="/songs-demo" className={styles.tryDemoDockItem}>
                 <Music size={14} />
                 <FormattedMessage id="homePage.hero.demoMusicTitle" defaultMessage="Synced Lyrics" />
-              </Link>
-              <Link to="/books" className={styles.tryDemoDockItem}>
-                <BookOpen size={14} />
-                <FormattedMessage id="homePage.hero.demoBooksTitle" defaultMessage="Graded Books" />
               </Link>
               <Link to="/texts-demo" className={styles.tryDemoDockItem}>
                 <Sparkles size={14} />

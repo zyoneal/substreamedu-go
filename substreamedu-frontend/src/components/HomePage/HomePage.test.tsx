@@ -56,7 +56,7 @@ describe('HomePage Demo Modal', () => {
     expect(heading).toBeInTheDocument();
   });
 
-  it('rotates hero phrases via DynamicText on the 2200ms morph interval', () => {
+  it('rotates hero phrases via DynamicText on the 1900ms morph interval', () => {
     jest.useFakeTimers();
     const OriginalIO = global.IntersectionObserver;
     class ActiveIntersectionObserver implements IntersectionObserver {
@@ -83,12 +83,12 @@ describe('HomePage Demo Modal', () => {
       expect(srSpan).toHaveTextContent('Learn English from movies');
 
       act(() => {
-        jest.advanceTimersByTime(2200);
+        jest.advanceTimersByTime(1900);
       });
       expect(srSpan).toHaveTextContent('Learn English from music');
 
       act(() => {
-        jest.advanceTimersByTime(2200);
+        jest.advanceTimersByTime(1900);
       });
       expect(srSpan).toHaveTextContent('Learn English from any text');
     } finally {
@@ -162,9 +162,7 @@ describe('HomePage Demo Modal', () => {
     expect(textDemoLink).toBeInTheDocument();
     expect(textDemoLink).toHaveAttribute('href', '/texts-demo');
 
-    const booksDemoLink = within(demoDock).getByRole('link', { name: /graded books/i });
-    expect(booksDemoLink).toBeInTheDocument();
-    expect(booksDemoLink).toHaveAttribute('href', '/books');
+    expect(within(demoDock).queryByRole('link', { name: /graded books/i })).not.toBeInTheDocument();
   });
 
   it('toggles Grammar Spotlight badge, 3x repeat state, and keyboard subtitle reveal in HeroCinemaPlayer', () => {
