@@ -1,22 +1,26 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SongSearchPlayer from './SongSearchPlayer';
 import { LanguageContext } from '../LanguageContext';
+import { EnhancedSongSearchService } from '../../services/EnhancedSongSearchService';
+import * as englishMorphology from '../../utils/englishMorphology';
+
+const MOCK_DICTIONARY_ITEMS = [
+    {
+        id: 1,
+        resourceName: 'Test Song',
+        highlightedText: 'hello',
+        translatedText: 'привіт',
+        context: 'Hello from the other side',
+        definition: 'A greeting',
+    },
+];
 
 jest.mock('../../hooks/useDictionary', () => ({
     useUserDictionaryItems: () => ({
-        data: [
-            {
-                id: 1,
-                resourceName: 'Test Song',
-                highlightedText: 'hello',
-                translatedText: 'привіт',
-                context: 'Hello from the other side',
-                definition: 'A greeting',
-            },
-        ],
+        data: MOCK_DICTIONARY_ITEMS,
     }),
     useSaveWord: () => ({
         mutate: jest.fn(),
@@ -118,5 +122,54 @@ describe('SongSearchPlayer (Pixzen Monochrome Editorial)', () => {
         const clearBtn = screen.getByRole('button', { name: /clear search query/i });
         fireEvent.click(clearBtn);
         expect(input.value).toBe('');
+    });
+
+    it('shows dictionary tooltip on hover without re-running lyric highlighting or thrashing listeners on mousemove', async () => {
+        (EnhancedSongSearchService.searchSongs as jest.Mock).mockResolvedValueOnce([
+            {
+                id: 'song-1',
+                title: 'Hello',
+                artist: 'Adele',
+                lyrics: { text: 'Hello from the other side' },
+                audio: { youtubeUrl: 'https://www.youtube.com/watch?v=YQHsXMglC9A' },
+            },
+        ]);
+
+        const { container } = renderSongsPage();
+
+        const input = screen.getByPlaceholderText(/search for any song/i);
+        fireEvent.change(input, { target: { value: 'Adele Hello' } });
+        fireEvent.click(screen.getByRole('button', { name: /^search$/i }));
+
+        const songCard = await screen.findByText('Adele');
+        fireEvent.click(songCard);
+
+        await waitFor(() => {
+            expect(container.querySelector('.highlightedText')).toBeInTheDocument();
+        });
+
+        const highlightedWord = container.querySelector('.highlightedText') as HTMLElement;
+        const wordMatchSpy = jest.spyOn(englishMorphology, 'findWordMatch');
+        const addListenerSpy = jest.spyOn(document, 'addEventListener');
+        wordMatchSpy.mockClear();
+        addListenerSpy.mockClear();
+
+        fireEvent.mouseOver(highlightedWord);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('привіт');
+
+        for (let i = 0; i < 15; i++) {
+            fireEvent.mouseMove(highlightedWord);
+        }
+
+        // Hovering and moving the cursor over an underlined word must NOT recompute highlightText
+        // or re-register document hover listeners.
+        expect(wordMatchSpy).toHaveBeenCalledTimes(0);
+        expect(addListenerSpy.mock.calls.filter(([evt]) => evt === 'mouseover' || evt === 'mousemove')).toHaveLength(0);
+
+        fireEvent.mouseOut(highlightedWord);
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+
+        wordMatchSpy.mockRestore();
+        addListenerSpy.mockRestore();
     });
 });

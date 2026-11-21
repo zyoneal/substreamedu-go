@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { StatusNotification } from '../VideoPage/components/StatusNotification';
 import axios, { AxiosError } from 'axios';
@@ -301,6 +301,8 @@ export default function SongSearchPlayer() {
 
         return result;
     }, [dictionaryItems]);
+
+    const highlightedLyricsHtml = useMemo(() => highlightText(lyrics), [lyrics, highlightText]);
 
     function isRangeOverlapping(
         start: number,
@@ -893,84 +895,51 @@ export default function SongSearchPlayer() {
     };
 
     useEffect(() => {
-        const decodeHtmlEntities = (str: string): string => {
-            if (!str) return '';
-            const textarea = document.createElement('textarea');
-            textarea.innerHTML = str;
-            return textarea.value;
-        };
+        let activeTarget: HTMLElement | null = null;
 
         const handleMouseOver = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.classList.contains(styles.highlightedText)) {
-                const translationRaw = target.getAttribute('data-translation');
-                const translation = translationRaw ? decodeHtmlEntities(translationRaw).trim() : '';
-                const word = target.textContent;
-
-                if (word) {
-                    let finalTranslation = translation || '';
-
-                    if (!finalTranslation && word.length > 2) {
-                        finalTranslation = `Click to translate "${word}"`;
-                    }
-
-                    if (finalTranslation) {
-                        const rect = target.getBoundingClientRect();
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
-                        setTooltipState({
-                            text: finalTranslation,
-                            x: rect.left + scrollLeft + rect.width / 2,
-                            y: rect.top + scrollTop - 30
-                        });
-                    }
-                }
+            const target = e.target as HTMLElement | null;
+            if (!target?.classList?.contains(styles.highlightedText)) {
+                return;
             }
+            if (activeTarget === target) {
+                return;
+            }
+            activeTarget = target;
+
+            const translation = (target.getAttribute('data-translation') || '').trim();
+            const word = target.textContent;
+            if (!word) return;
+
+            const finalTranslation = translation || (word.length > 2 ? `Click to translate "${word}"` : '');
+            if (!finalTranslation) return;
+
+            const rect = target.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+            setTooltipState({
+                text: finalTranslation,
+                x: rect.left + scrollLeft + rect.width / 2,
+                y: rect.top + scrollTop - 30
+            });
         };
+
         const handleMouseOut = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
+            const target = e.target as HTMLElement | null;
             if (target?.classList?.contains(styles.highlightedText)) {
+                activeTarget = null;
                 setTooltipState(null);
             }
         };
-        const handleMouseMove = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (target?.classList?.contains(styles.highlightedText) && tooltipState) {
-                const translationRaw = target.getAttribute('data-translation');
-                const translation = translationRaw ? decodeHtmlEntities(translationRaw).trim() : '';
-                const word = target.textContent;
 
-                if (word) {
-                    let finalTranslation = translation || '';
-
-                    if (!finalTranslation && word.length > 2) {
-                        finalTranslation = `Click to translate "${word}"`;
-                    }
-
-                    if (finalTranslation) {
-                        const rect = target.getBoundingClientRect();
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
-                        setTooltipState({
-                            text: finalTranslation,
-                            x: rect.left + scrollLeft + rect.width / 2,
-                            y: rect.top + scrollTop - 30
-                        });
-                    }
-                }
-            }
-        };
         document.addEventListener('mouseover', handleMouseOver);
         document.addEventListener('mouseout', handleMouseOut);
-        document.addEventListener('mousemove', handleMouseMove);
         return () => {
             document.removeEventListener('mouseover', handleMouseOver);
             document.removeEventListener('mouseout', handleMouseOut);
-            document.removeEventListener('mousemove', handleMouseMove);
         };
-    }, [dictionaryItems, highlightedWords, tooltipState]);
+    }, []);
 
     // Re-apply highlighting when dictionaryItems or lyrics change.
     // React skips re-rendering dangerouslySetInnerHTML inside contentEditable containers,
@@ -979,10 +948,10 @@ export default function SongSearchPlayer() {
         if (lyrics && lyricsContainerRef.current) {
             const lyricsDiv = lyricsContainerRef.current.querySelector(`.${styles.lyrics}`);
             if (lyricsDiv) {
-                lyricsDiv.innerHTML = highlightText(lyrics);
+                lyricsDiv.innerHTML = highlightedLyricsHtml;
             }
         }
-    }, [dictionaryItems, lyrics, highlightText]);
+    }, [lyrics, highlightedLyricsHtml]);
 
     useEffect(() => {
         if (popoverRef.current) {
@@ -1128,7 +1097,7 @@ export default function SongSearchPlayer() {
                                 >
                                     <div
                                         className={styles.lyrics}
-                                        dangerouslySetInnerHTML={{ __html: highlightText(lyrics) }}
+                                        dangerouslySetInnerHTML={{ __html: highlightedLyricsHtml }}
                                     />
                                 </div>
                             ) : null}

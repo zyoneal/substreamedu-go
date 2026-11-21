@@ -474,6 +474,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         },
     }), []);
 
+    const renderedSubtitleNode = useMemo(
+        () =>
+            renderHighlightedSubtitle(
+                formatSubtitleForDisplay(currentSubtitle || ''),
+                highlightedWords,
+                undefined,
+                onboardingUnderlineWords
+            ),
+        [currentSubtitle, highlightedWords, onboardingUnderlineWords]
+    );
+
     return (
         <div className={styles.container} style={{ position: 'relative' }}>
             {isTemporarySubtitles && temporarySubtitleInfo && (
@@ -762,12 +773,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 }}
                                 onPauseVideo={pauseVideo}
                                 onPlayVideo={playVideo}
-                                renderedSubtitle={renderHighlightedSubtitle(
-                                    formatSubtitleForDisplay(currentSubtitle || ''),
-                                    highlightedWords,
-                                    undefined,
-                                    onboardingUnderlineWords
-                                )}
+                                renderedSubtitle={renderedSubtitleNode}
                                 showOnboardingPointer={false}
                                 isOnboardingMode={isOnboardingMode}
                                 hasSelectedText={isPopoverOpen}

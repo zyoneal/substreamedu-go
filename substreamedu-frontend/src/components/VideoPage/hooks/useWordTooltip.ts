@@ -7,27 +7,41 @@ export interface TooltipState {
     y: number;
 }
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#x27;': "'",
+    '&#39;': "'",
+};
+
 const decodeHtmlEntities = (str: string): string => {
-    if (!str) return '';
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
+    if (!str || !str.includes('&')) return str;
+    return str.replace(/&(amp|lt|gt|quot|#x27|#39);/g, (entity) => HTML_ENTITY_MAP[entity] ?? entity);
 };
 
 export const useWordTooltip = () => {
     const [tooltipState, setTooltipState] = useState<TooltipState | null>(null);
 
     useEffect(() => {
+        let activeTarget: HTMLElement | null = null;
+
         const isDictionaryWordTarget = (target: HTMLElement | null): boolean => {
             if (!target) return false;
-            // Match against module class or fallback string 'dictionaryWord'
             return (
-                (styles.dictionaryWord && target.classList.contains(styles.dictionaryWord)) ||
+                (Boolean(styles.dictionaryWord) && target.classList.contains(styles.dictionaryWord)) ||
                 target.classList.contains('dictionaryWord')
             );
         };
 
-        const updatePosition = (target: HTMLElement) => {
+        const handleMouseOver = (e: MouseEvent) => {
+            const target = e.target as HTMLElement | null;
+            if (!isDictionaryWordTarget(target) || !target || activeTarget === target) {
+                return;
+            }
+            activeTarget = target;
+
             const translationRaw = target.getAttribute('data-translation');
             const translation = translationRaw ? decodeHtmlEntities(translationRaw).trim() : '';
             const word = target.textContent;
@@ -42,37 +56,22 @@ export const useWordTooltip = () => {
             }
         };
 
-        const handleMouseOver = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (isDictionaryWordTarget(target)) {
-                updatePosition(target);
-            }
-        };
-
         const handleMouseOut = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
+            const target = e.target as HTMLElement | null;
             if (isDictionaryWordTarget(target)) {
+                activeTarget = null;
                 setTooltipState(null);
-            }
-        };
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (isDictionaryWordTarget(target) && tooltipState) {
-                updatePosition(target);
             }
         };
 
         document.addEventListener('mouseover', handleMouseOver);
         document.addEventListener('mouseout', handleMouseOut);
-        document.addEventListener('mousemove', handleMouseMove);
 
         return () => {
             document.removeEventListener('mouseover', handleMouseOver);
             document.removeEventListener('mouseout', handleMouseOut);
-            document.removeEventListener('mousemove', handleMouseMove);
         };
-    }, [tooltipState]);
+    }, []);
 
     return {
         tooltipState,

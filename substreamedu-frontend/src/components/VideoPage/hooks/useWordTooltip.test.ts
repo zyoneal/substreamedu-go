@@ -69,4 +69,48 @@ describe('useWordTooltip', () => {
 
         expect(result.current.tooltipState).toBeNull();
     });
+
+    it('does not re-register listeners or call getBoundingClientRect on mousemove', () => {
+        const addListenerSpy = jest.spyOn(document, 'addEventListener');
+        const { result } = renderHook(() => useWordTooltip());
+
+        const el = document.createElement('span');
+        el.className = 'dictionaryWord';
+        el.setAttribute('data-translation', 'привіт');
+        el.textContent = 'hello';
+        const rectSpy = jest.spyOn(el, 'getBoundingClientRect').mockReturnValue({
+            left: 100,
+            top: 200,
+            width: 50,
+            height: 20,
+            bottom: 220,
+            right: 150,
+            x: 100,
+            y: 200,
+            toJSON: () => {},
+        });
+        document.body.appendChild(el);
+        addListenerSpy.mockClear();
+
+        act(() => {
+            const overEvent = new MouseEvent('mouseover', { bubbles: true });
+            Object.defineProperty(overEvent, 'target', { value: el });
+            document.dispatchEvent(overEvent);
+        });
+
+        expect(result.current.tooltipState?.text).toBe('привіт');
+        expect(rectSpy).toHaveBeenCalledTimes(1);
+
+        act(() => {
+            for (let i = 0; i < 10; i++) {
+                const moveEvent = new MouseEvent('mousemove', { bubbles: true });
+                Object.defineProperty(moveEvent, 'target', { value: el });
+                document.dispatchEvent(moveEvent);
+            }
+        });
+
+        expect(rectSpy).toHaveBeenCalledTimes(1);
+        expect(addListenerSpy.mock.calls.filter(([evt]) => evt === 'mouseover' || evt === 'mousemove')).toHaveLength(0);
+        addListenerSpy.mockRestore();
+    });
 });
