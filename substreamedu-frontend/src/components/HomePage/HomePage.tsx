@@ -29,7 +29,7 @@ import HomeDemoModal from './HomeDemoModal';
 import styles from './HomePage.module.css';
 
 import { usePixzenTheme } from './pixzen/usePixzenTheme';
-import TypingHeadline from './pixzen/TypingHeadline';
+import DynamicText from '../ui/DynamicText';
 import BrandMarquee from './pixzen/BrandMarquee';
 import ManifestoReveal from './pixzen/ManifestoReveal';
 
@@ -97,7 +97,11 @@ const HomePage: React.FC = () => {
           >
             <span className={styles.heroEyebrow}>English immersion</span>
             <h1 className={styles.heroTitle} aria-label={HERO_PHRASES.join('. ')}>
-              <TypingHeadline phrases={HERO_PHRASES} />
+              <DynamicText
+                mode="morph"
+                words={HERO_PHRASES}
+                className={styles.heroDynamicText}
+              />
             </h1>
 
             <p className={styles.heroSub}>

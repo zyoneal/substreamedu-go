@@ -56,13 +56,44 @@ describe('HomePage Demo Modal', () => {
     expect(heading).toBeInTheDocument();
   });
 
-  it('holds each hero phrase for 2600ms before switching', () => {
-    const intervalSpy = jest.spyOn(window, 'setInterval');
+  it('rotates hero phrases via DynamicText on the 2200ms morph interval', () => {
+    jest.useFakeTimers();
+    const OriginalIO = global.IntersectionObserver;
+    class ActiveIntersectionObserver implements IntersectionObserver {
+      readonly root: Element | null = null;
+      readonly rootMargin: string = '';
+      readonly thresholds: ReadonlyArray<number> = [];
+      private cb: IntersectionObserverCallback;
+      constructor(cb: IntersectionObserverCallback) {
+        this.cb = cb;
+      }
+      observe = jest.fn(() => {
+        this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this);
+      });
+      unobserve = jest.fn();
+      disconnect = jest.fn();
+      takeRecords = jest.fn().mockReturnValue([]);
+    }
+    global.IntersectionObserver = ActiveIntersectionObserver as unknown as typeof IntersectionObserver;
+
     try {
       renderHomePage();
-      expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 2600);
+      const heading = screen.getByRole('heading', { level: 1 });
+      const srSpan = heading.querySelector('[aria-live="off"]');
+      expect(srSpan).toHaveTextContent('Learn English from movies');
+
+      act(() => {
+        jest.advanceTimersByTime(2200);
+      });
+      expect(srSpan).toHaveTextContent('Learn English from music');
+
+      act(() => {
+        jest.advanceTimersByTime(2200);
+      });
+      expect(srSpan).toHaveTextContent('Learn English from any text');
     } finally {
-      intervalSpy.mockRestore();
+      global.IntersectionObserver = OriginalIO;
+      jest.useRealTimers();
     }
   });
 
@@ -175,7 +206,7 @@ describe('HomePage Demo Modal', () => {
     expect(within(heroPlayer).getByRole('button', { name: /repeat subtitle 3 times/i })).toBeInTheDocument();
 
     // Verify initial scene (Interstellar) and that highlightWord stays unblurred while context is blurred
-    expect(within(heroPlayer).getByText(/interstellar/i)).toBeInTheDocument();
+    expect(within(heroPlayer).getAllByText(/interstellar/i).length).toBeGreaterThanOrEqual(1);
     expect(within(heroPlayer).getAllByText(/no problem/i).length).toBeGreaterThanOrEqual(1);
     const subtitleLine = within(heroPlayer).getByRole('button', { name: /toggle subtitle blur/i });
     expect(within(subtitleLine).getByText(/Hey relax/i).className).toMatch(/blurredContext/);
@@ -198,13 +229,22 @@ describe('HomePage Demo Modal', () => {
     });
     expect(within(heroPlayer).getByRole('button', { name: /word saved to dictionary/i })).toBeInTheDocument();
 
-    // Verify tab switching to YouTube interviews
-    const youtubeTab = within(heroPlayer).getByRole('tab', { name: /youtube interviews/i });
+    // Verify spring pagination dots switch to Slide 2 (FSRS Flashcard Review)
+    const reviewDot = within(heroPlayer).getByRole('tab', { name: /review as fsrs flashcard/i });
     act(() => {
-      fireEvent.click(youtubeTab);
+      fireEvent.click(reviewDot);
     });
-    expect(within(heroPlayer).getByText(/suits & style/i)).toBeInTheDocument();
-    expect(within(heroPlayer).getAllByText(/suit/i).length).toBeGreaterThanOrEqual(1);
+    expect(reviewDot).toHaveAttribute('aria-selected', 'true');
+
+    const revealBtn = within(heroPlayer).getByRole('button', { name: /tap to reveal translation/i });
+    act(() => {
+      fireEvent.click(revealBtn);
+    });
+    const goodBtn = within(heroPlayer).getByRole('button', { name: /good/i });
+    act(() => {
+      fireEvent.click(goodBtn);
+    });
+    expect(within(heroPlayer).getByText(/scheduled in 3 days/i)).toBeInTheDocument();
   });
 
   it('locks mobile hero headline to a consistent 2-line height to prevent layout jump', () => {

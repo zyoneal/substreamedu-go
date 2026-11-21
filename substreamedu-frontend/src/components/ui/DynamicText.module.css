@@ -1,0 +1,64 @@
+.root {
+  display: inline-block;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+  --dynamic-text-accent: var(--color-success, #22c55e);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.morphRoot {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.measure {
+  pointer-events: none;
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: pre;
+}
+
+.strut {
+  display: inline-block;
+  width: 0;
+}
+
+.glyph {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 50% 80%;
+  will-change: transform, opacity;
+}
+
+.decodeHost {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+}
+
+.decodeCell {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}
+
+.decodeCell[data-flash] {
+  color: var(--dynamic-text-accent);
+}
+
+.decodeCell[data-scramble] {
+  opacity: 0.45;
+}

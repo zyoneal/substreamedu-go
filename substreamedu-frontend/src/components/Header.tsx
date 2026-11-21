@@ -118,14 +118,6 @@ const Header = () => {
     return (
         <>
         <header className={`${styles.header_container} ${!isLoggedIn && isHomepage ? styles.unauthenticatedLanding : ''} backdrop-blur-md bg-canvas/80 border-b border-hairline z-50`}>
-            <Link to="/" className={styles.logo_container}>
-                {isMobileScreen ? (
-                    <img src="/logo192.png" alt="S" className={styles.logoImage} />
-                ) : (
-                    <span className={styles.logoText}>SUBSTREAMEDU</span>
-                )}
-            </Link>
-
             {isLoggedIn && !isDashboard && !isOnboarding && !isPlayerActive && (
                 <nav className={styles.navigation}>
                     <ul className="flex items-center gap-1 md:gap-2 m-0 p-0 list-none">

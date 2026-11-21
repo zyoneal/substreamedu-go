@@ -1,0 +1,100 @@
+.pager {
+  width: 100%;
+  font-family: var(--font-body, 'e-Ukraine', system-ui, -apple-system, sans-serif);
+}
+
+.viewport {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #08080a;
+  box-shadow:
+    0 24px 64px -12px rgba(0, 0, 0, 0.65),
+    0 8px 24px -6px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.strip {
+  display: flex;
+  width: 100%;
+  will-change: transform;
+}
+
+.slide {
+  flex: none;
+  width: 100%;
+  min-width: 100%;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dots {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  height: 20px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.18);
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.dot::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dot:hover {
+    background: rgba(10, 10, 10, 0.36);
+  }
+}
+
+.dot:focus-visible {
+  outline: 2px solid var(--cream, #0a0a0a);
+  outline-offset: 4px;
+}
+
+.activePill {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  height: 8px;
+  width: 20px;
+  border-radius: 4px;
+  background: var(--cream, #0a0a0a);
+  will-change: transform, width;
+  pointer-events: none;
+}
+
+.caption {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--gray-600, #8e8e8e);
+  font-variant-numeric: tabular-nums;
+}
+
+.captionIndex {
+  color: var(--cream, #0a0a0a);
+  font-weight: 600;
+}

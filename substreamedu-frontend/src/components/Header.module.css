@@ -912,6 +912,7 @@
     align-items: center;
     gap: 16px;
     order: 3;
+    margin-left: auto;
 }
 
 /* ============================================

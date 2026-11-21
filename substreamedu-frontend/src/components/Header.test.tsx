@@ -51,11 +51,11 @@ describe('Header Component Mobile & Desktop Layout', () => {
         );
     };
 
-    it('renders logo, burger menu and language selector on mobile text-paste route', () => {
+    it('renders burger menu and language selector without logo on mobile text-paste route', () => {
         renderHeader({ route: '/text-paste', isLoggedIn: true });
 
-        // Logo
-        expect(screen.getByRole('link', { name: /^substreamedu$/i })).toBeInTheDocument();
+        // Logo container is removed
+        expect(screen.queryByRole('link', { name: /^substreamedu$/i })).not.toBeInTheDocument();
 
         // Burger menu button
         const menuButton = screen.getByRole('button', { name: /menu/i });

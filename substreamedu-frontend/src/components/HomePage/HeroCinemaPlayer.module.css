@@ -33,17 +33,232 @@
   min-height: 420px;
   max-height: 540px;
   background: #08080a;
-  border-radius: 16px;
   overflow: hidden;
-  box-shadow:
-    0 24px 64px -12px rgba(0, 0, 0, 0.65),
-    0 8px 24px -6px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   user-select: none;
+}
+
+/* ─────────────────────────────────────────────
+   Slide 2: FSRS Flashcard Review Stage (16:9)
+   ───────────────────────────────────────────── */
+.flashcardStage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 420px;
+  max-height: 540px;
+  background: radial-gradient(circle at 50% 0%, #1d1b18 0%, #141312 65%, #0d0c0b 100%);
+  padding: 20px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.flashcardTopBar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.flashcardSourcePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ede8e0;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.flashcardMetaCounter {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  color: #9e988f;
+  font-variant-numeric: tabular-nums;
+}
+
+.flashcardCard {
+  width: 100%;
+  max-width: 520px;
+  margin: auto 0;
+  padding: 28px 30px;
+  border-radius: 20px;
+  background: #f5f3ef;
+  color: #0a0a0a;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.flashcardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flashcardTypeBadge,
+.flashcardCefrBadge {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+
+.flashcardTypeBadge {
+  background: #eae7e1;
+  color: #4a4a48;
+}
+
+.flashcardCefrBadge {
+  background: #0a0a0a;
+  color: #f5f3ef;
+}
+
+.flashcardWord {
+  font-family: var(--font-display, 'e-Ukraine', system-ui, sans-serif);
+  font-size: clamp(1.6rem, 2.8vw, 2.3rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: #0a0a0a;
+  margin-top: 2px;
+}
+
+.flashcardPhonetics {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  color: #666360;
+}
+
+.flashcardQuote {
+  margin: 6px 0 10px;
+  font-family: var(--font-body, 'e-Ukraine', system-ui, sans-serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: #4a4a48;
+  max-width: 42ch;
+}
+
+.flashcardQuoteMark {
+  background: #eae7e1;
+  color: #0a0a0a;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.flashcardRevealBtn {
+  margin-top: 4px;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 9999px;
+  border: 1px solid #0a0a0a;
+  background: #0a0a0a;
+  color: #f5f3ef;
+  font-family: var(--font-body, 'e-Ukraine', system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.flashcardRevealBtn:active {
+  transform: scale(0.97);
+}
+
+.flashcardAnswerBlock {
+  width: 100%;
+  padding-top: 12px;
+  border-top: 1px solid rgba(10, 10, 10, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.flashcardTranslation {
+  font-family: var(--font-display, 'e-Ukraine', system-ui, sans-serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: #0a0a0a;
+}
+
+.flashcardRatingRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.flashcardAgainBtn,
+.flashcardGoodBtn {
+  flex: 1;
+  max-width: 160px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-family: var(--font-body, 'e-Ukraine', system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.flashcardAgainBtn {
+  background: #eae7e1;
+  border: 1px solid rgba(10, 10, 10, 0.14);
+  color: #0a0a0a;
+}
+
+.flashcardGoodBtn {
+  background: #0a0a0a;
+  border: 1px solid #0a0a0a;
+  color: #f5f3ef;
+}
+
+.flashcardAgainBtn:active,
+.flashcardGoodBtn:active {
+  transform: scale(0.97);
+}
+
+.flashcardInterval {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  opacity: 0.72;
+}
+
+.flashcardRatedStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* Authentic Cinematic Backdrop Wrapper */

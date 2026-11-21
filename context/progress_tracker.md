@@ -6,6 +6,8 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 90: Spring-Animated Pagination Dots for `HeroCinemaPlayer` Showcase (ADR-166): Built reusable `PaginationDots` (`src/components/ui/PaginationDots.tsx`, `PaginationDots.module.css`, `PaginationDots.test.tsx`) using the exact `designbookmark.com/motion#db-pagination-dots` springs (strip `k=170, c=22`, leading edge `k=520, c=34`, trailing edge `k=140, c=18`, `20px` droplet pill, 4 substeps, idle-stopped `rAF`, `prefers-reduced-motion`); integrated into `HeroCinemaPlayer` to glide between Slide 1 (*Highlight & save in context*) and Slide 2 (*Review as FSRS flashcard* with interactive reveal & rating).
+  - Spec 89: Kokonut UI `DynamicText` Animated Hero Headline (ADR-165): Built reusable `DynamicText` (`src/components/ui/DynamicText.tsx`, `DynamicText.module.css`, `DynamicText.test.tsx`) from Kokonut UI v2.0.0 (MIT) preserving exact spring-arc letter morphing, gravity fall, landing squash, counter digit roll, `decode`, and `cycle` modes with SubStreamEdu `e-Ukraine`/`JetBrains Mono` tokens and product copy; replaced `TypingHeadline` inside `HomePage.tsx`'s `h1.heroTitle`.
   - Spec 88: Spring-Animated Swipe Deck for `/learning` SRS Flashcards (ADR-164): Built reusable `SwipeDeck` (`src/components/ui/SwipeDeck.tsx`, `SwipeDeck.module.css`, `SwipeDeck.test.tsx`) using the exact `designbookmark.com/motion#db-swipe-deck` springs (`drag: 900/50`, `return: 280/16`, `depth: 260/22`, `fling: 70/17`, `110px` threshold, grab-point tilt, rising stacked back cards, directional `GOOD`/`AGAIN` stamps, `prefers-reduced-motion`); integrated into `Flashcards.tsx` around `Flashcard` (`ExpandCard`) so revealed cards can be swiped right (`Good`) or left (`Again`) or flung via the rating buttons.
   - Spec 87: Spring-Animated Expand Card for SRS Flashcards (ADR-163): Built reusable `ExpandCard` (`src/components/ui/ExpandCard.tsx`, `ExpandCard.module.css`, `ExpandCard.test.tsx`) using the dual-spring physics (`p: k=240, c=21`, `a: k=260, c=28`, `160ms` details stagger, 4 substeps, `ResizeObserver`, `prefers-reduced-motion`) and Pixzen editorial tokens (`#eae7e1`, `#0a0a0a`, `e-Ukraine`, `20px` radius); integrated into `Flashcard.tsx` for smooth card reveal expansion on `/learning`.
   - Spec 86: Animated Spring Toggle Switches for Video Player Features (ADR-162): Built reusable `ToggleSwitch` (`src/components/ui/ToggleSwitch.tsx`, `ToggleSwitch.module.css`, `ToggleSwitch.test.tsx`) using the dual-spring physics (`p: k=320, c=18`, `w: k=300, c=20`, stretch kick `60`, 4 substeps) and SubStreamEdu Warm Cinematic Espresso tokens (`e-Ukraine`, `--color-success`, `--rounded-full`, `prefers-reduced-motion`); replaced the `Blur`, `Delay` (`-2s`), and `2x Gap` text buttons in `VideoControlsOverlay.tsx` with compact animated `ToggleSwitch` controls while keeping `3x` repeat as an action button.
@@ -55,6 +57,14 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-165: Kokonut UI DynamicText Animated Hero Headline (Spec 89)
+- **Status**: Accepted
+- **Context**: `HomePage.tsx`'s `h1.heroTitle` previously used `TypingHeadline` (simple vertical opacity/y swap). Replacing it with Kokonut UI v2.0.0's MIT-licensed `DynamicText` adds physical spring-arc letter morphing, gravity fall, landing squash, and counter digit rolling with zero external dependencies.
+- **Decision**:
+  1. Added reusable [`DynamicText.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/DynamicText.tsx) (`DynamicText.module.css`, `DynamicText.test.tsx`) implementing Kokonut UI v2.0.0's exact physics constants, `morph` / `decode` / `cycle` modes, `prefers-reduced-motion` support, viewport/visibility pausing, and SubStreamEdu design tokens (`e-Ukraine`, `JetBrains Mono`, `--color-success`) with product-specific defaults.
+  2. Replaced `TypingHeadline` inside `h1.heroTitle` in [`HomePage.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/HomePage/HomePage.tsx) with `<DynamicText mode="morph" words={HERO_PHRASES} />` and tuned mobile `.heroTitle` clamp sizing in [`HomePage.module.css`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/HomePage/HomePage.module.css) so single-line glyph measurement stays centered without horizontal overflow.
+- **Consequences**: The homepage hero headline morphs smoothly between `'Learn English from movies'`, `'Learn English from music'`, and `'Learn English from any text'` while keeping the shared prefix anchored and zero CLS.
 
 ### ADR-164: Spring-Animated Swipe Deck for `/learning` SRS Flashcards (Spec 88)
 - **Status**: Accepted
