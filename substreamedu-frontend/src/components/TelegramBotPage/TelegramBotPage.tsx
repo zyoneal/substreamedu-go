@@ -4,6 +4,7 @@ import { userService } from '../../services/UserService';
 import styles from './css/TelegramBotPage.module.css';
 import { FormattedMessage } from 'react-intl';
 import { Rocket } from 'lucide-react';
+import { CopyButton } from '../ui/CopyButton';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import '../../styles/pixzen.css';
 
@@ -79,18 +80,31 @@ const TelegramBotPage: React.FC = () => {
                             />
                         </p>
 
-                        <a
-                            href={`https://t.me/substreamedu_bot?start=${user.telegramToken}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.heroCta}
-                        >
-                            <Rocket className={styles.ctaIcon} size={18} aria-hidden="true" />
-                            <FormattedMessage
-                                id="telegramBotPage.connectButton"
-                                defaultMessage="Connect to Telegram Bot"
-                            />
-                        </a>
+                        <div className={styles.heroActions}>
+                            <a
+                                href={`https://t.me/substreamedu_bot?start=${user.telegramToken}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.heroCta}
+                            >
+                                <Rocket className={styles.ctaIcon} size={18} aria-hidden="true" />
+                                <FormattedMessage
+                                    id="telegramBotPage.connectButton"
+                                    defaultMessage="Connect to Telegram Bot"
+                                />
+                            </a>
+
+                            {user.telegramToken && (
+                                <CopyButton
+                                    text={`https://t.me/substreamedu_bot?start=${user.telegramToken}`}
+                                    label="Copy link"
+                                    copiedLabel="Copied"
+                                    ariaLabel="Copy Telegram bot link"
+                                    variant="light"
+                                    size="md"
+                                />
+                            )}
+                        </div>
 
                         <div className={styles.heroStats}>
                             <div className={styles.statItem}>

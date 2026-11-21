@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import { DictionaryService, SRSItemKind, SRSSessionFilters } from '../../../services/DictionaryService';
+import { SegmentedControl } from '../../ui/SegmentedControl';
 import styles from '../Flashcards.module.css';
 
 interface ResourceOption {
@@ -87,6 +88,10 @@ export const SessionFilterBar: React.FC<SessionFilterBarProps> = ({
     }, []);
 
     const activeKind: SRSItemKind = filters.kind || 'all';
+    const segmentedOptions = KIND_OPTIONS.map((opt) => ({
+        value: opt.value,
+        label: intl.formatMessage({ id: opt.id, defaultMessage: opt.defaultMessage }),
+    }));
 
     return (
         <div
@@ -94,23 +99,16 @@ export const SessionFilterBar: React.FC<SessionFilterBarProps> = ({
             role="region"
             aria-label={intl.formatMessage({ id: 'flashcards.filter.regionLabel', defaultMessage: 'Session filters' })}
         >
-            <div className={styles.filterSegmented} role="group" aria-label={intl.formatMessage({ id: 'flashcards.filter.kindLabel', defaultMessage: 'Card type' })}>
-                {KIND_OPTIONS.map((opt) => {
-                    const isActive = activeKind === opt.value;
-                    return (
-                        <button
-                            key={opt.value}
-                            type="button"
-                            disabled={disabled}
-                            aria-pressed={isActive}
-                            onClick={() => onApplyFilters({ ...filters, kind: opt.value })}
-                            className={`${styles.filterPill} ${isActive ? styles.filterPillActive : ''}`}
-                        >
-                            {intl.formatMessage({ id: opt.id, defaultMessage: opt.defaultMessage })}
-                        </button>
-                    );
-                })}
-            </div>
+            <SegmentedControl
+                options={segmentedOptions}
+                value={activeKind}
+                onChange={(nextKind) => onApplyFilters({ ...filters, kind: nextKind })}
+                ariaLabel={intl.formatMessage({ id: 'flashcards.filter.kindLabel', defaultMessage: 'Card type' })}
+                roleMode="group"
+                variant="light"
+                size="sm"
+                disabled={disabled}
+            />
 
             {resources.length > 0 && (
                 <select

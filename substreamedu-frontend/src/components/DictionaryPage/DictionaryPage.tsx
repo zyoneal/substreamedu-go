@@ -24,6 +24,9 @@ import { Upload } from 'lucide-react';
 
 import { Card, CardContent } from '../ui/card';
 import { Input } from '../ui/input';
+import { SegmentedControl } from '../ui/SegmentedControl';
+import { LoadingToSuccessButton, LoadingButtonState } from '../ui/LoadingToSuccessButton';
+import { AnimatedStatValue } from '../ui/AnimatedStatValue';
 import { usePixzenTheme } from '../HomePage/pixzen/usePixzenTheme';
 import { parseDoTags } from '../../utils/textUtils';
 import { useDictionaryData } from './hooks/useDictionaryData';
@@ -39,6 +42,8 @@ const DictionaryPage: React.FC = () => {
     usePixzenTheme();
     const intl = useIntl();
     const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
+    const [exportSuccess, setExportSuccess] = React.useState(false);
+    const wasExportingRef = React.useRef(false);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -156,6 +161,50 @@ const DictionaryPage: React.FC = () => {
         }
     ];
 
+    React.useEffect(() => {
+        if (wasExportingRef.current && !isExporting) {
+            setExportSuccess(true);
+            const timer = window.setTimeout(() => setExportSuccess(false), 1800);
+            wasExportingRef.current = false;
+            return () => window.clearTimeout(timer);
+        }
+        wasExportingRef.current = isExporting;
+        return undefined;
+    }, [isExporting]);
+
+    const exportButtonState: LoadingButtonState = isExporting
+        ? 'loading'
+        : exportSuccess
+        ? 'success'
+        : 'idle';
+
+    const viewModeOptions = [
+        {
+            value: 'groups' as const,
+            label: intl.formatMessage({ id: 'groups', defaultMessage: 'Collections' }),
+            icon: <Folder size={15} />,
+        },
+        {
+            value: 'categories' as const,
+            label: intl.formatMessage({ id: 'categories', defaultMessage: 'Themes' }),
+            icon: <Sparkles size={15} />,
+        },
+        {
+            value: 'words' as const,
+            label: intl.formatMessage({ id: 'allWords', defaultMessage: 'All Words' }),
+            icon: <BookOpen size={15} />,
+        },
+    ];
+
+    const categoryFilterOptions = filterCategories.map((cat) => {
+        const Icon = cat.icon;
+        return {
+            value: cat.key ?? 'all',
+            label: cat.label,
+            icon: <Icon size={14} />,
+        };
+    });
+
     return (
         <motion.div
             className={styles.dictionaryContainer}
@@ -177,35 +226,15 @@ const DictionaryPage: React.FC = () => {
 
                     <div className={styles.topBarActions}>
                         {/* Segmented View Mode Toggle */}
-                        <div className={styles.segmentedControl} role="tablist" aria-label="View mode">
-                            <button
-                                onClick={() => handleSwitchViewMode('groups')}
-                                className={`${styles.segmentedButton} ${view.mode === 'groups' ? styles.segmentedButtonActive : ''}`}
-                                role="tab"
-                                aria-selected={view.mode === 'groups'}
-                            >
-                                <Folder size={15} />
-                                <span>{intl.formatMessage({ id: 'groups', defaultMessage: 'Collections' })}</span>
-                            </button>
-                            <button
-                                onClick={() => handleSwitchViewMode('categories')}
-                                className={`${styles.segmentedButton} ${view.mode === 'categories' ? styles.segmentedButtonActive : ''}`}
-                                role="tab"
-                                aria-selected={view.mode === 'categories'}
-                            >
-                                <Sparkles size={15} />
-                                <span>{intl.formatMessage({ id: 'categories', defaultMessage: 'Themes' })}</span>
-                            </button>
-                            <button
-                                onClick={() => handleSwitchViewMode('words')}
-                                className={`${styles.segmentedButton} ${view.mode === 'words' ? styles.segmentedButtonActive : ''}`}
-                                role="tab"
-                                aria-selected={view.mode === 'words'}
-                            >
-                                <BookOpen size={15} />
-                                <span>{intl.formatMessage({ id: 'allWords', defaultMessage: 'All Words' })}</span>
-                            </button>
-                        </div>
+                        <SegmentedControl
+                            options={viewModeOptions}
+                            value={view.mode}
+                            onChange={handleSwitchViewMode}
+                            ariaLabel="View mode"
+                            roleMode="tablist"
+                            variant="light"
+                            size="md"
+                        />
 
                         <button
                             type="button"
@@ -218,16 +247,17 @@ const DictionaryPage: React.FC = () => {
                             <span>Import</span>
                         </button>
 
-                        <button
+                        <LoadingToSuccessButton
+                            state={exportButtonState}
                             onClick={handleExport}
+                            idleIcon={<Download size={14} />}
+                            idleLabel="Export Anki"
+                            loadingLabel="Exporting..."
+                            successLabel="Exported"
                             className={styles.exportButton}
-                            disabled={isExporting}
                             title="Export entire dictionary to Anki (.apkg)"
-                            aria-label="Export entire dictionary to Anki (.apkg)"
-                        >
-                            <Download size={14} className={isExporting ? 'animate-spin' : ''} />
-                            <span>{isExporting ? 'Exporting...' : 'Export Anki'}</span>
-                        </button>
+                            ariaLabel="Export entire dictionary to Anki (.apkg)"
+                        />
                     </div>
                 </motion.div>
 
@@ -239,7 +269,7 @@ const DictionaryPage: React.FC = () => {
                             <BookOpen size={16} className={styles.statIcon} />
                         </div>
                         <div className={styles.statBottomRow}>
-                            <span className={styles.statValue}>{totalWordsCount}</span>
+                            <AnimatedStatValue value={totalWordsCount} className={styles.statValue} />
                             <span className={styles.statSubtext}>words saved</span>
                         </div>
                     </div>
@@ -250,7 +280,7 @@ const DictionaryPage: React.FC = () => {
                             <Sparkles size={16} className={styles.statIcon} />
                         </div>
                         <div className={styles.statBottomRow}>
-                            <span className={styles.statValue}>{masteredCount}</span>
+                            <AnimatedStatValue value={masteredCount} className={styles.statValue} />
                             <span className={styles.statSubtext}>
                                 {totalWordsCount > 0 ? `${Math.round((masteredCount / totalWordsCount) * 100)}% retention` : '0% retention'}
                             </span>
@@ -263,7 +293,7 @@ const DictionaryPage: React.FC = () => {
                             <Layers size={16} className={styles.statIcon} />
                         </div>
                         <div className={styles.statBottomRow}>
-                            <span className={styles.statValue}>{activeGroupsCount}</span>
+                            <AnimatedStatValue value={activeGroupsCount} className={styles.statValue} />
                             <span className={styles.statSubtext}>media sources</span>
                         </div>
                     </div>
@@ -272,24 +302,15 @@ const DictionaryPage: React.FC = () => {
                 {/* Single-Row Filter & Search Toolbar */}
                 <motion.div className={styles.controlsContainer} variants={itemVariants}>
                     {view.mode !== 'categories' ? (
-                        <div className={styles.categoryFilterList} role="tablist" aria-label="Source category filter">
-                            {filterCategories.map((cat) => {
-                                const Icon = cat.icon;
-                                const isActive = selectedCategory === cat.key;
-                                return (
-                                    <button
-                                        key={cat.key || 'all'}
-                                        onClick={() => setSelectedCategory(cat.key)}
-                                        className={`${styles.categoryFilterBtn} ${isActive ? styles.categoryFilterBtnActive : ''}`}
-                                        role="tab"
-                                        aria-selected={isActive}
-                                    >
-                                        <Icon size={14} />
-                                        <span>{cat.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        <SegmentedControl
+                            options={categoryFilterOptions}
+                            value={selectedCategory ?? 'all'}
+                            onChange={(val) => setSelectedCategory(val === 'all' ? null : val)}
+                            ariaLabel="Source category filter"
+                            roleMode="tablist"
+                            variant="light"
+                            size="sm"
+                        />
                     ) : <div />}
 
                     <div className={styles.rightActionsGroup}>

@@ -2,6 +2,7 @@ import React from 'react';
 import { useIntl } from 'react-intl';
 import { X } from 'lucide-react';
 import { usePromo } from '../hooks/usePromo';
+import { LoadingToSuccessButton, LoadingButtonState } from '../../ui/LoadingToSuccessButton';
 import styles from '../styles/layout.module.css';
 
 export const PromoSection: React.FC = () => {
@@ -51,16 +52,14 @@ export const PromoSection: React.FC = () => {
                         </button>
                     )}
                 </div>
-                <button
-                    type="button"
+                <LoadingToSuccessButton
+                    state={(status === 'loading' ? 'loading' : status === 'success' ? 'success' : 'idle') as LoadingButtonState}
                     className={styles.promoButton}
                     onClick={applyPromo}
-                    disabled={status === 'loading'}
-                >
-                    {status === 'loading'
-                        ? '...'
-                        : intl.formatMessage({ id: 'paymentPage.promo.apply', defaultMessage: 'Apply' })}
-                </button>
+                    idleLabel={intl.formatMessage({ id: 'paymentPage.promo.apply', defaultMessage: 'Apply' })}
+                    loadingLabel="..."
+                    successLabel={intl.formatMessage({ id: 'paymentPage.promo.applied', defaultMessage: 'Applied' })}
+                />
             </div>
             {message && (
                 <div className={`${styles.message} ${status === 'success' ? styles.success : styles.error}`}>

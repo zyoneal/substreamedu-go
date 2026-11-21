@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useIntl } from 'react-intl';
 import { SUPPORTED_LANGUAGES } from '../../constants/languageConfig';
 import { getRecommendedLanguages, getSortedLanguages } from '../../utils/languageUtils';
@@ -18,6 +18,7 @@ const LanguageSelector: FC<LanguageSelectorProps> = ({
     detectedRegion = 'US'
 }) => {
     const intl = useIntl();
+    const prefersReducedMotion = useReducedMotion();
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -70,9 +71,17 @@ const LanguageSelector: FC<LanguageSelectorProps> = ({
                         ? currentLangConfig!.label
                         : intl.formatMessage({ id: 'selectLanguage', defaultMessage: 'Select language' })}
                 </span>
-                <div className={styles.chevronWrapper}>
+                <motion.div
+                    className={styles.chevronWrapper}
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={
+                        prefersReducedMotion
+                            ? { duration: 0 }
+                            : { type: 'spring', stiffness: 420, damping: 28, mass: 0.7 }
+                    }
+                >
                     <ChevronDown size={16} strokeWidth={2.5} className={`${styles.chevronIcon} ${!isLanguageSelected ? styles.notSelectedChevron : ''}`} />
-                </div>
+                </motion.div>
             </button>
 
             <AnimatePresence>
@@ -80,10 +89,14 @@ const LanguageSelector: FC<LanguageSelectorProps> = ({
                     <motion.div
                         className={styles.dropdown}
                         role="listbox"
-                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                        initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: -6 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                        exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }}
+                        transition={
+                            prefersReducedMotion
+                                ? { duration: 0 }
+                                : { type: 'spring', stiffness: 420, damping: 28, mass: 0.7 }
+                        }
                         style={{ transformOrigin: "top right" }}
                     >
                         {recommendedLanguages.length > 0 && (

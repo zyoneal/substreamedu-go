@@ -6,6 +6,7 @@
 - **In Progress**: None
 - **Backlog**: None
 - **Recent Completed**:
+  - Spec 91: Quick-Win Spring Motion Components (`SegmentedControl`, `CopyButton`, `LoadingToSuccessButton`, `AnimatedStatValue`, `SpringDropdown`) (ADR-167): Built reusable `SegmentedControl` (dual-spring sliding pill `x: 380/28, w: 360/28`, idle-stopped `rAF`, `ResizeObserver`, keyboard nav), `CopyButton` (spring `Copy`/`Check` morph, clipboard + fallback, auto-reset), `LoadingToSuccessButton` (`idle -> loading -> success` spring state transitions), and `AnimatedStatValue` (spring count-up `160/24`, `tabular-nums`, `prefers-reduced-motion`); upgraded `LanguageSelector` to spring dropdown physics (`420/28/0.7` + rotating chevron); integrated across `DictionaryPage`, `SessionFilterBar`, `TelegramBotPage`, `TranslationPopover`, `PromoSection`, and `DashboardTelemetryCards` with unit tests.
   - Spec 90: Spring-Animated Pagination Dots for `HeroCinemaPlayer` Showcase (ADR-166): Built reusable `PaginationDots` (`src/components/ui/PaginationDots.tsx`, `PaginationDots.module.css`, `PaginationDots.test.tsx`) using the exact `designbookmark.com/motion#db-pagination-dots` springs (strip `k=170, c=22`, leading edge `k=520, c=34`, trailing edge `k=140, c=18`, `20px` droplet pill, 4 substeps, idle-stopped `rAF`, `prefers-reduced-motion`); integrated into `HeroCinemaPlayer` to glide between Slide 1 (*Highlight & save in context*) and Slide 2 (*Review as FSRS flashcard* with interactive reveal & rating).
   - Spec 89: Kokonut UI `DynamicText` Animated Hero Headline (ADR-165): Built reusable `DynamicText` (`src/components/ui/DynamicText.tsx`, `DynamicText.module.css`, `DynamicText.test.tsx`) from Kokonut UI v2.0.0 (MIT) preserving exact spring-arc letter morphing, gravity fall, landing squash, counter digit roll, `decode`, and `cycle` modes with SubStreamEdu `e-Ukraine`/`JetBrains Mono` tokens and product copy; replaced `TypingHeadline` inside `HomePage.tsx`'s `h1.heroTitle`.
   - Spec 88: Spring-Animated Swipe Deck for `/learning` SRS Flashcards (ADR-164): Built reusable `SwipeDeck` (`src/components/ui/SwipeDeck.tsx`, `SwipeDeck.module.css`, `SwipeDeck.test.tsx`) using the exact `designbookmark.com/motion#db-swipe-deck` springs (`drag: 900/50`, `return: 280/16`, `depth: 260/22`, `fling: 70/17`, `110px` threshold, grab-point tilt, rising stacked back cards, directional `GOOD`/`AGAIN` stamps, `prefers-reduced-motion`); integrated into `Flashcards.tsx` around `Flashcard` (`ExpandCard`) so revealed cards can be swiped right (`Good`) or left (`Again`) or flung via the rating buttons.
@@ -57,6 +58,14 @@
 ---
 
 ## Architectural Decisions Log (Recent)
+
+### ADR-167: Quick-Win Spring Motion Components (Spec 91)
+- **Status**: Accepted
+- **Context**: Following Specs 86–90, high-frequency controls (`DictionaryPage` view/category tabs, `SessionFilterBar` kind filter, `Export Anki`, `PromoSection` apply CTA, `TelegramBotPage` link sharing, `TranslationPopover` word copy, `DashboardTelemetryCards` metrics, and `LanguageSelector`) lacked tactile spring feedback.
+- **Decision**:
+  1. Built four reusable motion primitives under `src/components/ui/`: [`SegmentedControl.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/SegmentedControl.tsx) (dual-spring sliding pill `380/28` & `360/28`, `ResizeObserver`, idle-stopped `rAF`), [`CopyButton.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/CopyButton.tsx) (spring `Copy`/`Check` morph + clipboard fallback), [`LoadingToSuccessButton.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/LoadingToSuccessButton.tsx) (`idle -> loading -> success` morph), and [`AnimatedStatValue.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/ui/AnimatedStatValue.tsx) (spring numeric count-up `160/24` with `tabular-nums`), all honoring `prefers-reduced-motion`.
+  2. Upgraded [`LanguageSelector.tsx`](file:///Users/test/Desktop/substreamedu-go/substreamedu-frontend/src/components/LanguageSelector/LanguageSelector.tsx) with spring popover physics (`420/28/0.7`) and animated chevron rotation, and integrated all primitives into `DictionaryPage`, `SessionFilterBar`, `TelegramBotPage`, `TranslationPopover`, `PromoSection`, and `DashboardTelemetryCards`.
+- **Consequences**: Consistent tactile spring motion across core learner surfaces with zero new dependencies and full test coverage.
 
 ### ADR-165: Kokonut UI DynamicText Animated Hero Headline (Spec 89)
 - **Status**: Accepted

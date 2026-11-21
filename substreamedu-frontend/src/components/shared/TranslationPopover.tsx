@@ -7,6 +7,7 @@ import { useIntl } from 'react-intl';
 import styles from '../VideoPage/css/VideoPlayerPopover.module.css';
 import { TranslationData, SelectionPosition, TranslationOption } from '../VideoPage/types';
 import { TranslationOptionsGrid } from '../VideoPage/components/TranslationOptionsGrid';
+import { CopyButton } from '../ui/CopyButton';
 
 export interface TranslationPopoverProps {
     selectionPosition: SelectionPosition | null;
@@ -189,6 +190,15 @@ export const TranslationPopover: React.FC<TranslationPopoverProps> = ({
                     <h3 className={styles.selectedText}>{selectedText}</h3>
                     {cleanTranscription && (
                         <span className={styles.transcription}>[{cleanTranscription}]</span>
+                    )}
+                    {selectedText && (
+                        <CopyButton
+                            text={selectedText}
+                            ariaLabel="Copy word"
+                            copiedLabel="Copied"
+                            variant="ghost"
+                            size="sm"
+                        />
                     )}
                 </div>
 

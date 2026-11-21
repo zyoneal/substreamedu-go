@@ -10,6 +10,7 @@ import {
     RotateCcw,
 } from 'lucide-react';
 import { VectorFlameIcon } from './StreakShareModal';
+import { AnimatedStatValue } from '../../ui/AnimatedStatValue';
 import {
     DAYS_LETTERS,
     DashboardStats,
@@ -81,7 +82,7 @@ export const DashboardTelemetryCards: React.FC<DashboardTelemetryCardsProps> = (
                                 statsLoading ? styles.metricValueLoading : ''
                             }`}
                         >
-                            {statsLoading ? '–' : stats?.streakDays ?? 0}
+                            {statsLoading ? '–' : <AnimatedStatValue value={stats?.streakDays ?? 0} />}
                         </span>
                         <span className={styles.metricLabel}>
                             <FormattedMessage id="dashboard.stats.streak" defaultMessage="day streak" />
@@ -177,7 +178,7 @@ export const DashboardTelemetryCards: React.FC<DashboardTelemetryCardsProps> = (
                                         sessionCardsCount > 0 ? styles.metricValueAccent : ''
                                     } ${statsLoading ? styles.metricValueLoading : ''}`}
                                 >
-                                    {statsLoading ? '–' : sessionCardsCount}
+                                    {statsLoading ? '–' : <AnimatedStatValue value={sessionCardsCount} />}
                                 </span>
                                 <span className={styles.metricLabel}>
                                     <FormattedMessage id="dashboard.stats.cardsToday" defaultMessage="cards today" />
@@ -243,14 +244,14 @@ export const DashboardTelemetryCards: React.FC<DashboardTelemetryCardsProps> = (
                                         statsLoading ? styles.metricValueLoading : ''
                                     }`}
                                 >
-                                    {statsLoading ? '–' : totalWords.toLocaleString()}
+                                    {statsLoading ? '–' : <AnimatedStatValue value={totalWords} />}
                                 </span>
                                 <span className={styles.metricLabel}>
                                     <FormattedMessage id="dashboard.stats.totalWords" defaultMessage="total words" />
                                 </span>
                             </div>
                             <span className={styles.metricSubtext}>
-                                {statsLoading ? '–' : learningWords.toLocaleString()}{' '}
+                                {statsLoading ? '–' : <AnimatedStatValue value={learningWords} />}{' '}
                                 <FormattedMessage id="dashboard.stats.learning" defaultMessage="in progress" />
                             </span>
                         </>
